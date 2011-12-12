@@ -1,1 +1,38 @@
 Fujiyama Renderer
+=================
+
+  Overview
+-----------------
+Fujiyama Renderer is distribution oriented ray-tracing renderer.
+* Compatibility - written in pure ANSI C (x)
+* Portability - depends on no external library (xx)
+* Simplicity - requires only single C interfaces header file and library
+* Compact - the size of core library is about 100Kb
+* Open Source - licensed under the terms of MIT License
+
+(x) fb2exr is written in C++
+(xx) some external tools require OpenEXR and OpneGL/glut
+
+  Features
+-----------------
+Below are the implemented features so far.
+* Original mesh format - ply2mesh is provided
+* Original mipmap format - hdr2mip is provided
+* Original framebuffer format - fb2exr is provided
+* On demand reading of mipmap - unlimited number of texture images
+* Pluggable shader DSO - shaders can be written in C/C++
+* Object instance - saves memory usage
+* On demand construction of accelerator - avoids unnecessary construction
+* Grid accelerator - mailbox is not implemented
+* Command-like scene description language - works with text filter tools
+* Region rendering - accelerates distribution rendering pipeline
+* Gaussian and Box pixel filters - supports filter width bigger than 1 pixel
+* FrameBuffer Viewer - provided in the distribution
+* Uniform grid pixel sampling
+* Tile based rendering 
+
+See LICENSE for the license.
+For more information about Fujiyama, see http://fujiyama-renderer.com/
+
+Copyright (c) 2011-2012 Hiroshi Tsubokawa
+
