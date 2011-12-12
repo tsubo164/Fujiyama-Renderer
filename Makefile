@@ -10,8 +10,14 @@ LDFLAGS = -Llib
 #LDFLAGS = -Llib -pg
 CPPFLAGS = -Isrc -Wall -O2
 
-.PHONY: all all_ clean
+RM = rm -f
+INSTALL = install
+
+.PHONY: all all_ clean install
 all: all_
+
+prefix = $(HOME)
+export prefix
 
 #******************************************************************************
 # $(eval $(call submodule, $(srcdir_), $(files_), $(subtgt_), $(cflags_), $(ldflags_)))
@@ -24,13 +30,16 @@ all_targets += $$(target)
 all_objects += $$(objects)
 all_depends += $$(depends)
 $$(objects): %.o: %.c
-	$$(CC) $$(CFLAGS) $(cflags_) -c -o $$@ $$<
+	@echo '  compile $$<'
+	@$$(CC) $$(CFLAGS) $(cflags_) -c -o $$@ $$<
 $$(target): $$(objects) $(addobj_)
-	$$(CC) $$(LDFLAGS) $(ldflags_) -o $$@ $$^
+	@echo '  link $$^'
+	@$$(CC) $$(LDFLAGS) $(ldflags_) -o $$@ $$^
 $$(depends): %.d: %.c
-	$$(CC) $$(CFLAGS) $(cflags_) -c -MM $$< | \
+	@echo '  dependency $$<'
+	@$$(CC) $$(CFLAGS) $(cflags_) -c -MM $$< | \
 	sed 's,\($$(notdir $$*)\.o\) *:,$$(dir $$@)\1 $@: ,' > $$@.tmp
-	mv $$@.tmp $$@
+	@mv $$@.tmp $$@
 endef
 #******************************************************************************
 #******************************************************************************
@@ -44,13 +53,16 @@ all_targets += $$(target)
 all_objects += $$(objects)
 all_depends += $$(depends)
 $$(objects): %.o: %.cpp
-	g++ $$(CPPFLAGS) $(cflags_) -c -o $$@ $$<
+	@echo '  compile $$<'
+	@g++ $$(CPPFLAGS) $(cflags_) -c -o $$@ $$<
 $$(target): $$(objects) $(addobj_)
-	g++ $$(LDFLAGS) $(ldflags_) -o $$@ $$^
+	@echo '  link $$^'
+	@g++ $$(LDFLAGS) $(ldflags_) -o $$@ $$^
 $$(depends): %.d: %.cpp
-	g++ $$(CPPFLAGS) $(cflags_) -c -MM $$< | \
+	@echo '  dependency $$<'
+	@g++ $$(CPPFLAGS) $(cflags_) -c -MM $$< | \
 	sed 's,\($$(notdir $$*)\.o\) *:,$$(dir $$@)\1 $@: ,' > $$@.tmp
-	mv $$@.tmp $$@
+	@mv $$@.tmp $$@
 endef
 #******************************************************************************
 
@@ -58,6 +70,9 @@ all_targets :=
 all_objects :=
 all_depends :=
 addobj_ :=
+install_lib :=
+install_bin :=
+install_shader :=
 
 #core library
 srcdir_  := src
@@ -70,6 +85,9 @@ cflags_  := -fPIC
 ldflags_ := -shared -ldl -lm
 $(eval $(call submodule))
 
+#install
+install_lib := $(subtgt_)
+
 #shaders
 srcdir_  := shaders/PlasticShader
 tgtdir_  := lib
@@ -79,6 +97,8 @@ cflags_  := -fPIC
 ldflags_ := -shared -lscene
 $(eval $(call submodule))
 
+install_shader += $(subtgt_)
+
 srcdir_  := shaders/GlassShader
 tgtdir_  := lib
 files_   := GlassShader
@@ -86,6 +106,8 @@ subtgt_  := GlassShader.so
 cflags_  := -fPIC
 ldflags_ := -shared -lscene
 $(eval $(call submodule))
+
+install_shader += $(subtgt_)
 
 srcdir_  := shaders/ConstantShader
 tgtdir_  := lib
@@ -95,46 +117,58 @@ cflags_  := -fPIC
 ldflags_ := -shared -lscene
 $(eval $(call submodule))
 
+install_shader += $(subtgt_)
+
 #tools
 srcdir_  := tools/SceneParser
-tgtdir_  := $(srcdir_)
+tgtdir_  := bin
 files_   := main Parser Table
-subtgt_  := scn
+subtgt_  := scene
 cflags_  :=
 ldflags_ := -lscene
 $(eval $(call submodule))
 
+install_bin += $(subtgt_)
+
 srcdir_  := tools/FrameBufferViewer
-tgtdir_  := $(srcdir_)
+tgtdir_  := bin
 files_   := main FrameBufferViewer
 subtgt_  := fbview
 cflags_  :=
 ldflags_ := -lscene -lGL -lGLU -lglut
 $(eval $(call submodule))
 
+install_bin += $(subtgt_)
+
 srcdir_  := tools/ply2mesh
-tgtdir_  := $(srcdir_)
+tgtdir_  := bin
 files_   := main plyfile
 subtgt_  := ply2mesh
 cflags_  :=
 ldflags_ := -lscene
 $(eval $(call submodule))
 
+install_bin += $(subtgt_)
+
 srcdir_  := tools/hdr2mip
-tgtdir_  := $(srcdir_)
+tgtdir_  := bin
 files_   := main rgbe
 subtgt_  := hdr2mip
 cflags_  :=
 ldflags_ := -lscene
 $(eval $(call submodule))
 
+install_bin += $(subtgt_)
+
 srcdir_  := tools/fb2exr
-tgtdir_  := $(srcdir_)
+tgtdir_  := bin
 files_   := main
 subtgt_  := fb2exr
 cflags_  := $(shell pkg-config --cflags OpenEXR)
 ldflags_ := $(shell pkg-config --libs OpenEXR) -lscene
 $(eval $(call submodule_cpp))
+
+install_bin += $(subtgt_)
 
 #save and reset
 main_programs := $(all_targets)
@@ -189,12 +223,33 @@ check: all_ $(check_programs)
 	do echo running :$$t; $$t; \
 	done;
 
+install: all_ install_library install_shader install_tools
+
+install_library:
+	@echo '  install' lib/$(install_lib)
+	@$(INSTALL) -d -m 755 $(prefix)/lib
+	@$(INSTALL) -m 755 lib/$(install_lib) $(prefix)/lib/$(install_lib)
+
+install_shader:
+	@$(INSTALL) -d -m 755 $(prefix)/lib
+	@for t in $(install_shader); \
+	do echo '  install' lib/$$t; \
+		$(INSTALL) -m 755 lib/$$t $(prefix)/lib/$$t; \
+	done;
+
+install_tools:
+	@$(INSTALL) -d -m 755 $(prefix)/bin
+	@for t in $(install_bin); \
+	do echo '  install' bin/$$t; \
+		$(INSTALL) -m 755 bin/$$t $(prefix)/bin/$$t; \
+	done;
+
 clean:
-	-rm -f $(main_programs)
-	-rm -f $(main_objects)
-	-rm -f $(check_programs)
-	-rm -f $(check_objects)
-	-rm -f $(all_depends)
+	-$(RM) $(main_programs)
+	-$(RM) $(main_objects)
+	-$(RM) $(check_programs)
+	-$(RM) $(check_objects)
+	-$(RM) $(all_depends)
 
 ifneq "$(MAKECMDGOALS)" "clean"
 -include $(dependencies)
