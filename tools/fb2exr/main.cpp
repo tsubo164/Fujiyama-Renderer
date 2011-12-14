@@ -27,6 +27,7 @@ static void copy_fb_into_rgba(const float* src, Imf::Rgba* dst,
 		int width, int height, int nchannels);
 static void write_rgba_layer(const char *filename,
 		const Imf::Rgba* pixels, const Imath::Box2i &dispwin, const Imath::Box2i &datawin);
+static Imath::Box2i make_box2i(int *box);
 
 int main(int argc, const char** argv)
 try {
@@ -57,10 +58,8 @@ try {
 		FbCloseInputFile(in);
 		return -1;
 	}
-	const Imath::Box2i dispwin(Imath::V2i(in->viewbox[0], in->viewbox[1]),
-			Imath::V2i(in->viewbox[2] - 1, in->viewbox[3] - 1));
-	const Imath::Box2i datawin(Imath::V2i(in->databox[0], in->databox[1]),
-			Imath::V2i(in->databox[2] - 1, in->databox[3] - 1));
+	const Imath::Box2i dispwin = make_box2i(in->viewbox);
+	const Imath::Box2i datawin = make_box2i(in->databox);
 
 	struct ::FrameBuffer *fb = FbNew();
 	if (fb == NULL) {
@@ -155,5 +154,10 @@ static void write_rgba_layer(const char *filename,
 
 	exr.setFrameBuffer(frameBuffer);
 	exr.writePixels(DATA_HEIGHT);
+}
+
+static Imath::Box2i make_box2i(int *box)
+{
+	return Imath::Box2i(Imath::V2i(box[0], box[1]), Imath::V2i(box[2] - 1, box[3] - 1));
 }
 
