@@ -235,8 +235,8 @@ static int render_scene(struct Renderer *renderer)
 /*
 	cxt.max_reflect_depth = 0;
 	cxt.max_refract_depth = 0;
-	cxt.cast_shadow = 0;
 */
+	cxt.cast_shadow = 0;
 
 	/* region */
 	BOX2_COPY(region, renderer->render_region);

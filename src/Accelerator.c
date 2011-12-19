@@ -21,6 +21,7 @@ See LICENSE and README
 struct Accelerator {
 	int has_built;
 	double bounds[6];
+	const char *name;
 
 	/* TODO should make struct PrimitiveSet? */
 	const void *primset;
@@ -37,6 +38,8 @@ struct Accelerator {
 			struct LocalGeometry *isect, double *t_hit);
 };
 
+/* -------------------------------------------------------------------------- */
+/* GridAccelerator */
 enum { GRID_MAXCELLS = 512 };
 
 struct Cell {
@@ -60,6 +63,43 @@ static void compute_grid_cellsizes(int nprimitives,
 		double xwidth, double ywidth, double zwidth,
 		int *xncells, int *yncells, int *zncells);
 
+/* -------------------------------------------------------------------------- */
+/* BVHAccelerator */
+struct Primitive {
+	double bounds[6];
+	double centroid[3];
+	int index;
+};
+
+struct BVHNode {
+	struct BVHNode *left;
+	struct BVHNode *right;
+	double bounds[6];
+	int index;
+};
+
+struct BVHAccelerator {
+	struct BVHNode *root;
+};
+
+static struct BVHAccelerator *NewBVH(void);
+static void FreeBVH(struct Accelerator *acc);
+static int BuildBVH(struct Accelerator *acc);
+static int IntersectBVH(const struct Accelerator *acc, const struct Ray *ray,
+		struct LocalGeometry *isect, double *t_hit);
+static int intersect_bvh_recursive(const struct Accelerator *acc, const struct BVHNode *node,
+		const struct Ray *ray, struct LocalGeometry *isect, double *t_hit);
+static struct BVHNode *new_bvhnode(void);
+static void free_bvhnode_recursive(struct BVHNode *node);
+static struct BVHNode *build_bvh(struct Primitive **prims, int begin, int end, int axis);
+static int is_bvh_leaf(const struct BVHNode *node);
+static int find_median(struct Primitive **prims, int begin, int end, int axis);
+static int compare_double(double x, double y);
+static int primitive_compare_x(const void *a, const void *b);
+static int primitive_compare_y(const void *a, const void *b);
+static int primitive_compare_z(const void *a, const void *b);
+
+/* -------------------------------------------------------------------------- */
 static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
 		struct LocalGeometry *isect, double *t_hit)
 {
@@ -86,12 +126,16 @@ static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
 		return 0;
 	}
 
+#if 0
+	boxhit_tmin = ray->tmin;
+	boxhit_tmax = ray->tmax;
 	if (!acc->has_built) {
 		/* dynamic build */
 		printf("\nbuilding grid accelerator...\n");
 		AccBuild((struct Accelerator *) acc);
 		fflush(stdout);
 	}
+#endif
 
 	/* check if the ray shot from inside bounds */
 	if (BoxContainsPoint(grid->bounds, ray->orig)) {
@@ -226,9 +270,6 @@ static int BuildGrid(struct Accelerator *acc)
 
 	struct GridAccelerator *grid = (struct GridAccelerator *) acc->derived;
 
-	if (acc->has_built)
-		return -1;
-
 	compute_grid_cellsizes(acc->nprims, 
 			acc->bounds[3] - acc->bounds[0],
 			acc->bounds[4] - acc->bounds[1],
@@ -325,7 +366,6 @@ static int BuildGrid(struct Accelerator *acc)
 	VEC3_COPY(grid->cellsize, cellsize);
 	BOX3_COPY(grid->bounds, bounds);
 
-	acc->has_built = 1;
 	return 0;
 }
 
@@ -387,6 +427,18 @@ struct Accelerator *AccNew(int accelerator_type)
 		acc->FreeDerived = FreeGrid;
 		acc->Build = BuildGrid;
 		acc->Intersect = IntersectGrid;
+		acc->name = "Uniform-Grid";
+		break;
+	case ACC_BVH:
+		acc->derived = (char *) NewBVH();
+		if (acc->derived == NULL) {
+			AccFree(acc);
+			return NULL;
+		}
+		acc->FreeDerived = FreeBVH;
+		acc->Build = BuildBVH;
+		acc->Intersect = IntersectBVH;
+		acc->name = "BVH";
 		break;
 	default:
 		assert(!"invalid accelerator type");
@@ -415,12 +467,47 @@ void AccGetBounds(const struct Accelerator *acc, double *bounds)
 
 int AccBuild(struct Accelerator *acc)
 {
-	return acc->Build(acc);
+	int err;
+
+	if (acc->has_built)
+		return -1;
+
+	err = acc->Build(acc);
+	if (err)
+		return -1;
+
+	acc->has_built = 1;
+	return 0;
 }
 
 int AccIntersect(const struct Accelerator *acc, const struct Ray *ray,
 		struct LocalGeometry *isect, double *t_hit)
 {
+	double boxhit_tmin;
+	double boxhit_tmax;
+	/*
+	struct Ray newray;
+	*/
+
+	/* check intersection with overall bounds */
+	if (!BoxRayIntersect(acc->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
+				&boxhit_tmin, &boxhit_tmax)) {
+		return 0;
+	}
+
+	if (!acc->has_built) {
+		/* dynamic build */
+		printf("\nbuilding %s accelerator ...\n", acc->name);
+		AccBuild((struct Accelerator *) acc);
+		fflush(stdout);
+	}
+#if 0
+	newray = *ray;
+	newray.tmin = boxhit_tmin;
+	newray.tmax = boxhit_tmax;
+
+	return acc->Intersect(acc, &newray, isect, t_hit);
+#endif
 	return acc->Intersect(acc, ray, isect, t_hit);
 }
 
@@ -438,6 +525,11 @@ void AccSetTargetGeometry(struct Accelerator *acc,
 	/* accelerator's bounds */
 	BOX3_COPY(acc->bounds, primset_bounds);
 	BOX3_EXPAND(acc->bounds, EXPAND);
+}
+
+int AccGetPrimitiveCount(const struct Accelerator *acc)
+{
+	return acc->nprims;
 }
 
 static void compute_grid_cellsizes(int nprimitives,
@@ -474,5 +566,363 @@ static void compute_grid_cellsizes(int nprimitives,
 	*xncells = XNCELLS;
 	*yncells = YNCELLS;
 	*zncells = ZNCELLS;
+}
+
+/* -------------------------------------------------------------------------- */
+static struct BVHAccelerator *NewBVH(void)
+{
+	struct BVHAccelerator *bvh;
+
+	bvh = (struct BVHAccelerator *) malloc(sizeof(struct BVHAccelerator));
+	if (bvh == NULL)
+		return NULL;
+
+	bvh->root = NULL;
+
+	return bvh;
+}
+
+static void FreeBVH(struct Accelerator *acc)
+{
+	struct BVHAccelerator *bvh = (struct BVHAccelerator *) acc->derived;
+
+	free_bvhnode_recursive(bvh->root);
+
+	free(bvh);
+}
+
+static int BuildBVH(struct Accelerator *acc)
+{
+	struct BVHAccelerator *bvh = (struct BVHAccelerator *) acc->derived;
+	struct Primitive *prims;
+	struct Primitive **primptrs;
+	int NPRIMS;
+	int i;
+
+	NPRIMS = AccGetPrimitiveCount(acc);
+
+	prims = (struct Primitive *) malloc(sizeof(struct Primitive) * NPRIMS);
+	if (prims == NULL)
+		return -1;
+
+	primptrs = (struct Primitive **) malloc(sizeof(struct Primitive *) * NPRIMS);
+	if (primptrs == NULL) {
+		free(prims);
+		return -1;
+	}
+
+	for (i = 0; i < NPRIMS; i++) {
+		acc->PrimBounds(acc->primset, i, prims[i].bounds);
+		/*
+		BOX3_EXPAND(prims[i].bounds, HALF_EXPAND);
+		*/
+		prims[i].centroid[0] = (prims[i].bounds[3] + prims[i].bounds[0]) / 2;
+		prims[i].centroid[1] = (prims[i].bounds[4] + prims[i].bounds[1]) / 2;
+		prims[i].centroid[2] = (prims[i].bounds[5] + prims[i].bounds[2]) / 2;
+		prims[i].index = i;
+		/*
+		PrintBox3d(prims[i].bounds);
+		printf("%g, %g, %g\n", prims[i].centroid[0], prims[i].centroid[1], prims[i].centroid[2]);
+		printf("%d: %g\n", i, prims[i].centroid[0]);
+		*/
+
+		primptrs[i] = &prims[i];
+	}
+	/*
+	puts("===============================");
+
+	qsort(primptrs, NPRIMS, sizeof(struct Primitive *), primitive_compare_x);
+	for (i = 0; i < NPRIMS; i++) {
+		printf("%d: %d: %g\n", i, primptrs[i]->index, primptrs[i]->centroid[0]);
+	}
+	{
+		int median = find_median(primptrs, 0, NPRIMS);
+		printf("median: %d: %d: %g\n", median, primptrs[median]->index, primptrs[median]->centroid[0]);
+	}
+	*/
+
+	bvh->root = build_bvh(primptrs, 0, NPRIMS, 0);
+	if (bvh->root == NULL) {
+		free(primptrs);
+		free(prims);
+		return -1;
+	}
+	/*
+	*/
+
+	free(primptrs);
+	free(prims);
+	return 0;
+}
+
+static int IntersectBVH(const struct Accelerator *acc, const struct Ray *ray,
+		struct LocalGeometry *isect, double *t_hit)
+{
+	const struct BVHAccelerator *bvh = (const struct BVHAccelerator *) acc->derived;
+
+	return intersect_bvh_recursive(acc, bvh->root, ray, isect,  t_hit);
+#if 0
+	double tmin_left, tmin_right;
+	struct LocalGeometry local_left, local_right;
+	double boxhit_tmin;
+	double boxhit_tmax;
+
+	/* check intersection with overall bounds */
+	if (!BoxRayIntersect(acc->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
+				&boxhit_tmin, &boxhit_tmax)) {
+		return 0;
+	}
+
+	if (!acc->has_built) {
+		/* dynamic build */
+		printf("\nbuilding BVH accelerator...\n");
+		AccBuild((struct Accelerator *) acc);
+		fflush(stdout);
+	}
+
+	return 0;
+#endif
+}
+
+static int intersect_bvh_recursive(const struct Accelerator *acc, const struct BVHNode *node,
+		const struct Ray *ray, struct LocalGeometry *isect, double *t_hit)
+{
+	/*
+	const struct BVHAccelerator *bvh = (const struct BVHAccelerator *) acc->derived;
+	*/
+	struct LocalGeometry local_left, local_right;
+	double boxhit_tmin;
+	double boxhit_tmax;
+	double t_hit_left, t_hit_right;
+	int hit_left, hit_right;
+	int hit;
+
+	hit = BoxRayIntersect(node->bounds,
+			ray->orig, ray->dir, ray->tmin, ray->tmax,
+			&boxhit_tmin, &boxhit_tmax);
+	if (!hit) {
+		return 0;
+	}
+
+	if (is_bvh_leaf(node)) {
+		int hitprim;
+		hitprim = acc->PrimIntersect(acc->primset, node->index, ray, isect, t_hit);
+			/*
+		if (hitprim) {
+			printf("hit index: %d: t_hit: %g: node offset: %ul\n", node->index, *t_hit,
+				node - bvh->root);
+			PrintBox3d(node->bounds);
+		}
+			*/
+
+		if (hitprim)
+			return 1;
+		else
+			return 0;
+	}
+
+	t_hit_left = FLT_MAX;
+	hit_left  = intersect_bvh_recursive(acc, node->left,  ray, &local_left,  &t_hit_left);
+	t_hit_right = FLT_MAX;
+	hit_right = intersect_bvh_recursive(acc, node->right, ray, &local_right, &t_hit_right);
+
+	if (t_hit_left < t_hit_right) {
+		*t_hit = t_hit_left;
+		*isect = local_left;
+	} else if (t_hit_right < t_hit_left) {
+		*t_hit = t_hit_right;
+		*isect = local_right;
+	}
+#if 0
+#endif
+	/*
+	if (hit_left || hit_right) {
+		if (*t_hit > 1000) {
+			printf("t_hit: %g\n", *t_hit);
+			printf("\tt_hit_left:  %g\n", t_hit_left);
+			printf("\tt_hit_right: %g\n", t_hit_right);
+			printf("\thit_left:  %d\n", hit_left);
+			printf("\thit_right: %d\n", hit_right);
+		}
+	}
+	*/
+
+	return (hit_left || hit_right);
+}
+
+static struct BVHNode *build_bvh(struct Primitive **primptrs, int begin, int end, int axis)
+{
+	struct BVHNode *node = NULL;
+	const int NPRIMS = end - begin;
+	int median;
+	int new_axis;
+	int (*primitive_compare)(const void *, const void *);
+
+	node = new_bvhnode();
+	if (node == NULL)
+		return NULL;
+
+	if (NPRIMS == 1) {
+		node->index = primptrs[begin]->index;
+		BOX3_COPY(node->bounds, primptrs[begin]->bounds);
+		/*
+		printf("*** leaf: %d\n", node->index);
+		*/
+		/*
+		printf("*** leaf: ");
+		PrintBox3d(node->bounds);
+		*/
+		/*
+		if (node->index == 7941) {
+			static int n = 0;
+			n++;
+			printf("*** leaf: %d was built %d times\n", node->index, n);
+			printf("\t begin: %d end %d\n", begin, end);
+		}
+		*/
+		return node;
+	}
+
+	switch (axis) {
+		case 0:
+			primitive_compare = primitive_compare_x;
+			new_axis = 1;
+			break;
+		case 1:
+			primitive_compare = primitive_compare_y;
+			new_axis = 2;
+			break;
+		case 2:
+			primitive_compare = primitive_compare_z;
+			new_axis = 0;
+			break;
+		default:
+			assert(!"invalid axis");
+			break;
+	}
+
+	/* XXX QSORT */
+	qsort(primptrs + begin, NPRIMS, sizeof(struct Primitive *), primitive_compare);
+	median = find_median(primptrs, begin, end, axis);
+
+	/*
+	new_axis = (axis + 1) % 3;
+	*/
+
+	node->left  = build_bvh(primptrs, begin, median, new_axis);
+	if (node->left == NULL)
+		return NULL;
+
+	node->right = build_bvh(primptrs, median, end, new_axis);
+	if (node->right == NULL)
+		return NULL;
+
+	BOX3_COPY(node->bounds, node->left->bounds);
+	BoxAddBox(node->bounds, node->right->bounds);
+
+	return node;
+}
+
+static struct BVHNode *new_bvhnode(void)
+{
+	struct BVHNode *node;
+
+	node = (struct BVHNode *) malloc(sizeof(struct BVHNode));
+	if (node == NULL)
+		return NULL;
+
+	node->left = NULL;
+	node->right = NULL;
+	node->index = -1;
+	BOX3_SET(node->bounds, 0, 0, 0, 0, 0, 0);
+
+	return node;
+}
+
+static void free_bvhnode_recursive(struct BVHNode *node)
+{
+	if (node == NULL)
+		return;
+
+	if (is_bvh_leaf(node)) {
+		/*
+		printf("freeing index: %d\n", node->index);
+		*/
+		free(node);
+		return;
+	}
+
+	assert(node->left != NULL);
+	assert(node->right != NULL);
+	assert(node->index == -1);
+
+	free_bvhnode_recursive(node->left);
+	free_bvhnode_recursive(node->right);
+
+	free(node);
+}
+
+static int is_bvh_leaf(const struct BVHNode *node)
+{
+	return (
+		node->left == NULL &&
+		node->right == NULL &&
+		node->index != -1);
+}
+
+static int find_median(struct Primitive **prims, int begin, int end, int axis)
+{
+	int low, high, mid;
+	double key;
+
+	assert(axis >= 0 && axis <= 2);
+
+	low = begin;
+	high = end - 1;
+	mid = -1;
+	key = (prims[low]->centroid[axis] + prims[high]->centroid[axis]) / 2;
+
+	while (low != mid) {
+		mid = (low + high) / 2;
+		if (key < prims[mid]->centroid[axis])
+			high = mid;
+		else if (prims[mid]->centroid[axis] < key)
+			low = mid;
+		else
+			break;
+	}
+
+	return mid + 1;
+}
+
+static int compare_double(double x, double y)
+{
+	if (x > y)
+		return 1;
+	else if (x < y)
+		return -1;
+	else
+		return 0;
+}
+
+static int primitive_compare_x(const void *a, const void *b)
+{
+	struct Primitive **A = (struct Primitive **) a;
+	struct Primitive **B = (struct Primitive **) b;
+	return compare_double((*A)->centroid[0], (*B)->centroid[0]);
+}
+
+static int primitive_compare_y(const void *a, const void *b)
+{
+	struct Primitive **A = (struct Primitive **) a;
+	struct Primitive **B = (struct Primitive **) b;
+	return compare_double((*A)->centroid[1], (*B)->centroid[1]);
+}
+
+static int primitive_compare_z(const void *a, const void *b)
+{
+	struct Primitive **A = (struct Primitive **) a;
+	struct Primitive **B = (struct Primitive **) b;
+	return compare_double((*A)->centroid[2], (*B)->centroid[2]);
 }
 

@@ -316,7 +316,10 @@ ID SiNewMesh(const char *arg)
 	}
 
 	/* TODO fix hard-coded acc type */
+	acc = ScnNewAccelerator(scene, ACC_BVH);
+	/*
 	acc = ScnNewAccelerator(scene, ACC_GRID);
+	*/
 	if (acc == NULL) {
 		set_errno(SI_ERR_FAILNEW);
 		return SI_BADID;

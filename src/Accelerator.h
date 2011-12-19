@@ -36,6 +36,8 @@ extern void AccSetTargetGeometry(struct Accelerator *acc,
 extern int AccIntersect(const struct Accelerator *acc, const struct Ray *ray,
 		struct LocalGeometry *isect, double *t_hit);
 
+extern int AccGetPrimitiveCount(const struct Accelerator *acc);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
