@@ -206,6 +206,9 @@ static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
 			if (!hittmp)
 				continue;
 
+			/*
+			printf("----------- faceid: %8d ttmp: %g\n", faceid, ttmp);
+			*/
 			/* check if the hit point is inside the cell */
 			cellbox[0] = grid->bounds[0] + cellid[0] * grid->cellsize[0];
 			cellbox[1] = grid->bounds[1] + cellid[1] * grid->cellsize[1];
@@ -661,27 +664,6 @@ static int IntersectBVH(const struct Accelerator *acc, const struct Ray *ray,
 	const struct BVHAccelerator *bvh = (const struct BVHAccelerator *) acc->derived;
 
 	return intersect_bvh_recursive(acc, bvh->root, ray, isect,  t_hit);
-#if 0
-	double tmin_left, tmin_right;
-	struct LocalGeometry local_left, local_right;
-	double boxhit_tmin;
-	double boxhit_tmax;
-
-	/* check intersection with overall bounds */
-	if (!BoxRayIntersect(acc->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
-				&boxhit_tmin, &boxhit_tmax)) {
-		return 0;
-	}
-
-	if (!acc->has_built) {
-		/* dynamic build */
-		printf("\nbuilding BVH accelerator...\n");
-		AccBuild((struct Accelerator *) acc);
-		fflush(stdout);
-	}
-
-	return 0;
-#endif
 }
 
 static int intersect_bvh_recursive(const struct Accelerator *acc, const struct BVHNode *node,
@@ -705,26 +687,37 @@ static int intersect_bvh_recursive(const struct Accelerator *acc, const struct B
 	}
 
 	if (is_bvh_leaf(node)) {
-		int hitprim;
-		hitprim = acc->PrimIntersect(acc->primset, node->index, ray, isect, t_hit);
+		int hittmp;
+		hittmp = acc->PrimIntersect(acc->primset, node->index, ray, isect, t_hit);
 			/*
-		if (hitprim) {
-			printf("hit index: %d: t_hit: %g: node offset: %ul\n", node->index, *t_hit,
-				node - bvh->root);
-			PrintBox3d(node->bounds);
+		if (hittmp) {
+			printf("hit index: %d: t_hit: %g\n", node->index, *t_hit);
 		}
 			*/
+		if (!hittmp)
+			return 0;
 
-		if (hitprim)
+		if (*t_hit < ray->tmin || ray->tmax < *t_hit)
+			return 0;
+
+		return 1;
+#if 0
+		if (hittmp)
 			return 1;
 		else
 			return 0;
+#endif
 	}
 
 	t_hit_left = FLT_MAX;
 	hit_left  = intersect_bvh_recursive(acc, node->left,  ray, &local_left,  &t_hit_left);
 	t_hit_right = FLT_MAX;
 	hit_right = intersect_bvh_recursive(acc, node->right, ray, &local_right, &t_hit_right);
+
+	if (t_hit_left < ray->tmin)
+		t_hit_left = FLT_MAX;
+	if (t_hit_right < ray->tmin)
+		t_hit_right = FLT_MAX;
 
 	if (t_hit_left < t_hit_right) {
 		*t_hit = t_hit_left;
