@@ -206,8 +206,7 @@ struct ObjectGroup *ObjGroupNew(void)
 	if (grp == NULL)
 		return NULL;
 
-	/* TODO fix hard-coded acc type */
-	grp->accelerator = AccNew(ACC_GRID);
+	grp->accelerator = AccNew(ACC_BVH);
 	if (grp->accelerator == NULL) {
 		ObjGroupFree(grp);
 		return NULL;

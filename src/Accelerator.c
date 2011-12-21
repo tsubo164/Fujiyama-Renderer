@@ -39,11 +39,16 @@ struct Accelerator {
 };
 
 /* -------------------------------------------------------------------------- */
+/* Accelerator */
+static int ray_prim_intersect (const struct Accelerator *acc, int prim_id,
+	const struct Ray *ray, struct LocalGeometry *isect, double *t_hit);
+
+/* -------------------------------------------------------------------------- */
 /* GridAccelerator */
 enum { GRID_MAXCELLS = 512 };
 
 struct Cell {
-	int faceid;
+	int prim_id;
 	struct Cell *next;
 };
 
@@ -65,6 +70,14 @@ static void compute_grid_cellsizes(int nprimitives,
 
 /* -------------------------------------------------------------------------- */
 /* BVHAccelerator */
+enum { BVH_STACKSIZE = 64 };
+enum {
+	HIT_NONE = 0,
+	HIT_LEFT = 1,
+	HIT_RIGHT = 2,
+	HIT_BOTH = 3
+};
+
 struct Primitive {
 	double bounds[6];
 	double centroid[3];
@@ -75,7 +88,7 @@ struct BVHNode {
 	struct BVHNode *left;
 	struct BVHNode *right;
 	double bounds[6];
-	int index;
+	int prim_id;
 };
 
 struct BVHAccelerator {
@@ -88,6 +101,8 @@ static int BuildBVH(struct Accelerator *acc);
 static int IntersectBVH(const struct Accelerator *acc, const struct Ray *ray,
 		struct LocalGeometry *isect, double *t_hit);
 static int intersect_bvh_recursive(const struct Accelerator *acc, const struct BVHNode *node,
+		const struct Ray *ray, struct LocalGeometry *isect, double *t_hit);
+static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNode *root,
 		const struct Ray *ray, struct LocalGeometry *isect, double *t_hit);
 static struct BVHNode *new_bvhnode(void);
 static void free_bvhnode_recursive(struct BVHNode *node);
@@ -116,7 +131,6 @@ static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
 	int cellid[3];
 	int cellstep[3];
 	int cellend[3];
-	double stepdir[3];
 	double tnext[3];
 	double tdelt[3];
 
@@ -127,8 +141,6 @@ static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
 	}
 
 #if 0
-	boxhit_tmin = ray->tmin;
-	boxhit_tmax = ray->tmax;
 	if (!acc->has_built) {
 		/* dynamic build */
 		printf("\nbuilding grid accelerator...\n");
@@ -148,67 +160,61 @@ static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
 		POINT_ON_RAY(start, ray->orig, ray->dir, tstart);
 	}
 
-	VEC3_COPY(stepdir, ray->dir);
 	VEC3_COPY(NCELLS, grid->ncells);
 
 	/* setup 3D DDA */
 	for (i = 0; i < 3; i++) {
 		cellid[i] = (int) floor((start[i] - grid->bounds[i]) / grid->cellsize[i]);
-		cellid[i] = CLAMP(cellid[i], 0, grid->ncells[i]-1);
+		cellid[i] = CLAMP(cellid[i], 0, NCELLS[i]-1);
 
-		if (stepdir[i] > 0) {
+		if (ray->dir[i] > 0) {
 			tnext[i] = tstart +
-				(((cellid[i]+1) * grid->cellsize[i] + grid->bounds[i]) - start[i]) / stepdir[i];
+				(((cellid[i]+1) * grid->cellsize[i] + grid->bounds[i]) - start[i]) / ray->dir[i];
 
-			tdelt[i] = grid->cellsize[i] / stepdir[i];
+			tdelt[i] = grid->cellsize[i] / ray->dir[i];
 			cellstep[i] = +1;
 			cellend[i] = NCELLS[i];
 		}
-		else if (stepdir[i] <0) {
+		else if (ray->dir[i] <0) {
 			tnext[i] = tstart +
-				((cellid[i] * grid->cellsize[i] + grid->bounds[i]) - start[i]) / stepdir[i];
+				((cellid[i] * grid->cellsize[i] + grid->bounds[i]) - start[i]) / ray->dir[i];
 
-			tdelt[i] = -1 * grid->cellsize[i] / stepdir[i];
+			tdelt[i] = -1 * grid->cellsize[i] / ray->dir[i];
 			cellstep[i] = -1;
 			cellend[i] = -1;
 		}
 		else {
 			tnext[i] = FLT_MAX;
 			tdelt[i] = 0;
-			cellstep[i] = -1;
+			cellstep[i] = 0;
 			cellend[i] = -1;
 		}
 	}
 
-	/* traversal voxels */
+	/* traverse voxels */
 	hit = 0;
 	for(;;) {
 		int id;
 		int xid, yid, zid;
 		double tmin = FLT_MAX;
-		int faceid;
-		struct Cell *c;
+		struct Cell *cell;
 		struct LocalGeometry loctmp;
 
 		VEC3_GET(xid, yid, zid, cellid);
 		id = zid * NCELLS[0] * NCELLS[1] + yid * NCELLS[0] + xid;
 
 		/* loop over face list that associated in current cell */
-		for (c = grid->cells[id]; c != NULL; c = c->next) {
+		for (cell = grid->cells[id]; cell != NULL; cell = cell->next) {
 			int hittmp;
-			double ttmp = FLT_MAX;
-			double cellbox[6];
-			double hitpt[3];
 			int inside_cell;
-			faceid = c->faceid;
+			double ttmp = FLT_MAX;
+			double hitpt[3];
+			double cellbox[6];
 
-			hittmp = acc->PrimIntersect(acc->primset, faceid, ray, &loctmp, &ttmp);
+			hittmp = ray_prim_intersect(acc, cell->prim_id, ray, &loctmp, &ttmp);
 			if (!hittmp)
 				continue;
 
-			/*
-			printf("----------- faceid: %8d ttmp: %g\n", faceid, ttmp);
-			*/
 			/* check if the hit point is inside the cell */
 			cellbox[0] = grid->bounds[0] + cellid[0] * grid->cellsize[0];
 			cellbox[1] = grid->bounds[1] + cellid[1] * grid->cellsize[1];
@@ -220,8 +226,7 @@ static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
 			inside_cell = BoxContainsPoint(cellbox, hitpt);
 
 			/* update info ONLY if tmin renewed */
-			if (ttmp < tmin && inside_cell &&
-			    ttmp > ray->tmin && ttmp < ray->tmax) {
+			if (ttmp < tmin && inside_cell) {
 				tmin = ttmp;
 				hit = hittmp;
 				*isect = loctmp;
@@ -325,7 +330,7 @@ static int BuildGrid(struct Accelerator *acc)
 						/* TODO error handling */
 						return -1;
 					}
-					newcell->faceid = primid;
+					newcell->prim_id = primid;
 					newcell->next = NULL;
 
 					if (cells[cellid] == NULL) {
@@ -339,30 +344,7 @@ static int BuildGrid(struct Accelerator *acc)
 			}
 		}
 	}
-#if 0
-	{
-		int x, y, z;
-		printf("bounds: (%g, %g, %g), (%g, %g, %g)\n",
-				bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]);
-		for (z = 0; z < ZNCELLS; z++) {
-			for (y = 0; y < YNCELLS; y++) {
-				for (x = 0; x < XNCELLS; x++) {
-					int cellid = z * YNCELLS * XNCELLS + y * XNCELLS + x;
-					struct Cell *c;
-					if (cells[cellid] == NULL)
-						continue;
 
-					printf("cellid %d: ", cellid);
-					printf("%d %d %d => ", x, y, z);
-					for (c = cells[cellid]; c != NULL; c = c->next) {
-						printf("%d ", c->faceid);
-					}
-					printf("\n");
-				}
-			}
-		}
-	}
-#endif
 	/* commit */
 	grid->cells = cells;
 	VEC3_SET(grid->ncells, XNCELLS, YNCELLS, ZNCELLS);
@@ -400,13 +382,13 @@ static void FreeGrid(struct Accelerator *acc)
 		for (y = 0; y < YNCELLS; y++) {
 			for (x = 0; x < XNCELLS; x++) {
 				int cellid = z * YNCELLS * XNCELLS + y * XNCELLS + x;
-				struct Cell *c = grid->cells[cellid];
+				struct Cell *cell = grid->cells[cellid];
 
-				while (c != NULL) {
-					struct Cell *kill = c;
-					struct Cell *next = c->next;
+				while (cell != NULL) {
+					struct Cell *kill = cell;
+					struct Cell *next = cell->next;
 					free(kill);
-					c = next;
+					cell = next;
 				}
 			}
 		}
@@ -488,9 +470,6 @@ int AccIntersect(const struct Accelerator *acc, const struct Ray *ray,
 {
 	double boxhit_tmin;
 	double boxhit_tmax;
-	/*
-	struct Ray newray;
-	*/
 
 	/* check intersection with overall bounds */
 	if (!BoxRayIntersect(acc->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
@@ -504,13 +483,7 @@ int AccIntersect(const struct Accelerator *acc, const struct Ray *ray,
 		AccBuild((struct Accelerator *) acc);
 		fflush(stdout);
 	}
-#if 0
-	newray = *ray;
-	newray.tmin = boxhit_tmin;
-	newray.tmax = boxhit_tmax;
 
-	return acc->Intersect(acc, &newray, isect, t_hit);
-#endif
 	return acc->Intersect(acc, ray, isect, t_hit);
 }
 
@@ -528,11 +501,6 @@ void AccSetTargetGeometry(struct Accelerator *acc,
 	/* accelerator's bounds */
 	BOX3_COPY(acc->bounds, primset_bounds);
 	BOX3_EXPAND(acc->bounds, EXPAND);
-}
-
-int AccGetPrimitiveCount(const struct Accelerator *acc)
-{
-	return acc->nprims;
 }
 
 static void compute_grid_cellsizes(int nprimitives,
@@ -602,7 +570,7 @@ static int BuildBVH(struct Accelerator *acc)
 	int NPRIMS;
 	int i;
 
-	NPRIMS = AccGetPrimitiveCount(acc);
+	NPRIMS = acc->nprims;
 
 	prims = (struct Primitive *) malloc(sizeof(struct Primitive) * NPRIMS);
 	if (prims == NULL)
@@ -616,33 +584,13 @@ static int BuildBVH(struct Accelerator *acc)
 
 	for (i = 0; i < NPRIMS; i++) {
 		acc->PrimBounds(acc->primset, i, prims[i].bounds);
-		/*
-		BOX3_EXPAND(prims[i].bounds, HALF_EXPAND);
-		*/
 		prims[i].centroid[0] = (prims[i].bounds[3] + prims[i].bounds[0]) / 2;
 		prims[i].centroid[1] = (prims[i].bounds[4] + prims[i].bounds[1]) / 2;
 		prims[i].centroid[2] = (prims[i].bounds[5] + prims[i].bounds[2]) / 2;
 		prims[i].index = i;
-		/*
-		PrintBox3d(prims[i].bounds);
-		printf("%g, %g, %g\n", prims[i].centroid[0], prims[i].centroid[1], prims[i].centroid[2]);
-		printf("%d: %g\n", i, prims[i].centroid[0]);
-		*/
 
 		primptrs[i] = &prims[i];
 	}
-	/*
-	puts("===============================");
-
-	qsort(primptrs, NPRIMS, sizeof(struct Primitive *), primitive_compare_x);
-	for (i = 0; i < NPRIMS; i++) {
-		printf("%d: %d: %g\n", i, primptrs[i]->index, primptrs[i]->centroid[0]);
-	}
-	{
-		int median = find_median(primptrs, 0, NPRIMS);
-		printf("median: %d: %d: %g\n", median, primptrs[median]->index, primptrs[median]->centroid[0]);
-	}
-	*/
 
 	bvh->root = build_bvh(primptrs, 0, NPRIMS, 0);
 	if (bvh->root == NULL) {
@@ -650,8 +598,6 @@ static int BuildBVH(struct Accelerator *acc)
 		free(prims);
 		return -1;
 	}
-	/*
-	*/
 
 	free(primptrs);
 	free(prims);
@@ -663,15 +609,15 @@ static int IntersectBVH(const struct Accelerator *acc, const struct Ray *ray,
 {
 	const struct BVHAccelerator *bvh = (const struct BVHAccelerator *) acc->derived;
 
-	return intersect_bvh_recursive(acc, bvh->root, ray, isect,  t_hit);
+	if (1)
+		return intersect_bvh_loop(acc, bvh->root, ray, isect,  t_hit);
+	else
+		return intersect_bvh_recursive(acc, bvh->root, ray, isect,  t_hit);
 }
 
 static int intersect_bvh_recursive(const struct Accelerator *acc, const struct BVHNode *node,
 		const struct Ray *ray, struct LocalGeometry *isect, double *t_hit)
 {
-	/*
-	const struct BVHAccelerator *bvh = (const struct BVHAccelerator *) acc->derived;
-	*/
 	struct LocalGeometry local_left, local_right;
 	double boxhit_tmin;
 	double boxhit_tmax;
@@ -687,26 +633,7 @@ static int intersect_bvh_recursive(const struct Accelerator *acc, const struct B
 	}
 
 	if (is_bvh_leaf(node)) {
-		int hittmp;
-		hittmp = acc->PrimIntersect(acc->primset, node->index, ray, isect, t_hit);
-			/*
-		if (hittmp) {
-			printf("hit index: %d: t_hit: %g\n", node->index, *t_hit);
-		}
-			*/
-		if (!hittmp)
-			return 0;
-
-		if (*t_hit < ray->tmin || ray->tmax < *t_hit)
-			return 0;
-
-		return 1;
-#if 0
-		if (hittmp)
-			return 1;
-		else
-			return 0;
-#endif
+		return ray_prim_intersect(acc, node->prim_id, ray, isect, t_hit);
 	}
 
 	t_hit_left = FLT_MAX;
@@ -726,21 +653,102 @@ static int intersect_bvh_recursive(const struct Accelerator *acc, const struct B
 		*t_hit = t_hit_right;
 		*isect = local_right;
 	}
-#if 0
-#endif
-	/*
-	if (hit_left || hit_right) {
-		if (*t_hit > 1000) {
-			printf("t_hit: %g\n", *t_hit);
-			printf("\tt_hit_left:  %g\n", t_hit_left);
-			printf("\tt_hit_right: %g\n", t_hit_right);
-			printf("\thit_left:  %d\n", hit_left);
-			printf("\thit_right: %d\n", hit_right);
-		}
-	}
-	*/
 
 	return (hit_left || hit_right);
+}
+
+static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNode *root,
+		const struct Ray *ray, struct LocalGeometry *isect, double *t_hit)
+{
+	int hit, hittmp;
+	int whichhit;
+	int hit_left, hit_right;
+	double boxhit_tmin, boxhit_tmax;
+	double ttmp, tmin;
+	struct LocalGeometry localgeo[2];
+	struct LocalGeometry *localmin, *localtmp;
+
+	const struct BVHNode *node;
+	const struct BVHNode *stack[BVH_STACKSIZE] = {NULL};
+	int depth;
+
+	node = root;
+	depth = 0;
+	hit = 0;
+	tmin = FLT_MAX;
+
+	localmin = &localgeo[0];
+	localtmp = &localgeo[1];
+
+	for (;;) {
+
+		if (is_bvh_leaf(node)) {
+			hittmp = ray_prim_intersect(acc, node->prim_id, ray, localtmp, &ttmp);
+			if (hittmp && ttmp < tmin) {
+				/* swap local geometry */
+				struct LocalGeometry *localswp = localtmp;
+				localtmp = localmin;
+				localmin = localswp;
+				/* update tmin */
+				tmin = ttmp;
+				hit = hittmp;
+			}
+
+			/* pop */
+			if (depth == 0)
+				goto loop_exit;
+			node = stack[--depth];
+			continue;
+		}
+
+		hit_left = BoxRayIntersect(node->left->bounds,
+				ray->orig, ray->dir, ray->tmin, ray->tmax,
+				&boxhit_tmin, &boxhit_tmax);
+
+		hit_right = BoxRayIntersect(node->right->bounds,
+				ray->orig, ray->dir, ray->tmin, ray->tmax,
+				&boxhit_tmin, &boxhit_tmax);
+
+		whichhit = HIT_NONE;
+		whichhit |= hit_left  ? HIT_LEFT :  HIT_NONE;
+		whichhit |= hit_right ? HIT_RIGHT : HIT_NONE;
+
+		switch (whichhit) {
+		case HIT_NONE:
+			/* pop */
+			if (depth == 0)
+				goto loop_exit;
+			node = stack[--depth];
+			break;
+
+		case HIT_LEFT:
+			node = node->left;
+			break;
+
+		case HIT_RIGHT:
+			node = node->right;
+			break;
+
+		case HIT_BOTH:
+			/* push */
+			stack[depth++] = node->right;
+			assert(depth < BVH_STACKSIZE);
+			node = node->left;
+			break;
+
+		default:
+			assert(!"invalid whichhit");
+			break;
+		}
+	}
+loop_exit:
+
+	if (hit) {
+		*t_hit = tmin;
+		*isect = *localmin;
+	}
+
+	return hit;
 }
 
 static struct BVHNode *build_bvh(struct Primitive **primptrs, int begin, int end, int axis)
@@ -756,23 +764,8 @@ static struct BVHNode *build_bvh(struct Primitive **primptrs, int begin, int end
 		return NULL;
 
 	if (NPRIMS == 1) {
-		node->index = primptrs[begin]->index;
+		node->prim_id = primptrs[begin]->index;
 		BOX3_COPY(node->bounds, primptrs[begin]->bounds);
-		/*
-		printf("*** leaf: %d\n", node->index);
-		*/
-		/*
-		printf("*** leaf: ");
-		PrintBox3d(node->bounds);
-		*/
-		/*
-		if (node->index == 7941) {
-			static int n = 0;
-			n++;
-			printf("*** leaf: %d was built %d times\n", node->index, n);
-			printf("\t begin: %d end %d\n", begin, end);
-		}
-		*/
 		return node;
 	}
 
@@ -794,13 +787,9 @@ static struct BVHNode *build_bvh(struct Primitive **primptrs, int begin, int end
 			break;
 	}
 
-	/* XXX QSORT */
+	/* QSORT */
 	qsort(primptrs + begin, NPRIMS, sizeof(struct Primitive *), primitive_compare);
 	median = find_median(primptrs, begin, end, axis);
-
-	/*
-	new_axis = (axis + 1) % 3;
-	*/
 
 	node->left  = build_bvh(primptrs, begin, median, new_axis);
 	if (node->left == NULL)
@@ -826,7 +815,7 @@ static struct BVHNode *new_bvhnode(void)
 
 	node->left = NULL;
 	node->right = NULL;
-	node->index = -1;
+	node->prim_id = -1;
 	BOX3_SET(node->bounds, 0, 0, 0, 0, 0, 0);
 
 	return node;
@@ -838,16 +827,13 @@ static void free_bvhnode_recursive(struct BVHNode *node)
 		return;
 
 	if (is_bvh_leaf(node)) {
-		/*
-		printf("freeing index: %d\n", node->index);
-		*/
 		free(node);
 		return;
 	}
 
 	assert(node->left != NULL);
 	assert(node->right != NULL);
-	assert(node->index == -1);
+	assert(node->prim_id == -1);
 
 	free_bvhnode_recursive(node->left);
 	free_bvhnode_recursive(node->right);
@@ -860,7 +846,7 @@ static int is_bvh_leaf(const struct BVHNode *node)
 	return (
 		node->left == NULL &&
 		node->right == NULL &&
-		node->index != -1);
+		node->prim_id != -1);
 }
 
 static int find_median(struct Primitive **prims, int begin, int end, int axis)
@@ -917,5 +903,20 @@ static int primitive_compare_z(const void *a, const void *b)
 	struct Primitive **A = (struct Primitive **) a;
 	struct Primitive **B = (struct Primitive **) b;
 	return compare_double((*A)->centroid[2], (*B)->centroid[2]);
+}
+
+static int ray_prim_intersect (const struct Accelerator *acc, int prim_id,
+	const struct Ray *ray, struct LocalGeometry *isect, double *t_hit)
+{
+	int hit;
+
+	hit = acc->PrimIntersect(acc->primset, prim_id, ray, isect, t_hit);
+	if (!hit)
+		return 0;
+
+	if (*t_hit < ray->tmin || ray->tmax < *t_hit)
+		return 0;
+
+	return 1;
 }
 
