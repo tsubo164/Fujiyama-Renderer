@@ -23,7 +23,8 @@ Below are the implemented features so far.
 * Pluggable shader DSO - shaders can be written in C/C++
 * Object instance - saves memory usage
 * On demand construction of accelerator - avoids unnecessary construction
-* Grid accelerator - mailbox is not implemented
+* Grid accelerator - for meshes (dense distribution)
+* BVH accelerator - for object instances (sparse distribution) 
 * Command-like scene description language - works with text filter tools
 * Region rendering - accelerates distribution rendering pipeline
 * Gaussian and Box pixel filters - supports filter width bigger than 1 pixel
