@@ -6,8 +6,11 @@ See LICENSE and README
 /*
 example scene of C interfaces
 1 cube with 1 point lights
-to compile this scene
-$ gcc -I../src -L../lib -lscene cube.c
+
+to compile and render this scene, run this at the top level of source tree
+
+ $ make sample
+
 */
 
 #include "SceneInterfaces.h"
@@ -59,7 +62,7 @@ int main(int argc, const char **argv)
 	}
 
 	/* Mesh and Accelerator */
-	mesh = SiNewMesh("../mesh/cube.mesh");
+	mesh = SiNewMesh("scenes/cube.mesh");
 	if (mesh == SI_BADID) {
 		fprintf(stderr, "Could not create mesh: %s\n", SiGetErrorMessage(SiGetErrorNo()));
 		return -1;
@@ -93,7 +96,7 @@ int main(int argc, const char **argv)
 
 	/* Render scene */
 	SiRenderScene(renderer);
-	SiSaveFrameBuffer(framebuffer, "cube.fb");
+	SiSaveFrameBuffer(framebuffer, "scenes/cube.fb");
 	SiCloseScene();
 
 	return 0;

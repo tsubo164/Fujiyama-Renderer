@@ -91,6 +91,11 @@ struct BVHNode {
 	int prim_id;
 };
 
+struct BVHNodeStack {
+	int depth;
+	const struct BVHNode *node[BVH_STACKSIZE];
+};
+
 struct BVHAccelerator {
 	struct BVHNode *root;
 };
@@ -104,15 +109,21 @@ static int intersect_bvh_recursive(const struct Accelerator *acc, const struct B
 		const struct Ray *ray, struct LocalGeometry *isect, double *t_hit);
 static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNode *root,
 		const struct Ray *ray, struct LocalGeometry *isect, double *t_hit);
+
 static struct BVHNode *new_bvhnode(void);
 static void free_bvhnode_recursive(struct BVHNode *node);
 static struct BVHNode *build_bvh(struct Primitive **prims, int begin, int end, int axis);
 static int is_bvh_leaf(const struct BVHNode *node);
 static int find_median(struct Primitive **prims, int begin, int end, int axis);
+
 static int compare_double(double x, double y);
 static int primitive_compare_x(const void *a, const void *b);
 static int primitive_compare_y(const void *a, const void *b);
 static int primitive_compare_z(const void *a, const void *b);
+
+static int is_empty(const struct BVHNodeStack *stack);
+static void push_node(struct BVHNodeStack *stack, const struct BVHNode *node);
+static const struct BVHNode *pop_node(struct BVHNodeStack *stack);
 
 /* -------------------------------------------------------------------------- */
 static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
@@ -669,11 +680,9 @@ static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNod
 	struct LocalGeometry *localmin, *localtmp;
 
 	const struct BVHNode *node;
-	const struct BVHNode *stack[BVH_STACKSIZE] = {NULL};
-	int depth;
+	struct BVHNodeStack stack = {0, {NULL}};
 
 	node = root;
-	depth = 0;
 	hit = 0;
 	tmin = FLT_MAX;
 
@@ -681,7 +690,6 @@ static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNod
 	localtmp = &localgeo[1];
 
 	for (;;) {
-
 		if (is_bvh_leaf(node)) {
 			hittmp = ray_prim_intersect(acc, node->prim_id, ray, localtmp, &ttmp);
 			if (hittmp && ttmp < tmin) {
@@ -694,10 +702,9 @@ static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNod
 				hit = hittmp;
 			}
 
-			/* pop */
-			if (depth == 0)
+			if (is_empty(&stack))
 				goto loop_exit;
-			node = stack[--depth];
+			node = pop_node(&stack);
 			continue;
 		}
 
@@ -715,10 +722,9 @@ static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNod
 
 		switch (whichhit) {
 		case HIT_NONE:
-			/* pop */
-			if (depth == 0)
+			if (is_empty(&stack))
 				goto loop_exit;
-			node = stack[--depth];
+			node = pop_node(&stack);
 			break;
 
 		case HIT_LEFT:
@@ -730,9 +736,7 @@ static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNod
 			break;
 
 		case HIT_BOTH:
-			/* push */
-			stack[depth++] = node->right;
-			assert(depth < BVH_STACKSIZE);
+			push_node(&stack, node->right);
 			node = node->left;
 			break;
 
@@ -787,7 +791,6 @@ static struct BVHNode *build_bvh(struct Primitive **primptrs, int begin, int end
 			break;
 	}
 
-	/* QSORT */
 	qsort(primptrs + begin, NPRIMS, sizeof(struct Primitive *), primitive_compare);
 	median = find_median(primptrs, begin, end, axis);
 
@@ -918,5 +921,22 @@ static int ray_prim_intersect (const struct Accelerator *acc, int prim_id,
 		return 0;
 
 	return 1;
+}
+
+static int is_empty(const struct BVHNodeStack *stack)
+{
+	return (stack->depth == 0);
+}
+
+static void push_node(struct BVHNodeStack *stack, const struct BVHNode *node)
+{
+	stack->node[stack->depth++] = node;
+	assert(stack->depth < BVH_STACKSIZE);
+}
+
+static const struct BVHNode *pop_node(struct BVHNodeStack *stack)
+{
+	assert(!is_empty(stack));
+	return stack->node[--stack->depth];
 }
 

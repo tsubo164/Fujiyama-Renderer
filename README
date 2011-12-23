@@ -3,15 +3,15 @@ Fujiyama Renderer
 
   Overview
 -----------------
-Fujiyama Renderer is distribution oriented ray-tracing renderer.
+Fujiyama is free and open source, distribution oriented ray-tracing renderer
+designed to handle production image rendering. 
 * Compatibility - written in pure ANSI C (x)
 * Portability - depends on no external library (xx)
 * Simplicity - requires only single C interfaces header file and library
 * Compact - the size of core library is about 100Kb
-* Open Source - licensed under the terms of MIT License
-
-(x) fb2exr is written in C++
-(xx) some external tools require OpenEXR and OpneGL/glut
+* Open Source - licensed under the terms of MIT License (See LICENSE)
+   (x) fb2exr is written in C++
+   (xx) some external tools require OpenEXR and OpneGL/GLUT
 
   Features
 -----------------
@@ -37,9 +37,9 @@ Below are the implemented features so far.
 * make
 * make check | grep FAIL
 * make prefix=/path/to/install install
+   - OpneGL/GLUT is required for FrameBuffer Viewer
+   - OpenEXR is required for fb2exr
 
-See LICENSE for the license.
-For more information about Fujiyama, see http://fujiyama-renderer.com/
-
+http://fujiyama-renderer.com/
 Copyright (c) 2011-2012 Hiroshi Tsubokawa
 

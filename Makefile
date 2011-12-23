@@ -2,18 +2,15 @@
 #See LICENSE and README
 
 CC = gcc
+CXX = g++
 CFLAGS = -Isrc -Wall -ansi -pedantic-errors -O2
-#CFLAGS = -Isrc -Wall -ansi -pedantic-errors -O2 -g
-#CFLAGS = -Isrc -Wall -ansi -pedantic-errors -pg
 LDFLAGS = -Llib
-#LDFLAGS = -Llib -g
-#LDFLAGS = -Llib -pg
 CPPFLAGS = -Isrc -Wall -O2
 
 RM = rm -f
 INSTALL = install
 
-.PHONY: all all_ clean install
+.PHONY: all all_ clean install install_library install_shader install_bin install_tools sample
 all: all_
 
 prefix = $(HOME)
@@ -54,13 +51,13 @@ all_objects += $$(objects)
 all_depends += $$(depends)
 $$(objects): %.o: %.cpp
 	@echo '  compile $$<'
-	@g++ $$(CPPFLAGS) $(cflags_) -c -o $$@ $$<
+	@$$(CXX) $$(CPPFLAGS) $(cflags_) -c -o $$@ $$<
 $$(target): $$(objects) $(addobj_)
 	@echo '  link $$^'
-	@g++ $$(LDFLAGS) $(ldflags_) -o $$@ $$^
+	@$$(CXX) $$(LDFLAGS) $(ldflags_) -o $$@ $$^
 $$(depends): %.d: %.cpp
 	@echo '  dependency $$<'
-	@g++ $$(CPPFLAGS) $(cflags_) -c -MM $$< | \
+	@$$(CXX) $$(CPPFLAGS) $(cflags_) -c -MM $$< | \
 	sed 's,\($$(notdir $$*)\.o\) *:,$$(dir $$@)\1 $@: ,' > $$@.tmp
 	@mv $$@.tmp $$@
 endef
@@ -214,6 +211,18 @@ all_targets :=
 all_objects :=
 
 #------------------------------------------------------------------------------
+#Sample Programs
+sample: scenes/cube.fb
+	fbview $<
+scenes/cube.fb: scenes/cube scenes/cube.mesh
+	scenes/cube
+scenes/cube: scenes/cube.c lib/libscene.so lib/PlasticShader.so
+	$(CC) $(CFLAGS) -Llib -lscene -o $@ $<
+scenes/cube.mesh: scenes/cube.ply
+	ply2mesh $< $@
+samples := scenes/cube.fb scenes/cube.mesh scenes/cube
+
+#------------------------------------------------------------------------------
 all_: $(all_depends) $(main_programs)
 
 dependencies := $(subst .o,.d, $(main_objects) )
@@ -250,6 +259,7 @@ clean:
 	-$(RM) $(check_programs)
 	-$(RM) $(check_objects)
 	-$(RM) $(all_depends)
+	-$(RM) $(samples)
 
 ifneq "$(MAKECMDGOALS)" "clean"
 -include $(dependencies)

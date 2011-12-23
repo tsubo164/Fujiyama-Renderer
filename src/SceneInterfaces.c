@@ -65,6 +65,7 @@ static void set_errno(int err_no);
 static int SetObjectInstanceProperty1(int index, const char *name, double v0);
 static int SetObjectInstanceProperty3(int index, const char *name, double v0, double v1, double v2);
 
+static int SetRendererProperty1(int index, const char *name, double v0);
 static int SetRendererProperty2(int index, const char *name, double v0, double v1);
 static int SetRendererProperty4(int index, const char *name, double v0, double v1, double v2, double v3);
 
@@ -470,6 +471,9 @@ Status SiSetProperty1(ID id, const char *name, double v0)
 	case Type_ObjectInstance:
 		SetObjectInstanceProperty1(index, name, v0);
 		break;
+	case Type_Renderer:
+		SetRendererProperty1(index, name, v0);
+		break;
 	case Type_Camera:
 		SetCameraProperty1(index, name, v0);
 		break;
@@ -613,6 +617,26 @@ static int SetObjectInstanceProperty3(int index, const char *name, double v0, do
 }
 
 /* Renderer Property */
+static int SetRendererProperty1(int index, const char *name, double v0)
+{
+	int result = SI_SUCCESS;
+	struct Renderer *renderer = ScnGetRenderer(scene, index);
+	if (renderer == NULL)
+		return SI_FAIL;
+
+	if (strcmp(name, "cast_shadow") == 0) {
+		RdrSetShadowEnable(renderer, (int) v0);
+	} else if (strcmp(name, "max_reflect_depth") == 0) {
+		RdrSetMaxReflectDepth(renderer, (int) v0);
+	} else if (strcmp(name, "max_refract_depth") == 0) {
+		RdrSetMaxRefractDepth(renderer, (int) v0);
+	} else {
+		result = SI_FAIL;
+	}
+
+	return result;
+}
+
 static int SetRendererProperty2(int index, const char *name, double v0, double v1)
 {
 	int result = SI_SUCCESS;

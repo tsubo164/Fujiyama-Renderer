@@ -23,6 +23,11 @@ extern void RdrSetRenderRegion(struct Renderer *renderer, int xmin, int ymin, in
 extern void RdrSetPixelSamples(struct Renderer *renderer, int xrate, int yrate);
 extern void RdrSetTileSize(struct Renderer *renderer, int xtilesize, int ytilesize);
 extern void RdrSetFilterWidth(struct Renderer *renderer, float xfwidth, float yfwidth);
+
+extern void RdrSetShadowEnable(struct Renderer *renderer, int enable);
+extern void RdrSetMaxReflectDepth(struct Renderer *renderer, int max_depth);
+extern void RdrSetMaxRefractDepth(struct Renderer *renderer, int max_depth);
+
 extern void RdrSetCamera(struct Renderer *renderer, struct Camera *cam);
 extern void RdrSetFrameBuffers(struct Renderer *renderer, struct FrameBuffer *fb);
 extern void RdrSetTargetObjects(struct Renderer *renderer, struct ObjectGroup *grp);

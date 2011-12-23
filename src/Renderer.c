@@ -33,6 +33,10 @@ struct Renderer {
 	int pixelsamples[2];
 	int tilesize[2];
 	float filterwidth[2];
+
+	int cast_shadow;
+	int max_reflect_depth;
+	int max_refract_depth;
 };
 
 static int prepare_render(struct Renderer *renderer);
@@ -54,6 +58,10 @@ struct Renderer *RdrNew(void)
 	RdrSetPixelSamples(renderer, 3, 3);
 	RdrSetTileSize(renderer, 64, 64);
 	RdrSetFilterWidth(renderer, 2, 2);
+
+	renderer->cast_shadow = 1;
+	renderer->max_reflect_depth = 3;
+	renderer->max_refract_depth = 3;
 
 	return renderer;
 }
@@ -109,6 +117,24 @@ void RdrSetFilterWidth(struct Renderer *renderer, float xfwidth, float yfwidth)
 	assert(yfwidth > 0);
 	renderer->filterwidth[0] = xfwidth;
 	renderer->filterwidth[1] = yfwidth;
+}
+
+void RdrSetShadowEnable(struct Renderer *renderer, int enable)
+{
+	assert(enable == 0 || enable == 1);
+	renderer->cast_shadow = enable;
+}
+
+void RdrSetMaxReflectDepth(struct Renderer *renderer, int max_depth)
+{
+	assert(max_depth >= 0);
+	renderer->max_reflect_depth = max_depth;
+}
+
+void RdrSetMaxRefractDepth(struct Renderer *renderer, int max_depth)
+{
+	assert(max_depth >= 0);
+	renderer->max_refract_depth = max_depth;
 }
 
 void RdrSetCamera(struct Renderer *renderer, struct Camera *cam)
@@ -232,11 +258,9 @@ static int render_scene(struct Renderer *renderer)
 
 	/* context */
 	cxt = SlCameraContext(target_objects);
-/*
-	cxt.max_reflect_depth = 0;
-	cxt.max_refract_depth = 0;
-	cxt.cast_shadow = 0;
-*/
+	cxt.cast_shadow = renderer->cast_shadow;
+	cxt.max_reflect_depth = renderer->max_reflect_depth;
+	cxt.max_refract_depth = renderer->max_refract_depth;
 
 	/* region */
 	BOX2_COPY(region, renderer->render_region);
