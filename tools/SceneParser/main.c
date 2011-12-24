@@ -14,6 +14,9 @@ See LICENSE and README
 #include <errno.h>
 #include <float.h>
 
+const char HEADER[] =
+" Fujiyama Scene Interpreter v0.0.1 (Alpha)\n"
+"\n";
 
 int main(int argc, const char **argv)
 {
@@ -21,6 +24,8 @@ int main(int argc, const char **argv)
 	int read_from_file = 0;
 	struct Parser *parser;
 	FILE *file;
+
+	printf(HEADER);
 
 	if (argc == 2) {
 		file = fopen(argv[1], "r");
