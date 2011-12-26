@@ -1,0 +1,11 @@
+Fujiyama Renderer v0.0.1(Alpha) Release Notes
+=============================================
+
+Features under development
+--------------------------
+This is the first release. The features the below are under development.
+ * Curve primitive
+ * Volume primitive
+ * Displacement shader
+ * Motion blur (animation)
+ * IBL
