@@ -55,6 +55,7 @@ struct Scene {
 	struct Array *ConfigList;
 	struct Array *PluginList;
 	struct Array *ShaderList;
+	struct Array *CurveList;
 	struct Array *LightList;
 	struct Array *MeshList;
 };
@@ -139,6 +140,12 @@ struct Shader *ScnNewShader(struct Scene *scn, const struct Plugin *plugin)
 	return push_entry(scn->ShaderList, ShdNew(plugin));
 }
 
+/* Curve */
+struct Curve *ScnNewCurve(struct Scene *scn)
+{
+	return push_entry(scn->CurveList, CrvNew());
+}
+
 /* Light */
 struct Light *ScnNewLight(struct Scene *scn, const char *type)
 {
@@ -160,6 +167,7 @@ DEFINE_LIST_FUNCTIONS(Texture)
 DEFINE_LIST_FUNCTIONS(Camera)
 DEFINE_LIST_FUNCTIONS(Plugin)
 DEFINE_LIST_FUNCTIONS(Shader)
+DEFINE_LIST_FUNCTIONS(Curve)
 DEFINE_LIST_FUNCTIONS(Light)
 DEFINE_LIST_FUNCTIONS(Mesh)
 
@@ -174,6 +182,7 @@ static void new_all_node_list(struct Scene *scn)
 	NEW_LIST(scn, Camera);
 	NEW_LIST(scn, Plugin);
 	NEW_LIST(scn, Shader);
+	NEW_LIST(scn, Curve);
 	NEW_LIST(scn, Light);
 	NEW_LIST(scn, Mesh);
 }
@@ -187,6 +196,7 @@ static void free_all_node_list(struct Scene *scn)
 	FREE_LIST(scn, Texture, TexFree);
 	FREE_LIST(scn, Camera, CamFree);
 	FREE_LIST(scn, Shader, ShdFree);
+	FREE_LIST(scn, Curve, CrvFree);
 	FREE_LIST(scn, Light, LgtFree);
 	FREE_LIST(scn, Mesh, MshFree);
 

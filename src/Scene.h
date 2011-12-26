@@ -18,6 +18,7 @@ extern "C" {
 #include "Camera.h"
 #include "Plugin.h"
 #include "Shader.h"
+#include "Curve.h"
 #include "Light.h"
 #include "Mesh.h"
 
@@ -79,6 +80,12 @@ extern struct Shader *ScnNewShader(struct Scene *scn, const struct Plugin *plugi
 extern struct Shader **ScnGetShaderList(const struct Scene *scn);
 extern struct Shader *ScnGetShader(const struct Scene *scn, int index);
 extern size_t ScnGetShaderCount(const struct Scene *scn);
+
+/* Curve */
+extern struct Curve *ScnNewCurve(struct Scene *scn);
+extern struct Curve **ScnGetCurveList(const struct Scene *scn);
+extern struct Curve *ScnGetCurve(const struct Scene *scn, int index);
+extern size_t ScnGetCurveCount(const struct Scene *scn);
 
 /* Light */
 extern struct Light *ScnNewLight(struct Scene *scn, const char *type);

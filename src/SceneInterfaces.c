@@ -47,6 +47,7 @@ enum {
 	Type_Camera,
 	Type_Plugin,
 	Type_Shader,
+	Type_Curve,
 	Type_Light,
 	Type_Mesh,
 	Type_End
@@ -288,6 +289,34 @@ ID SiNewShader(const char *arg)
 
 	set_errno(SI_NOERR);
 	return encode_id(Type_Shader, GET_LAST_ADDED_ID(Shader));
+}
+
+ID SiNewCurve(const char *filename)
+{
+	struct Curve *curve;
+	struct Accelerator *acc;
+
+	curve = ScnNewCurve(scene);
+	if (curve == NULL) {
+		set_errno(SI_ERR_FAILNEW);
+		return SI_BADID;
+	}
+	/*
+	if (MshLoadFile(curve, arg)) {
+		set_errno(SI_ERR_FAILLOAD);
+		return SI_BADID;
+	}
+	*/
+
+	acc = ScnNewAccelerator(scene, ACC_GRID);
+	if (acc == NULL) {
+		set_errno(SI_ERR_FAILNEW);
+		return SI_BADID;
+	}
+	CrvSetupAccelerator(curve, acc);
+
+	set_errno(SI_NOERR);
+	return encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
 }
 
 ID SiNewLight(const char *arg)

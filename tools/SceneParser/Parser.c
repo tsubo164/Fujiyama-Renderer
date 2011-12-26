@@ -313,6 +313,25 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		TblAdd(parser->table, args[0].str, id);
 	}
+	else if (strcmp(cmd, "NewCurve") == 0) {
+		err = parse_args("ss", argline, args, MAX_ARGS);
+		if (err)
+			return -1;
+
+		if (TblLookup(parser->table, args[0].str)) {
+			set_errno(ERR_PSR_NAMEEXISTS);
+			return -1;
+		}
+
+		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
+		id = SiNewCurve(args[1].str);
+		if (id == SI_BADID) {
+			set_errno(ERR_PSR_FAILNEW);
+			return -1;
+		}
+
+		TblAdd(parser->table, args[0].str, id);
+	}
 	else if (strcmp(cmd, "NewLight") == 0) {
 		err = parse_args("ss", argline, args, MAX_ARGS);
 		if (err)
