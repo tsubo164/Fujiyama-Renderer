@@ -29,6 +29,19 @@ void MatIdentity(struct Matrix *dst)
 			0., 0., 0., 1.);
 }
 
+extern void MatSet(struct Matrix *dst,
+		double e00, double e01, double e02, double e03,
+		double e10, double e11, double e12, double e13,
+		double e20, double e21, double e22, double e23,
+		double e30, double e31, double e32, double e33)
+{
+	MAT_SET(dst->e,
+		e00, e01, e02, e03,
+		e10, e11, e12, e13,
+		e20, e21, e22, e23,
+		e30, e31, e32, e33);
+}
+
 void MatTranslate(struct Matrix *dst, double tx, double ty, double tz )
 {
 	MAT_SET(dst->e,

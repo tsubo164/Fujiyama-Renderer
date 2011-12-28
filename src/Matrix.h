@@ -15,6 +15,11 @@ struct Matrix {
 };
 
 extern void MatIdentity(struct Matrix *dst);
+extern void MatSet(struct Matrix *dst,
+		double e00, double e01, double e02, double e03,
+		double e10, double e11, double e12, double e13,
+		double e20, double e21, double e22, double e23,
+		double e30, double e31, double e32, double e33);
 
 extern void MatTranslate(struct Matrix *dst, double tx, double ty, double tz );
 extern void MatScale(struct Matrix *dst, double sx, double sy, double sz );
