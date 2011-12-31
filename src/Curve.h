@@ -18,6 +18,13 @@ extern void CrvFree(struct Curve *light);
 
 extern void CrvSetupAccelerator(const struct Curve *curve, struct Accelerator *acc);
 
+/* TODO TEST */
+#if 0
+struct ControlPoint {
+	double P[3];
+};
+void eval_bezier_curve(double *evalP, const struct ControlPoint *cp, double t);
+#endif
 #if 0
 extern void CrvSetPosition(struct Curve *light, double xpos, double ypos, double zpos);
 extern void CrvSetColor(struct Curve *light, float r, float g, float b);

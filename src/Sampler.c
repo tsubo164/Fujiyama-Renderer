@@ -107,6 +107,7 @@ int SmpGenerateSamples(struct Sampler *sampler, const int *pixel_bounds)
 		for (x = 0; x < sampler->xnsamples; x++) {
 			smp->uv[0] = (.5 + x + sampler->xpixel_start * sampler->xrate - sampler->xmargin) * udelta;
 			smp->uv[1] = 1 - (.5 + y + sampler->ypixel_start * sampler->yrate - sampler->xmargin) * vdelta;
+
 			smp->data[0] = 0;
 			smp->data[1] = 0;
 			smp->data[2] = 0;

@@ -10,7 +10,7 @@ See LICENSE and README
 #include <assert.h>
 
 static int error_no = ERR_SHD_NOERR;
-static const float NO_SHADER_COLOR[] = {.9, .8, .5};
+static const float NO_SHADER_COLOR[] = {.5, 1., 0.};
 
 struct Shader {
 	void *self;

@@ -24,6 +24,7 @@ extern "C" {
 #define N_PI_180 0.01745329251994329577 /* pi/180 */
 #define N_180_PI 57.2957795130823208768 /* 180/pi */
 
+#define ABS(x_) (((x_)<0)?-(x_):(x_))
 #define MIN(x_,y_) ((x_)<(y_)?(x_):(y_))
 #define MAX(x_,y_) ((x_)>(y_)?(x_):(y_))
 #define CLAMP(x_,lo_,up_) ((x_)<(lo_)?(lo_):((x_)>(up_)?(up_):(x_)))

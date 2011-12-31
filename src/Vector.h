@@ -18,6 +18,8 @@ extern "C" {
 	(dst)[1] = (y); \
 	} while(0)
 
+#define VEC2_DOT(a,b) ((a)[0] * (b)[0] + (a)[1] * (b)[1])
+
 /* VEC3 */
 #define VEC3_SET(dst,x,y,z) do { \
 	(dst)[0] = (x); \
