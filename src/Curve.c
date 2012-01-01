@@ -15,12 +15,17 @@ See LICENSE and README
 #include <stdlib.h>
 #include <float.h>
 #include <stdio.h>
+#include <math.h>
 
 struct ControlPoint {
 	double P[3];
 };
-/*
-*/
+
+struct BezierCurve3 {
+	struct ControlPoint cp[4];
+	double maxwidth;
+	double width[4];
+};
 
 struct Curve {
 	struct ControlPoint ctrl_pts[4];
@@ -38,12 +43,12 @@ static void compute_world_to_ray_matrix(const struct Ray *ray, struct Matrix *ds
 static int converge_bezier_curve(const struct ControlPoint *cp, double v0, double vn,
 		int depth, double *t_hit);
 static void eval_bezier_curve(double *evalP, const struct ControlPoint *cp, double t);
-/*
-*/
 static void split_bezier_curve(const struct ControlPoint *cp,
 		struct ControlPoint *left, struct ControlPoint *right);
 static void compute_bezier_curve_bounds(const struct ControlPoint *cp, double *bounds);
+
 static void mid_point(double *mid, const double *a, const double *b);
+static int compute_split_depth_limit(const struct ControlPoint *cp, double epsilon);
 
 struct Curve *CrvNew(void)
 {
@@ -105,6 +110,7 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, const struct R
 		struct LocalGeometry *isect, double *t_hit)
 {
 	const struct Curve *curve = (const struct Curve *) prim_set;
+	struct BezierCurve3 bezier;
 	struct ControlPoint projCP[4];
 	struct Matrix world_to_ray;
 
@@ -113,13 +119,18 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, const struct R
 	int hit;
 	int i;
 
-	depth = 5;
-
 	compute_world_to_ray_matrix(ray, &world_to_ray);
 	for (i = 0; i < 4; i++) {
 		VEC3_COPY(projCP[i].P, curve->ctrl_pts[i].P);
 		TransformPoint(projCP[i].P, &world_to_ray);
+
+		VEC3_COPY(bezier.cp[i].P, curve->ctrl_pts[i].P);
+		TransformPoint(bezier.cp[i].P, &world_to_ray);
+		bezier.width[i] = .05-i*.01;
+		bezier.maxwidth = MAX(bezier.maxwidth, bezier.width[i]);
 	}
+
+	depth = compute_split_depth_limit(projCP, .05 / 20);
 
 	hit = converge_bezier_curve(projCP, 0, 1, depth, &ttmp);
 	if (hit) {
@@ -196,20 +207,14 @@ static int converge_bezier_curve(const struct ControlPoint *cp, double v0, doubl
 		int depth, double *t_hit)
 {
 	double bounds[6];
-	double radius = .15;
+	double radius = .05;
 
 	compute_bezier_curve_bounds(cp, bounds);
 	BOX3_EXPAND(bounds, radius);
 
-#if 0
-	if (bounds[2] >= *t_hit || bounds[5] <= .00001 ||
-		bounds[0] >= radius || bounds[3] <= -radius ||
-		bounds[1] >= radius || bounds[4] <= -radius) {
-		return 0;
-	}
-#endif
 	if (bounds[0] >= radius || bounds[3] <= -radius ||
-		bounds[1] >= radius || bounds[4] <= -radius) {
+		bounds[1] >= radius || bounds[4] <= -radius ||
+		bounds[2] >= *t_hit || bounds[5] <= 1e-6) {
 		return 0;
 	}
 
@@ -274,6 +279,8 @@ static int converge_bezier_curve(const struct ControlPoint *cp, double v0, doubl
 		const double vm = (v0 + vn) * .5;
 		struct ControlPoint cp_left[4];
 		struct ControlPoint cp_right[4];
+		struct BezierCurve3 bezier_left;
+		struct BezierCurve3 bezier_right;
 		int hit_left, hit_right;
 		double t_left, t_right;
 
@@ -342,6 +349,25 @@ static void mid_point(double *mid, const double *a, const double *b)
 	mid[0] = (a[0] + b[0]) * .5;
 	mid[1] = (a[1] + b[1]) * .5;
 	mid[2] = (a[2] + b[2]) * .5;
+}
+
+static int compute_split_depth_limit(const struct ControlPoint *cp, double epsilon)
+{
+	int i;
+	int r0;
+	const int N = 4;
+	double L0;
+
+	L0 = -1.;
+	for (i = 0; i < N-2; i++) {
+		const double x_val = fabs(cp[i].P[0] - 2 * cp[i+1].P[0] + cp[i+2].P[0]);
+		const double y_val = fabs(cp[i].P[1] - 2 * cp[i+1].P[1] + cp[i+2].P[1]);
+		const double max_val = MAX(x_val, y_val);
+		L0 = MAX(L0, max_val);
+	}
+
+	r0 = (int) (log(sqrt(2.) * N * (N-1) * L0 / (8. * epsilon)) / log(4.));
+	return r0;
 }
 
 #if 0
