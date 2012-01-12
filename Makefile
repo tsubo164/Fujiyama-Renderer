@@ -14,7 +14,6 @@ INSTALL = install
 all: all_
 
 prefix = $(HOME)
-export prefix
 
 #******************************************************************************
 # $(eval $(call submodule, $(srcdir_), $(files_), $(subtgt_), $(cflags_), $(ldflags_)))
@@ -110,6 +109,16 @@ srcdir_  := shaders/ConstantShader
 tgtdir_  := lib
 files_   := ConstantShader
 subtgt_  := ConstantShader.so
+cflags_  := -fPIC
+ldflags_ := -shared -lscene
+$(eval $(call submodule))
+
+install_shader += $(subtgt_)
+
+srcdir_  := shaders/HairShader
+tgtdir_  := lib
+files_   := HairShader
+subtgt_  := HairShader.so
 cflags_  := -fPIC
 ldflags_ := -shared -lscene
 $(eval $(call submodule))

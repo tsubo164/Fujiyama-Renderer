@@ -18,6 +18,9 @@ struct LocalGeometry {
 	float Cd[3];
 	float uv[2];
 
+	/* TODO TEST */
+	double T[3];
+
 	const struct ObjectInstance *object;
 	const void *geometry;
 	int prim_id;

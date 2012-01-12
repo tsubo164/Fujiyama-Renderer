@@ -216,7 +216,8 @@ static int render_scene(struct Renderer *renderer)
 	struct Sample *pixelsmps = NULL;
 	struct Sample *smp;
 	struct Ray ray;
-	struct Timer t;
+	struct Timer timer;
+	struct Elapse elapse;
 	struct Progress *progress;
 
 	/* aux */
@@ -270,7 +271,7 @@ static int render_scene(struct Renderer *renderer)
 	pixelsmps = SmpAllocatePixelSamples(sampler);
 
 	/* Run sampling */
-	TimerStart(&t);
+	TimerStart(&timer);
 	printf("Rendering ...\n");
 	while ((tile = TlrGetNextTile(tiler)) != NULL) {
 		int pixel_bounds[4];
@@ -334,7 +335,8 @@ static int render_scene(struct Renderer *renderer)
 				(int ) ((tile->id+1) / (double )TlrGetTileCount(tiler) * 100));
 		PrgDone(progress);
 	}
-	printf("Done: %.5f sec\n", TimerElapsed(&t));
+	elapse = TimerElapsed(&timer);
+	printf("Done: %d hour %d min %g sec\n", elapse.hour, elapse.min, elapse.sec);
 
 	/* clean up */
 	SmpFreePixelSamples(pixelsmps);

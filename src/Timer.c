@@ -10,8 +10,15 @@ void TimerStart(struct Timer *t)
 	t->start = clock();
 }
 
-double TimerElapsed(const struct Timer *t)
+struct Elapse TimerElapsed(const struct Timer *t)
 {
-	return (double)(clock() - t->start) / CLOCKS_PER_SEC;
+	const double seconds = (double)(clock() - t->start) / CLOCKS_PER_SEC;
+	struct Elapse elapse;
+
+	elapse.hour = (int) (seconds / (60*60));
+	elapse.min = (int) ((seconds - elapse.hour*60*60) / 60);
+	elapse.sec = seconds - elapse.hour*60*60 - elapse.min*60;
+
+	return elapse;
 }
 

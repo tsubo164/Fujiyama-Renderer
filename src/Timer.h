@@ -16,8 +16,14 @@ struct Timer {
 	clock_t start;
 };
 
+struct Elapse {
+	int hour;
+	int min;
+	double sec;
+};
+
 extern void TimerStart(struct Timer *t);
-extern double TimerElapsed(const struct Timer *t);
+extern struct Elapse TimerElapsed(const struct Timer *t);
 
 #ifdef __cplusplus
 } /* extern "C" */

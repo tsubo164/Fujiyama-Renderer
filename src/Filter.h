@@ -18,7 +18,6 @@ enum {
 };
 
 extern struct Filter *FltNew(int filtertype, double xwidth, double ywidth);
-
 extern void FltFree(struct Filter *filter);
 
 extern double FltEvaluate(const struct Filter *filter, double x, double y);

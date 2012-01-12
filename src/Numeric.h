@@ -30,6 +30,8 @@ extern "C" {
 #define CLAMP(x_,lo_,up_) ((x_)<(lo_)?(lo_):((x_)>(up_)?(up_):(x_)))
 #define RADIAN(deg_) ((deg_)*N_PI_180)
 
+#define LERP(x_,y_,t_) (((1-(t_))*(x_))+((y_)*(t_)))
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
