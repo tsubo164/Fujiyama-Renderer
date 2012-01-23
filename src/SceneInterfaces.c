@@ -5,6 +5,7 @@ See LICENSE and README
 
 #include "SceneInterfaces.h"
 #include "FrameBufferIO.h"
+#include "CurveIO.h"
 #include "MeshIO.h"
 #include "Scene.h"
 #include <stdio.h>
@@ -301,12 +302,10 @@ ID SiNewCurve(const char *filename)
 		set_errno(SI_ERR_FAILNEW);
 		return SI_BADID;
 	}
-	/*
-	if (MshLoadFile(curve, arg)) {
+	if (CrvLoadFile(curve, filename)) {
 		set_errno(SI_ERR_FAILLOAD);
 		return SI_BADID;
 	}
-	*/
 
 	acc = ScnNewAccelerator(scene, ACC_GRID);
 	if (acc == NULL) {
@@ -330,7 +329,7 @@ ID SiNewLight(const char *arg)
 	return encode_id(Type_Light, GET_LAST_ADDED_ID(Light));
 }
 
-ID SiNewMesh(const char *arg)
+ID SiNewMesh(const char *filename)
 {
 	struct Mesh *mesh;
 	struct Accelerator *acc;
@@ -340,7 +339,7 @@ ID SiNewMesh(const char *arg)
 		set_errno(SI_ERR_FAILNEW);
 		return SI_BADID;
 	}
-	if (MshLoadFile(mesh, arg)) {
+	if (MshLoadFile(mesh, filename)) {
 		set_errno(SI_ERR_FAILLOAD);
 		return SI_BADID;
 	}

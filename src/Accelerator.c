@@ -204,15 +204,13 @@ static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
 
 	/* traverse voxels */
 	hit = 0;
-	for(;;) {
+	for (;;) {
 		int id;
-		int xid, yid, zid;
 		double tmin = FLT_MAX;
 		struct Cell *cell;
 		struct LocalGeometry loctmp;
 
-		VEC3_GET(xid, yid, zid, cellid);
-		id = zid * NCELLS[0] * NCELLS[1] + yid * NCELLS[0] + xid;
+		id = cellid[2] * NCELLS[0] * NCELLS[1] + cellid[1] * NCELLS[0] + cellid[0];
 
 		/* loop over face list that associated in current cell */
 		for (cell = grid->cells[id]; cell != NULL; cell = cell->next) {

@@ -13,6 +13,7 @@ See LICENSE and README
 #include "Ray.h"
 #include "Box.h"
 #include <stdlib.h>
+#include <string.h>
 #include <float.h>
 #include <stdio.h>
 #include <math.h>
@@ -21,41 +22,33 @@ struct ControlPoint {
 	double P[3];
 };
 
-struct BezierCurve3 {
+struct Bezier3 {
 	struct ControlPoint cp[4];
 	double width[2];
 };
 
-struct Curve {
-	struct ControlPoint ctrl_pts[4];
-	double bounds[6];
-
-	struct ControlPoint *cps;
-	int *indices;
-
-	int ncps;
-	int ncurves;
-};
-
+/* curve interfaces */
 static int curve_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
 		struct LocalGeometry *isect, double *t_hit);
 static void curve_bounds(const void *prim_set, int prim_id, double *bounds);
 
-static void eval_bezier_curve3(double *evalP, const struct ControlPoint *cp, double t);
-static void derivative_bezier_curve3(double *deriv, const struct ControlPoint *cp, double t);
-static void compute_bezier_curve_bounds(const struct ControlPoint *cp, double *bounds);
-static void compute_bezier_curve_bounds3(const struct BezierCurve3 *bezier, double *bounds);
-static void split_bezier_curve3(const struct BezierCurve3 *bezier,
-		struct BezierCurve3 *left, struct BezierCurve3 *right);
-static int converge_bezier_curve3(const struct BezierCurve3 *bezier,
+/* bezier curve interfaces */
+static double get_bezier3_max_radius(const struct Bezier3 *bezier);
+static double get_bezier3_width(const struct Bezier3 *bezier, double t);
+static void get_bezier3_bounds(const struct Bezier3 *bezier, double *bounds);
+static void get_bezier3(const struct Curve *curve, int prim_id, struct Bezier3 *bezier);
+static void eval_bezier3(double *evalP, const struct ControlPoint *cp, double t);
+static void derivative_bezier3(double *deriv, const struct ControlPoint *cp, double t);
+static void split_bezier3(const struct Bezier3 *bezier,
+		struct Bezier3 *left, struct Bezier3 *right);
+static int converge_bezier3(const struct Bezier3 *bezier,
 		double v0, double vn, int depth,
 		double *v_hit, double *P_hit);
 
+/* helper functions */
 static void mid_point(double *mid, const double *a, const double *b);
 static int compute_split_depth_limit(const struct ControlPoint *cp, double epsilon);
 static void compute_world_to_ray_matrix(const struct Ray *ray, struct Matrix *dst);
-
-static double get_bezier_cureve3_width(const struct BezierCurve3 *bezier, double t);
 
 struct Curve *CrvNew(void)
 {
@@ -65,23 +58,35 @@ struct Curve *CrvNew(void)
 	if (curve == NULL)
 		return NULL;
 
-	curve->cps = NULL;
+	curve->P = NULL;
+	curve->width = NULL;
+	curve->Cd = NULL;
+	curve->uv = NULL;
 	curve->indices = NULL;
-#if 0
-	VEC3_SET(curve->ctrl_pts[0].P, 0, -.75, 0);
-	VEC3_SET(curve->ctrl_pts[1].P, 0, -.25, 0);
-	VEC3_SET(curve->ctrl_pts[2].P, 0,  .25, 0);
-	VEC3_SET(curve->ctrl_pts[3].P, 0,  .75, 0);
-#endif
-	VEC3_SET(curve->ctrl_pts[0].P, -.5, -.75, -5+0);
-	VEC3_SET(curve->ctrl_pts[1].P,  .75, -.75, 0);
-	VEC3_SET(curve->ctrl_pts[2].P, -.75, .75, 0);
-	VEC3_SET(curve->ctrl_pts[3].P,  .5,  .75, 0);
+	BOX3_SET(curve->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-	compute_bezier_curve_bounds(curve->ctrl_pts, curve->bounds);
-	BOX3_EXPAND(curve->bounds, .5);
-	curve->ncurves = 1;
-	PrintBox3d(curve->bounds);
+	curve->nverts = 0;
+	curve->ncurves = 0;
+
+	/* TODO TEST DATA */
+#if 0
+	CrvAllocateVertex(curve, "P", 4);
+	VEC3_SET(&curve->P[0*3], -.5, -.75, -5+0);
+	VEC3_SET(&curve->P[1*3],  .75, -.75, 0);
+	VEC3_SET(&curve->P[2*3], -.75, .75, 0);
+	VEC3_SET(&curve->P[3*3],  .5,  .75, 0);
+
+	CrvAllocateVertex(curve, "width", 4);
+	curve->width[0] = .5;
+	curve->width[1] = .5;
+	curve->width[2] = .5;
+	curve->width[3] = .5;
+
+	CrvAllocateCurve(curve, "indices", 1);
+	curve->indices[0] = 0;
+
+	CrvComputeBounds(curve);
+#endif
 
 	return curve;
 }
@@ -91,8 +96,11 @@ void CrvFree(struct Curve *curve)
 	if (curve == NULL)
 		return;
 
-	if (curve->cps != NULL)
-		free(curve->cps);
+	if (curve->P != NULL)
+		free(curve->P);
+
+	if (curve->width != NULL)
+		free(curve->width);
 
 	if (curve->indices != NULL)
 		free(curve->indices);
@@ -110,12 +118,97 @@ void CrvSetupAccelerator(const struct Curve *curve, struct Accelerator *acc)
 			curve_bounds);
 }
 
+void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int nverts)
+{
+	void *ret = NULL;
+
+	if (curve->nverts != 0 && curve->nverts != nverts) {
+		/* TODO error handling */
+#if 0
+		return NULL;
+#endif
+	}
+
+	if (strcmp(attr_name, "P") == 0) {
+		curve->P = (double *) realloc(curve->P, 3 * sizeof(double) * nverts);
+		ret = curve->P;
+	}
+	else if (strcmp(attr_name, "width") == 0) {
+		curve->width = (double *) realloc(curve->width, 1 * sizeof(double) * nverts);
+		ret = curve->width;
+	}
+	else if (strcmp(attr_name, "uv") == 0) {
+		curve->uv = (float *) realloc(curve->uv, 2 * sizeof(float) * nverts);
+		ret = curve->uv;
+	}
+
+	if (ret == NULL) {
+		curve->nverts = 0;
+		return NULL;
+	}
+
+	curve->nverts = nverts;
+	return ret;
+}
+
+void *CrvAllocateCurve(struct Curve *curve, const char *attr_name, int ncurves)
+{
+	void *ret = NULL;
+
+	if (curve->ncurves != 0 && curve->ncurves != ncurves) {
+		/* TODO error handling */
+#if 0
+		return NULL;
+#endif
+	}
+
+	if (strcmp(attr_name, "indices") == 0) {
+		curve->indices = (int *) realloc(curve->indices, 1 * sizeof(int) * ncurves);
+		ret = curve->indices;
+	}
+
+	if (ret == NULL) {
+		curve->ncurves = 0;
+		return NULL;
+	}
+
+	curve->ncurves = ncurves;
+	return ret;
+}
+
+void CrvComputeBounds(struct Curve *curve)
+{
+	int i;
+	double max_radius = 0;
+
+	BOX3_SET(curve->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	for (i = 0; i < curve->ncurves; i++) {
+		struct Bezier3 bezier;
+		double bezier_bounds[6];
+		double bezier_max_radius;
+
+		get_bezier3(curve, i, &bezier);
+		get_bezier3_bounds(&bezier, bezier_bounds);
+		BoxAddBox(curve->bounds, bezier_bounds);
+
+		bezier_max_radius = get_bezier3_max_radius(&bezier);
+		max_radius = MAX(max_radius, bezier_max_radius);
+	}
+
+	BOX3_EXPAND(curve->bounds, max_radius);
+}
+
 static int curve_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
 		struct LocalGeometry *isect, double *t_hit)
 {
 	const struct Curve *curve = (const struct Curve *) prim_set;
-	struct BezierCurve3 bezier;
+	struct Bezier3 bezier;
 	struct Matrix world_to_ray;
+
+	/* for scaled ray */
+	struct Ray nml_ray;
+	double ray_scale;
 
 	double ttmp = FLT_MAX;
 	double v_hit;
@@ -123,39 +216,34 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, const struct R
 	int hit;
 	int i;
 
-	compute_world_to_ray_matrix(ray, &world_to_ray);
+	nml_ray = *ray;
+	ray_scale = VEC3_LEN(nml_ray.dir);
+	VEC3_DIV_ASGN(nml_ray.dir, ray_scale);
+
+	get_bezier3(curve, prim_id, &bezier);
+
+	compute_world_to_ray_matrix(&nml_ray, &world_to_ray);
 	for (i = 0; i < 4; i++) {
-		VEC3_COPY(bezier.cp[i].P, curve->ctrl_pts[i].P);
 		TransformPoint(bezier.cp[i].P, &world_to_ray);
 	}
-	bezier.width[0] = .4;
-	bezier.width[0] = .5;
-	bezier.width[1] = .01;
-	bezier.width[1] = .5;
-	/*
-	*/
 
-	depth = compute_split_depth_limit(bezier.cp, .5 / 20);
-	depth = MIN(depth, 5);
+	depth = compute_split_depth_limit(bezier.cp, 2*get_bezier3_max_radius(&bezier) / 20.);
+	depth = CLAMP(depth, 1, 5);
 
-	hit = converge_bezier_curve3(&bezier, 0, 1, depth, &v_hit, &ttmp);
+	hit = converge_bezier3(&bezier, 0, 1, depth, &v_hit, &ttmp);
 	if (hit) {
+		struct Bezier3 original;
 		double P_curve[3];
-		*t_hit = ttmp;
+		*t_hit = ttmp / ray_scale;
+
+		get_bezier3(curve, prim_id, &original);
 
 		POINT_ON_RAY(isect->P,ray->orig, ray->dir, *t_hit);
-		eval_bezier_curve3(P_curve, curve->ctrl_pts, v_hit);
+		eval_bezier3(P_curve, original.cp, v_hit);
 		VEC3_SUB(isect->N, isect->P, P_curve);
 		VEC3_NORMALIZE(isect->N);
 
-		derivative_bezier_curve3(isect->T, curve->ctrl_pts, v_hit);
-		VEC3_NORMALIZE(isect->T);
-		if (v_hit > 0) {
-		/*
-			printf("[%g, %g, %g]\n", isect->T[0], isect->T[1], isect->T[2]);
-			printf("[%g]\n", v_hit);
-		*/
-		}
+		derivative_bezier3(isect->dPdt, original.cp, v_hit);
 	}
 
 	return hit;
@@ -164,7 +252,10 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, const struct R
 static void curve_bounds(const void *prim_set, int prim_id, double *bounds)
 {
 	const struct Curve *curve = (const struct Curve *) prim_set;
-	BOX3_COPY(bounds, curve->bounds);
+	struct Bezier3 bezier;
+
+	get_bezier3(curve, prim_id, &bezier);
+	get_bezier3_bounds(&bezier, bounds);
 }
 
 static void compute_world_to_ray_matrix(const struct Ray *ray, struct Matrix *dst)
@@ -197,15 +288,15 @@ static void compute_world_to_ray_matrix(const struct Ray *ray, struct Matrix *ds
 	MatMultiply(dst, &rotate, &translate);
 }
 
-static int converge_bezier_curve3(const struct BezierCurve3 *bezier,
+static int converge_bezier3(const struct Bezier3 *bezier,
 		double v0, double vn, int depth,
 		double *v_hit, double *t_hit)
 {
 	const struct ControlPoint *cp = bezier->cp;
-	double radius = MAX(bezier->width[0], bezier->width[1]) * .5;
+	const double radius = get_bezier3_max_radius(bezier);
 	double bounds[6];
 
-	compute_bezier_curve_bounds3(bezier, bounds);
+	get_bezier3_bounds(bezier, bounds);
 
 	if (bounds[0] >= radius || bounds[3] <= -radius ||
 		bounds[1] >= radius || bounds[4] <= -radius ||
@@ -255,9 +346,9 @@ static int converge_bezier_curve3(const struct BezierCurve3 *bezier,
 		/* compute v on the curve segment */
 		v = v0 * (1-w) + vn * w;
 
-		radius_w = .5 * get_bezier_cureve3_width(bezier, w);
+		radius_w = .5 * get_bezier3_width(bezier, w);
 		/* compare x-y distance */
-		eval_bezier_curve3(vP, cp, w);
+		eval_bezier3(vP, cp, w);
 		if (vP[0] * vP[0] + vP[1] * vP[1] >= radius_w * radius_w) {
 			return 0;
 		}
@@ -276,28 +367,20 @@ static int converge_bezier_curve3(const struct BezierCurve3 *bezier,
 
 	{
 		const double vm = (v0 + vn) * .5;
-		struct BezierCurve3 bezier_left;
-		struct BezierCurve3 bezier_right;
+		struct Bezier3 bezier_left;
+		struct Bezier3 bezier_right;
 		int hit_left, hit_right;
 		double t_left, t_right;
 		double v_left, v_right;
 
-		split_bezier_curve3(bezier, &bezier_left, &bezier_right);
+		split_bezier3(bezier, &bezier_left, &bezier_right);
 
 		t_left  = FLT_MAX;
 		t_right = FLT_MAX;
-		hit_left  = converge_bezier_curve3(&bezier_left,  v0, vm, depth-1, &v_left,  &t_left);
-		hit_right = converge_bezier_curve3(&bezier_right, vm, vn, depth-1, &v_right, &t_right);
+		hit_left  = converge_bezier3(&bezier_left,  v0, vm, depth-1, &v_left,  &t_left);
+		hit_right = converge_bezier3(&bezier_right, vm, vn, depth-1, &v_right, &t_right);
 
-#if 0
-		if (hit_left) {
-			*t_hit = MIN(*t_hit, t_left);
-		}
-		if (hit_right) {
-			*t_hit = MIN(*t_hit, t_right);
-		}
-#endif
-		if(hit_left || hit_right) {
+		if (hit_left || hit_right) {
 			if (t_left < t_right) {
 				*t_hit = t_left;
 				*v_hit = v_left;
@@ -311,7 +394,7 @@ static int converge_bezier_curve3(const struct BezierCurve3 *bezier,
 	}
 }
 
-static void eval_bezier_curve3(double *evalP, const struct ControlPoint *cp, double t)
+static void eval_bezier3(double *evalP, const struct ControlPoint *cp, double t)
 {
 	const double u = 1-t;
 	const double a = u * u * u;
@@ -324,7 +407,7 @@ static void eval_bezier_curve3(double *evalP, const struct ControlPoint *cp, dou
 	evalP[2] = a * cp[0].P[2] + b * cp[1].P[2] + c * cp[2].P[2] + d * cp[3].P[2];
 }
 
-static void derivative_bezier_curve3(double *deriv, const struct ControlPoint *cp, double t)
+static void derivative_bezier3(double *deriv, const struct ControlPoint *cp, double t)
 {
 	const double u = 1-t;
 	const double a = 2 * u * u;
@@ -341,13 +424,13 @@ static void derivative_bezier_curve3(double *deriv, const struct ControlPoint *c
 	deriv[2] = a * CP[0].P[2] + b * CP[1].P[2] + c * CP[2].P[2];
 }
 
-static void split_bezier_curve3(const struct BezierCurve3 *bezier,
-		struct BezierCurve3 *left, struct BezierCurve3 *right)
+static void split_bezier3(const struct Bezier3 *bezier,
+		struct Bezier3 *left, struct Bezier3 *right)
 {
 	double midP[3];
 	double midCP[3];
 
-	eval_bezier_curve3(midP, bezier->cp, .5);
+	eval_bezier3(midP, bezier->cp, .5);
 	mid_point(midCP, bezier->cp[1].P, bezier->cp[2].P);
 
 	VEC3_COPY(left->cp[0].P, bezier->cp[0].P);
@@ -364,28 +447,6 @@ static void split_bezier_curve3(const struct BezierCurve3 *bezier,
 	left->width[1] = (bezier->width[0] + bezier->width[1]) * .5;
 	right->width[0] = left->width[1];
 	right->width[1] = bezier->width[1];
-}
-
-static void compute_bezier_curve_bounds(const struct ControlPoint *cp, double *bounds)
-{
-	int i;
-	BOX3_SET(bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-	for (i = 0; i < 4; i++) {
-		BoxAddPoint(bounds, cp[i].P);
-	}
-}
-
-static void compute_bezier_curve_bounds3(const struct BezierCurve3 *bezier, double *bounds)
-{
-	int i;
-	double maxwidth;
-	BOX3_SET(bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-	for (i = 0; i < 4; i++) {
-		BoxAddPoint(bounds, bezier->cp[i].P);
-	}
-
-	maxwidth = .5 * MAX(bezier->width[0], bezier->width[1]);
-	BOX3_EXPAND(bounds, maxwidth);
 }
 
 static void mid_point(double *mid, const double *a, const double *b)
@@ -414,41 +475,44 @@ static int compute_split_depth_limit(const struct ControlPoint *cp, double epsil
 	return r0;
 }
 
-static double get_bezier_cureve3_width(const struct BezierCurve3 *bezier, double t)
+static double get_bezier3_max_radius(const struct Bezier3 *bezier)
+{
+	return .5 * MAX(bezier->width[0], bezier->width[1]);
+}
+
+static double get_bezier3_width(const struct Bezier3 *bezier, double t)
 {
 	return LERP(bezier->width[0], bezier->width[1], t);
 }
 
-#if 0
-void CrvSetPosition(struct Curve *curve, double xpos, double ypos, double zpos)
+static void get_bezier3_bounds(const struct Bezier3 *bezier, double *bounds)
 {
-	curve->position[0] = xpos;
-	curve->position[1] = ypos;
-	curve->position[2] = zpos;
+	int i;
+	double max_radius;
+	BOX3_SET(bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+	for (i = 0; i < 4; i++) {
+		BoxAddPoint(bounds, bezier->cp[i].P);
+	}
+
+	max_radius = get_bezier3_max_radius(bezier);
+	BOX3_EXPAND(bounds, max_radius);
 }
 
-void CrvSetColor(struct Curve *curve, float r, float g, float b)
+static void get_bezier3(const struct Curve *curve, int prim_id, struct Bezier3 *bezier)
 {
-	curve->color[0] = r;
-	curve->color[1] = g;
-	curve->color[2] = b;
-}
+	int i0, i1, i2, i3;
 
-void CrvSetIntensity(struct Curve *curve, double intensity)
-{
-	curve->intensity = intensity;
-}
+	i0 = curve->indices[prim_id];
+	i1 = i0 + 1;
+	i2 = i0 + 2;
+	i3 = i0 + 3;
 
-const double *CrvGetPosition(const struct Curve *curve)
-{
-	return curve->position;
-}
+	VEC3_COPY(bezier->cp[0].P, &curve->P[3 * i0]);
+	VEC3_COPY(bezier->cp[1].P, &curve->P[3 * i1]);
+	VEC3_COPY(bezier->cp[2].P, &curve->P[3 * i2]);
+	VEC3_COPY(bezier->cp[3].P, &curve->P[3 * i3]);
 
-void CrvIlluminate(const struct Curve *curve, const double *Ps, float *Cl)
-{
-	Cl[0] = curve->intensity * curve->color[0];
-	Cl[1] = curve->intensity * curve->color[1];
-	Cl[2] = curve->intensity * curve->color[2];
+	bezier->width[0] = curve->width[4*prim_id + 0];
+	bezier->width[1] = curve->width[4*prim_id + 3];
 }
-#endif
 

@@ -13,26 +13,29 @@ extern "C" {
 struct Curve;
 struct Accelerator;
 
+/* TODO temporary */
+struct Curve {
+	double bounds[6];
+
+	double *P;
+	double *width;
+	float *Cd;
+	float *uv;
+	int *indices;
+
+	int nverts;
+	int ncurves;
+};
+
 extern struct Curve *CrvNew(void);
 extern void CrvFree(struct Curve *light);
 
+extern void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int nverts);
+extern void *CrvAllocateCurve(struct Curve *curve, const char *attr_name, int ncurves);
+
+extern void CrvComputeBounds(struct Curve *curve);
+
 extern void CrvSetupAccelerator(const struct Curve *curve, struct Accelerator *acc);
-
-/* TODO TEST */
-#if 0
-struct ControlPoint {
-	double P[3];
-};
-void eval_bezier_curve(double *evalP, const struct ControlPoint *cp, double t);
-#endif
-#if 0
-extern void CrvSetPosition(struct Curve *light, double xpos, double ypos, double zpos);
-extern void CrvSetColor(struct Curve *light, float r, float g, float b);
-extern void CrvSetIntensity(struct Curve *light, double intensity);
-extern const double *CrvGetPosition(const struct Curve *light);
-
-extern void CrvIlluminate(const struct Curve *light, const double *Ps, float *Cl);
-#endif
 
 #ifdef __cplusplus
 } /* extern "C" */

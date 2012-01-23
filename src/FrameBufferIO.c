@@ -84,7 +84,7 @@ void FbCloseInputFile(struct FbInput *in)
 
 int FbReadHeader(struct FbInput *in)
 {
-	int nreads = 0;
+	size_t nreads = 0;
 	char magic[FB_MAGIC_SIZE];
 
 	nreads += fread(magic, sizeof(char), FB_MAGIC_SIZE, in->file);
@@ -108,7 +108,7 @@ int FbReadHeader(struct FbInput *in)
 
 int FbReadData(struct FbInput *in)
 {
-	int nreads = 0;
+	size_t nreads = 0;
 
 	if (in->data == NULL)
 		return -1;

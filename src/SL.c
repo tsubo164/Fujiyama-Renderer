@@ -337,6 +337,7 @@ static void setup_surface_input(
 	VEC3_COPY(in->uv, local->uv);
 	VEC3_COPY(in->I, ray->dir);
 
-	VEC3_COPY(in->T, local->T);
+	VEC3_COPY(in->dPds, local->dPds);
+	VEC3_COPY(in->dPdt, local->dPdt);
 }
 

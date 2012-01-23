@@ -6,6 +6,8 @@ See LICENSE and README
 #include "Parser.h"
 #include "Table.h"
 #include "SceneInterfaces.h"
+#include "Numeric.h"
+#include "String.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -30,11 +32,6 @@ static int parser_errno = ERR_PSR_NOERR;
 static int run_command(struct Parser *parser, const char *cmd, const char *arg);
 static int parse_args(const char *fmt, const char *arg, union Argument *args, int max_args);
 static void set_errno(int err);
-#if 0
-static char error_detail[1024] = {'\0'};
-static void set_error_detail(const char *detail);
-static void append_error_detail(const char *detail);
-#endif
 
 struct Parser *PsrNew(void)
 {
@@ -118,6 +115,7 @@ int PsrParseLine(struct Parser *parser, const char *line)
 
 	{
 		int s, e;
+		size_t ncpy;
 		size_t len = strlen(line);
 		for (s = 0; s < len; s++) {
 			if (!isspace(line[s]))
@@ -127,7 +125,9 @@ int PsrParseLine(struct Parser *parser, const char *line)
 			if (!isspace(line[e]))
 				break;
 		}
-		strncpy(trimed, line+s, e-s+1);
+		ncpy = e-s+1;
+		ncpy = MIN(ncpy, 1000);
+		StrCopyMax(trimed, line+s, ncpy);
 	}
 
 	if (trimed[0] == '#')
@@ -363,6 +363,7 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
 		id = SiNewMesh(args[1].str);
+
 		if (id == SI_BADID) {
 			set_errno(ERR_PSR_FAILNEW);
 			/* TODO better error message */
@@ -584,22 +585,4 @@ static int parse_args(const char *fmt, const char *arg, union Argument *args, in
 	set_errno(ERR_PSR_NOERR);
 	return 0;
 }
-
-#if 0
-static void set_error_detail(const char *detail)
-{
-	size_t len;
-
-	len = strlen(detail);
-	strncpy(error_detail, detail, 1000);
-}
-
-static void append_error_detail(const char *detail)
-{
-	size_t len;
-
-	len = strlen(detail);
-	strncat(error_detail, detail, len);
-}
-#endif
 

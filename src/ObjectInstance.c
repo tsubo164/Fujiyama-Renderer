@@ -192,6 +192,10 @@ int ObjIntersect(const struct ObjectInstance *obj, const struct Ray *ray,
 	TransformVector(isect->N, &obj->object_to_world);
 	VEC3_NORMALIZE(isect->N);
 
+	/* TODO should make TransformLocalGeometry? */
+	TransformVector(isect->dPds, &obj->object_to_world);
+	TransformVector(isect->dPdt, &obj->object_to_world);
+
 	isect->object = obj;
 
 	return 1;

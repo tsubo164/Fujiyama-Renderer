@@ -8,6 +8,7 @@ See LICENSE and README
 #include "FrameBuffer.h"
 #include "Numeric.h"
 #include "Mipmap.h"
+#include "String.h"
 #include "Box.h"
 
 #include <math.h>
@@ -56,8 +57,8 @@ struct FrameBufferViewer {
 	int draw_tile;
 };
 
-static int load_fb(struct FrameBufferViewer *v, const char *filename);
-static int load_mip(struct FrameBufferViewer *v, const char *filename);
+static int load_fb(struct FrameBufferViewer *v);
+static int load_mip(struct FrameBufferViewer *v);
 static const char *file_extension(const char *filename);
 
 static void clear_image_viewer(struct FrameBufferViewer *v);
@@ -365,18 +366,25 @@ void FbvPressKey(struct FrameBufferViewer *v, unsigned char key, int mouse_x, in
 
 int FbvLoadImage(struct FrameBufferViewer *v, const char *filename)
 {
+	char try_filename[1024] = {'\0'};
+	const size_t MAXCPY = 1024-1;
 	const char *ext;
 	int err;
 
-	ext = file_extension(filename);
+	StrCopyMax(try_filename, filename, MAXCPY);
+	if (strcmp(v->filename, try_filename) != 0) {
+		StrCopyMax(v->filename, try_filename, MAXCPY);
+	}
+
+	ext = file_extension(v->filename);
 	if (ext == NULL)
 		return -1;
 
 	if (strcmp(ext, "fb") == 0) {
-		err = load_fb(v, filename);
+		err = load_fb(v);
 	}
 	else if (strcmp(ext, "mip") == 0) {
-		err = load_mip(v, filename);
+		err = load_mip(v);
 	}
 	else {
 		err = -1;
@@ -461,14 +469,10 @@ static void set_to_home_position(struct FrameBufferViewer *v)
 	v->ylockoffset = 0.f;
 }
 
-static int load_fb(struct FrameBufferViewer *v, const char *filename)
+static int load_fb(struct FrameBufferViewer *v)
 {
 	struct FbInput *in;
 
-	if (filename == NULL)
-		return -1;
-
-	strncpy(v->filename, filename, strlen(filename)+1);
 	in = FbOpenInputFile(v->filename);
 	if (in == NULL)
 		return -1;
@@ -500,14 +504,10 @@ static int load_fb(struct FrameBufferViewer *v, const char *filename)
 	return 0;
 }
 
-static int load_mip(struct FrameBufferViewer *v, const char *filename)
+static int load_mip(struct FrameBufferViewer *v)
 {
 	struct MipInput *in;
 
-	if (filename == NULL)
-		return -1;
-
-	strncpy(v->filename, filename, strlen(filename)+1);
 	in = MipOpenInputFile(v->filename);
 	if (in == NULL)
 		return -1;

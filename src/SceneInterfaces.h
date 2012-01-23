@@ -36,7 +36,7 @@ extern ID SiNewCamera(const char *arg);
 extern ID SiNewShader(const char *arg);
 extern ID SiNewCurve(const char *filename);
 extern ID SiNewLight(const char *arg);
-extern ID SiNewMesh(const char *arg);
+extern ID SiNewMesh(const char *filename);
 
 extern Status SiAssignShader(ID object, ID shader);
 extern Status SiAssignTexture(ID shader, const char *prop_name, ID texture);

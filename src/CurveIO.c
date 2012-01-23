@@ -3,38 +3,38 @@ Copyright (c) 2011-2012 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "MeshIO.h"
-#include "Mesh.h"
+#include "CurveIO.h"
+#include "Curve.h"
 #include "String.h"
 #include <stdlib.h>
 #include <string.h>
 
-#define MSH_FILE_VERSION 1
-#define MSH_FILE_MAGIC "MESH"
-#define MSH_MAGIC_SIZE 4
+#define CRV_FILE_VERSION 1
+#define CRV_FILE_MAGIC "CURV"
+#define CRV_MAGIC_SIZE 4
 #define MAX_ATTRNAME_SIZE 32
 
-static size_t write_attriname(struct MeshOutput *out, const char *name);
-static size_t write_attridata(struct MeshOutput *out, const char *name);
+static size_t write_attriname(struct CurveOutput *out, const char *name);
+static size_t write_attridata(struct CurveOutput *out, const char *name);
 static void set_error(int err);
 
-static enum MshErrorNo error_no = ERR_MSH_NOERR;
+static enum CrvErrorNo error_no = ERR_CRV_NOERR;
 
 /* error no interfaces */
-int MshGetErrorNo(void)
+int CrvGetErrorNo(void)
 {
 	return error_no;
 }
 
-const char *MshGetErrorMessage(int err)
+const char *CrvGetErrorMessage(int err)
 {
 	static const char *errmsg[] = {
-		"",                        /* ERR_MSH_NOERR */
-		"No memory for MeshInput", /* ERR_MSH_NOMEM */
-		"No such file",            /* ERR_MSH_NOFILE */
-		"Not mesh file",           /* ERR_MSH_NOTMESH */
-		"Invalid file version",    /* ERR_MSH_BADVER */
-		"Invalid attribute name"   /* ERR_MSH_BADATTRNAME */
+		"",                         /* ERR_CRV_NOERR */
+		"No memory for CurveInput", /* ERR_CRV_NOMEM */
+		"No such file",             /* ERR_CRV_NOFILE */
+		"Not curve file",           /* ERR_CRV_NOTMESH */
+		"Invalid file version",     /* ERR_CRV_BADVER */
+		"Invalid attribute name"    /* ERR_CRV_BADATTRNAME */
 	};
 	static const size_t nerrs = sizeof(errmsg)/sizeof(errmsg[0]);
 
@@ -45,20 +45,25 @@ const char *MshGetErrorMessage(int err)
 	return errmsg[err];
 }
 
-/* mesh input file interfaces */
-struct MeshInput *MshOpenInputFile(const char *filename)
+static void set_error(int err)
 {
-	struct MeshInput *in;
+	error_no = err;
+}
 
-	in = (struct MeshInput *) malloc(sizeof(struct MeshInput));
+/* curve input file interfaces */
+struct CurveInput *CrvOpenInputFile(const char *filename)
+{
+	struct CurveInput *in;
+
+	in = (struct CurveInput *) malloc(sizeof(struct CurveInput));
 	if (in == NULL) {
-		set_error(ERR_MSH_NOMEM);
+		set_error(ERR_CRV_NOMEM);
 		return NULL;
 	}
 
 	in->file = fopen(filename, "rb");
 	if (in->file == NULL) {
-		set_error(ERR_MSH_NOFILE);
+		set_error(ERR_CRV_NOFILE);
 		free(in);
 		return NULL;
 	}
@@ -66,16 +71,18 @@ struct MeshInput *MshOpenInputFile(const char *filename)
 	in->version = 0;
 	in->nverts = 0;
 	in->nvert_attrs = 0;
-	in->nfaces = 0;
-	in->nface_attrs = 0;
+	in->ncurves = 0;
+	in->ncurve_attrs = 0;
 	in->P = NULL;
-	in->N = NULL;
+	in->width = NULL;
+	in->Cd = NULL;
+	in->uv = NULL;
 	in->indices = NULL;
 
 	return in;
 }
 
-void MshCloseInputFile(struct MeshInput *in)
+void CrvCloseInputFile(struct CurveInput *in)
 {
 	char **name;
 	if (in == NULL)
@@ -92,41 +99,41 @@ void MshCloseInputFile(struct MeshInput *in)
 	free(in);
 }
 
-int MshReadHeader(struct MeshInput *in)
+int CrvReadHeader(struct CurveInput *in)
 {
 	int i;
 	size_t nreads = 0;
 	size_t namesize = 1;
-	char magic[MSH_MAGIC_SIZE];
+	char magic[CRV_MAGIC_SIZE];
 	int nattrs_alloc;
 
-	nreads += fread(magic, sizeof(char), MSH_MAGIC_SIZE, in->file);
-	if (memcmp(magic, MSH_FILE_MAGIC, MSH_MAGIC_SIZE) != 0) {
-		set_error(ERR_MSH_NOTMESH);
+	nreads += fread(magic, sizeof(char), CRV_MAGIC_SIZE, in->file);
+	if (memcmp(magic, CRV_FILE_MAGIC, CRV_MAGIC_SIZE) != 0) {
+		set_error(ERR_CRV_NOTMESH);
 		return -1;
 	}
 	nreads += fread(&in->version, sizeof(int), 1, in->file);
-	if (in->version != MSH_FILE_VERSION) {
-		set_error(ERR_MSH_BADVER);
+	if (in->version != CRV_FILE_VERSION) {
+		set_error(ERR_CRV_BADVER);
 		return -1;
 	}
 	nreads += fread(&in->nverts, sizeof(int), 1, in->file);
 	nreads += fread(&in->nvert_attrs, sizeof(int), 1, in->file);
-	nreads += fread(&in->nfaces, sizeof(int), 1, in->file);
-	nreads += fread(&in->nface_attrs, sizeof(int), 1, in->file);
+	nreads += fread(&in->ncurves, sizeof(int), 1, in->file);
+	nreads += fread(&in->ncurve_attrs, sizeof(int), 1, in->file);
 
-	nattrs_alloc = in->nvert_attrs + in->nface_attrs + 1; /* for sentinel */
+	nattrs_alloc = in->nvert_attrs + in->ncurve_attrs + 1; /* for sentinel */
 	in->attr_names = (char **) malloc(sizeof(char *) * nattrs_alloc);
 	for (i = 0; i < nattrs_alloc; i++) {
 		in->attr_names[i] = NULL;
 	}
 
-	for (i = 0; i < in->nvert_attrs + in->nface_attrs; i++) {
+	for (i = 0; i < in->nvert_attrs + in->ncurve_attrs; i++) {
 		char attrname[MAX_ATTRNAME_SIZE] = {'\0'};
 
 		nreads += fread(&namesize, sizeof(size_t), 1, in->file);
 		if (namesize > MAX_ATTRNAME_SIZE-1) {
-			set_error(ERR_MSH_BADATTRNAME);
+			set_error(ERR_CRV_BADATTRNAME);
 			return -1;
 		}
 		nreads += fread(attrname, sizeof(char), namesize, in->file);
@@ -136,7 +143,7 @@ int MshReadHeader(struct MeshInput *in)
 	return 0;
 }
 
-int MshReadAttribute(struct MeshInput *in, void *data)
+int CrvReadAttribute(struct CurveInput *in, void *data)
 {
 	size_t nreads = 0;
 	size_t datasize = 0;
@@ -146,37 +153,39 @@ int MshReadAttribute(struct MeshInput *in, void *data)
 	return 0;
 }
 
-/* mesh output file interfaces */
-struct MeshOutput *MshOpenOutputFile(const char *filename)
+/* curve output file interfaces */
+struct CurveOutput *CrvOpenOutputFile(const char *filename)
 {
-	struct MeshOutput *out;
+	struct CurveOutput *out;
 
-	out = (struct MeshOutput *) malloc(sizeof(struct MeshOutput));
+	out = (struct CurveOutput *) malloc(sizeof(struct CurveOutput));
 	if (out == NULL) {
-		set_error(ERR_MSH_NOMEM);
+		set_error(ERR_CRV_NOMEM);
 		return NULL;
 	}
 
 	out->file = fopen(filename, "wb");
 	if (out->file == NULL) {
-		set_error(ERR_MSH_NOFILE);
+		set_error(ERR_CRV_NOFILE);
 		free(out);
 		return NULL;
 	}
 
-	out->version = MSH_FILE_VERSION;
+	out->version = CRV_FILE_VERSION;
 	out->nverts = 0;
 	out->nvert_attrs = 0;
-	out->nfaces = 0;
-	out->nface_attrs = 0;
+	out->ncurves = 0;
+	out->ncurve_attrs = 0;
 	out->P = NULL;
-	out->N = NULL;
+	out->width = NULL;
+	out->Cd = NULL;
+	out->uv = NULL;
 	out->indices = NULL;
 
 	return out;
 }
 
-void MshCloseOutputFile(struct MeshOutput *out)
+void CrvCloseOutputFile(struct CurveOutput *out)
 {
 	if (out == NULL)
 		return;
@@ -187,85 +196,97 @@ void MshCloseOutputFile(struct MeshOutput *out)
 	free(out);
 }
 
-void MshWriteFile(struct MeshOutput *out)
+void CrvWriteFile(struct CurveOutput *out)
 {
-	char magic[] = MSH_FILE_MAGIC;
+	char magic[] = CRV_FILE_MAGIC;
 
 	/* counts nvert_attrs automatically */
 	out->nvert_attrs = 0;
 	if (out->P != NULL) out->nvert_attrs++;
-	if (out->N != NULL) out->nvert_attrs++;
+	if (out->width != NULL) out->nvert_attrs++;
 	if (out->Cd != NULL) out->nvert_attrs++;
 	if (out->uv != NULL) out->nvert_attrs++;
-	out->nface_attrs = 0;
-	if (out->indices != NULL) out->nface_attrs++;
+	out->ncurve_attrs = 0;
+	if (out->indices != NULL) out->ncurve_attrs++;
 
-	fwrite(magic, sizeof(char), MSH_MAGIC_SIZE, out->file);
+	fwrite(magic, sizeof(char), CRV_MAGIC_SIZE, out->file);
 	fwrite(&out->version, sizeof(int), 1, out->file);
 	fwrite(&out->nverts, sizeof(int), 1, out->file);
 	fwrite(&out->nvert_attrs, sizeof(int), 1, out->file);
-	fwrite(&out->nfaces, sizeof(int), 1, out->file);
-	fwrite(&out->nface_attrs, sizeof(int), 1, out->file);
+	fwrite(&out->ncurves, sizeof(int), 1, out->file);
+	fwrite(&out->ncurve_attrs, sizeof(int), 1, out->file);
 
 	write_attriname(out, "P");
-	write_attriname(out, "N");
+	write_attriname(out, "width");
 	write_attriname(out, "Cd");
 	write_attriname(out, "uv");
 	write_attriname(out, "indices");
 
 	write_attridata(out, "P");
-	write_attridata(out, "N");
+	write_attridata(out, "width");
 	write_attridata(out, "Cd");
 	write_attridata(out, "uv");
 	write_attridata(out, "indices");
 }
 
-int MshLoadFile(struct Mesh *mesh, const char *filename)
+int CrvLoadFile(struct Curve *curve, const char *filename)
 {
 	int i;
 	int TOTAL_ATTR_COUNT;
-	struct MeshInput *in;
+	struct CurveInput *in;
 
-	in = MshOpenInputFile(filename);
+	in = CrvOpenInputFile(filename);
 	if (in == NULL) {
 		return -1;
 	}
 
-	if (MshReadHeader(in)) {
-		MshCloseInputFile(in);
+	if (CrvReadHeader(in)) {
+		CrvCloseInputFile(in);
 		return -1;
 	}
 
-	TOTAL_ATTR_COUNT = in->nvert_attrs + in->nface_attrs;
+	TOTAL_ATTR_COUNT = in->nvert_attrs + in->ncurve_attrs;
 
 	for (i = 0; i < TOTAL_ATTR_COUNT; i++) {
 		const char *attrname;
 		attrname = in->attr_names[i];
 		if (strcmp(attrname, "P") == 0) {
-			MshAllocateVertex(mesh, "P", in->nverts);
-			MshReadAttribute(in, mesh->P);
+			CrvAllocateVertex(curve, "P", in->nverts);
+			CrvReadAttribute(in, curve->P);
 		}
-		else if (strcmp(attrname, "N") == 0) {
-			MshAllocateVertex(mesh, "N", in->nverts);
-			MshReadAttribute(in, mesh->N);
+		else if (strcmp(attrname, "width") == 0) {
+			CrvAllocateVertex(curve, "width", in->nverts);
+			CrvReadAttribute(in, curve->width);
 		}
 		else if (strcmp(attrname, "uv") == 0) {
-			MshAllocateVertex(mesh, "uv", in->nverts);
-			MshReadAttribute(in, mesh->uv);
+			CrvAllocateVertex(curve, "uv", in->nverts);
+			CrvReadAttribute(in, curve->uv);
 		}
 		else if (strcmp(attrname, "indices") == 0) {
-			MshAllocateFace(mesh, "indices", in->nfaces);
-			MshReadAttribute(in, mesh->indices);
+			CrvAllocateCurve(curve, "indices", in->ncurves);
+			CrvReadAttribute(in, curve->indices);
 		}
+#if 0
+#endif
 	}
 
-	MshComputeBounds(mesh);
-	MshCloseInputFile(in);
+	/*
+	for (i = 0; i < curve->nverts; i++) {
+		printf(" +++++++ %d: %g, %g, %g\n", i, curve->P[3*i], curve->P[3*i+1], curve->P[3*i+2]);
+		printf(" +++++++ %d: %g\n", i, curve->width[i]);
+	}
+	for (i = 0; i < curve->ncurves; i++) {
+		printf(" +++++++ %d: %d\n", i, curve->indices[i]);
+	}
+	*/
+
+	CrvComputeBounds(curve);
+	CrvCloseInputFile(in);
 
 	return 0;
 }
 
-static size_t write_attriname(struct MeshOutput *out, const char *name)
+static size_t write_attriname(struct CurveOutput *out, const char *name)
 {
 	size_t namesize;
 	size_t nwrotes;
@@ -273,7 +294,7 @@ static size_t write_attriname(struct MeshOutput *out, const char *name)
 	if (strcmp(name, "P") == 0 && out->P == NULL) {
 		return 0;
 	}
-	else if (strcmp(name, "N") == 0 && out->N == NULL) {
+	else if (strcmp(name, "width") == 0 && out->width == NULL) {
 		return 0;
 	}
 	else if (strcmp(name, "Cd") == 0 && out->Cd == NULL) {
@@ -294,7 +315,7 @@ static size_t write_attriname(struct MeshOutput *out, const char *name)
 	return nwrotes;
 }
 
-static size_t write_attridata(struct MeshOutput *out, const char *name)
+static size_t write_attridata(struct CurveOutput *out, const char *name)
 {
 	size_t datasize;
 	size_t nwrotes;
@@ -307,12 +328,12 @@ static size_t write_attridata(struct MeshOutput *out, const char *name)
 		nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
 		nwrotes += fwrite(out->P, sizeof(double), 3 * out->nverts, out->file);
 	}
-	else if (strcmp(name, "N") == 0) {
-		if (out->N == NULL)
+	else if (strcmp(name, "width") == 0) {
+		if (out->width == NULL)
 			return 0;
-		datasize = 3 * sizeof(double) * out->nverts;
+		datasize = 1 * sizeof(double) * out->nverts;
 		fwrite(&datasize, sizeof(size_t), 1, out->file);
-		fwrite(out->N, sizeof(double), 3 * out->nverts, out->file);
+		fwrite(out->width, sizeof(double), 1 * out->nverts, out->file);
 	}
 	else if (strcmp(name, "Cd") == 0) {
 		if (out->Cd == NULL)
@@ -331,15 +352,10 @@ static size_t write_attridata(struct MeshOutput *out, const char *name)
 	else if (strcmp(name, "indices") == 0) {
 		if (out->indices == NULL)
 			return 0;
-		datasize = 3 * sizeof(int) * out->nfaces;
+		datasize = 1 * sizeof(int) * out->ncurves;
 		fwrite(&datasize, sizeof(size_t), 1, out->file);
-		fwrite(out->indices, sizeof(int), 3 * out->nfaces, out->file);
+		fwrite(out->indices, sizeof(int), 1 * out->ncurves, out->file);
 	}
 	return nwrotes;
-}
-
-static void set_error(int err)
-{
-	error_no = err;
 }
 

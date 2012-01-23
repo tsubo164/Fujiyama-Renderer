@@ -39,7 +39,7 @@ static int set_ior(void *self, const struct PropertyValue *value);
 
 /* hair shading implementations */
 static float kajiya_diffuse(const double *tangent, const double *Ln);
-static float kajiya_specular(const double *tangent, const double *I, const double *Ln);
+static float kajiya_specular(const double *tangent, const double *Ln, const double *I);
 
 static const struct Property PlasticShaderProperties[] = {
 	{"diffuse",   set_diffuse},
@@ -114,23 +114,23 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	VEC3_SET(out->Cs, 0, 0, 0);
 	for (i = 0; i < nlights; i++) {
 		struct LightOutput Lout;
+		double tangent[3];
 		float diff;
 		float spec;
 
 		SlIlluminace(cxt, i, in, &Lout);
 
-		diff = kajiya_diffuse(in->T, Lout.Ln);
-		spec = kajiya_specular(in->T, in->I, Lout.Ln);
+		VEC3_COPY(tangent, in->dPdt);
+		VEC3_NORMALIZE(tangent);
+
+		diff = kajiya_diffuse(tangent, Lout.Ln);
+		spec = kajiya_specular(tangent, Lout.Ln, in->I);
 
 		out->Cs[0] += (diff + spec) * Lout.Cl[0];
 		out->Cs[1] += (diff + spec) * Lout.Cl[1];
 		out->Cs[2] += (diff + spec) * Lout.Cl[2];
 	}
 
-	/* TODO TEST */
-	/*
-	VEC3_SET(out->Cs, 0, 0, 1);
-	*/
 	out->Alpha = 1;
 }
 
@@ -218,7 +218,7 @@ static float kajiya_diffuse(const double *tangent, const double *Ln)
 	return diff;
 }
 
-static float kajiya_specular(const double *tangent, const double *I, const double *Ln)
+static float kajiya_specular(const double *tangent, const double *Ln, const double *I)
 {
 	float spec;
 	const float roughness = .05;

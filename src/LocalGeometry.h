@@ -18,8 +18,8 @@ struct LocalGeometry {
 	float Cd[3];
 	float uv[2];
 
-	/* TODO TEST */
-	double T[3];
+	double dPds[3];
+	double dPdt[3];
 
 	const struct ObjectInstance *object;
 	const void *geometry;

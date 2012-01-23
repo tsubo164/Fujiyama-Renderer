@@ -29,9 +29,6 @@ extern void PsrFree(struct Parser *parser);
 
 extern int PsrGetErrorNo(void);
 extern const char *PsrGetErrorMessage(int err_no);
-#if 0
-extern const char *PsrGetErrorDetail(void);
-#endif
 
 extern int PsrParseLine(struct Parser *parser, const char *line);
 extern int PsrGetLineNo(const struct Parser *parser);

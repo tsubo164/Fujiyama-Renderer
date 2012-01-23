@@ -73,9 +73,10 @@ install_shader :=
 #core library
 srcdir_  := src
 tgtdir_  := lib
-files_   := OS Array Box Matrix Transform Triangle Timer Plugin Property Progress \
+files_   := OS Array String Box Matrix Transform Triangle Timer Plugin Property Progress \
 	FrameBuffer FrameBufferIO Camera Mesh MeshIO Tiler Renderer Light Filter Mipmap\
-	ObjectInstance Accelerator Sampler Shader SL Texture Curve Scene SceneInterfaces 
+	ObjectInstance Accelerator Sampler Shader SL Texture Curve CurveIO \
+	Scene SceneInterfaces 
 subtgt_  := libscene.so
 cflags_  := -fPIC
 ldflags_ := -shared -ldl -lm
@@ -173,6 +174,16 @@ subtgt_  := fb2exr
 cflags_  := $(shell pkg-config --cflags OpenEXR)
 ldflags_ := $(shell pkg-config --libs OpenEXR) -lscene
 $(eval $(call submodule_cpp))
+
+install_bin += $(subtgt_)
+
+srcdir_  := tools/CurveGenerator
+tgtdir_  := bin
+files_   := main
+subtgt_  := curvegen
+cflags_  :=
+ldflags_ := -lscene
+$(eval $(call submodule))
 
 install_bin += $(subtgt_)
 

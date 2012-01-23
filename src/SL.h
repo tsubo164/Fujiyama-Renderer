@@ -40,8 +40,6 @@ struct SurfaceInput {
 
 	double Ng[3];
 	double I[3];
-	/* TODO TEST */
-	double T[3];
 
 	double dPds[3];
 	double dPdt[3];

@@ -147,7 +147,7 @@ int MipReadTile(struct MipInput *in, int xtile, int ytile)
 	YNTILES = in->height / TILESIZE;
 	TILE_PXLS = TILESIZE * TILESIZE * in->nchannels;
 
-	/* TODO TEMP */
+	/* TODO TEMP out of border handling */
 	x = CLAMP(xtile, 0, XNTILES-1);
 	y = CLAMP(ytile, 0, YNTILES-1);
 	tile_index = y * XNTILES + x;

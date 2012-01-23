@@ -4,6 +4,7 @@ See LICENSE and README
 */
 
 #include "Table.h"
+#include "String.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -15,7 +16,6 @@ static struct TableEnt *EntNew(const char *key, ID id);
 static void EntFree(struct TableEnt *ent);
 
 static unsigned int hash_fn(const char *key);
-static char * str_dup(const char *s);
 
 struct TableEnt {
 	char *key;
@@ -120,7 +120,7 @@ static struct TableEnt *EntNew(const char *key, ID id)
 	if (ent == NULL)
 		return NULL;
 
-	ent->key = str_dup(key);
+	ent->key = StrDup(key);
 	if (ent->key == NULL) {
 		EntFree(ent);
 		return NULL;
@@ -136,9 +136,7 @@ static void EntFree(struct TableEnt *ent)
 	if (ent == NULL)
 		return;
 
-	if (ent->key != NULL)
-		free(ent->key);
-
+	ent->key = StrFree(ent->key);
 	free(ent);
 }
 
@@ -151,19 +149,5 @@ static unsigned int hash_fn(const char *key)
 		h = MULTIPLIER * h + *p;
 
 	return h % HASH_SIZE;
-}
-
-static char * str_dup(const char *s)
-{
-	size_t alloc;
-	char *dup;
-
-	alloc = strlen(s) + 1;
-	dup = (char *) malloc(sizeof(char) * alloc);
-	if (dup == NULL)
-		return NULL;
-
-	strcpy(dup, s);
-	return dup;
 }
 
