@@ -336,7 +336,7 @@ static int render_scene(struct Renderer *renderer)
 		PrgDone(progress);
 	}
 	elapse = TimerElapsed(&timer);
-	printf("Done: %d hour %d min %g sec\n", elapse.hour, elapse.min, elapse.sec);
+	printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
 
 	/* clean up */
 	SmpFreePixelSamples(pixelsmps);
