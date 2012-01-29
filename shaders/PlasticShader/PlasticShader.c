@@ -123,7 +123,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		struct LightOutput Lout;
 		float Kd;
 
-		SlIlluminace(cxt, i, in, &Lout);
+		SlIlluminace(cxt, i, in->P, in->N, N_PI_2, in, &Lout);
 		/* spec */
 		/*
 		Ks = SlPhong(in->I, in->N, Ln, .05);

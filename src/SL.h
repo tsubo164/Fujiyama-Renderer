@@ -81,6 +81,7 @@ extern struct TraceContext SlShadowContext(const struct TraceContext *cxt,
 		const struct ObjectInstance *obj);
 
 extern int SlIlluminace(const struct TraceContext *cxt, int light_id,
+		const double *Ps, const double *axis, float angle,
 		const struct SurfaceInput *in, struct LightOutput *out);
 
 extern int SlGetLightCount(const struct SurfaceInput *in);

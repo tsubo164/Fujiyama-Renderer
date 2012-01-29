@@ -118,7 +118,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		float diff;
 		float spec;
 
-		SlIlluminace(cxt, i, in, &Lout);
+		SlIlluminace(cxt, i, in->P, in->N, N_PI, in, &Lout);
 
 		VEC3_COPY(tangent, in->dPdt);
 		VEC3_NORMALIZE(tangent);

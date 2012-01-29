@@ -203,60 +203,60 @@ struct TraceContext SlShadowContext(const struct TraceContext *cxt,
 }
 
 int SlIlluminace(const struct TraceContext *cxt, int light_id,
+		const double *Ps, const double *axis, float angle,
 		const struct SurfaceInput *in, struct LightOutput *out)
 {
-	int hit = 0;
+	const struct Light **lights;
+	const double *light_pos;
+	const double *shaded_pos;
+	double cosangle;
+	double nml_axis[3];
+	float light_color[3];
+
+	VEC3_SET(out->Cl, 0, 0, 0);
+	if (light_id >= SlGetLightCount(in)) {
+		return 0;
+	}
+
+	lights = ObjGetLightList(in->shaded_object);
+	light_pos = LgtGetPosition(lights[light_id]);
+	shaded_pos = in->P;
+
+	VEC3_SUB(out->Ln, light_pos, shaded_pos);
+	out->distance = VEC3_LEN(out->Ln);
+	if (out->distance > 0) {
+		VEC3_DIV_ASGN(out->Ln, out->distance);
+	}
+
+	VEC3_COPY(nml_axis, axis);
+	VEC3_NORMALIZE(nml_axis);
+	cosangle = VEC3_DOT(nml_axis, out->Ln);
+	if (cosangle < cos(angle)) {
+		return 0;
+	}
+
+	LgtIlluminate(lights[light_id], in->P, light_color);
+	if (light_color[0] < .0001 &&
+		light_color[1] < .0001 &&
+		light_color[2] < .0001) {
+		return 0;
+	}
 
 	if (cxt->cast_shadow) {
 		struct TraceContext shad_cxt;
-		const struct Light **lights;
-		const double *light_pos;
-		const double *shaded_pos;
 		float C_occl[3];
-
-		if (light_id >= SlGetLightCount(in))
-			return 0;
-
-		lights = ObjGetLightList(in->shaded_object);
-		light_pos = LgtGetPosition(lights[light_id]);
-		shaded_pos = in->P;
-
-		VEC3_SUB(out->Ln, light_pos, shaded_pos);
-		out->distance = VEC3_LEN(out->Ln);
-		if (out->distance > 0) {
-			VEC3_DIV_ASGN(out->Ln, out->distance);
-		}
+		int hit;
 
 		shad_cxt = SlShadowContext(cxt, in->shaded_object);
 		hit = SlTrace(&shad_cxt, in->P, out->Ln, .0001, out->distance, C_occl);
 
 		if (hit) {
-			VEC3_SET(out->Cl, 0, 0, 0);
-		} else {
-			LgtIlluminate(lights[light_id], in->P, out->Cl);
-		}
-	} else {
-		/* no shadow */
-		const struct Light **lights;
-		const double *light_pos;
-		const double *shaded_pos;
-
-		if (light_id >= SlGetLightCount(in))
 			return 0;
-
-		lights = ObjGetLightList(in->shaded_object);
-		light_pos = LgtGetPosition(lights[light_id]);
-		shaded_pos = in->P;
-
-		VEC3_SUB(out->Ln, light_pos, shaded_pos);
-		out->distance = VEC3_LEN(out->Ln);
-		if (out->distance > 0) {
-			VEC3_DIV_ASGN(out->Ln, out->distance);
 		}
-		LgtIlluminate(lights[light_id], in->P, out->Cl);
 	}
 
-	return hit;
+	VEC3_COPY(out->Cl, light_color);
+	return 1;
 }
 
 int SlGetLightCount(const struct SurfaceInput *in)
