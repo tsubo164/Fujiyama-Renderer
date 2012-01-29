@@ -25,6 +25,8 @@ struct Curve {
 
 	int nverts;
 	int ncurves;
+
+	int *split_depth;
 };
 
 extern struct Curve *CrvNew(void);

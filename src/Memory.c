@@ -33,6 +33,8 @@ void *MemRealloc(void *ptr, size_t size)
 
 void MemFree(void *ptr)
 {
+	if (ptr == NULL)
+		return;
 	free(ptr);
 }
 

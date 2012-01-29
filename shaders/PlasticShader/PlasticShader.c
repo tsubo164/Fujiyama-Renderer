@@ -15,6 +15,8 @@ struct PlasticShader {
 
 	float reflect[3];
 	float ior;
+
+	int do_reflect;
 };
 
 static void *MyNew(void);
@@ -85,6 +87,8 @@ static void *MyNew(void)
 	VEC3_SET(plastic->reflect, 1, 1, 1);
 	plastic->ior = 1.4;
 
+	plastic->do_reflect = 1;
+
 	return plastic;
 }
 
@@ -139,10 +143,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	out->Cs[2] = diff[2] * plastic->diffuse[2] + spec[2];
 
 	/* reflect */
-	if (plastic->reflect[0] > 0 &&
-	    plastic->reflect[1] > 0 &&
-	    plastic->reflect[2] > 0) {
-
+	if (plastic->do_reflect) {
 		relf_cxt = SlReflectContext(cxt, in->shaded_object);
 		SlReflect(in->I, in->N, refldir);
 		SlTrace(&relf_cxt, in->P, refldir, .001, 1000, C_refl);
@@ -214,6 +215,15 @@ static int set_reflect(void *self, const struct PropertyValue *value)
 	reflect[1] = MAX(0, value->vector[1]);
 	reflect[2] = MAX(0, value->vector[2]);
 	VEC3_COPY(plastic->reflect, reflect);
+
+	if (plastic->reflect[0] > 0 ||
+		plastic->reflect[1] > 0 ||
+		plastic->reflect[2] > 0 ) {
+		plastic->do_reflect = 1;
+	}
+	else {
+		plastic->do_reflect = 0;
+	}
 
 	return 0;
 }

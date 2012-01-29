@@ -11,6 +11,17 @@ extern "C" {
 #endif
 
 #include <math.h>
+#include <stdlib.h>
+
+/* VEC2 ARRAY */
+#define VEC2_REALLOC(ptr,type,nelems) ((type*)realloc((ptr), sizeof(type)*2*(nelems)))
+#define VEC2_ALLOC(type,nelems) ((type*)malloc(sizeof(type)*2*(nelems)))
+#define VEC2_NTH(ptr,index) ((ptr)+2*(index))
+
+/* VEC3 ARRAY */
+#define VEC3_REALLOC(ptr,type,nelems) ((type*)realloc((ptr), sizeof(type)*3*(nelems)))
+#define VEC3_ALLOC(type,nelems) ((type*)malloc(sizeof(type)*3*(nelems)))
+#define VEC3_NTH(ptr,index) ((ptr)+3*(index))
 
 /* VEC2 */
 #define VEC2_SET(dst,x,y) do { \

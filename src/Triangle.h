@@ -15,6 +15,7 @@ enum {
 	CULL_BACKFACES = 1
 };
 
+extern double TriComputeArea(const double *vert0, const double *vert1, const double *vert2);
 extern void TriComputeBounds(
 		double *box,
 		const double *vert0, const double *vert1, const double *vert2);

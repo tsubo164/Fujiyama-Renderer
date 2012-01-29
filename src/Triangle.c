@@ -11,7 +11,20 @@ See LICENSE and README
 
 #define EPSILON 1e-6
 
-extern void TriComputeBounds(
+double TriComputeArea(const double *vert0, const double *vert1, const double *vert2)
+{
+	double a[3];
+	double b[3];
+	double cross[3];
+
+	VEC3_SUB(a, vert1, vert0);
+	VEC3_SUB(b, vert2, vert0);
+	VEC3_CROSS(cross, a, b);
+
+	return .5 * VEC3_LEN(cross);
+}
+
+void TriComputeBounds(
 		double *box,
 		const double *vert0, const double *vert1, const double *vert2)
 {

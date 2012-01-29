@@ -75,38 +75,3 @@ char *ArrGet(const struct Array *a, int index)
 	return a->data + index * a->elemsize;
 }
 
-#define DEFINE_ARRAY_FUNCTIONS(TypeName,type,N) \
-extern struct TypeName##N##Array TypeName##N##ArrayNew(size_t nelems) \
-{ \
-	struct TypeName##N##Array array = {NULL}; \
-	array.data = (type *) malloc(sizeof(type) * N * nelems); \
-	return array; \
-} \
-extern struct TypeName##N##Array TypeName##N##ArrayFree(struct TypeName##N##Array array) \
-{ \
-	if (array.data != NULL) \
-		free(array.data); \
-	array.data = NULL; \
-	return array; \
-} \
-extern type *TypeName##N##ArrayGetWritable(struct TypeName##N##Array array, int i) \
-{ \
-	return array.data + N * i; \
-} \
-extern const type *TypeName##N##ArrayGetReadOnly(struct TypeName##N##Array array, int i) \
-{ \
-	return array.data + N * i; \
-}
-
-DEFINE_ARRAY_FUNCTIONS(Int,int,1)
-DEFINE_ARRAY_FUNCTIONS(Int,int,2)
-DEFINE_ARRAY_FUNCTIONS(Int,int,3)
-
-DEFINE_ARRAY_FUNCTIONS(Float,float,1)
-DEFINE_ARRAY_FUNCTIONS(Float,float,2)
-DEFINE_ARRAY_FUNCTIONS(Float,float,3)
-
-DEFINE_ARRAY_FUNCTIONS(Double,double,1)
-DEFINE_ARRAY_FUNCTIONS(Double,double,2)
-DEFINE_ARRAY_FUNCTIONS(Double,double,3)
-

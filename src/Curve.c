@@ -14,6 +14,7 @@ See LICENSE and README
 #include "Box.h"
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <float.h>
 #include <stdio.h>
 #include <math.h>
@@ -47,6 +48,7 @@ static int converge_bezier3(const struct Bezier3 *bezier,
 
 /* helper functions */
 static void mid_point(double *mid, const double *a, const double *b);
+static void cache_split_depth(const struct Curve *curve);
 static int compute_split_depth_limit(const struct ControlPoint *cp, double epsilon);
 static void compute_world_to_ray_matrix(const struct Ray *ray, struct Matrix *dst);
 
@@ -68,6 +70,7 @@ struct Curve *CrvNew(void)
 	curve->nverts = 0;
 	curve->ncurves = 0;
 
+	curve->split_depth = NULL;
 	/* TODO TEST DATA */
 #if 0
 	CrvAllocateVertex(curve, "P", 4);
@@ -105,6 +108,9 @@ void CrvFree(struct Curve *curve)
 	if (curve->indices != NULL)
 		free(curve->indices);
 
+	if (curve->split_depth != NULL)
+		free(curve->split_depth);
+
 	free(curve);
 }
 
@@ -130,7 +136,7 @@ void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int nverts)
 	}
 
 	if (strcmp(attr_name, "P") == 0) {
-		curve->P = (double *) realloc(curve->P, 3 * sizeof(double) * nverts);
+		curve->P = VEC3_REALLOC(curve->P, double, nverts);
 		ret = curve->P;
 	}
 	else if (strcmp(attr_name, "width") == 0) {
@@ -138,7 +144,7 @@ void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int nverts)
 		ret = curve->width;
 	}
 	else if (strcmp(attr_name, "uv") == 0) {
-		curve->uv = (float *) realloc(curve->uv, 2 * sizeof(float) * nverts);
+		curve->uv = VEC2_REALLOC(curve->uv, float, nverts);
 		ret = curve->uv;
 	}
 
@@ -221,14 +227,15 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, const struct R
 	VEC3_DIV_ASGN(nml_ray.dir, ray_scale);
 
 	get_bezier3(curve, prim_id, &bezier);
+	if (curve->split_depth == NULL) {
+		cache_split_depth(curve);
+	}
+	depth = curve->split_depth[prim_id];
 
 	compute_world_to_ray_matrix(&nml_ray, &world_to_ray);
 	for (i = 0; i < 4; i++) {
 		TransformPoint(bezier.cp[i].P, &world_to_ray);
 	}
-
-	depth = compute_split_depth_limit(bezier.cp, 2*get_bezier3_max_radius(&bezier) / 20.);
-	depth = CLAMP(depth, 1, 5);
 
 	hit = converge_bezier3(&bezier, 0, 1, depth, &v_hit, &ttmp);
 	if (hit) {
@@ -456,6 +463,26 @@ static void mid_point(double *mid, const double *a, const double *b)
 	mid[2] = (a[2] + b[2]) * .5;
 }
 
+static void cache_split_depth(const struct Curve *curve)
+{
+	int i;
+	struct Curve *mutable_curve = (struct Curve *) curve;
+	assert(mutable_curve->split_depth == NULL);
+
+
+	mutable_curve->split_depth = (int *) malloc(sizeof(int) * mutable_curve->ncurves);
+	for (i = 0; i < mutable_curve->ncurves; i++) {
+		struct Bezier3 bezier;
+		int depth;
+
+		get_bezier3(mutable_curve, i, &bezier);
+		depth = compute_split_depth_limit(bezier.cp, 2*get_bezier3_max_radius(&bezier) / 20.);
+		depth = CLAMP(depth, 1, 5);
+
+		mutable_curve->split_depth[i] = depth;
+	}
+}
+
 static int compute_split_depth_limit(const struct ControlPoint *cp, double epsilon)
 {
 	int i;
@@ -507,10 +534,10 @@ static void get_bezier3(const struct Curve *curve, int prim_id, struct Bezier3 *
 	i2 = i0 + 2;
 	i3 = i0 + 3;
 
-	VEC3_COPY(bezier->cp[0].P, &curve->P[3 * i0]);
-	VEC3_COPY(bezier->cp[1].P, &curve->P[3 * i1]);
-	VEC3_COPY(bezier->cp[2].P, &curve->P[3 * i2]);
-	VEC3_COPY(bezier->cp[3].P, &curve->P[3 * i3]);
+	VEC3_COPY(bezier->cp[0].P, VEC3_NTH(curve->P, i0));
+	VEC3_COPY(bezier->cp[1].P, VEC3_NTH(curve->P, i1));
+	VEC3_COPY(bezier->cp[2].P, VEC3_NTH(curve->P, i2));
+	VEC3_COPY(bezier->cp[3].P, VEC3_NTH(curve->P, i3));
 
 	bezier->width[0] = curve->width[4*prim_id + 0];
 	bezier->width[1] = curve->width[4*prim_id + 3];
