@@ -28,13 +28,14 @@ int main(int argc, const char **argv)
 	const char *meshfile;
 	const char *curvefile;
 
-	double *CPs;
-	double *width;
-	int *indices;
-	int *ncurves_on_face;
+	double *P = NULL;
+	double *width = NULL;
+	float *Cd = NULL;
+	int *indices = NULL;
+	int *ncurves_on_face = NULL;
 
-	double *sourceP;
-	double *sourceN;
+	double *sourceP = NULL;
+	double *sourceN = NULL;
 
 	int total_ncurves;
 	int total_ncps;
@@ -86,8 +87,9 @@ int main(int argc, const char **argv)
 	printf("total_ncurves: %d\n", total_ncurves);
 
 	total_ncps = 4 * total_ncurves;
-	CPs = VEC3_ALLOC(double, total_ncps);
+	P = VEC3_ALLOC(double, total_ncps);
 	width = (double *) malloc(sizeof(double) * total_ncps);
+	Cd = VEC3_ALLOC(float, total_ncps);
 	indices = (int *) malloc(sizeof(int) * total_ncurves);
 
 	sourceP = VEC3_ALLOC(double, total_ncurves);
@@ -154,11 +156,12 @@ int main(int argc, const char **argv)
 
 		for (vtx = 0; vtx < 4; vtx++) {
 			const double LENGTH = .02;
-			double *CP;
+			double *dst_P;
 			double *src_P;
 			double *src_N;
 			double noisevec[3] = {0};
 			double noiseamp;
+			float *dst_Cd;
 
 			srand(12*i + 49*vtx);
 			if (vtx > 0) {
@@ -168,13 +171,13 @@ int main(int argc, const char **argv)
 			}
 			noiseamp = .75 * LENGTH;
 
-			CP = VEC3_NTH(CPs, cp_id);
+			dst_P = VEC3_NTH(P, cp_id);
 			src_P = VEC3_NTH(sourceP, curve_id);
 			src_N = VEC3_NTH(sourceN, curve_id);
 
-			CP[0] = src_P[0] + noiseamp * noisevec[0] + vtx * LENGTH/3. * src_N[0];
-			CP[1] = src_P[1] + noiseamp * noisevec[1] + vtx * LENGTH/3. * src_N[1];
-			CP[2] = src_P[2] + noiseamp * noisevec[2] + vtx * LENGTH/3. * src_N[2];
+			dst_P[0] = src_P[0] + noiseamp * noisevec[0] + vtx * LENGTH/3. * src_N[0];
+			dst_P[1] = src_P[1] + noiseamp * noisevec[1] + vtx * LENGTH/3. * src_N[1];
+			dst_P[2] = src_P[2] + noiseamp * noisevec[2] + vtx * LENGTH/3. * src_N[2];
 
 			if (vtx == 0) {
 				double *w = &width[cp_id];
@@ -183,6 +186,15 @@ int main(int argc, const char **argv)
 				w[2] = .001;
 				w[3] = .0001;
 			}
+
+			dst_Cd = VEC3_NTH(Cd, cp_id);
+			switch (vtx) {
+				case 0: VEC3_SET(dst_Cd, .8, .5, .3); break;
+				case 1: VEC3_SET(dst_Cd, .8, .6, .4); break;
+				case 2: VEC3_SET(dst_Cd, .8, .7, .5); break;
+				case 3: VEC3_SET(dst_Cd, .8, .75, .7); break;
+			}
+
 			cp_id++;
 		}
 		indices[curve_id] = 4*i;
@@ -200,8 +212,9 @@ int main(int argc, const char **argv)
 	/* setup CurveOutput */
 	out->nverts = total_ncps;
 	out->nvert_attrs = 2;
-	out->P = CPs;
+	out->P = P;
 	out->width = width;
+	out->Cd = Cd;
 	out->uv = NULL;
 	out->ncurves = total_ncurves;
 	out->ncurve_attrs = 1;
@@ -212,8 +225,9 @@ int main(int argc, const char **argv)
 	/* clean up */
 	CrvCloseOutputFile(out);
 	MshFree(mesh);
-	free(CPs);
+	free(P);
 	free(width);
+	free(Cd);
 	free(indices);
 	free(ncurves_on_face);
 	free(sourceP);

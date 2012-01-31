@@ -258,6 +258,10 @@ int CrvLoadFile(struct Curve *curve, const char *filename)
 			CrvAllocateVertex(curve, "width", in->nverts);
 			CrvReadAttribute(in, curve->width);
 		}
+		else if (strcmp(attrname, "Cd") == 0) {
+			CrvAllocateVertex(curve, "Cd", in->nverts);
+			CrvReadAttribute(in, curve->Cd);
+		}
 		else if (strcmp(attrname, "uv") == 0) {
 			CrvAllocateVertex(curve, "uv", in->nverts);
 			CrvReadAttribute(in, curve->uv);
@@ -266,19 +270,7 @@ int CrvLoadFile(struct Curve *curve, const char *filename)
 			CrvAllocateCurve(curve, "indices", in->ncurves);
 			CrvReadAttribute(in, curve->indices);
 		}
-#if 0
-#endif
 	}
-
-	/*
-	for (i = 0; i < curve->nverts; i++) {
-		printf(" +++++++ %d: %g, %g, %g\n", i, curve->P[3*i], curve->P[3*i+1], curve->P[3*i+2]);
-		printf(" +++++++ %d: %g\n", i, curve->width[i]);
-	}
-	for (i = 0; i < curve->ncurves; i++) {
-		printf(" +++++++ %d: %d\n", i, curve->indices[i]);
-	}
-	*/
 
 	CrvComputeBounds(curve);
 	CrvCloseInputFile(in);

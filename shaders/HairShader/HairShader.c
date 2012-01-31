@@ -126,9 +126,9 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		diff = kajiya_diffuse(tangent, Lout.Ln);
 		spec = kajiya_specular(tangent, Lout.Ln, in->I);
 
-		out->Cs[0] += (diff + spec) * Lout.Cl[0];
-		out->Cs[1] += (diff + spec) * Lout.Cl[1];
-		out->Cs[2] += (diff + spec) * Lout.Cl[2];
+		out->Cs[0] += (in->Cd[0] * diff + spec) * Lout.Cl[0];
+		out->Cs[1] += (in->Cd[1] * diff + spec) * Lout.Cl[1];
+		out->Cs[2] += (in->Cd[2] * diff + spec) * Lout.Cl[2];
 	}
 
 	out->Alpha = 1;

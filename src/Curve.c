@@ -71,25 +71,6 @@ struct Curve *CrvNew(void)
 	curve->ncurves = 0;
 
 	curve->split_depth = NULL;
-	/* TODO TEST DATA */
-#if 0
-	CrvAllocateVertex(curve, "P", 4);
-	VEC3_SET(&curve->P[0*3], -.5, -.75, -5+0);
-	VEC3_SET(&curve->P[1*3],  .75, -.75, 0);
-	VEC3_SET(&curve->P[2*3], -.75, .75, 0);
-	VEC3_SET(&curve->P[3*3],  .5,  .75, 0);
-
-	CrvAllocateVertex(curve, "width", 4);
-	curve->width[0] = .5;
-	curve->width[1] = .5;
-	curve->width[2] = .5;
-	curve->width[3] = .5;
-
-	CrvAllocateCurve(curve, "indices", 1);
-	curve->indices[0] = 0;
-
-	CrvComputeBounds(curve);
-#endif
 
 	return curve;
 }
@@ -104,6 +85,12 @@ void CrvFree(struct Curve *curve)
 
 	if (curve->width != NULL)
 		free(curve->width);
+
+	if (curve->Cd != NULL)
+		free(curve->Cd);
+
+	if (curve->uv != NULL)
+		free(curve->uv);
 
 	if (curve->indices != NULL)
 		free(curve->indices);
@@ -142,6 +129,10 @@ void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int nverts)
 	else if (strcmp(attr_name, "width") == 0) {
 		curve->width = (double *) realloc(curve->width, 1 * sizeof(double) * nverts);
 		ret = curve->width;
+	}
+	else if (strcmp(attr_name, "Cd") == 0) {
+		curve->Cd = VEC3_REALLOC(curve->Cd, float, nverts);
+		ret = curve->Cd;
 	}
 	else if (strcmp(attr_name, "uv") == 0) {
 		curve->uv = VEC2_REALLOC(curve->uv, float, nverts);
@@ -240,17 +231,24 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, const struct R
 	hit = converge_bezier3(&bezier, 0, 1, depth, &v_hit, &ttmp);
 	if (hit) {
 		struct Bezier3 original;
-		double P_curve[3];
+		float *Cd_curve0;
+		float *Cd_curve1;
+
+		/* P */
 		*t_hit = ttmp / ray_scale;
-
-		get_bezier3(curve, prim_id, &original);
-
 		POINT_ON_RAY(isect->P,ray->orig, ray->dir, *t_hit);
-		eval_bezier3(P_curve, original.cp, v_hit);
-		VEC3_SUB(isect->N, isect->P, P_curve);
-		VEC3_NORMALIZE(isect->N);
 
+		/* dPdt */
+		get_bezier3(curve, prim_id, &original);
 		derivative_bezier3(isect->dPdt, original.cp, v_hit);
+
+		/* TODO improve computation of Cd */
+		/* Cd */
+		Cd_curve0 = VEC3_NTH(curve->Cd, curve->indices[prim_id]);
+		Cd_curve1 = VEC3_NTH(curve->Cd, curve->indices[prim_id]+2);
+		isect->Cd[0] = v_hit * Cd_curve0[0] + (1-v_hit) * Cd_curve1[0];
+		isect->Cd[1] = v_hit * Cd_curve0[1] + (1-v_hit) * Cd_curve1[1];
+		isect->Cd[2] = v_hit * Cd_curve0[2] + (1-v_hit) * Cd_curve1[2];
 	}
 
 	return hit;
