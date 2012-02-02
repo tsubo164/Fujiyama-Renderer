@@ -6,9 +6,12 @@ See LICENSE and README
 #include "CurveIO.h"
 #include "MeshIO.h"
 #include "Mesh.h"
-#include "Vector.h"
 #include "Array.h"
+#include "Noise.h"
+#include "Vector.h"
+#include "Numeric.h"
 #include "Triangle.h"
+#include "Progress.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,6 +26,8 @@ static const char USAGE[] =
 
 int main(int argc, const char **argv)
 {
+	struct Progress *progress;
+
 	struct CurveOutput *out;
 	struct Mesh *mesh;
 	const char *meshfile;
@@ -56,6 +61,11 @@ int main(int argc, const char **argv)
 	}
 	meshfile = argv[1];
 	curvefile = argv[2];
+
+	progress = PrgNew();
+	if (progress == NULL) {
+		return -1;
+	}
 
 	mesh = MshNew();
 	if (mesh == NULL) {
@@ -94,6 +104,9 @@ int main(int argc, const char **argv)
 
 	sourceP = VEC3_ALLOC(double, total_ncurves);
 	sourceN = VEC3_ALLOC(double, total_ncurves);
+
+	printf("Computing curves' posittion ...\n");
+	PrgStart(progress, total_ncurves);
 
 	curve_id = 0;
 	for (i = 0; i < mesh->nfaces; i++) {
@@ -145,9 +158,15 @@ int main(int argc, const char **argv)
 			VEC3_NORMALIZE(src_N);
 
 			curve_id++;
+
+			PrgIncrement(progress);
 		}
 	}
 	assert(curve_id == total_ncurves);
+	PrgDone(progress);
+
+	printf("Generating curves ...\n");
+	PrgStart(progress, total_ncurves);
 
 	cp_id = 0;
 	curve_id = 0;
@@ -188,19 +207,27 @@ int main(int argc, const char **argv)
 			}
 
 			dst_Cd = VEC3_NTH(Cd, cp_id);
-			switch (vtx) {
-				case 0: VEC3_SET(dst_Cd, .8, .5, .3); break;
-				case 1: VEC3_SET(dst_Cd, .8, .6, .4); break;
-				case 2: VEC3_SET(dst_Cd, .8, .7, .5); break;
-				case 3: VEC3_SET(dst_Cd, .8, .75, .7); break;
+			{
+				double C_noise[3];
+				double C_dark[3] = {.8, .5, .3};
+				double C_light[3] = {.9, .88, .85};
+				double amp[3] = {1, 1, 1};
+				double freq[3] = {3, 3, 3};
+				double offset[3] = {0, 1, 0};
+				PerlinNoise(src_P, amp, freq, offset, 2, .5, 2, C_noise);
+				C_noise[0] = SmoothStep(C_noise[0], .55, .75);
+				VEC3_LERP(dst_Cd, C_noise[0], C_dark, C_light);
 			}
 
 			cp_id++;
 		}
 		indices[curve_id] = 4*i;
 		curve_id++;
+
+		PrgIncrement(progress);
 	}
 	assert(cp_id == total_ncps);
+	PrgDone(progress);
 
 	out = CrvOpenOutputFile(curvefile);
 	if (out == NULL) {

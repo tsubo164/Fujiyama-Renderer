@@ -1,6 +1,7 @@
 #include "Shader.h"
 #include "Vector.h"
 #include "Numeric.h"
+#include "Noise.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -141,6 +142,26 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	out->Cs[0] = diff[0] * plastic->diffuse[0] + spec[0];
 	out->Cs[1] = diff[1] * plastic->diffuse[1] + spec[1];
 	out->Cs[2] = diff[2] * plastic->diffuse[2] + spec[2];
+
+#if 0
+			{
+				double C_noise[3];
+				double C_dark[3] = {.8, .5, .3};
+				double C_light[3] = {.9, .88, .85};
+				double amp[3] = {1, 1, 1};
+				double freq[3] = {3, 3, 3};
+				double offset[3] = {0, 0, 0};
+				PerlinNoise(in->P, amp, freq, offset, 2, .5, 2, C_noise);
+				/*
+				C_noise[0] = -.5 + C_noise[0];
+				C_noise[1] = -.5 + C_noise[1];
+				C_noise[2] = -.5 + C_noise[2];
+				VEC3_COPY(out->Cs, C_noise);
+				*/
+				C_noise[0] = SmoothStep(C_noise[0], .55, .75);
+				VEC3_LERP(out->Cs, C_noise[0], C_dark, C_light);
+			}
+#endif
 
 	/* reflect */
 	if (plastic->do_reflect) {

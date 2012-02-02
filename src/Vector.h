@@ -102,6 +102,12 @@ extern "C" {
 	(dst)[2] = (a)[0] * (b)[1] - (a)[1] * (b)[0]; \
 	} while(0)
 
+#define VEC3_LERP(dst,t,a,b) do { \
+	(dst)[0] = (1-(t)) * (a)[0] + (t) * (b)[0]; \
+	(dst)[1] = (1-(t)) * (a)[1] + (t) * (b)[1]; \
+	(dst)[2] = (1-(t)) * (a)[2] + (t) * (b)[2]; \
+	} while(0)
+
 /* VEC4 */
 #define VEC4_SET(dst,x,y,z,w) do { \
 	(dst)[0] = (x); \

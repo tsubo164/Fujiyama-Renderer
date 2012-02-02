@@ -24,13 +24,15 @@ extern "C" {
 #define N_PI_180 0.01745329251994329577 /* pi/180 */
 #define N_180_PI 57.2957795130823208768 /* 180/pi */
 
-#define ABS(x_) (((x_)<0)?-(x_):(x_))
-#define MIN(x_,y_) ((x_)<(y_)?(x_):(y_))
-#define MAX(x_,y_) ((x_)>(y_)?(x_):(y_))
-#define CLAMP(x_,lo_,up_) ((x_)<(lo_)?(lo_):((x_)>(up_)?(up_):(x_)))
-#define RADIAN(deg_) ((deg_)*N_PI_180)
+#define ABS(x) (((x)<0)?-(x):(x))
+#define MIN(x,y) ((x)<(y)?(x):(y))
+#define MAX(x,y) ((x)>(y)?(x):(y))
+#define CLAMP(x,a,b) ((x)<(a)?(a):((x)>(b)?(b):(x)))
+#define RADIAN(deg) ((deg)*N_PI_180)
 
-#define LERP(x_,y_,t_) (((1-(t_))*(x_))+((y_)*(t_)))
+#define LERP(x,a,b) (((1-(x))*(a))+((b)*(x)))
+
+extern double SmoothStep(double x, double a, double b);
 
 #ifdef __cplusplus
 } /* extern "C" */

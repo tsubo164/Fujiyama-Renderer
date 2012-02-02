@@ -80,23 +80,12 @@ void CrvFree(struct Curve *curve)
 	if (curve == NULL)
 		return;
 
-	if (curve->P != NULL)
-		free(curve->P);
-
-	if (curve->width != NULL)
-		free(curve->width);
-
-	if (curve->Cd != NULL)
-		free(curve->Cd);
-
-	if (curve->uv != NULL)
-		free(curve->uv);
-
-	if (curve->indices != NULL)
-		free(curve->indices);
-
-	if (curve->split_depth != NULL)
-		free(curve->split_depth);
+	free(curve->P);
+	free(curve->width);
+	free(curve->Cd);
+	free(curve->uv);
+	free(curve->indices);
+	free(curve->split_depth);
 
 	free(curve);
 }
@@ -242,13 +231,10 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, const struct R
 		get_bezier3(curve, prim_id, &original);
 		derivative_bezier3(isect->dPdt, original.cp, v_hit);
 
-		/* TODO improve computation of Cd */
 		/* Cd */
 		Cd_curve0 = VEC3_NTH(curve->Cd, curve->indices[prim_id]);
 		Cd_curve1 = VEC3_NTH(curve->Cd, curve->indices[prim_id]+2);
-		isect->Cd[0] = v_hit * Cd_curve0[0] + (1-v_hit) * Cd_curve1[0];
-		isect->Cd[1] = v_hit * Cd_curve0[1] + (1-v_hit) * Cd_curve1[1];
-		isect->Cd[2] = v_hit * Cd_curve0[2] + (1-v_hit) * Cd_curve1[2];
+		VEC3_LERP(isect->Cd, v_hit, Cd_curve0, Cd_curve1);
 	}
 
 	return hit;
@@ -507,7 +493,7 @@ static double get_bezier3_max_radius(const struct Bezier3 *bezier)
 
 static double get_bezier3_width(const struct Bezier3 *bezier, double t)
 {
-	return LERP(bezier->width[0], bezier->width[1], t);
+	return LERP(t, bezier->width[0], bezier->width[1]);
 }
 
 static void get_bezier3_bounds(const struct Bezier3 *bezier, double *bounds)
