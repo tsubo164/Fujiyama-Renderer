@@ -12,8 +12,8 @@ See LICENSE and README
 #include <errno.h>
 
 #define FB_FILE_VERSION 1
-#define FB_FILE_MAGIC "FB"
-#define FB_MAGIC_SIZE 2
+#define FB_FILE_MAGIC "FBUF"
+#define FB_MAGIC_SIZE 4
 
 static void set_error(int err);
 

@@ -18,6 +18,8 @@ struct FrameBuffer {
 	int nchannels;
 };
 
+static void free_buffer(struct FrameBuffer *fb);
+
 struct FrameBuffer *FbNew(void)
 {
 	struct FrameBuffer *fb;
@@ -39,9 +41,7 @@ void FbFree(struct FrameBuffer *fb)
 	if (fb == NULL)
 		return;
 
-	if (!FbIsEmpty(fb))
-		free(fb->buf);
-
+	free_buffer(fb);
 	free(fb);
 }
 
@@ -82,8 +82,9 @@ float *FbResize(struct FrameBuffer *fb, int width, int height, int nchannels)
 	}
 
 	/* successed to get new buffer then free old buffer if exists*/
-	if (!FbIsEmpty(fb))
-		free(fb->buf);
+	if (!FbIsEmpty(fb)) {
+		free_buffer(fb);
+	}
 
 	/* commit */
 	fb->buf = buftmp;
@@ -141,7 +142,7 @@ int FbComputeBounds(struct FrameBuffer *fb, int *bounds)
 
 int FbIsEmpty(const struct FrameBuffer *fb)
 {
-	return FbGetReadOnly(fb, 0, 0, 0) == NULL;
+	return fb->buf == NULL;
 }
 
 float *FbGetWritable(struct FrameBuffer *fb, int x, int y, int z)
@@ -152,5 +153,11 @@ float *FbGetWritable(struct FrameBuffer *fb, int x, int y, int z)
 const float *FbGetReadOnly(const struct FrameBuffer *fb, int x, int y, int z)
 {
 	return fb->buf + y * fb->width * fb->nchannels + x * fb->nchannels + z;
+}
+
+static void free_buffer(struct FrameBuffer *fb)
+{
+	free(fb->buf);
+	fb->buf = NULL;
 }
 

@@ -13,7 +13,8 @@ extern "C" {
 #include <time.h>
 
 struct Timer {
-	clock_t start;
+	clock_t start_clock;
+	time_t start_time;
 };
 
 struct Elapse {
