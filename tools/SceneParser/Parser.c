@@ -127,7 +127,7 @@ int PsrParseLine(struct Parser *parser, const char *line)
 		}
 		ncpy = e-s+1;
 		ncpy = MIN(ncpy, 1000);
-		StrCopyMax(trimed, line+s, ncpy);
+		StrCopyAndTerminate(trimed, line+s, ncpy);
 	}
 
 	if (trimed[0] == '#')

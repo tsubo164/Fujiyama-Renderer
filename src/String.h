@@ -15,7 +15,7 @@ extern "C" {
 extern char *StrDup(const char *src);
 extern char *StrFree(char *s);
 
-extern char *StrCopyMax(char *dst, const char *src, size_t maxsize);
+extern char *StrCopyAndTerminate(char *dst, const char *src, size_t nchars);
 
 #ifdef __cplusplus
 } /* extern "C" */

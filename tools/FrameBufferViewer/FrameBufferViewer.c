@@ -371,9 +371,9 @@ int FbvLoadImage(struct FrameBufferViewer *v, const char *filename)
 	const char *ext;
 	int err;
 
-	StrCopyMax(try_filename, filename, MAXCPY);
+	StrCopyAndTerminate(try_filename, filename, MAXCPY);
 	if (strcmp(v->filename, try_filename) != 0) {
-		StrCopyMax(v->filename, try_filename, MAXCPY);
+		StrCopyAndTerminate(v->filename, try_filename, MAXCPY);
 	}
 
 	ext = file_extension(v->filename);

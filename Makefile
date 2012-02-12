@@ -74,7 +74,7 @@ install_shader :=
 srcdir_  := src
 tgtdir_  := lib
 files_   := OS Array String Box Matrix Transform Triangle Timer Plugin Property Progress \
-	FrameBuffer FrameBufferIO Camera Mesh MeshIO Tiler Renderer Light Filter Mipmap\
+	FrameBuffer FrameBufferIO Camera IO Mesh MeshIO Tiler Renderer Light Filter Mipmap\
 	ObjectInstance Accelerator Sampler Shader SL Noise Numeric Texture Curve CurveIO \
 	Scene SceneInterfaces 
 subtgt_  := libscene.so

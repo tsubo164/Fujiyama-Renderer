@@ -33,13 +33,14 @@ char *StrFree(char *s)
 	return NULL;
 }
 
-char *StrCopyMax(char *dst, const char *src, size_t maxsize)
+char *StrCopyAndTerminate(char *dst, const char *src, size_t nchars)
 {
-	size_t ncpys;
+	size_t len;
 
-	ncpys = strlen(src) + 1;
-	ncpys = MIN(ncpys, maxsize);
-	strncpy(dst, src, ncpys);
+	len = strlen(src);
+	len = MIN(len, nchars);
+	strncpy(dst, src, len);
+	dst[len] = '\0';
 
 	return dst;
 }
