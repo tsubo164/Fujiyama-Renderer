@@ -279,6 +279,9 @@ static void compute_world_to_ray_matrix(const struct Ray *ray, struct Matrix *ds
 	MatMultiply(dst, &rotate, &translate);
 }
 
+/* Based on this algorithm:
+   Koji Nakamaru and Yoshio Ono, RAY TRACING FOR CURVES PRIMITIVE, WSCG 2002.
+   */
 static int converge_bezier3(const struct Bezier3 *bezier,
 		double v0, double vn, int depth,
 		double *v_hit, double *t_hit)
