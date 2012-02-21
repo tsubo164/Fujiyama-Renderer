@@ -10,7 +10,7 @@ CPPFLAGS = -Isrc -Wall -O2
 RM = rm -f
 INSTALL = install
 
-.PHONY: all all_ clean install install_library install_shader install_bin install_tools sample
+.PHONY: all all_ clean install install_library install_shader install_bin install_tools sample scenes/cube.fb
 all: all_
 
 prefix = $(HOME)
@@ -232,14 +232,14 @@ all_objects :=
 
 #------------------------------------------------------------------------------
 #Sample Programs
-sample: scenes/cube.fb
-	fbview $<
+sample: scenes/cube.fb bin/fbview
+	env LD_LIBRARY_PATH=lib bin/fbview $<
 scenes/cube.fb: scenes/cube scenes/cube.mesh
-	scenes/cube
+	env LD_LIBRARY_PATH=lib scenes/cube
 scenes/cube: scenes/cube.c lib/libscene.so lib/PlasticShader.so
 	$(CC) $(CFLAGS) -Llib -lscene -o $@ $<
-scenes/cube.mesh: scenes/cube.ply
-	ply2mesh $< $@
+scenes/cube.mesh: scenes/cube.ply bin/ply2mesh
+	env LD_LIBRARY_PATH=lib bin/ply2mesh $< $@
 samples := scenes/cube.fb scenes/cube.mesh scenes/cube
 
 #------------------------------------------------------------------------------
