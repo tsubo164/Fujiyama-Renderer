@@ -15,30 +15,35 @@ designed to handle production image rendering.
 
   Features
 -----------------
-Below are the implemented features so far.
-* Original mesh format - ply2mesh is provided
-* Original mipmap format - hdr2mip is provided
-* Original framebuffer format - fb2exr is provided
-* On demand reading of mipmap - unlimited number of texture images
-* Pluggable shader DSO - shaders can be written in C/C++
-* Object instance - saves memory usage
-* On demand construction of accelerator - avoids unnecessary construction
-* Grid accelerator - for meshes (dense distribution)
-* BVH accelerator - for object instances (sparse distribution) 
-* Command-like scene description language - works with text filter tools
-* Region rendering - accelerates distribution rendering pipeline
-* Gaussian and Box pixel filters - supports filter width bigger than 1 pixel
-* FrameBuffer Viewer - provided in the distribution
-* Uniform grid pixel sampling
-* Tile based rendering 
+* Supported Primitives
+  + Triangle Mesh - Compact representation
+  + Bezier Curves - Unlimited smoothness subdividing in render time 
 
-  Install
------------------
-* make
-* make check | grep FAIL
-* make prefix=/path/to/install install
-   - OpneGL/GLUT is required for FrameBuffer Viewer
-   - OpenEXR is required for fb2exr
+* File format
+  + Original mesh format - ply2mesh is provided
+  + Original curve format - curvegen is provided
+  + Original mipmap format - hdr2mip is provided
+  + Original framebuffer format - fb2exr is provided
+  + Command-like scene description language - works with text filter tools
+  + FrameBuffer Viewer - displays *.fb and *.mip 
+
+* Shading and Texture
+  + On demand reading of mipmap - unlimited number of texture images
+  + Pluggable shader DSO - shaders can be written in C/C++ 
+
+* Acceleratotion structure
+  + On demand construction of accelerator - avoids unnecessary construction
+  + Grid accelerator - for meshes (dense distribution)
+  + BVH accelerator - for object instances (sparse distribution)
+  + Object instance - saves memory usage
+
+* Sampling and Filtering
+  + Gaussian and Box pixel filters - supports filter width bigger than 1 pixel
+  + Uniform grid pixel sampling 
+
+* Rendering
+  + Region rendering - accelerates distribution rendering pipeline
+  + Tile based rendering
 
 http://fujiyama-renderer.com/
 Copyright (c) 2011-2012 Hiroshi Tsubokawa
