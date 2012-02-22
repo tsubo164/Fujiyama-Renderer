@@ -131,8 +131,8 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		out->Cs[2] += (in->Cd[2] * diff + spec) * Lout.Cl[2];
 	}
 	out->Cs[0] += .0;
-	out->Cs[1] += .05;
-	out->Cs[2] += .1;
+	out->Cs[1] += .025;
+	out->Cs[2] += .05;
 
 	out->Alpha = 1;
 }
