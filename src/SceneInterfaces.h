@@ -34,6 +34,7 @@ extern ID SiNewRenderer(void);
 extern ID SiNewTexture(const char *arg);
 extern ID SiNewCamera(const char *arg);
 extern ID SiNewShader(const char *arg);
+extern ID SiNewVolume(void);
 extern ID SiNewCurve(const char *filename);
 extern ID SiNewLight(const char *arg);
 extern ID SiNewMesh(const char *filename);

@@ -30,7 +30,7 @@ struct Curve {
 };
 
 extern struct Curve *CrvNew(void);
-extern void CrvFree(struct Curve *light);
+extern void CrvFree(struct Curve *curve);
 
 extern void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int nverts);
 extern void *CrvAllocateCurve(struct Curve *curve, const char *attr_name, int ncurves);

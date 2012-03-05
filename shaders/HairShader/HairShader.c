@@ -134,7 +134,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	out->Cs[1] += .025;
 	out->Cs[2] += .05;
 
-	out->Alpha = 1;
+	out->Os = 1;
 }
 
 static int set_diffuse(void *self, const struct PropertyValue *value)

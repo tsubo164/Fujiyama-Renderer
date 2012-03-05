@@ -91,7 +91,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 
 	/* Cs */
 	VEC3_COPY(out->Cs, Ctex);
-	out->Alpha = 1;
+	out->Os = 1;
 }
 
 static int set_diffuse(void *self, const struct PropertyValue *value)

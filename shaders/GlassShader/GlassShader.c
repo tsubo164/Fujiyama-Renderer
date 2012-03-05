@@ -98,8 +98,8 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	struct TraceContext refl_cxt;
 	struct TraceContext refr_cxt;
 	double T[3], R[3];
-	float C_refl[3];
-	float C_refr[3];
+	float C_refl[4];
+	float C_refr[4];
 	double Kt, Kr;
 
 	glass = (struct GlassShader *) self;
@@ -128,7 +128,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	out->Cs[1] += Kt * C_refr[1];
 	out->Cs[2] += Kt * C_refr[2];
 
-	out->Alpha = 1;
+	out->Os = 1;
 }
 
 static int set_diffuse(void *self, const struct PropertyValue *value)

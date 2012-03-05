@@ -49,8 +49,10 @@ struct SurfaceInput {
 
 struct SurfaceOutput {
 	float Cs[3];
-	float Os[3];
+	float Os;
+	/*
 	float Alpha;
+	*/
 };
 
 struct LightOutput {

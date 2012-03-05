@@ -17,6 +17,8 @@ struct PlasticShader {
 	float reflect[3];
 	float ior;
 
+	float opacity;
+
 	int do_reflect;
 };
 
@@ -38,6 +40,7 @@ static int set_ambient(void *self, const struct PropertyValue *value);
 static int set_roughness(void *self, const struct PropertyValue *value);
 static int set_reflect(void *self, const struct PropertyValue *value);
 static int set_ior(void *self, const struct PropertyValue *value);
+static int set_opacity(void *self, const struct PropertyValue *value);
 
 static const struct Property PlasticShaderProperties[] = {
 	{"diffuse",   set_diffuse},
@@ -46,6 +49,7 @@ static const struct Property PlasticShaderProperties[] = {
 	{"roughness", set_roughness},
 	{"reflect",   set_reflect},
 	{"ior",       set_ior},
+	{"opacity",   set_opacity},
 	{NULL,        NULL}
 };
 
@@ -88,6 +92,8 @@ static void *MyNew(void)
 	VEC3_SET(plastic->reflect, 1, 1, 1);
 	plastic->ior = 1.4;
 
+	plastic->opacity = 1;
+
 	plastic->do_reflect = 1;
 
 	return plastic;
@@ -111,7 +117,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	float diff[5] = {0};
 	float spec[3] = {0};
 
-	float C_refl[3];
+	float C_refl[4];
 	double refldir[3];
 	double Kr;
 
@@ -174,7 +180,8 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		out->Cs[1] += Kr * C_refl[1] * plastic->reflect[1];
 		out->Cs[2] += Kr * C_refl[2] * plastic->reflect[2];
 	}
-	out->Alpha = 1;
+	out->Os = 1;
+	out->Os = plastic->opacity;
 }
 
 static int set_diffuse(void *self, const struct PropertyValue *value)
@@ -256,6 +263,17 @@ static int set_ior(void *self, const struct PropertyValue *value)
 
 	ior = MAX(0, ior);
 	plastic->ior = ior;
+
+	return 0;
+}
+
+static int set_opacity(void *self, const struct PropertyValue *value)
+{
+	struct PlasticShader *plastic = (struct PlasticShader *) self;
+	float opacity = value->vector[0];
+
+	opacity = CLAMP(opacity, 0, 1);
+	plastic->opacity = opacity;
 
 	return 0;
 }

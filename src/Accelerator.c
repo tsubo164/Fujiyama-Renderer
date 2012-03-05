@@ -19,9 +19,9 @@ See LICENSE and README
 #define HALF_EXPAND (.5*EXPAND)
 
 struct Accelerator {
-	int has_built;
-	double bounds[6];
 	const char *name;
+	double bounds[6];
+	int has_built;
 
 	/* TODO should make struct PrimitiveSet? */
 	const void *primset;

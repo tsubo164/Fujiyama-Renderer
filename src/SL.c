@@ -125,7 +125,7 @@ int SlTrace(const struct TraceContext *cxt,
 	double t_hit = FLT_MAX;
 	int hit;
 
-	VEC3_SET(out_color, 0, 0, 0);
+	VEC4_SET(out_color, 0, 0, 0, 0);
 	if (has_reached_bounce_limit(cxt)) {
 		return 0;
 	}
@@ -133,16 +133,63 @@ int SlTrace(const struct TraceContext *cxt,
 	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
 	hit = AccIntersect(ObjGroupGetAccelerator(cxt->trace_target), &ray, &local, &t_hit);
 
-	if (hit && cxt->ray_context != CXT_SHADOW_RAY) {
+	if (cxt->ray_context == CXT_SHADOW_RAY) {
+		return hit;
+	}
+
+	if (hit) {
 		struct SurfaceInput in;
 		struct SurfaceOutput out;
 
 		setup_surface_input(&local, &ray, &in);
 		ShdEvaluate(ObjGetShader(local.object), cxt, &in, &out);
-		VEC3_COPY(out_color, out.Cs);
+
+		out.Os = CLAMP(out.Os, 0, 1);
+		VEC4_SET(out_color, out.Cs[0], out.Cs[1], out.Cs[2], out.Os);
 	}
 
 	return hit;
+#if 0
+	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
+
+	while (out_color[3] < .9995) {
+		t_hit = FLT_MAX;
+		hit = AccIntersect(ObjGroupGetAccelerator(cxt->trace_target), &ray, &local, &t_hit);
+
+		if (!hit) {
+			break;
+		}
+
+		/*
+		if (cxt->ray_context == CXT_SHADOW_RAY) {
+			out_color[3] = 1;
+			break;
+		}
+		*/
+
+		if (hit) {
+			struct SurfaceInput in;
+			struct SurfaceOutput out;
+
+			setup_surface_input(&local, &ray, &in);
+			ShdEvaluate(ObjGetShader(local.object), cxt, &in, &out);
+
+			out_color[0] = out_color[0] + out.Cs[0] * (1-out_color[3]);
+			out_color[1] = out_color[1] + out.Cs[1] * (1-out_color[3]);
+			out_color[2] = out_color[2] + out.Cs[2] * (1-out_color[3]);
+			out_color[3] = out_color[3] + CLAMP(out.Os, 0, 1) * (1-out_color[3]);
+		}
+
+		{
+			double next_orig[3];
+			POINT_ON_RAY(next_orig, ray.orig, ray.dir, t_hit);
+			VEC3_COPY(ray.orig, next_orig);
+		}
+	}
+	out_color[3] = CLAMP(out_color[3], 0, 1);
+
+	return hit;
+#endif
 }
 
 struct TraceContext SlCameraContext(const struct ObjectGroup *target)
@@ -244,7 +291,7 @@ int SlIlluminace(const struct TraceContext *cxt, int light_id,
 
 	if (cxt->cast_shadow) {
 		struct TraceContext shad_cxt;
-		float C_occl[3];
+		float C_occl[4];
 		int hit;
 
 		shad_cxt = SlShadowContext(cxt, in->shaded_object);
@@ -253,6 +300,9 @@ int SlIlluminace(const struct TraceContext *cxt, int light_id,
 		if (hit) {
 			return 0;
 		}
+		/*
+		VEC3_MUL_ASGN(light_color, 1-C_occl[3]);
+		*/
 	}
 
 	VEC3_COPY(out->Cl, light_color);

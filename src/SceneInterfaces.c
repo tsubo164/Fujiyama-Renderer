@@ -48,6 +48,7 @@ enum {
 	Type_Camera,
 	Type_Plugin,
 	Type_Shader,
+	Type_Volume,
 	Type_Curve,
 	Type_Light,
 	Type_Mesh,
@@ -290,6 +291,28 @@ ID SiNewShader(const char *arg)
 
 	set_errno(SI_NOERR);
 	return encode_id(Type_Shader, GET_LAST_ADDED_ID(Shader));
+}
+
+ID SiNewVolume(void)
+{
+	struct Volume *volume;
+	struct Accelerator *acc;
+
+	volume = ScnNewVolume(scene);
+	if (volume == NULL) {
+		set_errno(SI_ERR_FAILNEW);
+		return SI_BADID;
+	}
+
+	acc = ScnNewAccelerator(scene, ACC_GRID);
+	if (acc == NULL) {
+		set_errno(SI_ERR_FAILNEW);
+		return SI_BADID;
+	}
+	VolSetupAccelerator(volume, acc);
+
+	set_errno(SI_NOERR);
+	return encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
 }
 
 ID SiNewCurve(const char *filename)

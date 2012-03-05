@@ -53,6 +53,7 @@ struct Renderer *RdrNew(void)
 	renderer->camera = NULL;
 	renderer->framebuffers = NULL;
 	renderer->object = NULL;
+	renderer->target_objects = NULL;
 
 	RdrSetResolution(renderer, 320, 240);
 	RdrSetPixelSamples(renderer, 3, 3);
@@ -289,12 +290,12 @@ static int render_scene(struct Renderer *renderer)
 
 		while ((smp = SmpGetNextSample(sampler)) != NULL) {
 			int hit;
-			float Cs[3] = {0};
+			float C_trace[4] = {0};
 
 			CamGetRay(cam, smp->uv, &ray);
 
-			hit = SlTrace(&cxt, ray.orig, ray.dir, ray.tmin, ray.tmax, Cs);
-			VEC4_SET(smp->data, Cs[0], Cs[1], Cs[2], hit);
+			hit = SlTrace(&cxt, ray.orig, ray.dir, ray.tmin, ray.tmax, C_trace);
+			VEC4_COPY(smp->data, C_trace);
 
 			PrgIncrement(progress);
 		}

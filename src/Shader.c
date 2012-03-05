@@ -65,7 +65,7 @@ void ShdEvaluate(const struct Shader *shader, const struct TraceContext *cxt,
 {
 	if (shader == NULL) {
 		VEC3_COPY(out->Cs, NO_SHADER_COLOR);
-		out->Alpha = 1;
+		out->Os = 1;
 		return;
 	}
 	shader->vptr->MyEvaluate(shader->self, cxt, in, out);
