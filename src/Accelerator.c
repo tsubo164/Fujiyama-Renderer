@@ -24,6 +24,7 @@ struct Accelerator {
 	int has_built;
 
 	/* TODO should make struct PrimitiveSet? */
+	int primtype;
 	const void *primset;
 	int nprims;
 	double primset_bounds[6];
@@ -440,6 +441,14 @@ struct Accelerator *AccNew(int accelerator_type)
 	}
 
 	acc->has_built = 0;
+
+	acc->primtype = ACC_PRIM_SURFACE;
+	acc->primset = NULL;
+	acc->nprims = 0;
+	acc->PrimIntersect = NULL;
+	acc->PrimBounds = NULL;
+	BOX3_SET(acc->primset_bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+
 	return acc;
 }
 
@@ -452,6 +461,11 @@ void AccFree(struct Accelerator *acc)
 
 	acc->FreeDerived(acc);
 	free(acc);
+}
+
+int AccGetPrimitiveType(const struct Accelerator *acc)
+{
+	return acc->primtype;
 }
 
 void AccGetBounds(const struct Accelerator *acc, double *bounds)
@@ -497,10 +511,14 @@ int AccIntersect(const struct Accelerator *acc, const struct Ray *ray,
 }
 
 void AccSetTargetGeometry(struct Accelerator *acc,
+	int primtype,
 	const void *primset, int nprims, const double *primset_bounds,
 	PrimIntersectFunction prim_intersect_function,
 	PrimBoundsFunction prim_bounds_function)
 {
+	assert(ACC_PRIM_SURFACE <= primtype && primtype <= ACC_PRIM_VOLUME );
+
+	acc->primtype = primtype;
 	acc->primset = primset;
 	acc->nprims = nprims;
 	acc->PrimIntersect = prim_intersect_function;

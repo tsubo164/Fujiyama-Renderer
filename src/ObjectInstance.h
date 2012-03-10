@@ -47,8 +47,11 @@ extern int ObjIntersect(const struct ObjectInstance *obj, const struct Ray *ray,
 /* ObjectGroup interfaces */
 extern struct ObjectGroup *ObjGroupNew(void);
 extern void ObjGroupFree(struct ObjectGroup *grp);
+
 extern void ObjGroupAdd(struct ObjectGroup *grp, const struct ObjectInstance *obj);
 extern const struct Accelerator *ObjGroupGetAccelerator(const struct ObjectGroup *grp);
+extern const struct Accelerator *ObjGroupGetSurfaceAccelerator(const struct ObjectGroup *grp);
+extern const struct Accelerator *ObjGroupGetVolumeAccelerator(const struct ObjectGroup *grp);
 
 #ifdef __cplusplus
 } /* extern "C" */

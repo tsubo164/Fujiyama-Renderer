@@ -93,6 +93,7 @@ void CrvFree(struct Curve *curve)
 void CrvSetupAccelerator(const struct Curve *curve, struct Accelerator *acc)
 {
 	AccSetTargetGeometry(acc,
+			ACC_PRIM_SURFACE,
 			curve,
 			curve->ncurves,
 			curve->bounds,

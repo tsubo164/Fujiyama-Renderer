@@ -37,6 +37,12 @@ struct ObjectInstance {
 	const struct ObjectGroup *refraction_target;
 };
 
+struct ObjectList {
+	struct Accelerator *accelerator;
+	struct Array *objects;
+	double bounds[6];
+};
+
 struct ObjectGroup {
 	struct Accelerator *accelerator;
 	struct Array *objects;
@@ -50,6 +56,11 @@ static void update_object_bounds(struct ObjectInstance *obj);
 static void object_bounds(const void *prim_set, int prim_id, double *bounds);
 static int object_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
 		struct LocalGeometry *isect, double *t_hit);
+
+/* ObjectList interfaces */
+static struct ObjectList *obj_list_new(void);
+static void obj_list_free(struct ObjectList *list);
+static void obj_list_add(struct ObjectList *list, const struct ObjectInstance *obj);
 
 /* ObjectInstance interfaces */
 struct ObjectInstance *ObjNew(const struct Accelerator *acc)
@@ -253,6 +264,16 @@ const struct Accelerator *ObjGroupGetAccelerator(const struct ObjectGroup *grp)
 	return grp->accelerator;
 }
 
+const struct Accelerator *ObjGroupGetSurfaceAccelerator(const struct ObjectGroup *grp)
+{
+	return grp->accelerator;
+}
+
+const struct Accelerator *ObjGroupGetVolumeAccelerator(const struct ObjectGroup *grp)
+{
+	return grp->accelerator;
+}
+
 static void update_matrix_and_bounds(struct ObjectInstance *obj)
 {
 	ComputeMatrix(obj->xform_order, obj->rotate_order,
@@ -291,9 +312,63 @@ static void update_group_accelerator(struct ObjectGroup *grp)
 	assert(grp->objects != NULL);
 
 	AccSetTargetGeometry(grp->accelerator,
+			ACC_PRIM_SURFACE,
 			grp->objects->data,
 			grp->objects->nelems,
 			grp->bounds,
+			object_ray_intersect,
+			object_bounds);
+}
+
+static struct ObjectList *obj_list_new(void)
+{
+	struct ObjectList *list;
+
+	list = (struct ObjectList *) malloc(sizeof(struct ObjectList));
+	if (list == NULL)
+		return NULL;
+
+	list->accelerator = AccNew(ACC_BVH);
+	if (list->accelerator == NULL) {
+		obj_list_free(list);
+		return NULL;
+	}
+
+	list->objects = ArrNew(sizeof(struct ObjectInstance *));
+	if (list->objects == NULL) {
+		obj_list_free(list);
+		return NULL;
+	}
+
+	BOX3_SET(list->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	return list;
+}
+
+static void obj_list_free(struct ObjectList *list)
+{
+	if (list == NULL)
+		return;
+
+	if (list->accelerator != NULL)
+		AccFree(list->accelerator);
+
+	if (list->objects != NULL)
+		ArrFree(list->objects);
+
+	free(list);
+}
+
+static void obj_list_add(struct ObjectList *list, const struct ObjectInstance *obj)
+{
+	ArrPushPointer(list->objects, obj);
+	BoxAddBox(list->bounds, obj->bounds);
+
+	AccSetTargetGeometry(list->accelerator,
+			ACC_PRIM_SURFACE,
+			list->objects->data,
+			list->objects->nelems,
+			list->bounds,
 			object_ray_intersect,
 			object_bounds);
 }

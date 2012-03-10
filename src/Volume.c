@@ -68,6 +68,7 @@ void VolFree(struct Volume *volume)
 void VolSetupAccelerator(const struct Volume *volume, struct Accelerator *acc)
 {
 	AccSetTargetGeometry(acc,
+			ACC_PRIM_VOLUME,
 			volume,
 			volume->nbuffers,
 			volume->bounds,
