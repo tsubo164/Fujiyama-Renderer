@@ -22,9 +22,21 @@ struct LocalGeometry {
 	double dPdt[3];
 
 	const struct ObjectInstance *object;
-	const void *geometry;
 	int prim_id;
 };
+
+struct Intersection {
+	struct LocalGeometry geo;
+	double hit_t;
+};
+
+struct IntersectionList;
+
+extern struct IntersectionList *IsectNew();
+extern void IsectFree(struct IntersectionList *list);
+
+extern int IsectPush(struct IntersectionList *list, const struct LocalGeometry *local);
+extern const struct LocalGeometry *IsectGet(struct IntersectionList *list, int index);
 
 #ifdef __cplusplus
 } /* extern "C" */

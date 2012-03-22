@@ -27,6 +27,15 @@ static void setup_surface_input(
 		const struct Ray *ray,
 		struct SurfaceInput *in);
 
+/*
+static int trace_surface(const struct TraceContext *cxt,
+		const double *ray_orig, const double *ray_dir,
+		double ray_tmin, double ray_tmax, float *out_color);
+*/
+static int raymarch_volume(const struct TraceContext *cxt,
+		const double *ray_orig, const double *ray_dir,
+		double ray_tmin, double ray_tmax, float *out_color);
+
 double SlSmoothStep(double x, double edge0, double edge1)
 {
 	double t;
@@ -125,13 +134,67 @@ int SlTrace(const struct TraceContext *cxt,
 	double t_hit = FLT_MAX;
 	int hit;
 
+	/* XXX TEST */
+	struct IntersectionList *isects = NULL;
+	/*
+	*/
+
 	VEC4_SET(out_color, 0, 0, 0, 0);
 	if (has_reached_bounce_limit(cxt)) {
 		return 0;
 	}
 
 	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
-	hit = AccIntersect(ObjGroupGetAccelerator(cxt->trace_target), &ray, &local, &t_hit);
+
+	isects = IsectNew();
+	/*
+	*/
+	hit = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &local, &t_hit);
+
+	if (cxt->ray_context == CXT_SHADOW_RAY) {
+		IsectFree(isects);
+	/*
+	*/
+		return hit;
+	}
+
+	if (hit) {
+		struct SurfaceInput in;
+		struct SurfaceOutput out;
+
+		setup_surface_input(&local, &ray, &in);
+		ShdEvaluate(ObjGetShader(local.object), cxt, &in, &out);
+
+		out.Os = CLAMP(out.Os, 0, 1);
+		VEC4_SET(out_color, out.Cs[0], out.Cs[1], out.Cs[2], out.Os);
+	}
+
+	/*
+	VEC4_SET(out_color, 0, 0, 0, 0);
+	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
+
+	hit = raymarch_volume(cxt, ray_orig, ray_dir, ray_tmin, ray_tmax, out_color);
+	*/
+	IsectFree(isects);
+	/*
+	*/
+
+	return hit;
+
+#if 0
+	/* original */
+	struct Ray ray;
+	struct LocalGeometry local;
+	double t_hit = FLT_MAX;
+	int hit;
+
+	VEC4_SET(out_color, 0, 0, 0, 0);
+	if (has_reached_bounce_limit(cxt)) {
+		return 0;
+	}
+
+	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
+	hit = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &local, &t_hit);
 
 	if (cxt->ray_context == CXT_SHADOW_RAY) {
 		return hit;
@@ -149,12 +212,26 @@ int SlTrace(const struct TraceContext *cxt,
 	}
 
 	return hit;
+#endif
+
 #if 0
+	/* original + transparent */
+	struct Ray ray;
+	struct Ray ray;
+	struct LocalGeometry local;
+	double t_hit = FLT_MAX;
+	int hit;
+
+	VEC4_SET(out_color, 0, 0, 0, 0);
+	if (has_reached_bounce_limit(cxt)) {
+		return 0;
+	}
+
 	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
 
 	while (out_color[3] < .9995) {
 		t_hit = FLT_MAX;
-		hit = AccIntersect(ObjGroupGetAccelerator(cxt->trace_target), &ray, &local, &t_hit);
+		hit = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &local, &t_hit);
 
 		if (!hit) {
 			break;
@@ -372,7 +449,6 @@ static void setup_ray(const double *ray_orig, const double *ray_dir,
 	VEC3_COPY(ray->dir, ray_dir);
 	ray->tmin = ray_tmin;
 	ray->tmax = ray_tmax;
-
 }
 
 static void setup_surface_input(
@@ -389,5 +465,49 @@ static void setup_surface_input(
 
 	VEC3_COPY(in->dPds, local->dPds);
 	VEC3_COPY(in->dPdt, local->dPdt);
+}
+
+static int raymarch_volume(const struct TraceContext *cxt,
+		const double *ray_orig, const double *ray_dir,
+		double ray_tmin, double ray_tmax, float *out_color)
+{
+	struct LocalGeometry local;
+	struct Ray ray;
+	int hit;
+
+	VEC4_SET(out_color, 0, 0, 0, 0);
+	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
+
+	while (out_color[3] < .9995) {
+		double t_hit = FLT_MAX;
+
+		hit = AccIntersect(ObjGroupGetVolumeAccelerator(cxt->trace_target),
+				&ray, &local, &t_hit);
+
+		if (!hit) {
+			break;
+		}
+
+		{
+			struct SurfaceInput in;
+			struct SurfaceOutput out;
+
+			setup_surface_input(&local, &ray, &in);
+			ShdEvaluate(ObjGetShader(local.object), cxt, &in, &out);
+			out.Os = 1 * .05;
+
+			out_color[0] = out_color[0] + out.Cs[0] * (1-out_color[3]);
+			out_color[1] = out_color[1] + out.Cs[1] * (1-out_color[3]);
+			out_color[2] = out_color[2] + out.Cs[2] * (1-out_color[3]);
+			out_color[3] = out_color[3] + CLAMP(out.Os, 0, 1) * (1-out_color[3]);
+
+			ray.orig[0] += ray.dir[0] * t_hit;
+			ray.orig[1] += ray.dir[1] * t_hit;
+			ray.orig[2] += ray.dir[2] * t_hit;
+		}
+	}
+	out_color[3] = CLAMP(out_color[3], 0, 1);
+
+	return hit;
 }
 

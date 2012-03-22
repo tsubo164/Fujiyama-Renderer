@@ -16,7 +16,8 @@ struct Ray;
 
 enum AcceleratorType {
 	ACC_GRID = 0,
-	ACC_BVH
+	ACC_BVH,
+	ACC_VOLUME
 };
 
 enum PrimitiveType {
@@ -42,6 +43,10 @@ extern void AccSetTargetGeometry(struct Accelerator *acc,
 
 extern int AccIntersect(const struct Accelerator *acc, const struct Ray *ray,
 		struct LocalGeometry *isect, double *t_hit);
+
+/* XXX TEST */
+struct Volume;
+extern struct Volume *AccGetVolume(const struct Accelerator *acc, int index);
 
 #ifdef __cplusplus
 } /* extern "C" */

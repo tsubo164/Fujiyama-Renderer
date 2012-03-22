@@ -174,7 +174,9 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, const struc
 
 	POINT_ON_RAY(isect->P, ray->orig, ray->dir, *t_hit);
 	isect->object = NULL;
+	/*
 	isect->geometry = mesh;
+	*/
 	isect->prim_id = prim_id;
 
 	return 1;

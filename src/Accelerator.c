@@ -127,6 +127,18 @@ static void push_node(struct BVHNodeStack *stack, const struct BVHNode *node);
 static const struct BVHNode *pop_node(struct BVHNodeStack *stack);
 
 /* -------------------------------------------------------------------------- */
+/* VolumeAccelerator */
+struct VolumeAccelerator {
+	double bounds[6];
+};
+
+static struct VolumeAccelerator *new_volume_accelerator(void);
+static void free_volume_accelerator(struct Accelerator *acc);
+static int build_volume_accelerator(struct Accelerator *acc);
+static int intersect_volume_accelerator(const struct Accelerator *acc, const struct Ray *ray,
+		struct LocalGeometry *isect, double *t_hit);
+
+/* -------------------------------------------------------------------------- */
 static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
 		struct LocalGeometry *isect, double *t_hit)
 {
@@ -147,19 +159,11 @@ static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
 	double tdelt[3];
 
 	/* check intersection with overall bounds */
+	/* to get boxhit_tmin and boxhit_tmax */
 	if (!BoxRayIntersect(acc->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
 				&boxhit_tmin, &boxhit_tmax)) {
 		return 0;
 	}
-
-#if 0
-	if (!acc->has_built) {
-		/* dynamic build */
-		printf("\nbuilding grid accelerator...\n");
-		AccBuild((struct Accelerator *) acc);
-		fflush(stdout);
-	}
-#endif
 
 	/* check if the ray shot from inside bounds */
 	if (BoxContainsPoint(grid->bounds, ray->orig)) {
@@ -435,6 +439,17 @@ struct Accelerator *AccNew(int accelerator_type)
 		acc->Intersect = IntersectBVH;
 		acc->name = "BVH";
 		break;
+	case ACC_VOLUME:
+		acc->derived = (char *) new_volume_accelerator();
+		if (acc->derived == NULL) {
+			AccFree(acc);
+			return NULL;
+		}
+		acc->FreeDerived = free_volume_accelerator;
+		acc->Build = build_volume_accelerator;
+		acc->Intersect = intersect_volume_accelerator;
+		acc->name = "Volume";
+		break;
 	default:
 		assert(!"invalid accelerator type");
 		break;
@@ -447,6 +462,8 @@ struct Accelerator *AccNew(int accelerator_type)
 	acc->nprims = 0;
 	acc->PrimIntersect = NULL;
 	acc->PrimBounds = NULL;
+
+	BOX3_SET(acc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 	BOX3_SET(acc->primset_bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	return acc;
@@ -954,5 +971,41 @@ static const struct BVHNode *pop_node(struct BVHNodeStack *stack)
 {
 	assert(!is_empty(stack));
 	return stack->node[--stack->depth];
+}
+
+/* -------------------------------------------------------------------------- */
+static struct VolumeAccelerator *new_volume_accelerator(void)
+{
+	struct VolumeAccelerator *vol;
+
+	vol = (struct VolumeAccelerator *) malloc(sizeof(struct VolumeAccelerator));
+	if (vol == NULL)
+		return NULL;
+
+	return vol;
+}
+
+static void free_volume_accelerator(struct Accelerator *acc)
+{
+	struct VolumeAccelerator *vol = (struct VolumeAccelerator *) acc->derived;
+	free(vol);
+}
+
+static int build_volume_accelerator(struct Accelerator *acc)
+{
+	return 0;
+}
+
+static int intersect_volume_accelerator(const struct Accelerator *acc, const struct Ray *ray,
+		struct LocalGeometry *isect, double *t_hit)
+{
+	return acc->PrimIntersect(acc->primset, 0, ray, isect, t_hit);
+}
+
+/* XXX TEST */
+struct Volume *AccGetVolume(const struct Accelerator *acc, int index)
+{
+	assert(acc->primtype == ACC_PRIM_VOLUME);
+	return (struct Volume *) acc->primset;
 }
 

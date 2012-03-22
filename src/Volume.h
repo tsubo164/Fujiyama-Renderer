@@ -11,6 +11,7 @@ extern "C" {
 #endif
 
 struct Volume;
+struct VolumeList;
 struct Accelerator;
 
 extern struct Volume *VolNew(void);
@@ -23,6 +24,19 @@ extern void *VolAllocateCurve(struct Volume *volume, const char *attr_name, int 
 
 extern void VolComputeBounds(struct Volume *volume);
 
+*/
+
+/* XXX TEST */
+struct Ray;
+struct LocalGeometry;
+extern int VolSample(const struct Volume *volume, const struct Ray *ray,
+		struct LocalGeometry *isect, double *t_hit);
+
+/* VolumeList interfaces */
+/*
+struct VolumeList *VolumeListNew(void);
+void VolumeListFree(struct VolumeList *list);
+void VolumeListAdd(struct VolumeList *list, const struct Volume *vol);
 */
 
 #ifdef __cplusplus

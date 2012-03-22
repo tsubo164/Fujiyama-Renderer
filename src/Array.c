@@ -27,12 +27,13 @@ struct Array *ArrNew(size_t size_of_element)
 
 void ArrFree(struct Array *a)
 {
-	if (a != NULL) {
-		if (a->nallocs > 0) {
-			free(a->data);
-		}
-		free(a);
-	}
+	if (a == NULL)
+		return;
+
+	if (a->nallocs > 0)
+		free(a->data);
+
+	free(a);
 }
 
 char *ArrPush(struct Array *a, const void *data)

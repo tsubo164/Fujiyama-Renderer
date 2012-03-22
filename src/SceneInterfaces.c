@@ -304,7 +304,10 @@ ID SiNewVolume(void)
 		return SI_BADID;
 	}
 
+	acc = ScnNewAccelerator(scene, ACC_VOLUME);
+	/*
 	acc = ScnNewAccelerator(scene, ACC_GRID);
+	*/
 	if (acc == NULL) {
 		set_errno(SI_ERR_FAILNEW);
 		return SI_BADID;

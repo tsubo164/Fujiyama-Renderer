@@ -7,12 +7,16 @@ See LICENSE and README
 #include "LocalGeometry.h"
 #include "Accelerator.h"
 #include "Vector.h"
+/* XXX TEST */
+#include "Volume.h"
 #include "Matrix.h"
 #include "Array.h"
 #include "Box.h"
 #include "Ray.h"
+
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 #include <float.h>
 
 struct ObjectInstance {
@@ -37,6 +41,7 @@ struct ObjectInstance {
 	const struct ObjectGroup *refraction_target;
 };
 
+/* internal uses only */
 struct ObjectList {
 	struct Accelerator *accelerator;
 	struct Array *objects;
@@ -44,13 +49,19 @@ struct ObjectList {
 };
 
 struct ObjectGroup {
+#if 0
 	struct Accelerator *accelerator;
 	struct Array *objects;
 	double bounds[6];
+#endif
+	struct ObjectList *surface_list;
+	struct ObjectList *volume_list;
 };
 
 static void update_matrix_and_bounds(struct ObjectInstance *obj);
+#if 0
 static void update_group_accelerator(struct ObjectGroup *grp);
+#endif
 static void update_object_bounds(struct ObjectInstance *obj);
 
 static void object_bounds(const void *prim_set, int prim_id, double *bounds);
@@ -197,6 +208,21 @@ int ObjIntersect(const struct ObjectInstance *obj, const struct Ray *ray,
 	hit = AccIntersect(obj->acc, &ray_in_objspace, isect, t_hit);
 	if (!hit)
 		return 0;
+#if 0
+	{
+		int primtype = AccGetPrimitiveType(obj->acc);
+		hit = 0;
+		if (primtype == ACC_PRIM_SURFACE) {
+			hit = AccIntersect(obj->acc, &ray_in_objspace, isect, t_hit);
+		}
+		else if (primtype == ACC_PRIM_VOLUME) {
+			struct Volume *volume = AccGetVolume(obj->acc, 0);
+			hit = VolSample(volume, &ray_in_objspace, isect, t_hit);
+		}
+		if (!hit)
+			return 0;
+	}
+#endif
 
 	/* transform intersection back to world space */
 	TransformPoint(isect->P, &obj->object_to_world);
@@ -215,6 +241,7 @@ int ObjIntersect(const struct ObjectInstance *obj, const struct Ray *ray,
 /* ObjectGroup interfaces */
 struct ObjectGroup *ObjGroupNew(void)
 {
+#if 0
 	struct ObjectGroup *grp;
 
 	grp = (struct ObjectGroup *) malloc(sizeof(struct ObjectGroup));
@@ -236,10 +263,31 @@ struct ObjectGroup *ObjGroupNew(void)
 	BOX3_SET(grp->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	return grp;
+#endif
+	struct ObjectGroup *grp;
+
+	grp = (struct ObjectGroup *) malloc(sizeof(struct ObjectGroup));
+	if (grp == NULL)
+		return NULL;
+
+	grp->surface_list = obj_list_new();
+	if (grp->surface_list == NULL) {
+		ObjGroupFree(grp);
+		return NULL;
+	}
+
+	grp->volume_list = obj_list_new();
+	if (grp->volume_list == NULL) {
+		ObjGroupFree(grp);
+		return NULL;
+	}
+
+	return grp;
 }
 
 void ObjGroupFree(struct ObjectGroup *grp)
 {
+#if 0
 	if (grp == NULL)
 		return;
 
@@ -250,28 +298,53 @@ void ObjGroupFree(struct ObjectGroup *grp)
 		ArrFree(grp->objects);
 
 	free(grp);
+#endif
+	if (grp == NULL)
+		return;
+
+	obj_list_free(grp->surface_list);
+	obj_list_free(grp->volume_list);
+	free(grp);
 }
 
 void ObjGroupAdd(struct ObjectGroup *grp, const struct ObjectInstance *obj)
 {
+#if 0
 	ArrPushPointer(grp->objects, obj);
 	BoxAddBox(grp->bounds, obj->bounds);
 	update_group_accelerator(grp);
+#endif
+	int primtype;
+	primtype = AccGetPrimitiveType(obj->acc);
+
+	if (primtype == ACC_PRIM_SURFACE) {
+		obj_list_add(grp->surface_list, obj);
+	}
+	else if (primtype == ACC_PRIM_VOLUME) {
+		obj_list_add(grp->volume_list, obj);
+	}
+	else {
+		printf("fatal error: bad primtype: %d\n", primtype);
+		abort();
+	}
 }
 
+#if 0
 const struct Accelerator *ObjGroupGetAccelerator(const struct ObjectGroup *grp)
 {
 	return grp->accelerator;
+	return grp->surface_list->accelerator;
 }
+#endif
 
 const struct Accelerator *ObjGroupGetSurfaceAccelerator(const struct ObjectGroup *grp)
 {
-	return grp->accelerator;
+	return grp->surface_list->accelerator;
 }
 
 const struct Accelerator *ObjGroupGetVolumeAccelerator(const struct ObjectGroup *grp)
 {
-	return grp->accelerator;
+	return grp->volume_list->accelerator;
 }
 
 static void update_matrix_and_bounds(struct ObjectInstance *obj)
@@ -305,6 +378,7 @@ static int object_ray_intersect(const void *prim_set, int prim_id, const struct 
 	return ObjIntersect(objects[prim_id], ray, isect, t_hit);
 }
 
+#if 0
 static void update_group_accelerator(struct ObjectGroup *grp)
 {
 	assert(grp != NULL);
@@ -319,6 +393,7 @@ static void update_group_accelerator(struct ObjectGroup *grp)
 			object_ray_intersect,
 			object_bounds);
 }
+#endif
 
 static struct ObjectList *obj_list_new(void)
 {

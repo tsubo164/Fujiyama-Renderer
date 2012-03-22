@@ -49,7 +49,9 @@ extern struct ObjectGroup *ObjGroupNew(void);
 extern void ObjGroupFree(struct ObjectGroup *grp);
 
 extern void ObjGroupAdd(struct ObjectGroup *grp, const struct ObjectInstance *obj);
+#if 0
 extern const struct Accelerator *ObjGroupGetAccelerator(const struct ObjectGroup *grp);
+#endif
 extern const struct Accelerator *ObjGroupGetSurfaceAccelerator(const struct ObjectGroup *grp);
 extern const struct Accelerator *ObjGroupGetVolumeAccelerator(const struct ObjectGroup *grp);
 
