@@ -12,7 +12,7 @@ extern "C" {
 
 #include "Transform.h"
 
-struct LocalGeometry;
+struct Intersection;
 struct Accelerator;
 struct Shader;
 struct Light;
@@ -40,9 +40,6 @@ extern const struct ObjectGroup *ObjGetRefractTarget(const struct ObjectInstance
 extern const struct Shader *ObjGetShader(const struct ObjectInstance *obj);
 extern const struct Light **ObjGetLightList(const struct ObjectInstance *obj);
 extern int ObjGetLightCount(const struct ObjectInstance *obj);
-
-extern int ObjIntersect(const struct ObjectInstance *obj, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit);
 
 /* ObjectGroup interfaces */
 extern struct ObjectGroup *ObjGroupNew(void);

@@ -4,7 +4,7 @@ See LICENSE and README
 */
 
 #include "Accelerator.h"
-#include "LocalGeometry.h"
+#include "Intersection.h"
 #include "Triangle.h"
 #include "Numeric.h"
 #include "Vector.h"
@@ -36,13 +36,14 @@ struct Accelerator {
 	void (*FreeDerived)(struct Accelerator *acc);
 	int (*Build)(struct Accelerator *acc);
 	int (*Intersect)(const struct Accelerator *acc, const struct Ray *ray,
-			struct LocalGeometry *isect, double *t_hit);
+			struct Intersection *isect);
 };
 
 /* -------------------------------------------------------------------------- */
 /* Accelerator */
-static int ray_prim_intersect (const struct Accelerator *acc, int prim_id,
-	const struct Ray *ray, struct LocalGeometry *isect, double *t_hit);
+static int ray_prim_intersect(const struct Accelerator *acc, int prim_id,
+	const struct Ray *ray, struct Intersection *isect);
+static void swap_isect_ptr(struct Intersection **isect0, struct Intersection **isect1);
 
 /* -------------------------------------------------------------------------- */
 /* GridAccelerator */
@@ -60,11 +61,11 @@ struct GridAccelerator {
 	double bounds[6];
 };
 
-static struct GridAccelerator *NewGrid(void);
-static void FreeGrid(struct Accelerator *acc);
-static int BuildGrid(struct Accelerator *acc);
-static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit);
+static struct GridAccelerator *new_grid_accel(void);
+static void free_grid_accel(struct Accelerator *acc);
+static int build_grid_accel(struct Accelerator *acc);
+static int intersect_grid_accel(const struct Accelerator *acc, const struct Ray *ray,
+		struct Intersection *isect);
 static void compute_grid_cellsizes(int nprimitives,
 		double xwidth, double ywidth, double zwidth,
 		int *xncells, int *yncells, int *zncells);
@@ -101,15 +102,15 @@ struct BVHAccelerator {
 	struct BVHNode *root;
 };
 
-static struct BVHAccelerator *NewBVH(void);
-static void FreeBVH(struct Accelerator *acc);
-static int BuildBVH(struct Accelerator *acc);
-static int IntersectBVH(const struct Accelerator *acc, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit);
+static struct BVHAccelerator *new_bvh_accel(void);
+static void free_bvh_accel(struct Accelerator *acc);
+static int build_bvh_accel(struct Accelerator *acc);
+static int intersect_bvh_accel(const struct Accelerator *acc, const struct Ray *ray,
+		struct Intersection *isect);
 static int intersect_bvh_recursive(const struct Accelerator *acc, const struct BVHNode *node,
-		const struct Ray *ray, struct LocalGeometry *isect, double *t_hit);
+		const struct Ray *ray, struct Intersection *isect);
 static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNode *root,
-		const struct Ray *ray, struct LocalGeometry *isect, double *t_hit);
+		const struct Ray *ray, struct Intersection *isect);
 
 static struct BVHNode *new_bvhnode(void);
 static void free_bvhnode_recursive(struct BVHNode *node);
@@ -132,15 +133,15 @@ struct VolumeAccelerator {
 	double bounds[6];
 };
 
-static struct VolumeAccelerator *new_volume_accelerator(void);
-static void free_volume_accelerator(struct Accelerator *acc);
-static int build_volume_accelerator(struct Accelerator *acc);
-static int intersect_volume_accelerator(const struct Accelerator *acc, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit);
+static struct VolumeAccelerator *new_volume_accel(void);
+static void free_volume_accel(struct Accelerator *acc);
+static int build_volume_accel(struct Accelerator *acc);
+static int intersect_volume_accel(const struct Accelerator *acc, const struct Ray *ray,
+		struct Intersection *isect);
 
 /* -------------------------------------------------------------------------- */
-static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit)
+static int intersect_grid_accel(const struct Accelerator *acc, const struct Ray *ray,
+		struct Intersection *isect)
 {
 	const struct GridAccelerator *grid = (const struct GridAccelerator *) acc->derived;
 	double start[3];
@@ -211,9 +212,13 @@ static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
 	hit = 0;
 	for (;;) {
 		int id;
-		double tmin = FLT_MAX;
 		struct Cell *cell;
-		struct LocalGeometry loctmp;
+		struct Intersection isect_candidates[2];
+		struct Intersection *isect_min, *isect_tmp;
+
+		isect_min = &isect_candidates[0];
+		isect_tmp = &isect_candidates[1];
+		isect_min->t_hit = FLT_MAX;
 
 		id = cellid[2] * NCELLS[0] * NCELLS[1] + cellid[1] * NCELLS[0] + cellid[0];
 
@@ -221,11 +226,10 @@ static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
 		for (cell = grid->cells[id]; cell != NULL; cell = cell->next) {
 			int hittmp;
 			int inside_cell;
-			double ttmp = FLT_MAX;
 			double hitpt[3];
 			double cellbox[6];
 
-			hittmp = ray_prim_intersect(acc, cell->prim_id, ray, &loctmp, &ttmp);
+			hittmp = ray_prim_intersect(acc, cell->prim_id, ray, isect_tmp);
 			if (!hittmp)
 				continue;
 
@@ -236,18 +240,20 @@ static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
 			cellbox[3] = cellbox[0] + grid->cellsize[0];
 			cellbox[4] = cellbox[1] + grid->cellsize[1];
 			cellbox[5] = cellbox[2] + grid->cellsize[2];
-			POINT_ON_RAY(hitpt, ray->orig, ray->dir, ttmp);
+			POINT_ON_RAY(hitpt, ray->orig, ray->dir, isect_tmp->t_hit);
 			inside_cell = BoxContainsPoint(cellbox, hitpt);
 
-			/* update info ONLY if tmin renewed */
-			if (ttmp < tmin && inside_cell) {
-				tmin = ttmp;
+			if (!inside_cell)
+				continue;
+
+			/* update info ONLY if isect->t_hit renewed */
+			if (isect_tmp->t_hit < isect_min->t_hit) {
+				swap_isect_ptr(&isect_min, &isect_tmp);
 				hit = hittmp;
-				*isect = loctmp;
 			}
 		}
 		if (hit) {
-			*t_hit = tmin;
+			*isect = *isect_min;
 			break;
 		}
 
@@ -280,7 +286,7 @@ static int IntersectGrid(const struct Accelerator *acc, const struct Ray *ray,
 	return hit;
 }
 
-static int BuildGrid(struct Accelerator *acc)
+static int build_grid_accel(struct Accelerator *acc)
 {
 	int i;
 	int XNCELLS;
@@ -368,7 +374,7 @@ static int BuildGrid(struct Accelerator *acc)
 	return 0;
 }
 
-static struct GridAccelerator *NewGrid(void)
+static struct GridAccelerator *new_grid_accel(void)
 {
 	struct GridAccelerator *grid;
 
@@ -384,7 +390,7 @@ static struct GridAccelerator *NewGrid(void)
 	return grid;
 }
 
-static void FreeGrid(struct Accelerator *acc)
+static void free_grid_accel(struct Accelerator *acc)
 {
 	int x, y, z;
 	struct GridAccelerator *grid = (struct GridAccelerator *) acc->derived;
@@ -418,36 +424,36 @@ struct Accelerator *AccNew(int accelerator_type)
 
 	switch (accelerator_type) {
 	case ACC_GRID:
-		acc->derived = (char *) NewGrid();
+		acc->derived = (char *) new_grid_accel();
 		if (acc->derived == NULL) {
 			AccFree(acc);
 			return NULL;
 		}
-		acc->FreeDerived = FreeGrid;
-		acc->Build = BuildGrid;
-		acc->Intersect = IntersectGrid;
+		acc->FreeDerived = free_grid_accel;
+		acc->Build = build_grid_accel;
+		acc->Intersect = intersect_grid_accel;
 		acc->name = "Uniform-Grid";
 		break;
 	case ACC_BVH:
-		acc->derived = (char *) NewBVH();
+		acc->derived = (char *) new_bvh_accel();
 		if (acc->derived == NULL) {
 			AccFree(acc);
 			return NULL;
 		}
-		acc->FreeDerived = FreeBVH;
-		acc->Build = BuildBVH;
-		acc->Intersect = IntersectBVH;
+		acc->FreeDerived = free_bvh_accel;
+		acc->Build = build_bvh_accel;
+		acc->Intersect = intersect_bvh_accel;
 		acc->name = "BVH";
 		break;
 	case ACC_VOLUME:
-		acc->derived = (char *) new_volume_accelerator();
+		acc->derived = (char *) new_volume_accel();
 		if (acc->derived == NULL) {
 			AccFree(acc);
 			return NULL;
 		}
-		acc->FreeDerived = free_volume_accelerator;
-		acc->Build = build_volume_accelerator;
-		acc->Intersect = intersect_volume_accelerator;
+		acc->FreeDerived = free_volume_accel;
+		acc->Build = build_volume_accel;
+		acc->Intersect = intersect_volume_accel;
 		acc->name = "Volume";
 		break;
 	default:
@@ -506,7 +512,7 @@ int AccBuild(struct Accelerator *acc)
 }
 
 int AccIntersect(const struct Accelerator *acc, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit)
+		struct Intersection *isect)
 {
 	double boxhit_tmin;
 	double boxhit_tmax;
@@ -524,7 +530,7 @@ int AccIntersect(const struct Accelerator *acc, const struct Ray *ray,
 		fflush(stdout);
 	}
 
-	return acc->Intersect(acc, ray, isect, t_hit);
+	return acc->Intersect(acc, ray, isect);
 }
 
 void AccSetTargetGeometry(struct Accelerator *acc,
@@ -584,7 +590,7 @@ static void compute_grid_cellsizes(int nprimitives,
 }
 
 /* -------------------------------------------------------------------------- */
-static struct BVHAccelerator *NewBVH(void)
+static struct BVHAccelerator *new_bvh_accel(void)
 {
 	struct BVHAccelerator *bvh;
 
@@ -597,7 +603,7 @@ static struct BVHAccelerator *NewBVH(void)
 	return bvh;
 }
 
-static void FreeBVH(struct Accelerator *acc)
+static void free_bvh_accel(struct Accelerator *acc)
 {
 	struct BVHAccelerator *bvh = (struct BVHAccelerator *) acc->derived;
 
@@ -606,7 +612,7 @@ static void FreeBVH(struct Accelerator *acc)
 	free(bvh);
 }
 
-static int BuildBVH(struct Accelerator *acc)
+static int build_bvh_accel(struct Accelerator *acc)
 {
 	struct BVHAccelerator *bvh = (struct BVHAccelerator *) acc->derived;
 	struct Primitive *prims;
@@ -648,24 +654,23 @@ static int BuildBVH(struct Accelerator *acc)
 	return 0;
 }
 
-static int IntersectBVH(const struct Accelerator *acc, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit)
+static int intersect_bvh_accel(const struct Accelerator *acc, const struct Ray *ray,
+		struct Intersection *isect)
 {
 	const struct BVHAccelerator *bvh = (const struct BVHAccelerator *) acc->derived;
 
 	if (1)
-		return intersect_bvh_loop(acc, bvh->root, ray, isect,  t_hit);
+		return intersect_bvh_loop(acc, bvh->root, ray, isect);
 	else
-		return intersect_bvh_recursive(acc, bvh->root, ray, isect,  t_hit);
+		return intersect_bvh_recursive(acc, bvh->root, ray, isect);
 }
 
 static int intersect_bvh_recursive(const struct Accelerator *acc, const struct BVHNode *node,
-		const struct Ray *ray, struct LocalGeometry *isect, double *t_hit)
+		const struct Ray *ray, struct Intersection *isect)
 {
-	struct LocalGeometry local_left, local_right;
+	struct Intersection isect_left, isect_right;
 	double boxhit_tmin;
 	double boxhit_tmax;
-	double t_hit_left, t_hit_right;
 	int hit_left, hit_right;
 	int hit;
 
@@ -677,61 +682,53 @@ static int intersect_bvh_recursive(const struct Accelerator *acc, const struct B
 	}
 
 	if (is_bvh_leaf(node)) {
-		return ray_prim_intersect(acc, node->prim_id, ray, isect, t_hit);
+		return ray_prim_intersect(acc, node->prim_id, ray, isect);
 	}
 
-	t_hit_left = FLT_MAX;
-	hit_left  = intersect_bvh_recursive(acc, node->left,  ray, &local_left,  &t_hit_left);
-	t_hit_right = FLT_MAX;
-	hit_right = intersect_bvh_recursive(acc, node->right, ray, &local_right, &t_hit_right);
+	isect_left.t_hit = FLT_MAX;
+	hit_left  = intersect_bvh_recursive(acc, node->left,  ray, &isect_left);
+	isect_right.t_hit = FLT_MAX;
+	hit_right = intersect_bvh_recursive(acc, node->right, ray, &isect_right);
 
-	if (t_hit_left < ray->tmin)
-		t_hit_left = FLT_MAX;
-	if (t_hit_right < ray->tmin)
-		t_hit_right = FLT_MAX;
+	if (isect_left.t_hit < ray->tmin)
+		isect_left.t_hit = FLT_MAX;
+	if (isect_right.t_hit < ray->tmin)
+		isect_right.t_hit = FLT_MAX;
 
-	if (t_hit_left < t_hit_right) {
-		*t_hit = t_hit_left;
-		*isect = local_left;
-	} else if (t_hit_right < t_hit_left) {
-		*t_hit = t_hit_right;
-		*isect = local_right;
+	if (isect_left.t_hit < isect_right.t_hit) {
+		*isect = isect_left;
+	} else if (isect_right.t_hit < isect_left.t_hit) {
+		*isect = isect_right;
 	}
 
 	return (hit_left || hit_right);
 }
 
 static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNode *root,
-		const struct Ray *ray, struct LocalGeometry *isect, double *t_hit)
+		const struct Ray *ray, struct Intersection *isect)
 {
 	int hit, hittmp;
 	int whichhit;
 	int hit_left, hit_right;
 	double boxhit_tmin, boxhit_tmax;
-	double ttmp, tmin;
-	struct LocalGeometry localgeo[2];
-	struct LocalGeometry *localmin, *localtmp;
+	struct Intersection isect_candidates[2];
+	struct Intersection *isect_min, *isect_tmp;
 
 	const struct BVHNode *node;
 	struct BVHNodeStack stack = {0, {NULL}};
 
 	node = root;
 	hit = 0;
-	tmin = FLT_MAX;
 
-	localmin = &localgeo[0];
-	localtmp = &localgeo[1];
+	isect_min = &isect_candidates[0];
+	isect_tmp = &isect_candidates[1];
+	isect_min->t_hit = FLT_MAX;
 
 	for (;;) {
 		if (is_bvh_leaf(node)) {
-			hittmp = ray_prim_intersect(acc, node->prim_id, ray, localtmp, &ttmp);
-			if (hittmp && ttmp < tmin) {
-				/* swap local geometry */
-				struct LocalGeometry *localswp = localtmp;
-				localtmp = localmin;
-				localmin = localswp;
-				/* update tmin */
-				tmin = ttmp;
+			hittmp = ray_prim_intersect(acc, node->prim_id, ray, isect_tmp);
+			if (hittmp && isect_tmp->t_hit < isect_min->t_hit) {
+				swap_isect_ptr(&isect_min, &isect_tmp);
 				hit = hittmp;
 			}
 
@@ -781,8 +778,7 @@ static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNod
 loop_exit:
 
 	if (hit) {
-		*t_hit = tmin;
-		*isect = *localmin;
+		*isect = *isect_min;
 	}
 
 	return hit;
@@ -942,18 +938,29 @@ static int primitive_compare_z(const void *a, const void *b)
 }
 
 static int ray_prim_intersect (const struct Accelerator *acc, int prim_id,
-	const struct Ray *ray, struct LocalGeometry *isect, double *t_hit)
+	const struct Ray *ray, struct Intersection *isect)
 {
 	int hit;
 
-	hit = acc->PrimIntersect(acc->primset, prim_id, ray, isect, t_hit);
-	if (!hit)
+	hit = acc->PrimIntersect(acc->primset, prim_id, ray, isect);
+	if (!hit) {
+		isect->t_hit = FLT_MAX;
 		return 0;
+	}
 
-	if (*t_hit < ray->tmin || ray->tmax < *t_hit)
+	if (isect->t_hit < ray->tmin || ray->tmax < isect->t_hit) {
+		isect->t_hit = FLT_MAX;
 		return 0;
+	}
 
 	return 1;
+}
+
+static void swap_isect_ptr(struct Intersection **isect0, struct Intersection **isect1)
+{
+	struct Intersection *isect_swp = *isect0;
+	*isect0 = *isect1;
+	*isect1 = isect_swp;
 }
 
 static int is_empty(const struct BVHNodeStack *stack)
@@ -974,7 +981,7 @@ static const struct BVHNode *pop_node(struct BVHNodeStack *stack)
 }
 
 /* -------------------------------------------------------------------------- */
-static struct VolumeAccelerator *new_volume_accelerator(void)
+static struct VolumeAccelerator *new_volume_accel(void)
 {
 	struct VolumeAccelerator *vol;
 
@@ -985,21 +992,21 @@ static struct VolumeAccelerator *new_volume_accelerator(void)
 	return vol;
 }
 
-static void free_volume_accelerator(struct Accelerator *acc)
+static void free_volume_accel(struct Accelerator *acc)
 {
 	struct VolumeAccelerator *vol = (struct VolumeAccelerator *) acc->derived;
 	free(vol);
 }
 
-static int build_volume_accelerator(struct Accelerator *acc)
+static int build_volume_accel(struct Accelerator *acc)
 {
 	return 0;
 }
 
-static int intersect_volume_accelerator(const struct Accelerator *acc, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit)
+static int intersect_volume_accel(const struct Accelerator *acc, const struct Ray *ray,
+		struct Intersection *isect)
 {
-	return acc->PrimIntersect(acc->primset, 0, ray, isect, t_hit);
+	return acc->PrimIntersect(acc->primset, 0, ray, isect);
 }
 
 /* XXX TEST */

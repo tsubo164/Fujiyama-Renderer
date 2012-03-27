@@ -4,7 +4,7 @@ See LICENSE and README
 */
 
 #include "Volume.h"
-#include "LocalGeometry.h"
+#include "Intersection.h"
 #include "Accelerator.h"
 #include "Array.h"
 #include "Box.h"
@@ -44,7 +44,7 @@ struct VolumeList {
 
 /* volume interfaces */
 static int volume_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit);
+		struct Intersection *isect);
 static void volume_bounds(const void *prim_set, int prim_id, double *bounds);
 
 struct Volume *VolNew(void)
@@ -124,7 +124,7 @@ void VolumeListAdd(struct VolumeList *list, const struct Volume *vol)
 */
 
 static int volume_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit)
+		struct Intersection *isect)
 {
 	const struct Volume *volume = (const struct Volume *) prim_set;
 	int hit;
@@ -134,7 +134,7 @@ static int volume_ray_intersect(const void *prim_set, int prim_id, const struct 
 	BOX3_COPY(bounds_expand, volume->bounds);
 	BOX3_EXPAND(bounds_expand, .000001);
 	if (BoxContainsPoint(bounds_expand, ray->orig)) {
-		*t_hit = .05;
+		isect->t_hit = .05;
 		return 1;
 	}
 #if 0
@@ -154,7 +154,7 @@ static int volume_ray_intersect(const void *prim_set, int prim_id, const struct 
 		return 0;
 	}
 
-	*t_hit = boxhit_tmin;
+	isect->t_hit = boxhit_tmin;
 	return hit;
 }
 
@@ -167,7 +167,7 @@ static void volume_bounds(const void *prim_set, int prim_id, double *bounds)
 
 /* XXX TEST */
 int VolSample(const struct Volume *volume, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit)
+		struct Intersection *isect, double *t_hit)
 {
 	int hit;
 	double boxhit_tmin, boxhit_tmax;

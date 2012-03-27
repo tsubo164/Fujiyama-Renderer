@@ -3,36 +3,41 @@ Copyright (c) 2011-2012 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "LocalGeometry.h"
+#include "Intersection.h"
 #include "Array.h"
 #include <stdlib.h>
 #include <assert.h>
 
 struct IntersectionList {
-	struct Array *intersections;
+	struct Array *list;
 };
 
 struct IntersectionList *IsectNew()
 {
-	struct IntersectionList *list;
+	struct IntersectionList *isects;
 
-	list = (struct IntersectionList *) malloc(sizeof(struct IntersectionList));
-	if (list == NULL)
+	isects = (struct IntersectionList *) malloc(sizeof(struct IntersectionList));
+	if (isects == NULL)
 		return NULL;
 
-	list->intersections = ArrNew(sizeof(struct Intersection));
-	if (list->intersections == NULL)
+	isects->list = ArrNew(sizeof(struct Intersection));
+	if (isects->list == NULL)
 		return NULL;
 
-	return list;
+	return isects;
 }
 
-void IsectFree(struct IntersectionList *list)
+void IsectFree(struct IntersectionList *isects)
 {
-	if (list == NULL)
+	if (isects == NULL)
 		return;
 	
-	ArrFree(list->intersections);
-	free(list);
+	ArrFree(isects->list);
+	free(isects);
+}
+
+void IsectPush(struct IntersectionList *isects, const struct Intersection *isect)
+{
+	ArrPush(isects->list, isect);
 }
 

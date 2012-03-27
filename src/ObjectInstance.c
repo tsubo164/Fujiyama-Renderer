@@ -4,7 +4,7 @@ See LICENSE and README
 */
 
 #include "ObjectInstance.h"
-#include "LocalGeometry.h"
+#include "Intersection.h"
 #include "Accelerator.h"
 #include "Vector.h"
 /* XXX TEST */
@@ -66,7 +66,7 @@ static void update_object_bounds(struct ObjectInstance *obj);
 
 static void object_bounds(const void *prim_set, int prim_id, double *bounds);
 static int object_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit);
+		struct Intersection *isect);
 
 /* ObjectList interfaces */
 static struct ObjectList *obj_list_new(void);
@@ -189,53 +189,6 @@ const struct Light **ObjGetLightList(const struct ObjectInstance *obj)
 int ObjGetLightCount(const struct ObjectInstance *obj)
 {
 	return obj->n_target_lights;
-}
-
-int ObjIntersect(const struct ObjectInstance *obj, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit)
-{
-	int hit;
-	struct Ray ray_in_objspace;
-
-	if (obj->acc == NULL)
-		return 0;
-
-	/* transform ray to object space */
-	ray_in_objspace = *ray;
-	TransformPoint(ray_in_objspace.orig, &obj->world_to_object);
-	TransformVector(ray_in_objspace.dir, &obj->world_to_object);
-
-	hit = AccIntersect(obj->acc, &ray_in_objspace, isect, t_hit);
-	if (!hit)
-		return 0;
-#if 0
-	{
-		int primtype = AccGetPrimitiveType(obj->acc);
-		hit = 0;
-		if (primtype == ACC_PRIM_SURFACE) {
-			hit = AccIntersect(obj->acc, &ray_in_objspace, isect, t_hit);
-		}
-		else if (primtype == ACC_PRIM_VOLUME) {
-			struct Volume *volume = AccGetVolume(obj->acc, 0);
-			hit = VolSample(volume, &ray_in_objspace, isect, t_hit);
-		}
-		if (!hit)
-			return 0;
-	}
-#endif
-
-	/* transform intersection back to world space */
-	TransformPoint(isect->P, &obj->object_to_world);
-	TransformVector(isect->N, &obj->object_to_world);
-	VEC3_NORMALIZE(isect->N);
-
-	/* TODO should make TransformLocalGeometry? */
-	TransformVector(isect->dPds, &obj->object_to_world);
-	TransformVector(isect->dPdt, &obj->object_to_world);
-
-	isect->object = obj;
-
-	return 1;
 }
 
 /* ObjectGroup interfaces */
@@ -372,10 +325,37 @@ static void object_bounds(const void *prim_set, int prim_id, double *bounds)
 }
 
 static int object_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit)
+		struct Intersection *isect)
 {
 	const struct ObjectInstance **objects = (const struct ObjectInstance **) prim_set;
-	return ObjIntersect(objects[prim_id], ray, isect, t_hit);
+	const struct ObjectInstance *obj = objects[prim_id];
+	struct Ray ray_in_objspace;
+	int hit;
+
+	if (obj->acc == NULL)
+		return 0;
+
+	/* transform ray to object space */
+	ray_in_objspace = *ray;
+	TransformPoint(ray_in_objspace.orig, &obj->world_to_object);
+	TransformVector(ray_in_objspace.dir, &obj->world_to_object);
+
+	hit = AccIntersect(obj->acc, &ray_in_objspace, isect);
+	if (!hit)
+		return 0;
+
+	/* transform intersection back to world space */
+	TransformPoint(isect->P, &obj->object_to_world);
+	TransformVector(isect->N, &obj->object_to_world);
+	VEC3_NORMALIZE(isect->N);
+
+	/* TODO should make TransformLocalGeometry? */
+	TransformVector(isect->dPds, &obj->object_to_world);
+	TransformVector(isect->dPdt, &obj->object_to_world);
+
+	isect->object = obj;
+
+	return 1;
 }
 
 #if 0

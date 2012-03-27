@@ -10,7 +10,7 @@ See LICENSE and README
 #include "Vector.h"
 #include "Numeric.h"
 #include "Accelerator.h"
-#include "LocalGeometry.h"
+#include "Intersection.h"
 #include "ObjectInstance.h"
 
 #include <assert.h>
@@ -23,7 +23,7 @@ static void setup_ray(const double *ray_orig, const double *ray_dir,
 		double ray_tmin, double ray_tmax,
 		struct Ray *ray);
 static void setup_surface_input(
-		const struct LocalGeometry *local,
+		const struct Intersection *isect,
 		const struct Ray *ray,
 		struct SurfaceInput *in);
 
@@ -31,10 +31,10 @@ static void setup_surface_input(
 static int trace_surface(const struct TraceContext *cxt,
 		const double *ray_orig, const double *ray_dir,
 		double ray_tmin, double ray_tmax, float *out_color);
-*/
 static int raymarch_volume(const struct TraceContext *cxt,
 		const double *ray_orig, const double *ray_dir,
 		double ray_tmin, double ray_tmax, float *out_color);
+*/
 
 double SlSmoothStep(double x, double edge0, double edge1)
 {
@@ -130,12 +130,11 @@ int SlTrace(const struct TraceContext *cxt,
 		double ray_tmin, double ray_tmax, float *out_color)
 {
 	struct Ray ray;
-	struct LocalGeometry local;
-	double t_hit = FLT_MAX;
+	struct Intersection isect;
 	int hit;
 
 	/* XXX TEST */
-	struct IntersectionList *isects = NULL;
+	struct IntersectionList *isect_list = NULL;
 	/*
 	*/
 
@@ -146,13 +145,13 @@ int SlTrace(const struct TraceContext *cxt,
 
 	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
 
-	isects = IsectNew();
+	isect_list = IsectNew();
 	/*
 	*/
-	hit = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &local, &t_hit);
+	hit = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &isect);
 
 	if (cxt->ray_context == CXT_SHADOW_RAY) {
-		IsectFree(isects);
+		IsectFree(isect_list);
 	/*
 	*/
 		return hit;
@@ -162,8 +161,8 @@ int SlTrace(const struct TraceContext *cxt,
 		struct SurfaceInput in;
 		struct SurfaceOutput out;
 
-		setup_surface_input(&local, &ray, &in);
-		ShdEvaluate(ObjGetShader(local.object), cxt, &in, &out);
+		setup_surface_input(&isect, &ray, &in);
+		ShdEvaluate(ObjGetShader(isect.object), cxt, &in, &out);
 
 		out.Os = CLAMP(out.Os, 0, 1);
 		VEC4_SET(out_color, out.Cs[0], out.Cs[1], out.Cs[2], out.Os);
@@ -175,7 +174,7 @@ int SlTrace(const struct TraceContext *cxt,
 
 	hit = raymarch_volume(cxt, ray_orig, ray_dir, ray_tmin, ray_tmax, out_color);
 	*/
-	IsectFree(isects);
+	IsectFree(isect_list);
 	/*
 	*/
 
@@ -184,7 +183,7 @@ int SlTrace(const struct TraceContext *cxt,
 #if 0
 	/* original */
 	struct Ray ray;
-	struct LocalGeometry local;
+	struct Intersection isect;
 	double t_hit = FLT_MAX;
 	int hit;
 
@@ -194,7 +193,7 @@ int SlTrace(const struct TraceContext *cxt,
 	}
 
 	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
-	hit = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &local, &t_hit);
+	hit = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &isect, &t_hit);
 
 	if (cxt->ray_context == CXT_SHADOW_RAY) {
 		return hit;
@@ -204,8 +203,8 @@ int SlTrace(const struct TraceContext *cxt,
 		struct SurfaceInput in;
 		struct SurfaceOutput out;
 
-		setup_surface_input(&local, &ray, &in);
-		ShdEvaluate(ObjGetShader(local.object), cxt, &in, &out);
+		setup_surface_input(&isect, &ray, &in);
+		ShdEvaluate(ObjGetShader(isect.object), cxt, &in, &out);
 
 		out.Os = CLAMP(out.Os, 0, 1);
 		VEC4_SET(out_color, out.Cs[0], out.Cs[1], out.Cs[2], out.Os);
@@ -218,7 +217,7 @@ int SlTrace(const struct TraceContext *cxt,
 	/* original + transparent */
 	struct Ray ray;
 	struct Ray ray;
-	struct LocalGeometry local;
+	struct Intersection isect;
 	double t_hit = FLT_MAX;
 	int hit;
 
@@ -231,7 +230,7 @@ int SlTrace(const struct TraceContext *cxt,
 
 	while (out_color[3] < .9995) {
 		t_hit = FLT_MAX;
-		hit = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &local, &t_hit);
+		hit = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &isect, &t_hit);
 
 		if (!hit) {
 			break;
@@ -248,8 +247,8 @@ int SlTrace(const struct TraceContext *cxt,
 			struct SurfaceInput in;
 			struct SurfaceOutput out;
 
-			setup_surface_input(&local, &ray, &in);
-			ShdEvaluate(ObjGetShader(local.object), cxt, &in, &out);
+			setup_surface_input(&isect, &ray, &in);
+			ShdEvaluate(ObjGetShader(isect.object), cxt, &in, &out);
 
 			out_color[0] = out_color[0] + out.Cs[0] * (1-out_color[3]);
 			out_color[1] = out_color[1] + out.Cs[1] * (1-out_color[3]);
@@ -452,26 +451,27 @@ static void setup_ray(const double *ray_orig, const double *ray_dir,
 }
 
 static void setup_surface_input(
-		const struct LocalGeometry *local,
+		const struct Intersection *isect,
 		const struct Ray *ray,
 		struct SurfaceInput *in)
 {
-	in->shaded_object = local->object;
-	VEC3_COPY(in->P, local->P);
-	VEC3_COPY(in->N, local->N);
-	VEC3_COPY(in->Cd, local->Cd);
-	VEC3_COPY(in->uv, local->uv);
+	in->shaded_object = isect->object;
+	VEC3_COPY(in->P, isect->P);
+	VEC3_COPY(in->N, isect->N);
+	VEC3_COPY(in->Cd, isect->Cd);
+	VEC3_COPY(in->uv, isect->uv);
 	VEC3_COPY(in->I, ray->dir);
 
-	VEC3_COPY(in->dPds, local->dPds);
-	VEC3_COPY(in->dPdt, local->dPdt);
+	VEC3_COPY(in->dPds, isect->dPds);
+	VEC3_COPY(in->dPdt, isect->dPdt);
 }
 
+#if 0
 static int raymarch_volume(const struct TraceContext *cxt,
 		const double *ray_orig, const double *ray_dir,
 		double ray_tmin, double ray_tmax, float *out_color)
 {
-	struct LocalGeometry local;
+	struct Intersection isect;
 	struct Ray ray;
 	int hit;
 
@@ -482,7 +482,7 @@ static int raymarch_volume(const struct TraceContext *cxt,
 		double t_hit = FLT_MAX;
 
 		hit = AccIntersect(ObjGroupGetVolumeAccelerator(cxt->trace_target),
-				&ray, &local, &t_hit);
+				&ray, &isect, &t_hit);
 
 		if (!hit) {
 			break;
@@ -492,8 +492,8 @@ static int raymarch_volume(const struct TraceContext *cxt,
 			struct SurfaceInput in;
 			struct SurfaceOutput out;
 
-			setup_surface_input(&local, &ray, &in);
-			ShdEvaluate(ObjGetShader(local.object), cxt, &in, &out);
+			setup_surface_input(&isect, &ray, &in);
+			ShdEvaluate(ObjGetShader(isect.object), cxt, &in, &out);
 			out.Os = 1 * .05;
 
 			out_color[0] = out_color[0] + out.Cs[0] * (1-out_color[3]);
@@ -510,4 +510,5 @@ static int raymarch_volume(const struct TraceContext *cxt,
 
 	return hit;
 }
+#endif
 

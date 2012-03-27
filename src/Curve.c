@@ -4,7 +4,7 @@ See LICENSE and README
 */
 
 #include "Curve.h"
-#include "LocalGeometry.h"
+#include "Intersection.h"
 #include "Accelerator.h"
 #include "Transform.h"
 #include "Numeric.h"
@@ -30,7 +30,7 @@ struct Bezier3 {
 
 /* curve interfaces */
 static int curve_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit);
+		struct Intersection *isect);
 static void curve_bounds(const void *prim_set, int prim_id, double *bounds);
 
 /* bezier curve interfaces */
@@ -187,7 +187,7 @@ void CrvComputeBounds(struct Curve *curve)
 }
 
 static int curve_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit)
+		struct Intersection *isect)
 {
 	const struct Curve *curve = (const struct Curve *) prim_set;
 	struct Bezier3 bezier;
@@ -225,8 +225,8 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, const struct R
 		float *Cd_curve1;
 
 		/* P */
-		*t_hit = ttmp / ray_scale;
-		POINT_ON_RAY(isect->P,ray->orig, ray->dir, *t_hit);
+		isect->t_hit = ttmp / ray_scale;
+		POINT_ON_RAY(isect->P,ray->orig, ray->dir, isect->t_hit);
 
 		/* dPdt */
 		get_bezier3(curve, prim_id, &original);
@@ -285,7 +285,7 @@ static void compute_world_to_ray_matrix(const struct Ray *ray, struct Matrix *ds
    */
 static int converge_bezier3(const struct Bezier3 *bezier,
 		double v0, double vn, int depth,
-		double *v_hit, double *t_hit)
+		double *v_hit, double *P_hit)
 {
 	const struct ControlPoint *cp = bezier->cp;
 	const double radius = get_bezier3_max_radius(bezier);
@@ -295,7 +295,7 @@ static int converge_bezier3(const struct Bezier3 *bezier,
 
 	if (bounds[0] >= radius || bounds[3] <= -radius ||
 		bounds[1] >= radius || bounds[4] <= -radius ||
-		bounds[2] >= *t_hit || bounds[5] <= 1e-6) {
+		bounds[2] >= *P_hit || bounds[5] <= 1e-6) {
 		return 0;
 	}
 
@@ -349,12 +349,12 @@ static int converge_bezier3(const struct Bezier3 *bezier,
 		}
 
 		/* compare z distance */
-		if (vP[2] <= 1e-6 || *t_hit < vP[2]) {
+		if (vP[2] <= 1e-6 || *P_hit < vP[2]) {
 			return 0;
 		}
 
 		/* we found a new intersection */
-		*t_hit = vP[2];
+		*P_hit = vP[2];
 		*v_hit = v;
 
 		return 1;
@@ -377,10 +377,10 @@ static int converge_bezier3(const struct Bezier3 *bezier,
 
 		if (hit_left || hit_right) {
 			if (t_left < t_right) {
-				*t_hit = t_left;
+				*P_hit = t_left;
 				*v_hit = v_left;
 			} else {
-				*t_hit = t_right;
+				*P_hit = t_right;
 				*v_hit = v_right;
 			}
 		}

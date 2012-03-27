@@ -28,9 +28,9 @@ extern void VolComputeBounds(struct Volume *volume);
 
 /* XXX TEST */
 struct Ray;
-struct LocalGeometry;
+struct Intersection;
 extern int VolSample(const struct Volume *volume, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit);
+		struct Intersection *isect, double *t_hit);
 
 /* VolumeList interfaces */
 /*

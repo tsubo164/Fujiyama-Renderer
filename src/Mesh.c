@@ -4,7 +4,7 @@ See LICENSE and README
 */
 
 #include "Mesh.h"
-#include "LocalGeometry.h"
+#include "Intersection.h"
 #include "Accelerator.h"
 #include "Triangle.h"
 #include "Vector.h"
@@ -15,7 +15,7 @@ See LICENSE and README
 #include <float.h>
 
 static int triangle_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit);
+		struct Intersection *isect);
 static void triangle_bounds(const void *prim_set, int prim_id, double *bounds);
 
 struct Mesh *MshNew(void)
@@ -122,13 +122,14 @@ void MshSetupAccelerator(const struct Mesh *mesh, struct Accelerator *acc)
 }
 
 static int triangle_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit)
+		struct Intersection *isect)
 {
 	const struct Mesh *mesh = (const struct Mesh *) prim_set;
 	const double *v0, *v1, *v2;
 	const double *N0, *N1, *N2;
 	int i0, i1, i2;
 	double u, v;
+	double t_hit;
 	int hit;
 
 	/* TODO make function */
@@ -142,7 +143,7 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, const struc
 	hit = TriRayIntersect(
 			v0, v1, v2,
 			ray->orig, ray->dir, DO_NOT_CULL_BACKFACES,
-			t_hit, &u, &v);
+			&t_hit, &u, &v);
 
 	if (!hit)
 		return 0;
@@ -172,12 +173,10 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, const struc
 		isect->uv[1] = 0;
 	}
 
-	POINT_ON_RAY(isect->P, ray->orig, ray->dir, *t_hit);
+	POINT_ON_RAY(isect->P, ray->orig, ray->dir, t_hit);
 	isect->object = NULL;
-	/*
-	isect->geometry = mesh;
-	*/
 	isect->prim_id = prim_id;
+	isect->t_hit = t_hit;
 
 	return 1;
 }

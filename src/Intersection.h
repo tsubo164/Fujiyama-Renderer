@@ -3,8 +3,8 @@ Copyright (c) 2011-2012 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef LOCALGEOMETRY_H
-#define LOCALGEOMETRY_H
+#ifndef INTERSECTION_H
+#define INTERSECTION_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,7 +12,7 @@ extern "C" {
 
 struct ObjectInstance;
 
-struct LocalGeometry {
+struct Intersection {
 	double P[3];
 	double N[3];
 	float Cd[3];
@@ -23,20 +23,17 @@ struct LocalGeometry {
 
 	const struct ObjectInstance *object;
 	int prim_id;
-};
 
-struct Intersection {
-	struct LocalGeometry geo;
-	double hit_t;
+	double t_hit;
 };
 
 struct IntersectionList;
 
 extern struct IntersectionList *IsectNew();
-extern void IsectFree(struct IntersectionList *list);
+extern void IsectFree(struct IntersectionList *isects);
 
-extern int IsectPush(struct IntersectionList *list, const struct LocalGeometry *local);
-extern const struct LocalGeometry *IsectGet(struct IntersectionList *list, int index);
+extern void IsectPush(struct IntersectionList *isects, const struct Intersection *isect);
+extern const struct Intersection *IsectGet(struct IntersectionList *isects, int index);
 
 #ifdef __cplusplus
 } /* extern "C" */

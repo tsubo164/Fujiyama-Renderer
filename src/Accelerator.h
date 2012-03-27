@@ -10,7 +10,7 @@ See LICENSE and README
 extern "C" {
 #endif
 
-struct LocalGeometry;
+struct Intersection;
 struct Mesh;
 struct Ray;
 
@@ -26,7 +26,7 @@ enum PrimitiveType {
 };
 
 typedef int (*PrimIntersectFunction)(const void *prim_set, int prim_id, const struct Ray *ray,
-			struct LocalGeometry *isect, double *t_hit);
+			struct Intersection *isect);
 typedef void (*PrimBoundsFunction)(const void *prim_set, int prim_id, double *bounds);
 
 extern struct Accelerator *AccNew(int accelerator_type);
@@ -42,7 +42,7 @@ extern void AccSetTargetGeometry(struct Accelerator *acc,
 	PrimBoundsFunction prim_bounds_function);
 
 extern int AccIntersect(const struct Accelerator *acc, const struct Ray *ray,
-		struct LocalGeometry *isect, double *t_hit);
+		struct Intersection *isect);
 
 /* XXX TEST */
 struct Volume;
