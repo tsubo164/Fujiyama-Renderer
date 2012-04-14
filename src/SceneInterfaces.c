@@ -191,6 +191,8 @@ Status SiSaveFrameBuffer(ID framebuffer, const char *filename)
 
 ID SiNewObjectInstance(ID accelerator)
 {
+/* TODO clean old code */
+#if 0
 	struct Accelerator *acc;
 	int type = 0;
 	int index = 0;
@@ -209,6 +211,56 @@ ID SiNewObjectInstance(ID accelerator)
 
 	if (ScnNewObjectInstance(scene, acc) == NULL) {
 		set_errno(SI_ERR_FAILNEW);
+		return SI_BADID;
+	}
+
+	set_errno(SI_NOERR);
+	return encode_id(Type_ObjectInstance, GET_LAST_ADDED_ID(ObjectInstance));
+#endif
+	int type = 0;
+	int index = 0;
+	decode_id(accelerator, &type, &index);
+
+	if (type == Type_Accelerator) {
+		struct Accelerator *acc;
+
+		acc = ScnGetAccelerator(scene, index);
+		if (acc == NULL) {
+			set_errno(SI_ERR_BADTYPE);
+			return SI_BADID;
+		}
+
+		if (ScnNewObjectInstance(scene, acc) == NULL) {
+			set_errno(SI_ERR_FAILNEW);
+			return SI_BADID;
+		}
+	}
+	else if (type == Type_Volume) {
+		struct ObjectInstance *object;
+		struct Volume *volume;
+		int err;
+
+		volume = ScnGetVolume(scene, index);
+		if (volume == NULL) {
+			set_errno(SI_ERR_BADTYPE);
+			return SI_BADID;
+		}
+
+		object = ScnNewObjectInstance(scene, NULL);
+		if (object == NULL) {
+			set_errno(SI_ERR_FAILNEW);
+			return SI_BADID;
+		}
+
+		err = ObjSetVolume(object, volume);
+		if (err) {
+			set_errno(SI_ERR_FAILNEW);
+			return SI_BADID;
+		}
+
+	}
+	else {
+		set_errno(SI_ERR_BADTYPE);
 		return SI_BADID;
 	}
 
@@ -296,7 +348,9 @@ ID SiNewShader(const char *arg)
 ID SiNewVolume(void)
 {
 	struct Volume *volume;
+	/* TODO remove acc
 	struct Accelerator *acc;
+	*/
 
 	volume = ScnNewVolume(scene);
 	if (volume == NULL) {
@@ -304,6 +358,7 @@ ID SiNewVolume(void)
 		return SI_BADID;
 	}
 
+#if 0
 	acc = ScnNewAccelerator(scene, ACC_VOLUME);
 	/*
 	acc = ScnNewAccelerator(scene, ACC_GRID);
@@ -313,9 +368,10 @@ ID SiNewVolume(void)
 		return SI_BADID;
 	}
 	VolSetupAccelerator(volume, acc);
+#endif
 
 	set_errno(SI_NOERR);
-	return encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
+	return encode_id(Type_Volume, GET_LAST_ADDED_ID(Volume));
 }
 
 ID SiNewCurve(const char *filename)
@@ -684,6 +740,10 @@ static int SetRendererProperty1(int index, const char *name, double v0)
 		RdrSetMaxReflectDepth(renderer, (int) v0);
 	} else if (strcmp(name, "max_refract_depth") == 0) {
 		RdrSetMaxRefractDepth(renderer, (int) v0);
+	} else if (strcmp(name, "raymarch_step") == 0) {
+		RdrSetRaymarchStep(renderer, v0);
+	} else if (strcmp(name, "raymarch_shadow_step") == 0) {
+		RdrSetRaymarchShadowStep(renderer, v0);
 	} else {
 		result = SI_FAIL;
 	}

@@ -113,7 +113,6 @@ void MshGetFaceVertex(const struct Mesh *mesh, int face_index,
 void MshSetupAccelerator(const struct Mesh *mesh, struct Accelerator *acc)
 {
 	AccSetTargetGeometry(acc,
-			ACC_PRIM_SURFACE,
 			mesh,
 			mesh->nfaces,
 			mesh->bounds,

@@ -28,6 +28,10 @@ struct TraceContext {
 	int max_refract_depth;
 	int cast_shadow;
 
+	float opacity_threshold;
+	double raymarch_step;
+	double raymarch_shadow_step;
+
 	const struct ObjectGroup *trace_target;
 };
 
@@ -50,9 +54,6 @@ struct SurfaceInput {
 struct SurfaceOutput {
 	float Cs[3];
 	float Os;
-	/*
-	float Alpha;
-	*/
 };
 
 struct LightOutput {

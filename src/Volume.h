@@ -11,33 +11,16 @@ extern "C" {
 #endif
 
 struct Volume;
-struct VolumeList;
-struct Accelerator;
+struct VolumeSample {
+	float density;
+};
 
 extern struct Volume *VolNew(void);
 extern void VolFree(struct Volume *volume);
 
-extern void VolSetupAccelerator(const struct Volume *volume, struct Accelerator *acc);
-/*
-extern void *VolAllocateVertex(struct Volume *volume, const char *attr_name, int nverts);
-extern void *VolAllocateCurve(struct Volume *volume, const char *attr_name, int ncurves);
-
-extern void VolComputeBounds(struct Volume *volume);
-
-*/
-
-/* XXX TEST */
-struct Ray;
-struct Intersection;
-extern int VolSample(const struct Volume *volume, const struct Ray *ray,
-		struct Intersection *isect, double *t_hit);
-
-/* VolumeList interfaces */
-/*
-struct VolumeList *VolumeListNew(void);
-void VolumeListFree(struct VolumeList *list);
-void VolumeListAdd(struct VolumeList *list, const struct Volume *vol);
-*/
+extern void VolGetBounds(const struct Volume *volume, double *bounds);
+extern int VolGetSample(const struct Volume *volume, const double *point,
+			struct VolumeSample *sample);
 
 #ifdef __cplusplus
 } /* extern "C" */

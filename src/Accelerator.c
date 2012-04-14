@@ -5,7 +5,6 @@ See LICENSE and README
 
 #include "Accelerator.h"
 #include "Intersection.h"
-#include "Triangle.h"
 #include "Numeric.h"
 #include "Vector.h"
 #include "Box.h"
@@ -24,7 +23,6 @@ struct Accelerator {
 	int has_built;
 
 	/* TODO should make struct PrimitiveSet? */
-	int primtype;
 	const void *primset;
 	int nprims;
 	double primset_bounds[6];
@@ -126,18 +124,6 @@ static int primitive_compare_z(const void *a, const void *b);
 static int is_empty(const struct BVHNodeStack *stack);
 static void push_node(struct BVHNodeStack *stack, const struct BVHNode *node);
 static const struct BVHNode *pop_node(struct BVHNodeStack *stack);
-
-/* -------------------------------------------------------------------------- */
-/* VolumeAccelerator */
-struct VolumeAccelerator {
-	double bounds[6];
-};
-
-static struct VolumeAccelerator *new_volume_accel(void);
-static void free_volume_accel(struct Accelerator *acc);
-static int build_volume_accel(struct Accelerator *acc);
-static int intersect_volume_accel(const struct Accelerator *acc, const struct Ray *ray,
-		struct Intersection *isect);
 
 /* -------------------------------------------------------------------------- */
 static int intersect_grid_accel(const struct Accelerator *acc, const struct Ray *ray,
@@ -445,6 +431,7 @@ struct Accelerator *AccNew(int accelerator_type)
 		acc->Intersect = intersect_bvh_accel;
 		acc->name = "BVH";
 		break;
+#if 0
 	case ACC_VOLUME:
 		acc->derived = (char *) new_volume_accel();
 		if (acc->derived == NULL) {
@@ -456,6 +443,7 @@ struct Accelerator *AccNew(int accelerator_type)
 		acc->Intersect = intersect_volume_accel;
 		acc->name = "Volume";
 		break;
+#endif
 	default:
 		assert(!"invalid accelerator type");
 		break;
@@ -463,7 +451,6 @@ struct Accelerator *AccNew(int accelerator_type)
 
 	acc->has_built = 0;
 
-	acc->primtype = ACC_PRIM_SURFACE;
 	acc->primset = NULL;
 	acc->nprims = 0;
 	acc->PrimIntersect = NULL;
@@ -484,11 +471,6 @@ void AccFree(struct Accelerator *acc)
 
 	acc->FreeDerived(acc);
 	free(acc);
-}
-
-int AccGetPrimitiveType(const struct Accelerator *acc)
-{
-	return acc->primtype;
 }
 
 void AccGetBounds(const struct Accelerator *acc, double *bounds)
@@ -534,14 +516,10 @@ int AccIntersect(const struct Accelerator *acc, const struct Ray *ray,
 }
 
 void AccSetTargetGeometry(struct Accelerator *acc,
-	int primtype,
 	const void *primset, int nprims, const double *primset_bounds,
 	PrimIntersectFunction prim_intersect_function,
 	PrimBoundsFunction prim_bounds_function)
 {
-	assert(ACC_PRIM_SURFACE <= primtype && primtype <= ACC_PRIM_VOLUME );
-
-	acc->primtype = primtype;
 	acc->primset = primset;
 	acc->nprims = nprims;
 	acc->PrimIntersect = prim_intersect_function;
@@ -978,41 +956,5 @@ static const struct BVHNode *pop_node(struct BVHNodeStack *stack)
 {
 	assert(!is_empty(stack));
 	return stack->node[--stack->depth];
-}
-
-/* -------------------------------------------------------------------------- */
-static struct VolumeAccelerator *new_volume_accel(void)
-{
-	struct VolumeAccelerator *vol;
-
-	vol = (struct VolumeAccelerator *) malloc(sizeof(struct VolumeAccelerator));
-	if (vol == NULL)
-		return NULL;
-
-	return vol;
-}
-
-static void free_volume_accel(struct Accelerator *acc)
-{
-	struct VolumeAccelerator *vol = (struct VolumeAccelerator *) acc->derived;
-	free(vol);
-}
-
-static int build_volume_accel(struct Accelerator *acc)
-{
-	return 0;
-}
-
-static int intersect_volume_accel(const struct Accelerator *acc, const struct Ray *ray,
-		struct Intersection *isect)
-{
-	return acc->PrimIntersect(acc->primset, 0, ray, isect);
-}
-
-/* XXX TEST */
-struct Volume *AccGetVolume(const struct Accelerator *acc, int index)
-{
-	assert(acc->primtype == ACC_PRIM_VOLUME);
-	return (struct Volume *) acc->primset;
 }
 

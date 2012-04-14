@@ -7,7 +7,6 @@ See LICENSE and README
 #include "Intersection.h"
 #include "Accelerator.h"
 #include "Vector.h"
-/* XXX TEST */
 #include "Volume.h"
 #include "Matrix.h"
 #include "Array.h"
@@ -22,6 +21,7 @@ See LICENSE and README
 struct ObjectInstance {
 	/* geometric properties */
 	const struct Accelerator *acc;
+	const struct Volume *volume;
 	double bounds[6];
 
 	/* transform properties */
@@ -41,38 +41,10 @@ struct ObjectInstance {
 	const struct ObjectGroup *refraction_target;
 };
 
-/* internal uses only */
-struct ObjectList {
-	struct Accelerator *accelerator;
-	struct Array *objects;
-	double bounds[6];
-};
-
-struct ObjectGroup {
-#if 0
-	struct Accelerator *accelerator;
-	struct Array *objects;
-	double bounds[6];
-#endif
-	struct ObjectList *surface_list;
-	struct ObjectList *volume_list;
-};
-
 static void update_matrix_and_bounds(struct ObjectInstance *obj);
-#if 0
-static void update_group_accelerator(struct ObjectGroup *grp);
-#endif
 static void update_object_bounds(struct ObjectInstance *obj);
 
-static void object_bounds(const void *prim_set, int prim_id, double *bounds);
-static int object_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct Intersection *isect);
-
-/* ObjectList interfaces */
-static struct ObjectList *obj_list_new(void);
-static void obj_list_free(struct ObjectList *list);
-static void obj_list_add(struct ObjectList *list, const struct ObjectInstance *obj);
-
+/* TODO remove acc argument */
 /* ObjectInstance interfaces */
 struct ObjectInstance *ObjNew(const struct Accelerator *acc)
 {
@@ -83,6 +55,7 @@ struct ObjectInstance *ObjNew(const struct Accelerator *acc)
 		return NULL;
 
 	obj->acc = acc;
+	obj->volume = NULL;
 
 	MatIdentity(&obj->object_to_world);
 	MatIdentity(&obj->world_to_object);
@@ -109,6 +82,39 @@ void ObjFree(struct ObjectInstance *obj)
 	if (obj == NULL)
 		return;
 	free(obj);
+}
+
+int ObjSetVolume(struct ObjectInstance *obj, const struct Volume *volume)
+{
+	if (obj->acc != NULL)
+		return -1;
+
+	if (obj->volume != NULL)
+		return -1;
+
+	obj->volume = volume;
+	update_matrix_and_bounds(obj);
+
+	assert(obj->acc == NULL && obj->volume != NULL);
+	return 0;
+}
+
+int ObjIsSurface(const struct ObjectInstance *obj)
+{
+	if (obj->acc == NULL)
+		return 0;
+
+	assert(obj->volume == NULL);
+	return 1;
+}
+
+int ObjIsVolume(const struct ObjectInstance *obj)
+{
+	if (obj->volume == NULL)
+		return 0;
+
+	assert(obj->acc == NULL);
+	return 1;
 }
 
 void ObjSetTranslate(struct ObjectInstance *obj, double tx, double ty, double tz)
@@ -191,148 +197,18 @@ int ObjGetLightCount(const struct ObjectInstance *obj)
 	return obj->n_target_lights;
 }
 
-/* ObjectGroup interfaces */
-struct ObjectGroup *ObjGroupNew(void)
+void ObjGetBounds(const struct ObjectInstance *obj, double *bounds)
 {
-#if 0
-	struct ObjectGroup *grp;
-
-	grp = (struct ObjectGroup *) malloc(sizeof(struct ObjectGroup));
-	if (grp == NULL)
-		return NULL;
-
-	grp->accelerator = AccNew(ACC_BVH);
-	if (grp->accelerator == NULL) {
-		ObjGroupFree(grp);
-		return NULL;
-	}
-
-	grp->objects = ArrNew(sizeof(struct ObjectInstance *));
-	if (grp->objects == NULL) {
-		ObjGroupFree(grp);
-		return NULL;
-	}
-
-	BOX3_SET(grp->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-	return grp;
-#endif
-	struct ObjectGroup *grp;
-
-	grp = (struct ObjectGroup *) malloc(sizeof(struct ObjectGroup));
-	if (grp == NULL)
-		return NULL;
-
-	grp->surface_list = obj_list_new();
-	if (grp->surface_list == NULL) {
-		ObjGroupFree(grp);
-		return NULL;
-	}
-
-	grp->volume_list = obj_list_new();
-	if (grp->volume_list == NULL) {
-		ObjGroupFree(grp);
-		return NULL;
-	}
-
-	return grp;
+	BOX3_COPY(bounds, obj->bounds);
 }
 
-void ObjGroupFree(struct ObjectGroup *grp)
-{
-#if 0
-	if (grp == NULL)
-		return;
-
-	if (grp->accelerator != NULL)
-		AccFree(grp->accelerator);
-
-	if (grp->objects != NULL)
-		ArrFree(grp->objects);
-
-	free(grp);
-#endif
-	if (grp == NULL)
-		return;
-
-	obj_list_free(grp->surface_list);
-	obj_list_free(grp->volume_list);
-	free(grp);
-}
-
-void ObjGroupAdd(struct ObjectGroup *grp, const struct ObjectInstance *obj)
-{
-#if 0
-	ArrPushPointer(grp->objects, obj);
-	BoxAddBox(grp->bounds, obj->bounds);
-	update_group_accelerator(grp);
-#endif
-	int primtype;
-	primtype = AccGetPrimitiveType(obj->acc);
-
-	if (primtype == ACC_PRIM_SURFACE) {
-		obj_list_add(grp->surface_list, obj);
-	}
-	else if (primtype == ACC_PRIM_VOLUME) {
-		obj_list_add(grp->volume_list, obj);
-	}
-	else {
-		printf("fatal error: bad primtype: %d\n", primtype);
-		abort();
-	}
-}
-
-#if 0
-const struct Accelerator *ObjGroupGetAccelerator(const struct ObjectGroup *grp)
-{
-	return grp->accelerator;
-	return grp->surface_list->accelerator;
-}
-#endif
-
-const struct Accelerator *ObjGroupGetSurfaceAccelerator(const struct ObjectGroup *grp)
-{
-	return grp->surface_list->accelerator;
-}
-
-const struct Accelerator *ObjGroupGetVolumeAccelerator(const struct ObjectGroup *grp)
-{
-	return grp->volume_list->accelerator;
-}
-
-static void update_matrix_and_bounds(struct ObjectInstance *obj)
-{
-	ComputeMatrix(obj->xform_order, obj->rotate_order,
-			obj->translate[0], obj->translate[1], obj->translate[2],
-			obj->rotate[0],    obj->rotate[1],    obj->rotate[2],
-			obj->scale[0],     obj->scale[1],     obj->scale[2],
-			&obj->object_to_world);
-
-	MatInverse(&obj->world_to_object, &obj->object_to_world);
-	update_object_bounds(obj);
-}
-
-static void update_object_bounds(struct ObjectInstance *obj)
-{
-	AccGetBounds(obj->acc, obj->bounds);
-	TransformBounds(obj->bounds, &obj->object_to_world);
-}
-
-static void object_bounds(const void *prim_set, int prim_id, double *bounds)
-{
-	const struct ObjectInstance **objects = (const struct ObjectInstance **) prim_set;
-	BOX3_COPY(bounds, objects[prim_id]->bounds);
-}
-
-static int object_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
+int ObjIntersect(const struct ObjectInstance *obj, const struct Ray *ray,
 		struct Intersection *isect)
 {
-	const struct ObjectInstance **objects = (const struct ObjectInstance **) prim_set;
-	const struct ObjectInstance *obj = objects[prim_id];
 	struct Ray ray_in_objspace;
 	int hit;
 
-	if (obj->acc == NULL)
+	if (!ObjIsSurface(obj))
 		return 0;
 
 	/* transform ray to object space */
@@ -358,73 +234,51 @@ static int object_ray_intersect(const void *prim_set, int prim_id, const struct 
 	return 1;
 }
 
-#if 0
-static void update_group_accelerator(struct ObjectGroup *grp)
+static void update_matrix_and_bounds(struct ObjectInstance *obj)
 {
-	assert(grp != NULL);
-	assert(grp->accelerator != NULL);
-	assert(grp->objects != NULL);
+	ComputeMatrix(obj->xform_order, obj->rotate_order,
+			obj->translate[0], obj->translate[1], obj->translate[2],
+			obj->rotate[0],    obj->rotate[1],    obj->rotate[2],
+			obj->scale[0],     obj->scale[1],     obj->scale[2],
+			&obj->object_to_world);
 
-	AccSetTargetGeometry(grp->accelerator,
-			ACC_PRIM_SURFACE,
-			grp->objects->data,
-			grp->objects->nelems,
-			grp->bounds,
-			object_ray_intersect,
-			object_bounds);
+	MatInverse(&obj->world_to_object, &obj->object_to_world);
+	update_object_bounds(obj);
 }
-#endif
 
-static struct ObjectList *obj_list_new(void)
+static void update_object_bounds(struct ObjectInstance *obj)
 {
-	struct ObjectList *list;
-
-	list = (struct ObjectList *) malloc(sizeof(struct ObjectList));
-	if (list == NULL)
-		return NULL;
-
-	list->accelerator = AccNew(ACC_BVH);
-	if (list->accelerator == NULL) {
-		obj_list_free(list);
-		return NULL;
+	if (ObjIsSurface(obj)) {
+		AccGetBounds(obj->acc, obj->bounds);
 	}
-
-	list->objects = ArrNew(sizeof(struct ObjectInstance *));
-	if (list->objects == NULL) {
-		obj_list_free(list);
-		return NULL;
+	else if (ObjIsVolume(obj)) {
+		VolGetBounds(obj->volume, obj->bounds);
 	}
-
-	BOX3_SET(list->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-	return list;
+	else {
+		/* TODO TEST allowing neither surface nor volume */
+		/*
+		printf("fatal error: object is neither surface nor volume\n");
+		abort();
+		*/
+		BOX3_SET(obj->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+	}
+	TransformBounds(obj->bounds, &obj->object_to_world);
 }
 
-static void obj_list_free(struct ObjectList *list)
+int ObjGetVolumeSample(const struct ObjectInstance *obj, const double *point,
+			struct VolumeSample *sample)
 {
-	if (list == NULL)
-		return;
+	int hit;
+	double point_in_objspace[3];
 
-	if (list->accelerator != NULL)
-		AccFree(list->accelerator);
+	if (!ObjIsVolume(obj))
+		return 0;
 
-	if (list->objects != NULL)
-		ArrFree(list->objects);
+	VEC3_COPY(point_in_objspace, point);
+	TransformPoint(point_in_objspace, &obj->world_to_object);
 
-	free(list);
-}
+	hit = VolGetSample(obj->volume, point_in_objspace, sample);
 
-static void obj_list_add(struct ObjectList *list, const struct ObjectInstance *obj)
-{
-	ArrPushPointer(list->objects, obj);
-	BoxAddBox(list->bounds, obj->bounds);
-
-	AccSetTargetGeometry(list->accelerator,
-			ACC_PRIM_SURFACE,
-			list->objects->data,
-			list->objects->nelems,
-			list->bounds,
-			object_ray_intersect,
-			object_bounds);
+	return hit;
 }
 

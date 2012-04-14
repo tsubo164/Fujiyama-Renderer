@@ -74,9 +74,9 @@ install_shader :=
 srcdir_  := src
 tgtdir_  := lib
 files_   := Accelerator Array Box Camera Curve CurveIO Filter FrameBuffer FrameBufferIO \
-	Intersection IO Light Matrix Mesh MeshIO Mipmap Noise Numeric ObjectInstance OS Plugin \
-	Progress Property Renderer Sampler Scene SceneInterfaces Shader String SL Texture Tiler \
-	Timer Transform Triangle Volume
+	Intersection Interval IO Light Matrix Mesh MeshIO Mipmap Noise Numeric ObjectGroup \
+	ObjectInstance OS Plugin Progress Property Renderer Sampler Scene SceneInterfaces \
+	Shader String SL Texture Tiler Timer Transform Triangle Volume VolumeAccelerator
 
 subtgt_  := libscene.so
 cflags_  := -fPIC
@@ -121,6 +121,16 @@ srcdir_  := shaders/HairShader
 tgtdir_  := lib
 files_   := HairShader
 subtgt_  := HairShader.so
+cflags_  := -fPIC
+ldflags_ := -shared -lscene
+$(eval $(call submodule))
+
+install_shader += $(subtgt_)
+
+srcdir_  := shaders/VolumeShader
+tgtdir_  := lib
+files_   := VolumeShader
+subtgt_  := VolumeShader.so
 cflags_  := -fPIC
 ldflags_ := -shared -lscene
 $(eval $(call submodule))
@@ -220,6 +230,14 @@ $(eval $(call submodule))
 srcdir_  := tests
 tgtdir_  := $(srcdir_)
 files_   := Vector_test
+subtgt_  := $(files_)
+cflags_  :=
+ldflags_ := -lscene
+$(eval $(call submodule))
+
+srcdir_  := tests
+tgtdir_  := $(srcdir_)
+files_   := Box_test
 subtgt_  := $(files_)
 cflags_  :=
 ldflags_ := -lscene

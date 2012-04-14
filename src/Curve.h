@@ -13,7 +13,7 @@ extern "C" {
 struct Curve;
 struct Accelerator;
 
-/* TODO temporary */
+/* TODO temporary visible structure */
 struct Curve {
 	double bounds[6];
 

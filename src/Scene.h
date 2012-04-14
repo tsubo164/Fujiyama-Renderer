@@ -13,6 +13,7 @@ extern "C" {
 #include "ObjectInstance.h"
 #include "Accelerator.h"
 #include "FrameBuffer.h"
+#include "ObjectGroup.h"
 #include "Renderer.h"
 #include "Texture.h"
 #include "Camera.h"

@@ -6,17 +6,18 @@ See LICENSE and README
 #include "Renderer.h"
 #include "FrameBuffer.h"
 #include "Progress.h"
+#include "Property.h"
+#include "Numeric.h"
 #include "Sampler.h"
 #include "Camera.h"
 #include "Filter.h"
+#include "Vector.h"
 #include "Tiler.h"
 #include "Timer.h"
 #include "Ray.h"
 #include "Box.h"
 #include "SL.h"
 
-#include "Vector.h"
-#include "Property.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,6 +38,9 @@ struct Renderer {
 	int cast_shadow;
 	int max_reflect_depth;
 	int max_refract_depth;
+
+	double raymarch_step;
+	double raymarch_shadow_step;
 };
 
 static int prepare_render(struct Renderer *renderer);
@@ -63,6 +67,9 @@ struct Renderer *RdrNew(void)
 	renderer->cast_shadow = 1;
 	renderer->max_reflect_depth = 3;
 	renderer->max_refract_depth = 3;
+
+	RdrSetRaymarchStep(renderer, .05);
+	RdrSetRaymarchShadowStep(renderer, .1);
 
 	return renderer;
 }
@@ -136,6 +143,18 @@ void RdrSetMaxRefractDepth(struct Renderer *renderer, int max_depth)
 {
 	assert(max_depth >= 0);
 	renderer->max_refract_depth = max_depth;
+}
+
+void RdrSetRaymarchStep(struct Renderer *renderer, double step)
+{
+	assert(step > 0);
+	renderer->raymarch_step = MAX(step, .001);
+}
+
+void RdrSetRaymarchShadowStep(struct Renderer *renderer, double step)
+{
+	assert(step > 0);
+	renderer->raymarch_shadow_step = MAX(step, .001);
 }
 
 void RdrSetCamera(struct Renderer *renderer, struct Camera *cam)
@@ -263,6 +282,8 @@ static int render_scene(struct Renderer *renderer)
 	cxt.cast_shadow = renderer->cast_shadow;
 	cxt.max_reflect_depth = renderer->max_reflect_depth;
 	cxt.max_refract_depth = renderer->max_refract_depth;
+	cxt.raymarch_step = renderer->raymarch_step;
+	cxt.raymarch_shadow_step = renderer->raymarch_shadow_step;
 
 	/* region */
 	BOX2_COPY(region, renderer->render_region);

@@ -28,6 +28,9 @@ extern void RdrSetShadowEnable(struct Renderer *renderer, int enable);
 extern void RdrSetMaxReflectDepth(struct Renderer *renderer, int max_depth);
 extern void RdrSetMaxRefractDepth(struct Renderer *renderer, int max_depth);
 
+extern void RdrSetRaymarchStep(struct Renderer *renderer, double step);
+extern void RdrSetRaymarchShadowStep(struct Renderer *renderer, double step);
+
 extern void RdrSetCamera(struct Renderer *renderer, struct Camera *cam);
 extern void RdrSetFrameBuffers(struct Renderer *renderer, struct FrameBuffer *fb);
 extern void RdrSetTargetObjects(struct Renderer *renderer, struct ObjectGroup *grp);
