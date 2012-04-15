@@ -214,7 +214,7 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, const struct R
 
 	compute_world_to_ray_matrix(&nml_ray, &world_to_ray);
 	for (i = 0; i < 4; i++) {
-		TransformPoint(bezier.cp[i].P, &world_to_ray);
+		TransformPoint(&world_to_ray, bezier.cp[i].P);
 	}
 
 	hit = converge_bezier3(&bezier, 0, 1, depth, &v_hit, &ttmp);

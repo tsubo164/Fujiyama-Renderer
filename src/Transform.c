@@ -10,7 +10,103 @@ See LICENSE and README
 #include <assert.h>
 #include <float.h>
 
-void ComputeMatrix(
+static int is_transform_order(int order);
+static int is_rotate_order(int order);
+static void update_matrix(struct Transform *transform);
+static void make_transform_matrix(
+		int transform_order, int rotate_order,
+		double tx, double ty, double tz,
+		double rx, double ry, double rz,
+		double sx, double sy, double sz,
+		struct Matrix *m);
+
+void XfmReset(struct Transform *transform)
+{
+	MatIdentity(&transform->matrix);
+	MatIdentity(&transform->inverse);
+
+	transform->transform_order = ORDER_SRT;
+	transform->rotate_order = ORDER_XYZ;
+
+	VEC3_SET(transform->translate, 0, 0, 0);
+	VEC3_SET(transform->rotate, 0, 0, 0);
+	VEC3_SET(transform->scale, 1, 1, 1);
+}
+
+void XfmTransformPoint(const struct Transform *transform, double *point)
+{
+	TransformPoint(&transform->matrix, point);
+}
+
+void XfmTransformVector(const struct Transform *transform, double *vector)
+{
+	TransformVector(&transform->matrix, vector);
+}
+
+void XfmTransformBounds(const struct Transform *transform, double *bounds)
+{
+	TransformBounds(&transform->matrix, bounds);
+}
+
+void XfmTransformPointInverse(const struct Transform *transform, double *point)
+{
+	TransformPoint(&transform->inverse, point);
+}
+
+void XfmTransformVectorInverse(const struct Transform *transform, double *vector)
+{
+	TransformVector(&transform->inverse, vector);
+}
+
+void XfmTransformBoundsInverse(const struct Transform *transform, double *bounds)
+{
+	TransformBounds(&transform->inverse, bounds);
+}
+
+void XfmSetTranslate(struct Transform *transform, double tx, double ty, double tz)
+{
+	VEC3_SET(transform->translate, tx, ty, tz);
+	update_matrix(transform);
+}
+
+void XfmSetRotate(struct Transform *transform, double rx, double ry, double rz)
+{
+	VEC3_SET(transform->rotate, rx, ry, rz);
+	update_matrix(transform);
+}
+
+void XfmSetScale(struct Transform *transform, double sx, double sy, double sz)
+{
+	VEC3_SET(transform->scale, sx, sy, sz);
+	update_matrix(transform);
+}
+
+void XfmSetTransformOrder(struct Transform *transform, int order)
+{
+	assert(is_transform_order(order));
+	transform->transform_order = order;
+	update_matrix(transform);
+}
+
+void XfmSetRotateOrder(struct Transform *transform, int order)
+{
+	assert(is_rotate_order(order));
+	transform->rotate_order = order;
+	update_matrix(transform);
+}
+
+static void update_matrix(struct Transform *transform)
+{
+	make_transform_matrix(transform->transform_order, transform->rotate_order,
+			transform->translate[0], transform->translate[1], transform->translate[2],
+			transform->rotate[0],    transform->rotate[1],    transform->rotate[2],
+			transform->scale[0],     transform->scale[1],     transform->scale[2],
+			&transform->matrix);
+
+	MatInverse(&transform->inverse, &transform->matrix);
+}
+
+static void make_transform_matrix(
 		int transform_order, int rotate_order,
 		double tx, double ty, double tz,
 		double rx, double ry, double rz,
@@ -60,17 +156,17 @@ void ComputeMatrix(
 		MatMultiply(transform, queue[i], transform);
 }
 
-int IsValidTransformOrder(int order)
+static int is_transform_order(int order)
 {
 	return order >= 0 && order < 6;
 }
 
-int IsValidRotatedOrder(int order)
+static int is_rotate_order(int order)
 {
 	return order >= 6 && order < 12;
 }
 
-void TransformPoint(double *point, const struct Matrix *m)
+void TransformPoint(const struct Matrix *m, double *point)
 {
 	double tmp[3];
 	tmp[0] = m->e[0]*point[0] + m->e[1]*point[1] + m->e[2]*point[2] + m->e[3];
@@ -81,7 +177,7 @@ void TransformPoint(double *point, const struct Matrix *m)
 	point[2] = tmp[2];
 }
 
-void TransformVector(double *vector, const struct Matrix *m)
+void TransformVector(const struct Matrix *m, double *vector)
 {
 	double tmp[3];
 	tmp[0] = m->e[0]*vector[0] + m->e[1]*vector[1] + m->e[2]*vector[2];
@@ -92,7 +188,7 @@ void TransformVector(double *vector, const struct Matrix *m)
 	vector[2] = tmp[2];
 }
 
-void TransformBounds(double *bounds, const struct Matrix *m)
+void TransformBounds(const struct Matrix *m, double *bounds)
 {
 	int i, j, k;
 	double box[6] = {FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX};
@@ -102,7 +198,7 @@ void TransformBounds(double *bounds, const struct Matrix *m)
 			for (k = 0; k < 2; k++) {
 				double pt[3];
 				VEC3_SET(pt, bounds[3*i], bounds[3*j+1], bounds[3*k+2]);
-				TransformPoint(pt, m);
+				TransformPoint(m, pt);
 				BoxAddPoint(box, pt);
 			}
 		}

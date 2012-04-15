@@ -23,6 +23,11 @@ struct Ray;
 struct ObjectInstance;
 struct ObjectGroup;
 
+struct ObjectContent {
+	const struct Accelerator *surface;
+	const struct Volume *volume;
+};
+
 /* ObjectInstance interfaces */
 extern struct ObjectInstance *ObjNew(const struct Accelerator *acc);
 extern void ObjFree(struct ObjectInstance *obj);

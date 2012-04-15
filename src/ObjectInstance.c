@@ -24,14 +24,8 @@ struct ObjectInstance {
 	const struct Volume *volume;
 	double bounds[6];
 
-	/* transform properties */
-	struct Matrix object_to_world;
-	struct Matrix world_to_object;
-	double translate[3];
-	double rotate[3];
-	double scale[3];
-	int xform_order;
-	int rotate_order;
+	/* transformation properties */
+	struct Transform transform;
 
 	/* non-geometric properties */
 	const struct Shader *shader;
@@ -41,7 +35,6 @@ struct ObjectInstance {
 	const struct ObjectGroup *refraction_target;
 };
 
-static void update_matrix_and_bounds(struct ObjectInstance *obj);
 static void update_object_bounds(struct ObjectInstance *obj);
 
 /* TODO remove acc argument */
@@ -57,14 +50,8 @@ struct ObjectInstance *ObjNew(const struct Accelerator *acc)
 	obj->acc = acc;
 	obj->volume = NULL;
 
-	MatIdentity(&obj->object_to_world);
-	MatIdentity(&obj->world_to_object);
-
-	VEC3_SET(obj->translate, 0, 0, 0);
-	VEC3_SET(obj->rotate, 0, 0, 0);
-	VEC3_SET(obj->scale, 1, 1, 1);
-	obj->xform_order = ORDER_SRT;
-	obj->rotate_order = ORDER_XYZ;
+	XfmReset(&obj->transform);
+	update_object_bounds(obj);
 
 	obj->shader = NULL;
 	obj->target_lights = NULL;
@@ -72,7 +59,6 @@ struct ObjectInstance *ObjNew(const struct Accelerator *acc)
 
 	obj->reflection_target = NULL;
 	obj->refraction_target = NULL;
-	update_matrix_and_bounds(obj);
 
 	return obj;
 }
@@ -93,7 +79,7 @@ int ObjSetVolume(struct ObjectInstance *obj, const struct Volume *volume)
 		return -1;
 
 	obj->volume = volume;
-	update_matrix_and_bounds(obj);
+	update_object_bounds(obj);
 
 	assert(obj->acc == NULL && obj->volume != NULL);
 	return 0;
@@ -119,34 +105,32 @@ int ObjIsVolume(const struct ObjectInstance *obj)
 
 void ObjSetTranslate(struct ObjectInstance *obj, double tx, double ty, double tz)
 {
-	VEC3_SET(obj->translate, tx, ty, tz);
-	update_matrix_and_bounds(obj);
+	XfmSetTranslate(&obj->transform, tx, ty, tz);
+	update_object_bounds(obj);
 }
 
 void ObjSetRotate(struct ObjectInstance *obj, double rx, double ry, double rz)
 {
-	VEC3_SET(obj->rotate, rx, ry, rz);
-	update_matrix_and_bounds(obj);
+	XfmSetRotate(&obj->transform, rx, ry, rz);
+	update_object_bounds(obj);
 }
 
 void ObjSetScale(struct ObjectInstance *obj, double sx, double sy, double sz)
 {
-	VEC3_SET(obj->scale, sx, sy, sz);
-	update_matrix_and_bounds(obj);
+	XfmSetScale(&obj->transform, sx, sy, sz);
+	update_object_bounds(obj);
 }
 
 void ObjSetTransformOrder(struct ObjectInstance *obj, int order)
 {
-	assert(IsValidTransformOrder(order));
-	obj->xform_order = order;
-	update_matrix_and_bounds(obj);
+	XfmSetTransformOrder(&obj->transform, order);
+	update_object_bounds(obj);
 }
 
 void ObjSetRotateOrder(struct ObjectInstance *obj, int order)
 {
-	assert(IsValidRotatedOrder(order));
-	obj->rotate_order = order;
-	update_matrix_and_bounds(obj);
+	XfmSetRotateOrder(&obj->transform, order);
+	update_object_bounds(obj);
 }
 
 void ObjSetShader(struct ObjectInstance *obj, const struct Shader *shader)
@@ -213,37 +197,25 @@ int ObjIntersect(const struct ObjectInstance *obj, const struct Ray *ray,
 
 	/* transform ray to object space */
 	ray_in_objspace = *ray;
-	TransformPoint(ray_in_objspace.orig, &obj->world_to_object);
-	TransformVector(ray_in_objspace.dir, &obj->world_to_object);
+	XfmTransformPointInverse(&obj->transform, ray_in_objspace.orig);
+	XfmTransformVectorInverse(&obj->transform, ray_in_objspace.dir);
 
 	hit = AccIntersect(obj->acc, &ray_in_objspace, isect);
 	if (!hit)
 		return 0;
 
 	/* transform intersection back to world space */
-	TransformPoint(isect->P, &obj->object_to_world);
-	TransformVector(isect->N, &obj->object_to_world);
+	XfmTransformPoint(&obj->transform, isect->P);
+	XfmTransformVector(&obj->transform, isect->N);
 	VEC3_NORMALIZE(isect->N);
 
 	/* TODO should make TransformLocalGeometry? */
-	TransformVector(isect->dPds, &obj->object_to_world);
-	TransformVector(isect->dPdt, &obj->object_to_world);
+	XfmTransformVector(&obj->transform, isect->dPds);
+	XfmTransformVector(&obj->transform, isect->dPdt);
 
 	isect->object = obj;
 
 	return 1;
-}
-
-static void update_matrix_and_bounds(struct ObjectInstance *obj)
-{
-	ComputeMatrix(obj->xform_order, obj->rotate_order,
-			obj->translate[0], obj->translate[1], obj->translate[2],
-			obj->rotate[0],    obj->rotate[1],    obj->rotate[2],
-			obj->scale[0],     obj->scale[1],     obj->scale[2],
-			&obj->object_to_world);
-
-	MatInverse(&obj->world_to_object, &obj->object_to_world);
-	update_object_bounds(obj);
 }
 
 static void update_object_bounds(struct ObjectInstance *obj)
@@ -262,7 +234,7 @@ static void update_object_bounds(struct ObjectInstance *obj)
 		*/
 		BOX3_SET(obj->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 	}
-	TransformBounds(obj->bounds, &obj->object_to_world);
+	XfmTransformBounds(&obj->transform, obj->bounds);
 }
 
 int ObjGetVolumeSample(const struct ObjectInstance *obj, const double *point,
@@ -275,7 +247,7 @@ int ObjGetVolumeSample(const struct ObjectInstance *obj, const double *point,
 		return 0;
 
 	VEC3_COPY(point_in_objspace, point);
-	TransformPoint(point_in_objspace, &obj->world_to_object);
+	XfmTransformPointInverse(&obj->transform, point_in_objspace);
 
 	hit = VolGetSample(obj->volume, point_in_objspace, sample);
 
