@@ -31,6 +31,8 @@ struct TraceContext {
 	float opacity_threshold;
 	double raymarch_step;
 	double raymarch_shadow_step;
+	double raymarch_reflect_step;
+	double raymarch_refract_step;
 
 	const struct ObjectGroup *trace_target;
 };

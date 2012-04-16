@@ -142,6 +142,7 @@ int SlTrace(const struct TraceContext *cxt,
 	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
 	hit_surface = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &isect);
 
+	/* TODO handle shadow ray for surface geometry */
 	/*
 	if (cxt->ray_context == CXT_SHADOW_RAY) {
 		return hit_surface;
@@ -281,6 +282,8 @@ struct TraceContext SlCameraContext(const struct ObjectGroup *target)
 	cxt.opacity_threshold = .995;
 	cxt.raymarch_step = .05;
 	cxt.raymarch_shadow_step = .05;
+	cxt.raymarch_reflect_step = .05;
+	cxt.raymarch_refract_step = .05;
 
 	return cxt;
 }
@@ -503,6 +506,12 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 			break;
 		case CXT_SHADOW_RAY:
 			t_delta = cxt->raymarch_shadow_step;
+			break;
+		case CXT_REFLECT_RAY:
+			t_delta = cxt->raymarch_reflect_step;
+			break;
+		case CXT_REFRACT_RAY:
+			t_delta = cxt->raymarch_refract_step;
 			break;
 		default:
 			t_delta = cxt->raymarch_step;

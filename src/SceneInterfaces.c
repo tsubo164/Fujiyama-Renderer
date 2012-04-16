@@ -744,6 +744,10 @@ static int SetRendererProperty1(int index, const char *name, double v0)
 		RdrSetRaymarchStep(renderer, v0);
 	} else if (strcmp(name, "raymarch_shadow_step") == 0) {
 		RdrSetRaymarchShadowStep(renderer, v0);
+	} else if (strcmp(name, "raymarch_reflect_step") == 0) {
+		RdrSetRaymarchReflectStep(renderer, v0);
+	} else if (strcmp(name, "raymarch_refract_step") == 0) {
+		RdrSetRaymarchRefractStep(renderer, v0);
 	} else {
 		result = SI_FAIL;
 	}

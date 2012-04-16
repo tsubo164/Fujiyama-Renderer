@@ -1,21 +1,35 @@
 #!/usr/bin/env python
 
-#import subprocess
+import subprocess
 
-class Fujiyama:
+class SceneInterface:
 	def __init__(self):
 		self.parser = 'scene'
 		self.commands = []
-		print 'Fujiyama initialized'
 
 	def OpenPlugin(self, plugin_path):
 		cmd = 'OpenPlugin ' + plugin_path
 		self.commands.append(cmd)
 
-	def Run(self):
-		print 'Running fujiyama ...'
+	def Print(self):
 		for cmd in self.commands:
 			print cmd
+
+	def Run(self):
+		commands = ''
+		for cmd in self.commands:
+			commands = commands + cmd + '\n'
+
+		p = subprocess.Popen('bin/scene', shell=False, stdin=subprocess.PIPE)
+		try:
+			p.communicate(commands)
+		except KeyboardInterrupt:
+			print ''
+			print ''
+			print '============================'
+			print 'Rendering terminated by user'
+			print '============================'
+			print ''
 
 	def RenderScene(self, renderer):
 		cmd = 'RenderScene ' + renderer
@@ -50,6 +64,10 @@ class Fujiyama:
 		cmd = 'NewShader ' + name + ' ' + arg
 		self.commands.append(cmd)
 
+	def NewVolume(self, name):
+		cmd = 'NewVolume ' + name
+		self.commands.append(cmd)
+
 	def NewCurve(self, name, filename):
 		cmd = 'NewCurve ' + name + ' ' + filename
 		self.commands.append(cmd)
@@ -80,24 +98,24 @@ class Fujiyama:
 
 	# Property interfaces
 	def SetProperty1(self, entry_name, prop_name, v0):
-		cmd = 'SetProperty1 ' + name + ' ' + prop_name + ' ' + v0
+		cmd = 'SetProperty1 ' + entry_name + ' ' + prop_name + ' ' + str(v0)
 		self.commands.append(cmd)
 
 	def SetProperty2(self, entry_name, prop_name, v0, v1):
-		cmd = 'SetProperty2 ' + name + ' ' + prop_name + ' ' + v0 + ' ' + v1
+		cmd = 'SetProperty2 ' + entry_name + ' ' + prop_name + ' ' + str(v0) + ' ' + str(v1)
 		self.commands.append(cmd)
 
 	def SetProperty3(self, entry_name, prop_name, v0, v1, v2):
-		cmd = 'SetProperty3 ' + name + ' ' + prop_name + ' ' + v0 + ' ' + v1 + ' ' + v2
+		cmd = 'SetProperty3 ' + entry_name + ' ' + prop_name + ' ' + str(v0) + ' ' + str(v1) + ' ' + str(v2)
 		self.commands.append(cmd)
 
 	def SetProperty4(self, entry_name, prop_name, v0, v1, v2, v3):
-		cmd = 'SetProperty4 ' + name + ' ' + prop_name + ' ' + v0 + ' ' + v1 + ' ' + v2 + ' ' + v3
+		cmd = 'SetProperty4 ' + entry_name + ' ' + prop_name + ' ' + str(v0) + ' ' + str(v1) + ' ' + str(v2) + ' ' + str(v3)
 		self.commands.append(cmd)
 
 if __name__ == '__main__':
-	fj = Fujiyama()
-	fj.OpenPlugin('PlasticShader.so')
-	fj.SaveFrameBuffer('fb1', 'test.fb')
-	fj.Run()
+	si = SceneInterface()
+	si.OpenPlugin('PlasticShader.so')
+	si.SaveFrameBuffer('fb1', 'test.fb')
+	si.Run()
 

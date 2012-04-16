@@ -204,6 +204,8 @@ main_objects := $(all_objects)
 all_targets :=
 all_objects :=
 
+#pyc_files := tools/PythonAPI/
+
 #------------------------------------------------------------------------------
 #TEST PROGRAMS
 tests/Test.o: tests/Test.c

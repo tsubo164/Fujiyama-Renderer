@@ -41,6 +41,8 @@ struct Renderer {
 
 	double raymarch_step;
 	double raymarch_shadow_step;
+	double raymarch_reflect_step;
+	double raymarch_refract_step;
 };
 
 static int prepare_render(struct Renderer *renderer);
@@ -70,6 +72,8 @@ struct Renderer *RdrNew(void)
 
 	RdrSetRaymarchStep(renderer, .05);
 	RdrSetRaymarchShadowStep(renderer, .1);
+	RdrSetRaymarchReflectStep(renderer, .1);
+	RdrSetRaymarchRefractStep(renderer, .1);
 
 	return renderer;
 }
@@ -155,6 +159,18 @@ void RdrSetRaymarchShadowStep(struct Renderer *renderer, double step)
 {
 	assert(step > 0);
 	renderer->raymarch_shadow_step = MAX(step, .001);
+}
+
+void RdrSetRaymarchReflectStep(struct Renderer *renderer, double step)
+{
+	assert(step > 0);
+	renderer->raymarch_reflect_step = MAX(step, .001);
+}
+
+void RdrSetRaymarchRefractStep(struct Renderer *renderer, double step)
+{
+	assert(step > 0);
+	renderer->raymarch_refract_step = MAX(step, .001);
 }
 
 void RdrSetCamera(struct Renderer *renderer, struct Camera *cam)
@@ -284,6 +300,8 @@ static int render_scene(struct Renderer *renderer)
 	cxt.max_refract_depth = renderer->max_refract_depth;
 	cxt.raymarch_step = renderer->raymarch_step;
 	cxt.raymarch_shadow_step = renderer->raymarch_shadow_step;
+	cxt.raymarch_reflect_step = renderer->raymarch_reflect_step;
+	cxt.raymarch_refract_step = renderer->raymarch_refract_step;
 
 	/* region */
 	BOX2_COPY(region, renderer->render_region);
