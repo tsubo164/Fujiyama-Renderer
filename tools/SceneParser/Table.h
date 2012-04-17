@@ -10,7 +10,7 @@ See LICENSE and README
 extern "C" {
 #endif
 
-#include "SceneInterfaces.h"
+#include "SceneInterface.h"
 
 struct Table;
 struct TableEnt;

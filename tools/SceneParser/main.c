@@ -3,7 +3,7 @@ Copyright (c) 2011-2012 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "SceneInterfaces.h"
+#include "SceneInterface.h"
 #include "Parser.h"
 #include "Vector.h"
 #include "Box.h"
@@ -14,18 +14,12 @@ See LICENSE and README
 #include <errno.h>
 #include <float.h>
 
-const char HEADER[] =
-" Fujiyama Scene Interpreter v0.0.1 (Alpha)\n"
-"\n";
-
 int main(int argc, const char **argv)
 {
 	char buf[1024] = {'\0'};
 	int read_from_file = 0;
 	struct Parser *parser;
 	FILE *file;
-
-	printf(HEADER);
 
 	if (argc == 2) {
 		file = fopen(argv[1], "r");

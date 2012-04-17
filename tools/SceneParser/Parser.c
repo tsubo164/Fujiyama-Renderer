@@ -4,10 +4,11 @@ See LICENSE and README
 */
 
 #include "Parser.h"
-#include "Table.h"
-#include "SceneInterfaces.h"
+#include "SceneInterface.h"
 #include "Numeric.h"
 #include "String.h"
+#include "Table.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>

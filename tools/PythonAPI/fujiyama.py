@@ -7,10 +7,6 @@ class SceneInterface:
 		self.parser = 'scene'
 		self.commands = []
 
-	def OpenPlugin(self, plugin_path):
-		cmd = 'OpenPlugin ' + plugin_path
-		self.commands.append(cmd)
-
 	def Print(self):
 		for cmd in self.commands:
 			print cmd
@@ -20,16 +16,22 @@ class SceneInterface:
 		for cmd in self.commands:
 			commands = commands + cmd + '\n'
 
-		p = subprocess.Popen('bin/scene', shell=False, stdin=subprocess.PIPE)
 		try:
+			p = subprocess.Popen('bin/scene', shell=False, stdin=subprocess.PIPE)
 			p.communicate(commands)
 		except KeyboardInterrupt:
 			print ''
 			print ''
-			print '============================'
-			print 'Rendering terminated by user'
-			print '============================'
+			print '===================='
+			print 'Rendering terminated'
+			print '===================='
 			print ''
+		except OSError, (errno, strerror):
+			print 'error: ' + 'bin/scene' + ': ' + strerror
+
+	def OpenPlugin(self, plugin_path):
+		cmd = 'OpenPlugin ' + plugin_path
+		self.commands.append(cmd)
 
 	def RenderScene(self, renderer):
 		cmd = 'RenderScene ' + renderer
@@ -115,7 +117,4 @@ class SceneInterface:
 
 if __name__ == '__main__':
 	si = SceneInterface()
-	si.OpenPlugin('PlasticShader.so')
-	si.SaveFrameBuffer('fb1', 'test.fb')
-	si.Run()
 

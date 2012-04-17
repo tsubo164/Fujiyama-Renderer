@@ -75,7 +75,7 @@ srcdir_  := src
 tgtdir_  := lib
 files_   := Accelerator Array Box Camera Curve CurveIO Filter FrameBuffer FrameBufferIO \
 	Intersection Interval IO Light Matrix Mesh MeshIO Mipmap Noise Numeric ObjectGroup \
-	ObjectInstance OS Plugin Progress Property Renderer Sampler Scene SceneInterfaces \
+	ObjectInstance OS Plugin Progress Property Renderer Sampler Scene SceneInterface \
 	Shader String SL Texture Tiler Timer Transform Triangle Volume VolumeAccelerator
 
 subtgt_  := libscene.so
@@ -204,7 +204,7 @@ main_objects := $(all_objects)
 all_targets :=
 all_objects :=
 
-#pyc_files := tools/PythonAPI/
+pyc_files := tools/PythonAPI/fujiyama.pyc
 
 #------------------------------------------------------------------------------
 #TEST PROGRAMS
@@ -301,6 +301,7 @@ clean:
 	-$(RM) $(check_objects)
 	-$(RM) $(all_depends)
 	-$(RM) $(samples)
+	-$(RM) $(pyc_files)
 
 ifneq "$(MAKECMDGOALS)" "clean"
 -include $(dependencies)

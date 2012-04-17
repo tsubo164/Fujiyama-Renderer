@@ -3,7 +3,7 @@ Copyright (c) 2011-2012 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "SceneInterfaces.h"
+#include "SceneInterface.h"
 #include "FrameBufferIO.h"
 #include "CurveIO.h"
 #include "MeshIO.h"
