@@ -10,7 +10,7 @@ CPPFLAGS = -Isrc -Wall -O2
 RM = rm -f
 INSTALL = install
 
-.PHONY: all all_ clean install install_library install_shader install_bin install_tools sample scenes/cube.fb
+.PHONY: all all_ clean install install_library install_shaders install_procedures install_bin install_tools sample scenes/cube.fb
 all: all_
 
 prefix = $(HOME)
@@ -68,15 +68,17 @@ all_depends :=
 addobj_ :=
 install_lib :=
 install_bin :=
-install_shader :=
+install_shaders :=
+install_procedures :=
 
 #core library
 srcdir_  := src
 tgtdir_  := lib
 files_   := Accelerator Array Box Camera Curve CurveIO Filter FrameBuffer FrameBufferIO \
 	Intersection Interval IO Light Matrix Mesh MeshIO Mipmap Noise Numeric ObjectGroup \
-	ObjectInstance OS Plugin Progress Property Renderer Sampler Scene SceneInterface \
-	Shader String SL Texture Tiler Timer Transform Triangle Volume VolumeAccelerator
+	ObjectInstance OS Plugin Procedure Progress Property Renderer Sampler Scene \
+	SceneInterface Shader String SL Texture Tiler Timer Transform Triangle Volume \
+	VolumeAccelerator
 
 subtgt_  := libscene.so
 cflags_  := -fPIC
@@ -95,7 +97,7 @@ cflags_  := -fPIC
 ldflags_ := -shared -lscene
 $(eval $(call submodule))
 
-install_shader += $(subtgt_)
+install_shaders += $(subtgt_)
 
 srcdir_  := shaders/GlassShader
 tgtdir_  := lib
@@ -105,7 +107,7 @@ cflags_  := -fPIC
 ldflags_ := -shared -lscene
 $(eval $(call submodule))
 
-install_shader += $(subtgt_)
+install_shaders += $(subtgt_)
 
 srcdir_  := shaders/ConstantShader
 tgtdir_  := lib
@@ -115,7 +117,7 @@ cflags_  := -fPIC
 ldflags_ := -shared -lscene
 $(eval $(call submodule))
 
-install_shader += $(subtgt_)
+install_shaders += $(subtgt_)
 
 srcdir_  := shaders/HairShader
 tgtdir_  := lib
@@ -125,7 +127,7 @@ cflags_  := -fPIC
 ldflags_ := -shared -lscene
 $(eval $(call submodule))
 
-install_shader += $(subtgt_)
+install_shaders += $(subtgt_)
 
 srcdir_  := shaders/VolumeShader
 tgtdir_  := lib
@@ -135,7 +137,18 @@ cflags_  := -fPIC
 ldflags_ := -shared -lscene
 $(eval $(call submodule))
 
-install_shader += $(subtgt_)
+install_shaders += $(subtgt_)
+
+#procedures
+srcdir_  := procedures/ReadPlyProcedure
+tgtdir_  := lib
+files_   := ReadPlyProcedure
+subtgt_  := ReadPlyProcedure.so
+cflags_  := -fPIC
+ldflags_ := -shared -lscene
+$(eval $(call submodule))
+
+install_procedures += $(subtgt_)
 
 #tools
 srcdir_  := tools/SceneParser
@@ -273,16 +286,16 @@ check: all_ $(check_programs)
 	do echo running :$$t; $$t; \
 	done;
 
-install: all_ install_library install_shader install_tools
+install: all_ install_library install_shaders install_tools
 
 install_library:
 	@echo '  install' lib/$(install_lib)
 	@$(INSTALL) -d -m 755 $(prefix)/lib
 	@$(INSTALL) -m 755 lib/$(install_lib) $(prefix)/lib/$(install_lib)
 
-install_shader:
+install_shaders:
 	@$(INSTALL) -d -m 755 $(prefix)/lib
-	@for t in $(install_shader); \
+	@for t in $(install_shaders); \
 	do echo '  install' lib/$$t; \
 		$(INSTALL) -m 755 lib/$$t $(prefix)/lib/$$t; \
 	done;

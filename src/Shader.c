@@ -15,38 +15,42 @@ static const float NO_SHADER_COLOR[] = {.5, 1., 0.};
 struct Shader {
 	void *self;
 	const struct ShaderFunctionTable *vptr;
-	const struct Plugin *plg;
+	const struct Plugin *plugin;
 };
 
-struct Shader *ShdNew(const struct Plugin *plg)
-{
-	struct Shader *shader = NULL;
-	void *tmpobj = NULL;
-	const void *tmpvtbl = NULL;
+static void set_error(int err);
 
-	tmpobj = PlgCreateInstance(plg);
+struct Shader *ShdNew(const struct Plugin *plugin)
+{
+	struct Shader *shader;
+	const void *tmpvtbl;
+	void *tmpobj;
+
+	tmpobj = PlgCreateInstance(plugin);
 	if (tmpobj == NULL) {
-		error_no = ERR_SHD_NOOBJ;
+		set_error(ERR_SHD_NOOBJ);
 		return NULL;
 	}
 
-	tmpvtbl = PlgGetVtable(plg);
+	tmpvtbl = PlgGetVtable(plugin);
 	if (tmpvtbl == NULL) {
-		error_no = ERR_SHD_NOVTBL;
+		set_error(ERR_SHD_NOVTBL);
+		PlgDeleteInstance(plugin, tmpobj);
 		return NULL;
 	}
 
 	shader = (struct Shader *) malloc(sizeof(struct Shader));
 	if (shader == NULL) {
-		error_no = ERR_SHD_NOMEM;
+		set_error(ERR_SHD_NOMEM);
+		PlgDeleteInstance(plugin, tmpobj);
 		return NULL;
 	}
 
 	/* commit */
 	shader->self = tmpobj;
 	shader->vptr = tmpvtbl;
-	shader->plg = plg;
-	error_no = ERR_SHD_NOERR;
+	shader->plugin = plugin;
+	set_error(ERR_SHD_NOERR);
 
 	return shader;
 }
@@ -56,7 +60,7 @@ void ShdFree(struct Shader *shader)
 	if (shader == NULL)
 		return;
 
-	PlgDeleteInstance(shader->plg, shader->self);
+	PlgDeleteInstance(shader->plugin, shader->self);
 	free(shader);
 }
 
@@ -89,5 +93,10 @@ int ShdSetProperty(struct Shader *shader,
 
 	assert(dst_prop->SetProperty != NULL);
 	return dst_prop->SetProperty(shader->self, src_data);
+}
+
+static void set_error(int err)
+{
+	error_no = err;
 }
 
