@@ -23,6 +23,7 @@ struct Accelerator {
 	int has_built;
 
 	/* TODO should make struct PrimitiveSet? */
+	struct PrimitiveSet primitives;
 	const void *primset;
 	int nprims;
 	double primset_bounds[6];
@@ -39,8 +40,9 @@ struct Accelerator {
 
 /* -------------------------------------------------------------------------- */
 /* Accelerator */
-static int ray_prim_intersect(const struct Accelerator *acc, int prim_id,
+static int prim_ray_intersect(const struct Accelerator *acc, int prim_id,
 	const struct Ray *ray, struct Intersection *isect);
+static void get_prim_bounds(const struct Accelerator *acc, int prim_id, double *bounds);
 static void swap_isect_ptr(struct Intersection **isect0, struct Intersection **isect1);
 
 /* -------------------------------------------------------------------------- */
@@ -215,7 +217,7 @@ static int intersect_grid_accel(const struct Accelerator *acc, const struct Ray 
 			double hitpt[3];
 			double cellbox[6];
 
-			hittmp = ray_prim_intersect(acc, cell->prim_id, ray, isect_tmp);
+			hittmp = prim_ray_intersect(acc, cell->prim_id, ray, isect_tmp);
 			if (!hittmp)
 				continue;
 
@@ -308,7 +310,7 @@ static int build_grid_accel(struct Accelerator *acc)
 		int primid = i;
 		double primbbox[6];
 
-		acc->PrimBounds(acc->primset, primid, primbbox);
+		get_prim_bounds(acc, primid, primbbox);
 		BOX3_EXPAND(primbbox, HALF_EXPAND);
 
 		/* compute the ranges of cell indices. e.g. [X0 .. X1) */
@@ -431,19 +433,6 @@ struct Accelerator *AccNew(int accelerator_type)
 		acc->Intersect = intersect_bvh_accel;
 		acc->name = "BVH";
 		break;
-#if 0
-	case ACC_VOLUME:
-		acc->derived = (char *) new_volume_accel();
-		if (acc->derived == NULL) {
-			AccFree(acc);
-			return NULL;
-		}
-		acc->FreeDerived = free_volume_accel;
-		acc->Build = build_volume_accel;
-		acc->Intersect = intersect_volume_accel;
-		acc->name = "Volume";
-		break;
-#endif
 	default:
 		assert(!"invalid accelerator type");
 		break;
@@ -451,6 +440,7 @@ struct Accelerator *AccNew(int accelerator_type)
 
 	acc->has_built = 0;
 
+	acc->primitives = MakeInitialPrimitiveSet();
 	acc->primset = NULL;
 	acc->nprims = 0;
 	acc->PrimIntersect = NULL;
@@ -611,7 +601,7 @@ static int build_bvh_accel(struct Accelerator *acc)
 	}
 
 	for (i = 0; i < NPRIMS; i++) {
-		acc->PrimBounds(acc->primset, i, prims[i].bounds);
+		get_prim_bounds(acc, i, prims[i].bounds);
 		prims[i].centroid[0] = (prims[i].bounds[3] + prims[i].bounds[0]) / 2;
 		prims[i].centroid[1] = (prims[i].bounds[4] + prims[i].bounds[1]) / 2;
 		prims[i].centroid[2] = (prims[i].bounds[5] + prims[i].bounds[2]) / 2;
@@ -660,7 +650,7 @@ static int intersect_bvh_recursive(const struct Accelerator *acc, const struct B
 	}
 
 	if (is_bvh_leaf(node)) {
-		return ray_prim_intersect(acc, node->prim_id, ray, isect);
+		return prim_ray_intersect(acc, node->prim_id, ray, isect);
 	}
 
 	isect_left.t_hit = FLT_MAX;
@@ -704,7 +694,7 @@ static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNod
 
 	for (;;) {
 		if (is_bvh_leaf(node)) {
-			hittmp = ray_prim_intersect(acc, node->prim_id, ray, isect_tmp);
+			hittmp = prim_ray_intersect(acc, node->prim_id, ray, isect_tmp);
 			if (hittmp && isect_tmp->t_hit < isect_min->t_hit) {
 				swap_isect_ptr(&isect_min, &isect_tmp);
 				hit = hittmp;
@@ -915,7 +905,7 @@ static int primitive_compare_z(const void *a, const void *b)
 	return compare_double((*A)->centroid[2], (*B)->centroid[2]);
 }
 
-static int ray_prim_intersect (const struct Accelerator *acc, int prim_id,
+static int prim_ray_intersect (const struct Accelerator *acc, int prim_id,
 	const struct Ray *ray, struct Intersection *isect)
 {
 	int hit;
@@ -932,6 +922,11 @@ static int ray_prim_intersect (const struct Accelerator *acc, int prim_id,
 	}
 
 	return 1;
+}
+
+static void get_prim_bounds(const struct Accelerator *acc, int prim_id, double *bounds)
+{
+	acc->PrimBounds(acc->primset, prim_id, bounds);
 }
 
 static void swap_isect_ptr(struct Intersection **isect0, struct Intersection **isect1)

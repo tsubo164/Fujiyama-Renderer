@@ -6,11 +6,11 @@ See LICENSE and README
 #ifndef TIMER_H
 #define TIMER_H
 
+#include <time.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <time.h>
 
 struct Timer {
 	clock_t start_clock;

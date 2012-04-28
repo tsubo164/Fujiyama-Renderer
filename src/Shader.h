@@ -6,15 +6,15 @@ See LICENSE and README
 #ifndef SHADER_H
 #define SHADER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "Property.h"
 #include "Texture.h"
 #include "Plugin.h"
 #include "SL.h"
 #include <stddef.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct Shader;
 

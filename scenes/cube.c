@@ -13,7 +13,7 @@ to compile and render this scene, run this at the top level of source tree
 
 */
 
-#include "SceneInterfaces.h"
+#include "SceneInterface.h"
 #include <stdio.h>
 
 int main(int argc, const char **argv)

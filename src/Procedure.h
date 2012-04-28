@@ -6,12 +6,12 @@ See LICENSE and README
 #ifndef PROCEDURE_H
 #define PROCEDURE_H
 
+#include "Property.h"
+#include "Plugin.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "Property.h"
-#include "Plugin.h"
 
 struct Procedure;
 

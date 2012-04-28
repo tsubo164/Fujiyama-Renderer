@@ -6,11 +6,11 @@ See LICENSE and README
 #ifndef OBJECTINSTANCE_H
 #define OBJECTINSTANCE_H
 
+#include "Transform.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "Transform.h"
 
 struct Intersection;
 struct VolumeSample;

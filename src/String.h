@@ -6,11 +6,11 @@ See LICENSE and README
 #ifndef STRING_H
 #define STRING_H
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stdlib.h>
 
 extern char *StrDup(const char *src);
 extern char *StrFree(char *s);

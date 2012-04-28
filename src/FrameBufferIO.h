@@ -6,11 +6,11 @@ See LICENSE and README
 #ifndef FRAMEBUFFERIO_H
 #define FRAMEBUFFERIO_H
 
+#include <stdio.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stdio.h>
 
 struct FrameBuffer;
 

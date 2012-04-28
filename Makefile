@@ -76,8 +76,8 @@ srcdir_  := src
 tgtdir_  := lib
 files_   := Accelerator Array Box Camera Curve CurveIO Filter FrameBuffer FrameBufferIO \
 	Intersection Interval IO Light Matrix Mesh MeshIO Mipmap Noise Numeric ObjectGroup \
-	ObjectInstance OS Plugin Procedure Progress Property Renderer Sampler Scene \
-	SceneInterface Shader String SL Texture Tiler Timer Transform Triangle Volume \
+	ObjectInstance OS Plugin PrimitiveSet Procedure Progress Property Renderer Sampler \
+	Scene SceneInterface Shader String SL Texture Tiler Timer Transform Triangle Volume \
 	VolumeAccelerator
 
 subtgt_  := libscene.so

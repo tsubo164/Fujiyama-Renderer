@@ -6,11 +6,11 @@ See LICENSE and README
 #ifndef MEMORY_H
 #define MEMORY_H
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stddef.h>
 
 void *MemAlloc(size_t size);
 void *MemRealloc(void *ptr, size_t size);

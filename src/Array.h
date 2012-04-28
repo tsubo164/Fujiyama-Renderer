@@ -6,11 +6,11 @@ See LICENSE and README
 #ifndef ARRAY_H
 #define ARRAY_H
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stddef.h>
 
 struct Array {
 	size_t elemsize;

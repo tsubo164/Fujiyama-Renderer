@@ -56,6 +56,12 @@ extern "C" {
 	(dst)[5] += (a); \
 	} while(0)
 
+/* TODO TEST */
+struct Box {
+	double min[3];
+	double max[3];
+};
+
 extern int BoxRayIntersect(const double *box,
 		const double *rayorig, const double *raydir,
 		double ray_tmin, double ray_tmax,

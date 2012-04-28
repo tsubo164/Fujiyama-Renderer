@@ -6,10 +6,6 @@ See LICENSE and README
 #ifndef SCENE_H
 #define SCENE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "ObjectInstance.h"
 #include "Accelerator.h"
 #include "FrameBuffer.h"
@@ -23,6 +19,10 @@ extern "C" {
 #include "Curve.h"
 #include "Light.h"
 #include "Mesh.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct Scene;
 

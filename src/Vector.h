@@ -6,12 +6,12 @@ See LICENSE and README
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include <math.h>
+#include <stdlib.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <math.h>
-#include <stdlib.h>
 
 /* VEC2 ARRAY */
 #define VEC2_REALLOC(ptr,type,nelems) ((type*)realloc((ptr), sizeof(type)*2*(nelems)))

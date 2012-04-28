@@ -6,11 +6,11 @@ See LICENSE and README
 #ifndef CURVEIO_H
 #define CURVEIO_H
 
+#include <stdio.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stdio.h>
 
 struct Curve;
 

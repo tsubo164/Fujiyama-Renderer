@@ -6,11 +6,11 @@ See LICENSE and README
 #ifndef OBJECTGROUP_H
 #define OBJECTGROUP_H
 
+#include "Transform.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "Transform.h"
 
 struct Intersection;
 struct Accelerator;
