@@ -11,7 +11,7 @@ extern "C" {
 #endif
 
 struct Curve;
-struct Accelerator;
+struct PrimitiveSet;
 
 /* TODO temporary visible structure */
 struct Curve {
@@ -36,8 +36,7 @@ extern void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int n
 extern void *CrvAllocateCurve(struct Curve *curve, const char *attr_name, int ncurves);
 
 extern void CrvComputeBounds(struct Curve *curve);
-
-extern void CrvSetupAccelerator(const struct Curve *curve, struct Accelerator *acc);
+extern void CrvGetPrimitiveSet(const struct Curve *curve, struct PrimitiveSet *primset);
 
 #ifdef __cplusplus
 } /* extern "C" */

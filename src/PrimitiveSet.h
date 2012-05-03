@@ -13,35 +13,35 @@ extern "C" {
 struct Intersection;
 struct Ray;
 
-typedef int (*PrimIntersectFunction)(const void *prim_set, int prim_id, const struct Ray *ray,
+typedef int (*PrimIntersectFunction)(const void *primset, int prim_id, const struct Ray *ray,
 			struct Intersection *isect);
-typedef void (*PrimBoundsFunction)(const void *prim_set, int prim_id, double *bounds);
+typedef void (*PrimBoundsFunction)(const void *primset, int prim_id, double *bounds);
 
 /* PrimitiveSet abstract a set of primitives that is used by Accelerator */
 struct PrimitiveSet {
-	const char *primitive_name;
-	const void *primitives;
-	int num_primitives;
+	const char *name;
+	const void *data;
+	int nprims;
 	double bounds[6];
 
 	PrimIntersectFunction PrimitiveIntersect;
 	PrimBoundsFunction PrimitiveBounds;
 };
 
-/* Construction interfaces */
-extern struct PrimitiveSet MakeInitialPrimitiveSet(void);
-/* Each implementation of primitive set should make PrimitiveSet structure
-   by caling this function */
-extern struct PrimitiveSet MakePrimitiveSet(
-		const char *primitive_name,
-		const void *primitives, int num_primitives, const double *bounds,
+/* Each primitive set should make PrimitiveSet by caling this function */
+extern void MakePrimitiveSet(struct PrimitiveSet *primset,
+		const char *primset_name,
+		const void *primset_data, int nprims, const double *bounds,
 		PrimIntersectFunction prim_intersect_function,
 		PrimBoundsFunction prim_bounds_function);
+extern void InitPrimitiveSet(struct PrimitiveSet *primset);
 
-/* interfaces called by Accelerator */
-extern int PrimRayIntersect(const struct PrimitiveSet *prim_set, int prim_id,
+extern const char *PrmGetName(const struct PrimitiveSet *primset);
+extern int PrmGetPrimitiveCount(const struct PrimitiveSet *primset);
+extern void PrmGetBounds(const struct PrimitiveSet *primset, double *bounds);
+extern int PrmRayIntersect(const struct PrimitiveSet *primset, int prim_id,
 		const struct Ray *ray, struct Intersection *isect);
-extern void PrimBounds(const struct PrimitiveSet *prim_set, int prim_id, double *bounds);
+extern void PrmGetPrimitiveBounds(const struct PrimitiveSet *primset, int prim_id, double *bounds);
 
 #ifdef __cplusplus
 } /* extern "C" */

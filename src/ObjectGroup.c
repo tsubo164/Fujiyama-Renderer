@@ -6,6 +6,7 @@ See LICENSE and README
 #include "ObjectGroup.h"
 #include "VolumeAccelerator.h"
 #include "ObjectInstance.h"
+#include "PrimitiveSet.h"
 #include "Accelerator.h"
 #include "Interval.h"
 #include "Matrix.h"
@@ -19,34 +20,27 @@ See LICENSE and README
 #include <float.h>
 
 struct ObjectList {
-	struct Accelerator *accelerator;
 	struct Array *objects;
 	double bounds[6];
-};
-
-struct VolumeList {
-	struct VolumeAccelerator *accelerator;
-	struct Array *volumes;
-	double bounds[6];
-};
-
-struct ObjectGroup {
-	struct ObjectList *surface_list;
-	struct VolumeList *volume_list;
 };
 
 static struct ObjectList *obj_list_new(void);
 static void obj_list_free(struct ObjectList *list);
 static void obj_list_add(struct ObjectList *list, const struct ObjectInstance *obj);
-static struct VolumeList *vol_list_new(void);
-static void vol_list_free(struct VolumeList *list);
-static void vol_list_add(struct VolumeList *list, const struct ObjectInstance *obj);
 
 static void object_bounds(const void *prim_set, int prim_id, double *bounds);
 static int object_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
 		struct Intersection *isect);
 static int volume_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
 		struct Interval *interval);
+
+struct ObjectGroup {
+	struct ObjectList *surface_list;
+	struct ObjectList *volume_list;
+
+	struct Accelerator *surface_acc;
+	struct VolumeAccelerator *volume_acc;
+};
 
 struct ObjectGroup *ObjGroupNew(void)
 {
@@ -56,14 +50,31 @@ struct ObjectGroup *ObjGroupNew(void)
 	if (grp == NULL)
 		return NULL;
 
+	grp->surface_list = NULL;
+	grp->volume_list = NULL;
+	grp->surface_acc = NULL;
+	grp->volume_acc = NULL;
+
 	grp->surface_list = obj_list_new();
 	if (grp->surface_list == NULL) {
 		ObjGroupFree(grp);
 		return NULL;
 	}
 
-	grp->volume_list = vol_list_new();
+	grp->volume_list = obj_list_new();
 	if (grp->volume_list == NULL) {
+		ObjGroupFree(grp);
+		return NULL;
+	}
+
+	grp->surface_acc = AccNew(ACC_BVH);
+	if (grp->surface_acc == NULL) {
+		ObjGroupFree(grp);
+		return NULL;
+	}
+
+	grp->volume_acc = VolumeAccNew(VOLACC_BVH);
+	if (grp->volume_acc == NULL) {
 		ObjGroupFree(grp);
 		return NULL;
 	}
@@ -77,17 +88,38 @@ void ObjGroupFree(struct ObjectGroup *grp)
 		return;
 
 	obj_list_free(grp->surface_list);
-	vol_list_free(grp->volume_list);
+	obj_list_free(grp->volume_list);
+
+	AccFree(grp->surface_acc);
+	VolumeAccFree(grp->volume_acc);
+
 	free(grp);
 }
 
 void ObjGroupAdd(struct ObjectGroup *grp, const struct ObjectInstance *obj)
 {
 	if (ObjIsSurface(obj)) {
+		struct PrimitiveSet primset;
 		obj_list_add(grp->surface_list, obj);
+
+		MakePrimitiveSet(&primset,
+				"ObjectInstance:Surface",
+				grp->surface_list->objects->data,
+				grp->surface_list->objects->nelems,
+				grp->surface_list->bounds,
+				object_ray_intersect,
+				object_bounds);
+		AccSetPrimitiveSet(grp->surface_acc, &primset);
 	}
 	else if (ObjIsVolume(obj)) {
-		vol_list_add(grp->volume_list, obj);
+		obj_list_add(grp->volume_list, obj);
+
+		VolumeAccSetTargetGeometry(grp->volume_acc,
+				grp->volume_list->objects->data,
+				grp->volume_list->objects->nelems,
+				grp->volume_list->bounds,
+				volume_ray_intersect,
+				object_bounds);
 	}
 	else {
 		printf("fatal error: object is neither surface nor volume\n");
@@ -97,12 +129,12 @@ void ObjGroupAdd(struct ObjectGroup *grp, const struct ObjectInstance *obj)
 
 const struct Accelerator *ObjGroupGetSurfaceAccelerator(const struct ObjectGroup *grp)
 {
-	return grp->surface_list->accelerator;
+	return grp->surface_acc;
 }
 
 const struct VolumeAccelerator *ObjGroupGetVolumeAccelerator(const struct ObjectGroup *grp)
 {
-	return grp->volume_list->accelerator;
+	return grp->volume_acc;
 }
 
 static void object_bounds(const void *prim_set, int prim_id, double *bounds)
@@ -153,12 +185,6 @@ static struct ObjectList *obj_list_new(void)
 	if (list == NULL)
 		return NULL;
 
-	list->accelerator = AccNew(ACC_BVH);
-	if (list->accelerator == NULL) {
-		obj_list_free(list);
-		return NULL;
-	}
-
 	list->objects = ArrNew(sizeof(struct ObjectInstance *));
 	if (list->objects == NULL) {
 		obj_list_free(list);
@@ -175,9 +201,6 @@ static void obj_list_free(struct ObjectList *list)
 	if (list == NULL)
 		return;
 
-	if (list->accelerator != NULL)
-		AccFree(list->accelerator);
-
 	if (list->objects != NULL)
 		ArrFree(list->objects);
 
@@ -188,78 +211,9 @@ static void obj_list_add(struct ObjectList *list, const struct ObjectInstance *o
 {
 	double bounds[6];
 
-	if (!ObjIsSurface(obj))
-		return;
-
 	ObjGetBounds(obj, bounds);
 
 	ArrPushPointer(list->objects, obj);
 	BoxAddBox(list->bounds, bounds);
-
-	AccSetTargetGeometry(list->accelerator,
-			list->objects->data,
-			list->objects->nelems,
-			list->bounds,
-			object_ray_intersect,
-			object_bounds);
-}
-
-static struct VolumeList *vol_list_new(void)
-{
-	struct VolumeList *list;
-
-	list = (struct VolumeList *) malloc(sizeof(struct VolumeList));
-	if (list == NULL)
-		return NULL;
-
-	list->accelerator = VolumeAccNew(VOLACC_BVH);
-	if (list->accelerator == NULL) {
-		vol_list_free(list);
-		return NULL;
-	}
-
-	list->volumes = ArrNew(sizeof(struct ObjectInstance *));
-	if (list->volumes == NULL) {
-		vol_list_free(list);
-		return NULL;
-	}
-
-	BOX3_SET(list->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-	return list;
-}
-
-static void vol_list_free(struct VolumeList *list)
-{
-	if (list == NULL)
-		return;
-
-	if (list->accelerator != NULL)
-		VolumeAccFree(list->accelerator);
-
-	if (list->volumes != NULL)
-		ArrFree(list->volumes);
-
-	free(list);
-}
-
-static void vol_list_add(struct VolumeList *list, const struct ObjectInstance *obj)
-{
-	double bounds[6];
-
-	if (!ObjIsVolume(obj))
-		return;
-
-	ObjGetBounds(obj, bounds);
-
-	ArrPushPointer(list->volumes, obj);
-	BoxAddBox(list->bounds, bounds);
-
-	VolumeAccSetTargetGeometry(list->accelerator,
-			list->volumes->data,
-			list->volumes->nelems,
-			list->bounds,
-			volume_ray_intersect,
-			object_bounds);
 }
 

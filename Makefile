@@ -3,9 +3,10 @@
 
 CC = gcc
 CXX = g++
-CFLAGS = -Isrc -Wall -ansi -pedantic-errors -O2
+OPT = -O2
+CFLAGS = -Isrc -Wall -ansi -pedantic-errors $(OPT)
 LDFLAGS = -Llib
-CPPFLAGS = -Isrc -Wall -O2
+CPPFLAGS = -Isrc -Wall $(OPT)
 
 RM = rm -f
 INSTALL = install

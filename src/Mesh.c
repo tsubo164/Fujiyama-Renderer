@@ -5,7 +5,7 @@ See LICENSE and README
 
 #include "Mesh.h"
 #include "Intersection.h"
-#include "Accelerator.h"
+#include "PrimitiveSet.h"
 #include "Triangle.h"
 #include "Vector.h"
 #include "Ray.h"
@@ -28,7 +28,7 @@ struct Mesh *MshNew(void)
 
 	mesh->nverts = 0;
 	mesh->nfaces = 0;
-	BOX3_SET(mesh->bounds, 0, 0, 0, 0, 0, 0);
+	BOX3_SET(mesh->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	mesh->P = NULL;
 	mesh->N = NULL;
@@ -110,9 +110,10 @@ void MshGetFaceVertex(const struct Mesh *mesh, int face_index,
 	*v2 = VEC3_NTH(mesh->P, i2);
 }
 
-void MshSetupAccelerator(const struct Mesh *mesh, struct Accelerator *acc)
+void MshGetPrimitiveSet(const struct Mesh *mesh, struct PrimitiveSet *primset)
 {
-	AccSetTargetGeometry(acc,
+	MakePrimitiveSet(primset,
+			"Mesh",
 			mesh,
 			mesh->nfaces,
 			mesh->bounds,
@@ -157,10 +158,10 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, const struc
 	TriComputeNormal(isect->N, N0, N1, N2, u, v);
 
 	/* TODO TMP uv handling */
-	/* N = (1-u-v) * N0 + u * N1 + v * N2 */
+	/* UV = (1-u-v) * UV0 + u * UV1 + v * UV2 */
 	if (mesh->uv != NULL) {
 		const float *uv0, *uv1, *uv2;
-		double t = 1-u-v;
+		const double t = 1-u-v;
 		uv0 = VEC2_NTH(mesh->uv, i0);
 		uv1 = VEC2_NTH(mesh->uv, i1);
 		uv2 = VEC2_NTH(mesh->uv, i2);

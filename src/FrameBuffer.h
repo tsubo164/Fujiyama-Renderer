@@ -26,7 +26,6 @@ extern int FbIsEmpty(const struct FrameBuffer *fb);
 extern float *FbGetWritable(struct FrameBuffer *fb, int x, int y, int z);
 extern const float *FbGetReadOnly(const struct FrameBuffer *fb, int x, int y, int z);
 
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

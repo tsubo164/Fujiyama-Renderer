@@ -5,6 +5,7 @@ See LICENSE and README
 
 #include "Accelerator.h"
 #include "Intersection.h"
+#include "PrimitiveSet.h"
 #include "Numeric.h"
 #include "Vector.h"
 #include "Box.h"
@@ -16,34 +17,6 @@ See LICENSE and README
 
 #define EXPAND .0001
 #define HALF_EXPAND (.5*EXPAND)
-
-struct Accelerator {
-	const char *name;
-	double bounds[6];
-	int has_built;
-
-	/* TODO should make struct PrimitiveSet? */
-	struct PrimitiveSet primitives;
-	const void *primset;
-	int nprims;
-	double primset_bounds[6];
-	PrimIntersectFunction PrimIntersect;
-	PrimBoundsFunction PrimBounds;
-
-	/* private */
-	char *derived;
-	void (*FreeDerived)(struct Accelerator *acc);
-	int (*Build)(struct Accelerator *acc);
-	int (*Intersect)(const struct Accelerator *acc, const struct Ray *ray,
-			struct Intersection *isect);
-};
-
-/* -------------------------------------------------------------------------- */
-/* Accelerator */
-static int prim_ray_intersect(const struct Accelerator *acc, int prim_id,
-	const struct Ray *ray, struct Intersection *isect);
-static void get_prim_bounds(const struct Accelerator *acc, int prim_id, double *bounds);
-static void swap_isect_ptr(struct Intersection **isect0, struct Intersection **isect1);
 
 /* -------------------------------------------------------------------------- */
 /* GridAccelerator */
@@ -126,6 +99,132 @@ static int primitive_compare_z(const void *a, const void *b);
 static int is_empty(const struct BVHNodeStack *stack);
 static void push_node(struct BVHNodeStack *stack, const struct BVHNode *node);
 static const struct BVHNode *pop_node(struct BVHNodeStack *stack);
+
+/* -------------------------------------------------------------------------- */
+/* Accelerator */
+static int prim_ray_intersect(const struct Accelerator *acc, int prim_id,
+	const struct Ray *ray, struct Intersection *isect);
+static void get_prim_bounds(const struct Accelerator *acc, int prim_id, double *bounds);
+static void swap_isect_ptr(struct Intersection **isect0, struct Intersection **isect1);
+
+struct Accelerator {
+	const char *name;
+	double bounds[6];
+	int has_built;
+
+	struct PrimitiveSet primset;
+
+	/* private */
+	char *derived;
+	void (*FreeDerived)(struct Accelerator *acc);
+	int (*Build)(struct Accelerator *acc);
+	int (*Intersect)(const struct Accelerator *acc, const struct Ray *ray,
+			struct Intersection *isect);
+};
+
+struct Accelerator *AccNew(int accelerator_type)
+{
+	struct Accelerator *acc = (struct Accelerator *) malloc(sizeof(struct Accelerator));
+	if (acc == NULL)
+		return NULL;
+
+	switch (accelerator_type) {
+	case ACC_GRID:
+		acc->derived = (char *) new_grid_accel();
+		if (acc->derived == NULL) {
+			AccFree(acc);
+			return NULL;
+		}
+		acc->FreeDerived = free_grid_accel;
+		acc->Build = build_grid_accel;
+		acc->Intersect = intersect_grid_accel;
+		acc->name = "Uniform-Grid";
+		break;
+	case ACC_BVH:
+		acc->derived = (char *) new_bvh_accel();
+		if (acc->derived == NULL) {
+			AccFree(acc);
+			return NULL;
+		}
+		acc->FreeDerived = free_bvh_accel;
+		acc->Build = build_bvh_accel;
+		acc->Intersect = intersect_bvh_accel;
+		acc->name = "BVH";
+		break;
+	default:
+		assert(!"invalid accelerator type");
+		break;
+	}
+
+	acc->has_built = 0;
+
+	InitPrimitiveSet(&acc->primset);
+	BOX3_SET(acc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	return acc;
+}
+
+void AccFree(struct Accelerator *acc)
+{
+	if (acc == NULL)
+		return;
+	if (acc->derived == NULL)
+		return;
+
+	acc->FreeDerived(acc);
+	free(acc);
+}
+
+void AccGetBounds(const struct Accelerator *acc, double *bounds)
+{
+	BOX3_COPY(bounds, acc->bounds);
+}
+
+int AccBuild(struct Accelerator *acc)
+{
+	int err;
+
+	if (acc->has_built)
+		return -1;
+
+	err = acc->Build(acc);
+	if (err)
+		return -1;
+
+	acc->has_built = 1;
+	return 0;
+}
+
+int AccIntersect(const struct Accelerator *acc, const struct Ray *ray,
+		struct Intersection *isect)
+{
+	double boxhit_tmin;
+	double boxhit_tmax;
+
+	/* check intersection with overall bounds */
+	if (!BoxRayIntersect(acc->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
+				&boxhit_tmin, &boxhit_tmax)) {
+		return 0;
+	}
+
+	if (!acc->has_built) {
+		/* dynamic build */
+		printf("\nbuilding %s accelerator ...\n", acc->name);
+		AccBuild((struct Accelerator *) acc);
+		fflush(stdout);
+	}
+
+	return acc->Intersect(acc, ray, isect);
+}
+
+void AccSetPrimitiveSet(struct Accelerator *acc, const struct PrimitiveSet *primset)
+{
+	acc->primset = *primset;
+
+	/* accelerator's bounds */
+	PrmGetBounds(&acc->primset, acc->bounds);
+	BOX3_EXPAND(acc->bounds, EXPAND);
+}
 
 /* -------------------------------------------------------------------------- */
 static int intersect_grid_accel(const struct Accelerator *acc, const struct Ray *ray,
@@ -277,6 +376,7 @@ static int intersect_grid_accel(const struct Accelerator *acc, const struct Ray 
 static int build_grid_accel(struct Accelerator *acc)
 {
 	int i;
+	int NPRIMS;
 	int XNCELLS;
 	int YNCELLS;
 	int ZNCELLS;
@@ -286,7 +386,8 @@ static int build_grid_accel(struct Accelerator *acc)
 
 	struct GridAccelerator *grid = (struct GridAccelerator *) acc->derived;
 
-	compute_grid_cellsizes(acc->nprims, 
+	NPRIMS = PrmGetPrimitiveCount(&acc->primset);
+	compute_grid_cellsizes(NPRIMS, 
 			acc->bounds[3] - acc->bounds[0],
 			acc->bounds[4] - acc->bounds[1],
 			acc->bounds[5] - acc->bounds[2],
@@ -304,7 +405,7 @@ static int build_grid_accel(struct Accelerator *acc)
 	cellsize[1] = (bounds[4] - bounds[1]) / YNCELLS;
 	cellsize[2] = (bounds[5] - bounds[2]) / ZNCELLS;
 
-	for (i = 0; i < acc->nprims; i++) {
+	for (i = 0; i < NPRIMS; i++) {
 		int X0, X1, Y0, Y1, Z0, Z1;
 		int x, y, z;
 		int primid = i;
@@ -337,6 +438,9 @@ static int build_grid_accel(struct Accelerator *acc)
 					if (newcell == NULL) {
 						/* TODO error handling */
 						return -1;
+#if 0
+						continue;
+#endif
 					}
 					newcell->prim_id = primid;
 					newcell->next = NULL;
@@ -402,123 +506,6 @@ static void free_grid_accel(struct Accelerator *acc)
 		}
 	}
 	free(grid);
-}
-
-struct Accelerator *AccNew(int accelerator_type)
-{
-	struct Accelerator *acc = (struct Accelerator *) malloc(sizeof(struct Accelerator));
-	if (acc == NULL)
-		return NULL;
-
-	switch (accelerator_type) {
-	case ACC_GRID:
-		acc->derived = (char *) new_grid_accel();
-		if (acc->derived == NULL) {
-			AccFree(acc);
-			return NULL;
-		}
-		acc->FreeDerived = free_grid_accel;
-		acc->Build = build_grid_accel;
-		acc->Intersect = intersect_grid_accel;
-		acc->name = "Uniform-Grid";
-		break;
-	case ACC_BVH:
-		acc->derived = (char *) new_bvh_accel();
-		if (acc->derived == NULL) {
-			AccFree(acc);
-			return NULL;
-		}
-		acc->FreeDerived = free_bvh_accel;
-		acc->Build = build_bvh_accel;
-		acc->Intersect = intersect_bvh_accel;
-		acc->name = "BVH";
-		break;
-	default:
-		assert(!"invalid accelerator type");
-		break;
-	}
-
-	acc->has_built = 0;
-
-	acc->primitives = MakeInitialPrimitiveSet();
-	acc->primset = NULL;
-	acc->nprims = 0;
-	acc->PrimIntersect = NULL;
-	acc->PrimBounds = NULL;
-
-	BOX3_SET(acc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-	BOX3_SET(acc->primset_bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-	return acc;
-}
-
-void AccFree(struct Accelerator *acc)
-{
-	if (acc == NULL)
-		return;
-	if (acc->derived == NULL)
-		return;
-
-	acc->FreeDerived(acc);
-	free(acc);
-}
-
-void AccGetBounds(const struct Accelerator *acc, double *bounds)
-{
-	BOX3_COPY(bounds, acc->bounds);
-}
-
-int AccBuild(struct Accelerator *acc)
-{
-	int err;
-
-	if (acc->has_built)
-		return -1;
-
-	err = acc->Build(acc);
-	if (err)
-		return -1;
-
-	acc->has_built = 1;
-	return 0;
-}
-
-int AccIntersect(const struct Accelerator *acc, const struct Ray *ray,
-		struct Intersection *isect)
-{
-	double boxhit_tmin;
-	double boxhit_tmax;
-
-	/* check intersection with overall bounds */
-	if (!BoxRayIntersect(acc->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
-				&boxhit_tmin, &boxhit_tmax)) {
-		return 0;
-	}
-
-	if (!acc->has_built) {
-		/* dynamic build */
-		printf("\nbuilding %s accelerator ...\n", acc->name);
-		AccBuild((struct Accelerator *) acc);
-		fflush(stdout);
-	}
-
-	return acc->Intersect(acc, ray, isect);
-}
-
-void AccSetTargetGeometry(struct Accelerator *acc,
-	const void *primset, int nprims, const double *primset_bounds,
-	PrimIntersectFunction prim_intersect_function,
-	PrimBoundsFunction prim_bounds_function)
-{
-	acc->primset = primset;
-	acc->nprims = nprims;
-	acc->PrimIntersect = prim_intersect_function;
-	acc->PrimBounds = prim_bounds_function;
-	BOX3_COPY(acc->primset_bounds, primset_bounds);
-
-	/* accelerator's bounds */
-	BOX3_COPY(acc->bounds, primset_bounds);
-	BOX3_EXPAND(acc->bounds, EXPAND);
 }
 
 static void compute_grid_cellsizes(int nprimitives,
@@ -588,7 +575,7 @@ static int build_bvh_accel(struct Accelerator *acc)
 	int NPRIMS;
 	int i;
 
-	NPRIMS = acc->nprims;
+	NPRIMS = PrmGetPrimitiveCount(&acc->primset);
 
 	prims = (struct Primitive *) malloc(sizeof(struct Primitive) * NPRIMS);
 	if (prims == NULL)
@@ -910,7 +897,7 @@ static int prim_ray_intersect (const struct Accelerator *acc, int prim_id,
 {
 	int hit;
 
-	hit = acc->PrimIntersect(acc->primset, prim_id, ray, isect);
+	hit = PrmRayIntersect(&acc->primset, prim_id, ray, isect);
 	if (!hit) {
 		isect->t_hit = FLT_MAX;
 		return 0;
@@ -926,7 +913,7 @@ static int prim_ray_intersect (const struct Accelerator *acc, int prim_id,
 
 static void get_prim_bounds(const struct Accelerator *acc, int prim_id, double *bounds)
 {
-	acc->PrimBounds(acc->primset, prim_id, bounds);
+	PrmGetPrimitiveBounds(&acc->primset, prim_id, bounds);
 }
 
 static void swap_isect_ptr(struct Intersection **isect0, struct Intersection **isect1)

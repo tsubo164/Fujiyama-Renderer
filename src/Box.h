@@ -62,6 +62,25 @@ struct Box {
 	double max[3];
 };
 
+struct BoxHit {
+	double tmin, tmax;
+};
+
+extern void BoxSet(struct Box *box,
+		double xmin, double ymin, double zmin,
+		double xmax, double ymax, double zmax);
+extern void BoxExpand(struct Box *box, double delta);
+
+extern void BoxPrint(const struct Box *box);
+
+#if TEST
+struct Ray;
+extern int BoxRayIntersect(const struct Box *box, const struct Ray *ray,
+		struct BoxHit *boxhit);
+#endif
+
+
+/* TODO TEST */
 extern int BoxRayIntersect(const double *box,
 		const double *rayorig, const double *raydir,
 		double ray_tmin, double ray_tmax,
@@ -72,8 +91,6 @@ extern int BoxContainsPoint(const double *box, const double *point);
 extern void BoxAddPoint(double *box, const double *point);
 
 extern void BoxAddBox(double *box, const double *otherbox);
-
-extern void PrintBox3d(const double *box);
 
 #ifdef __cplusplus
 } /* extern "C" */

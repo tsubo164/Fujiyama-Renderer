@@ -10,7 +10,7 @@ See LICENSE and README
 extern "C" {
 #endif
 
-struct Accelerator;
+struct PrimitiveSet;
 
 struct Mesh {
 	int nverts;
@@ -36,7 +36,7 @@ extern void *MshAllocateFace(struct Mesh *mesh, const char *attr_name, int nface
 extern void MshGetFaceVertex(const struct Mesh *mesh, int face_index,
 		const double **v0, const double **v1, const double **v2);
 
-extern void MshSetupAccelerator(const struct Mesh *mesh, struct Accelerator *acc);
+extern void MshGetPrimitiveSet(const struct Mesh *mesh, struct PrimitiveSet *primset);
 
 #ifdef __cplusplus
 } /* extern "C" */

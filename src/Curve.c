@@ -5,7 +5,7 @@ See LICENSE and README
 
 #include "Curve.h"
 #include "Intersection.h"
-#include "Accelerator.h"
+#include "PrimitiveSet.h"
 #include "Transform.h"
 #include "Numeric.h"
 #include "Matrix.h"
@@ -88,16 +88,6 @@ void CrvFree(struct Curve *curve)
 	free(curve->split_depth);
 
 	free(curve);
-}
-
-void CrvSetupAccelerator(const struct Curve *curve, struct Accelerator *acc)
-{
-	AccSetTargetGeometry(acc,
-			curve,
-			curve->ncurves,
-			curve->bounds,
-			curve_ray_intersect,
-			curve_bounds);
 }
 
 void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int nverts)
@@ -183,6 +173,17 @@ void CrvComputeBounds(struct Curve *curve)
 	}
 
 	BOX3_EXPAND(curve->bounds, max_radius);
+}
+
+void CrvGetPrimitiveSet(const struct Curve *curve, struct PrimitiveSet *primset)
+{
+	MakePrimitiveSet(primset,
+			"Curve",
+			curve,
+			curve->ncurves,
+			curve->bounds,
+			curve_ray_intersect,
+			curve_bounds);
 }
 
 static int curve_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,

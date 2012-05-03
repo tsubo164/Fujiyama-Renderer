@@ -36,7 +36,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 
 double SlSmoothStep(double x, double edge0, double edge1)
 {
-	double t;
+	double t = 0;
 	t = (x - edge0) / (edge1 - edge0);
 	t = CLAMP(t, 0, 1);
 	return t*t*(3 - 2*t);
@@ -44,10 +44,10 @@ double SlSmoothStep(double x, double edge0, double edge1)
 
 double SlFresnel(const double *I, const double *N, double ior)
 {
-	double k2;
-	double F0;
-	double eta;
-	double cos;
+	double k2 = 0;
+	double F0 = 0;
+	double eta = 0;
+	double cos = 0;
 
 	/* dot(-I, N) */
 	cos = -1 * VEC3_DOT(I, N);
@@ -66,8 +66,8 @@ double SlFresnel(const double *I, const double *N, double ior)
 
 double SlPhong(const double *I, const double *N, const double *L, double roughness)
 {
-	double spec;
-	double Lrefl[3];
+	double spec = 0;
+	double Lrefl[3] = {0};
 
 	SlReflect(L, N, Lrefl);
 
@@ -90,11 +90,11 @@ void SlReflect(const double *I, const double *N, double *R)
 
 void SlRefract(const double *I, const double *N, double ior, double *T)
 {
-	double radicand;
-	double ncoeff;
-	double cos1;
-	double eta;
-	double n[3];
+	double radicand = 0;
+	double ncoeff = 0;
+	double cos1 = 0;
+	double eta = 0;
+	double n[3] = {0};
 
 	/* dot(-I, N) */
 	cos1 = -1 * VEC3_DOT(I, N);
@@ -127,7 +127,7 @@ int SlTrace(const struct TraceContext *cxt,
 		const double *ray_orig, const double *ray_dir,
 		double ray_tmin, double ray_tmax, float *out_rgba)
 {
-	struct Ray ray;
+	struct Ray ray = {{0}};
 	struct Intersection isect;
 	float surface_color[4] = {0};
 	float volume_color[4] = {0};
@@ -184,7 +184,7 @@ int SlTrace(const struct TraceContext *cxt,
 	struct Ray ray;
 	struct Intersection isect;
 	double t_hit = FLT_MAX;
-	int hit;
+	int hit_surface;
 
 	VEC4_SET(out_rgba, 0, 0, 0, 0);
 	if (has_reached_bounce_limit(cxt)) {
@@ -192,13 +192,15 @@ int SlTrace(const struct TraceContext *cxt,
 	}
 
 	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
-	hit = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &isect, &t_hit);
+	hit_surface = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &isect);
 
+	/*
 	if (cxt->ray_context == CXT_SHADOW_RAY) {
-		return hit;
+		return hit_surface;
 	}
+	*/
 
-	if (hit) {
+	if (hit_surface) {
 		struct SurfaceInput in;
 		struct SurfaceOutput out;
 
@@ -209,7 +211,7 @@ int SlTrace(const struct TraceContext *cxt,
 		VEC4_SET(out_rgba, out.Cs[0], out.Cs[1], out.Cs[2], out.Os);
 	}
 
-	return hit;
+	return hit_surface;
 #endif
 
 #if 0
@@ -334,12 +336,12 @@ int SlIlluminace(const struct TraceContext *cxt, int light_id,
 		const double *Ps, const double *axis, float angle,
 		const struct SurfaceInput *in, struct LightOutput *out)
 {
-	const struct Light **lights;
-	const double *light_pos;
-	const double *shaded_pos;
-	double cosangle;
-	double nml_axis[3];
-	float light_color[3];
+	const struct Light **lights = NULL;
+	const double *light_pos = NULL;
+	const double *shaded_pos = NULL;
+	double cosangle = 0.;
+	double nml_axis[3] = {0};
+	float light_color[3] = {0};
 
 	VEC3_SET(out->Cl, 0, 0, 0);
 	if (light_id >= SlGetLightCount(in)) {
@@ -367,6 +369,10 @@ int SlIlluminace(const struct TraceContext *cxt, int light_id,
 	if (light_color[0] < .0001 &&
 		light_color[1] < .0001 &&
 		light_color[2] < .0001) {
+		return 0;
+	}
+
+	if (cxt->ray_context == CXT_SHADOW_RAY) {
 		return 0;
 	}
 
@@ -398,9 +404,9 @@ int SlGetLightCount(const struct SurfaceInput *in)
 void SlGetLightDirection(const struct SurfaceInput *in, int light_id,
 		const double *P, double *out_light_dir)
 {
-	const struct Light **lights;
-	const double *light_pos;
-	const double *shaded_pos;
+	const struct Light **lights = NULL;
+	const double *light_pos = NULL;
+	const double *shaded_pos = NULL;
 
 	if (light_id >= SlGetLightCount(in)) {
 		VEC3_SET(out_light_dir, 0, 1, 0);
@@ -474,9 +480,9 @@ static void setup_surface_input(
 static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray,
 		float *out_rgba)
 {
-	const struct VolumeAccelerator *acc;
-	struct IntervalList *intervals;
-	int hit;
+	const struct VolumeAccelerator *acc = NULL;
+	struct IntervalList *intervals = NULL;
+	int hit = 0;
 
 	VEC4_SET(out_rgba, 0, 0, 0, 0);
 
@@ -490,13 +496,14 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 	hit = VolumeAccIntersect(acc, ray, intervals);
 
 	if (!hit) {
+		IntervalListFree(intervals);
 		return 0;
 	}
 
 	{
-		double P[3];
-		double ray_delta[3];
-		double t, t_start, t_delta, t_limit;
+		double P[3] = {0};
+		double ray_delta[3] = {0};
+		double t = 0, t_start = 0, t_delta = 0, t_limit = 0;
 		const float opacity_threshold = cxt->opacity_threshold;
 
 		/* t properties */
@@ -583,5 +590,17 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 
 	IntervalListFree(intervals);
 	return hit;
+}
+
+struct LightOutput LightOutputInit(void)
+{
+	struct LightOutput out;
+
+	VEC3_SET(out.Cl, 0, 0, 0);
+	VEC3_SET(out.Ol, 0, 0, 0);
+	VEC3_SET(out.Ln, 0, 0, 0);
+	out.distance = 0;
+
+	return out;
 }
 

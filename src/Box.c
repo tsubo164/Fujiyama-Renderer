@@ -7,6 +7,35 @@ See LICENSE and README
 #include "Numeric.h"
 #include <stdio.h>
 
+void BoxSet(struct Box *box,
+		double xmin, double ymin, double zmin,
+		double xmax, double ymax, double zmax)
+{
+	box->min[0] = xmin;
+	box->min[1] = ymin;
+	box->min[2] = zmin;
+	box->max[0] = xmax;
+	box->max[1] = ymax;
+	box->max[2] = zmax;
+}
+
+void BoxExpand(struct Box *box, double delta)
+{
+	box->min[0] -= delta;
+	box->min[1] -= delta;
+	box->min[2] -= delta;
+	box->max[0] += delta;
+	box->max[1] += delta;
+	box->max[2] += delta;
+}
+
+void BoxPrint(const struct Box *box)
+{
+	printf("(%g, %g, %g) (%g, %g, %g)\n",
+		box->min[0], box->min[1], box->min[2],
+		box->max[0], box->max[1], box->max[2]);
+}
+
 int BoxRayIntersect(const double *box,
 		const double *rayorig, const double *raydir,
 		double ray_tmin, double ray_tmax,
@@ -97,8 +126,59 @@ void BoxAddBox(double *box, const double *otherbox)
 		box[5] = MAX(box[5], otherbox[5]);
 }
 
-void PrintBox3d(const double *box)
+/* TODO ========================================== */
+#include "Ray.h"
+int BoxRayIntersect2(const struct Box *box, const struct Ray *ray, struct BoxHit *boxhit)
 {
-	printf("(%g, %g, %g) (%g, %g, %g)\n", box[0], box[1], box[2], box[3], box[4], box[5]);
+	int hit;
+	double tmin, tmax, tymin, tymax, tzmin, tzmax;
+
+	if (ray->dir[0] >= 0) {
+		tmin = (box->min[0] - ray->orig[0]) / ray->dir[0];
+		tmax = (box->max[0] - ray->orig[0]) / ray->dir[0];
+	} else {
+		tmin = (box->max[0] - ray->orig[0]) / ray->dir[0];
+		tmax = (box->min[0] - ray->orig[0]) / ray->dir[0];
+	}
+
+	if (ray->dir[1] >= 0) {
+		tymin = (box->min[1] - ray->orig[1]) / ray->dir[1];
+		tymax = (box->max[1] - ray->orig[1]) / ray->dir[1];
+	} else {
+		tymin = (box->max[1] - ray->orig[1]) / ray->dir[1];
+		tymax = (box->min[1] - ray->orig[1]) / ray->dir[1];
+	}
+
+	if ((tmin > tymax) || (tymin > tmax))
+		return 0;
+
+	if (tymin > tmin)
+		tmin = tymin;
+	if (tymax < tmax)
+		tmax = tymax;
+
+	if (ray->dir[2] >= 0) {
+		tzmin = (box->min[2] - ray->orig[2]) / ray->dir[2];
+		tzmax = (box->max[2] - ray->orig[2]) / ray->dir[2];
+	} else {
+		tzmin = (box->max[2] - ray->orig[2]) / ray->dir[2];
+		tzmax = (box->min[2] - ray->orig[2]) / ray->dir[2];
+	}
+
+	if ((tmin > tzmax) || (tzmin > tmax))
+		return 0;
+
+	if (tzmin > tmin)
+		tmin = tzmin;
+	if (tzmax < tmax)
+		tmax = tzmax;
+
+	hit = ((tmin < ray->tmax) && (tmax > ray->tmin));
+	if (hit) {
+		boxhit->tmin = tmin;
+		boxhit->tmax = tmax;
+	}
+
+	return hit;
 }
 

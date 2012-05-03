@@ -8,48 +8,55 @@ See LICENSE and README
 #include <stddef.h>
 #include <float.h>
 
-extern struct PrimitiveSet MakeInitialPrimitiveSet(void)
+void InitPrimitiveSet(struct PrimitiveSet *primset)
 {
-	struct PrimitiveSet p;
+	primset->name = "NullPrimitives";
+	primset->data = NULL;
+	primset->nprims = 0;
+	BOX3_SET(primset->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-	p.primitive_name = "NullPrimitives";
-	p.primitives = NULL;
-	p.num_primitives = 0;
-	BOX3_SET(p.bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-	p.PrimitiveIntersect = NULL;
-	p.PrimitiveBounds = NULL;
-
-	return p;
+	primset->PrimitiveIntersect = NULL;
+	primset->PrimitiveBounds = NULL;
 }
 
-extern struct PrimitiveSet MakePrimitiveSet(
-		const char *primitive_name,
-		const void *primitives, int num_primitives, const double *bounds,
+void MakePrimitiveSet(struct PrimitiveSet *primset,
+		const char *primset_name,
+		const void *primset_data, int nprims, const double *bounds,
 		PrimIntersectFunction prim_intersect_function,
 		PrimBoundsFunction prim_bounds_function)
 {
-	struct PrimitiveSet p;
+	primset->name = primset_name;
+	primset->data = primset_data;
+	primset->nprims = nprims;
+	BOX3_COPY(primset->bounds, bounds);
 
-	p.primitive_name = primitive_name;
-	p.primitives = primitives;
-	p.num_primitives = num_primitives;
-	BOX3_COPY(p.bounds, bounds);
-
-	p.PrimitiveIntersect = prim_intersect_function;
-	p.PrimitiveBounds = prim_bounds_function;
-
-	return p;
+	primset->PrimitiveIntersect = prim_intersect_function;
+	primset->PrimitiveBounds = prim_bounds_function;
 }
 
-int PrimRayIntersect(const struct PrimitiveSet *prim_set, int prim_id,
+const char *PrmGetName(const struct PrimitiveSet *primset)
+{
+	return primset->name;
+}
+
+int PrmGetPrimitiveCount(const struct PrimitiveSet *primset)
+{
+	return primset->nprims;
+}
+
+void PrmGetBounds(const struct PrimitiveSet *primset, double *bounds)
+{
+	BOX3_COPY(bounds, primset->bounds);
+}
+
+int PrmRayIntersect(const struct PrimitiveSet *primset, int prim_id,
 		const struct Ray *ray, struct Intersection *isect)
 {
-	return prim_set->PrimitiveIntersect(prim_set->primitives, prim_id, ray, isect);
+	return primset->PrimitiveIntersect(primset->data, prim_id, ray, isect);
 }
 
-void PrimBounds(const struct PrimitiveSet *prim_set, int prim_id, double *bounds)
+void PrmGetPrimitiveBounds(const struct PrimitiveSet *primset, int prim_id, double *bounds)
 {
-	prim_set->PrimitiveBounds(prim_set->primitives, prim_id, bounds);
+	primset->PrimitiveBounds(primset->data, prim_id, bounds);
 }
 

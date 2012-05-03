@@ -5,6 +5,7 @@ See LICENSE and README
 
 #include "SceneInterface.h"
 #include "FrameBufferIO.h"
+#include "PrimitiveSet.h"
 #include "CurveIO.h"
 #include "MeshIO.h"
 #include "Scene.h"
@@ -378,6 +379,7 @@ ID SiNewCurve(const char *filename)
 {
 	struct Curve *curve;
 	struct Accelerator *acc;
+	struct PrimitiveSet primset;
 
 	curve = ScnNewCurve(scene);
 	if (curve == NULL) {
@@ -394,7 +396,9 @@ ID SiNewCurve(const char *filename)
 		set_errno(SI_ERR_FAILNEW);
 		return SI_BADID;
 	}
-	CrvSetupAccelerator(curve, acc);
+
+	CrvGetPrimitiveSet(curve, &primset);
+	AccSetPrimitiveSet(acc, &primset);
 
 	set_errno(SI_NOERR);
 	return encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
@@ -415,6 +419,7 @@ ID SiNewMesh(const char *filename)
 {
 	struct Mesh *mesh;
 	struct Accelerator *acc;
+	struct PrimitiveSet primset;
 
 	mesh = ScnNewMesh(scene);
 	if (mesh == NULL) {
@@ -431,7 +436,9 @@ ID SiNewMesh(const char *filename)
 		set_errno(SI_ERR_FAILNEW);
 		return SI_BADID;
 	}
-	MshSetupAccelerator(mesh, acc);
+
+	MshGetPrimitiveSet(mesh, &primset);
+	AccSetPrimitiveSet(acc, &primset);
 
 	set_errno(SI_NOERR);
 	return encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
@@ -679,12 +686,12 @@ static int decode_id(ID id, int *type, int *index)
 
 	tp = id / TYPE_ID_OFFSET;
 	if (!is_valid_type(tp))
-		return -1;
+		return SI_FAIL;
 
 	*type = tp;
 	*index = id - (tp * TYPE_ID_OFFSET);
 
-	return 0;
+	return SI_SUCCESS;
 }
 
 /* ObjectInstance Property */

@@ -93,6 +93,8 @@ extern int SlGetLightCount(const struct SurfaceInput *in);
 extern void SlGetLightDirection(const struct SurfaceInput *in, int light_id,
 		const double *P, double *out_light_dir);
 
+extern struct LightOutput LightOutputInit(void);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
