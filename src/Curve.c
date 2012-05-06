@@ -50,7 +50,7 @@ static int converge_bezier3(const struct Bezier3 *bezier,
 static void mid_point(double *mid, const double *a, const double *b);
 static void cache_split_depth(const struct Curve *curve);
 static int compute_split_depth_limit(const struct ControlPoint *cp, double epsilon);
-static void compute_world_to_ray_matrix(const struct Ray *ray, struct Matrix *dst);
+static void compute_world_to_ray_matrix(const struct Ray *ray, double *dst);
 
 struct Curve *CrvNew(void)
 {
@@ -191,7 +191,7 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, const struct R
 {
 	const struct Curve *curve = (const struct Curve *) prim_set;
 	struct Bezier3 bezier;
-	struct Matrix world_to_ray;
+	double world_to_ray[16];
 
 	/* for scaled ray */
 	struct Ray nml_ray;
@@ -213,9 +213,9 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, const struct R
 	}
 	depth = curve->split_depth[prim_id];
 
-	compute_world_to_ray_matrix(&nml_ray, &world_to_ray);
+	compute_world_to_ray_matrix(&nml_ray, world_to_ray);
 	for (i = 0; i < 4; i++) {
-		TransformPoint(&world_to_ray, bezier.cp[i].P);
+		MatTransformPoint(world_to_ray, bezier.cp[i].P);
 	}
 
 	hit = converge_bezier3(&bezier, 0, 1, depth, &v_hit, &ttmp);
@@ -250,12 +250,12 @@ static void curve_bounds(const void *prim_set, int prim_id, double *bounds)
 	get_bezier3_bounds(&bezier, bounds);
 }
 
-static void compute_world_to_ray_matrix(const struct Ray *ray, struct Matrix *dst)
+static void compute_world_to_ray_matrix(const struct Ray *ray, double *dst)
 {
 	double d, d_inv;
 	double ox, oy, oz;
 	double lx, ly, lz;
-	struct Matrix translate, rotate;
+	double translate[16], rotate[16];
 
 	VEC3_GET(ox, oy, oz, ray->orig);
 	VEC3_GET(lx, ly, lz, ray->dir);
@@ -266,18 +266,18 @@ static void compute_world_to_ray_matrix(const struct Ray *ray, struct Matrix *ds
 	}
 	d_inv = 1. / d;
 
-	MatSet(&translate,
+	MatSet(translate,
 			1, 0, 0, -ox,
 			0, 1, 0, -oy,
 			0, 0, 1, -oz,
 			0, 0, 0, 1);
-	MatSet(&rotate,
+	MatSet(rotate,
 			lz*d_inv, 0, -lx*d_inv, 0,
 			-lx*ly*d_inv, d, -ly*lz*d_inv, 0,
 			lx, ly, lz, 0,
 			0, 0, 0, 1);
 
-	MatMultiply(dst, &rotate, &translate);
+	MatMultiply(dst, rotate, translate);
 }
 
 /* Based on this algorithm:

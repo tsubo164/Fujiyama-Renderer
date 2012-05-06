@@ -6,8 +6,6 @@ See LICENSE and README
 #ifndef TRANSFORM_H
 #define TRANSFORM_H
 
-#include "Matrix.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -28,8 +26,8 @@ enum TransformOrder {
 };
 
 struct Transform {
-	struct Matrix matrix;
-	struct Matrix inverse;
+	double matrix[16];
+	double inverse[16];
 
 	int transform_order;
 	int rotate_order;
@@ -54,11 +52,6 @@ extern void XfmSetRotate(struct Transform *transform, double rx, double ry, doub
 extern void XfmSetScale(struct Transform *transform, double sx, double sy, double sz);
 extern void XfmSetTransformOrder(struct Transform *transform, int order);
 extern void XfmSetRotateOrder(struct Transform *transform, int order);
-
-/* interfaces for matrix */
-extern void TransformPoint(const struct Matrix *m, double *point);
-extern void TransformVector(const struct Matrix *m, double *vector);
-extern void TransformBounds(const struct Matrix *m, double *bounds);
 
 #ifdef __cplusplus
 } /* extern "C" */
