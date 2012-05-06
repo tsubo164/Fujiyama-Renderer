@@ -10,11 +10,13 @@ See LICENSE and README
 extern "C" {
 #endif
 
+/* double matrix[16] row-matrix */
 struct Matrix {
 	double e[16]; /* row-major */
 };
 
 extern void MatIdentity(struct Matrix *dst);
+extern void MatCopy(double *dst, const double *src);
 extern void MatSet(struct Matrix *dst,
 		double e00, double e01, double e02, double e03,
 		double e10, double e11, double e12, double e13,
@@ -29,6 +31,10 @@ extern void MatRotateZ(struct Matrix *dst, double angle);
 
 extern void MatMultiply(struct Matrix *dst, const struct Matrix *a, const struct Matrix *b);
 extern void MatInverse(struct Matrix *dst, const struct Matrix *a);
+
+extern void MatTransformPoint(const double *m, double *point);
+extern void MatTransformVector(const double *m, double *vector);
+extern void MatTransformBounds(const double *m, double *bounds);
 
 extern void MatPrint(const struct Matrix *m);
 

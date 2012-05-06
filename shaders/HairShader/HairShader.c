@@ -113,7 +113,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 
 	VEC3_SET(out->Cs, 0, 0, 0);
 	for (i = 0; i < nlights; i++) {
-		struct LightOutput Lout = LightOutputInit();
+		struct LightOutput Lout = {{0}};
 		double tangent[3] = {0};
 		float diff = 0;
 		float spec = 0;

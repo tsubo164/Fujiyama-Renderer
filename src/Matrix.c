@@ -5,7 +5,11 @@ See LICENSE and README
 
 #include "Matrix.h"
 #include "Numeric.h"
+#include "Vector.h"
+#include "Box.h"
 #include <stdio.h>
+#include <float.h>
+#include <string.h>
 #include <math.h>
 
 #define MAT_SET(dst, \
@@ -27,6 +31,11 @@ void MatIdentity(struct Matrix *dst)
 			0., 1., 0., 0.,
 			0., 0., 1., 0.,
 			0., 0., 0., 1.);
+}
+
+void MatCopy(double *dst, const double *src)
+{
+	memmove(dst, src, sizeof(double) * 16);
 }
 
 extern void MatSet(struct Matrix *dst,
@@ -200,6 +209,46 @@ void MatInverse(struct Matrix *dst, const struct Matrix *a)
 	det = 1./det;
 	for (j = 0; j < 16; j++)
 		dst->e[j] *= det;
+}
+
+void MatTransformPoint(const double *m, double *point)
+{
+	double tmp[3];
+	tmp[0] = m[0]*point[0] + m[1]*point[1] + m[2]*point[2] + m[3];
+	tmp[1] = m[4]*point[0] + m[5]*point[1] + m[6]*point[2] + m[7];
+	tmp[2] = m[8]*point[0] + m[9]*point[1] + m[10]*point[2] + m[11];
+	point[0] = tmp[0];
+	point[1] = tmp[1];
+	point[2] = tmp[2];
+}
+
+void MatTransformVector(const double *m, double *vector)
+{
+	double tmp[3];
+	tmp[0] = m[0]*vector[0] + m[1]*vector[1] + m[2]*vector[2];
+	tmp[1] = m[4]*vector[0] + m[5]*vector[1] + m[6]*vector[2];
+	tmp[2] = m[8]*vector[0] + m[9]*vector[1] + m[10]*vector[2];
+	vector[0] = tmp[0];
+	vector[1] = tmp[1];
+	vector[2] = tmp[2];
+}
+
+void MatTransformBounds(const double *m, double *bounds)
+{
+	int i, j, k;
+	double box[6] = {FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX};
+
+	for (i = 0; i < 2; i++) {
+		for (j = 0; j < 2; j++) {
+			for (k = 0; k < 2; k++) {
+				double pt[3];
+				VEC3_SET(pt, bounds[3*i], bounds[3*j+1], bounds[3*k+2]);
+				MatTransformPoint(m, pt);
+				BoxAddPoint(box, pt);
+			}
+		}
+	}
+	BOX3_COPY(bounds, box);
 }
 
 void MatPrint(const struct Matrix *m)

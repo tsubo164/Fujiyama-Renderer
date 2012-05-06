@@ -592,15 +592,3 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 	return hit;
 }
 
-struct LightOutput LightOutputInit(void)
-{
-	struct LightOutput out;
-
-	VEC3_SET(out.Cl, 0, 0, 0);
-	VEC3_SET(out.Ol, 0, 0, 0);
-	VEC3_SET(out.Ln, 0, 0, 0);
-	out.distance = 0;
-
-	return out;
-}
-
