@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2011-2012 Hiroshi Tsubokawa
+See LICENSE and README
+*/
+
 #include "Shader.h"
 #include "Vector.h"
 #include "Numeric.h"
@@ -11,6 +16,9 @@ struct GlassShader {
 	float diffuse[3];
 	float specular[3];
 	float ambient[3];
+
+	float filter_color[3];
+
 	float roughness;
 	float ior;
 };
@@ -31,16 +39,18 @@ static const struct ShaderFunctionTable MyShaderFunctionTable = {
 static int set_diffuse(void *self, const struct PropertyValue *value);
 static int set_specular(void *self, const struct PropertyValue *value);
 static int set_ambient(void *self, const struct PropertyValue *value);
+static int set_filter_color(void *self, const struct PropertyValue *value);
 static int set_roughness(void *self, const struct PropertyValue *value);
 static int set_ior(void *self, const struct PropertyValue *value);
 
 static const struct Property PlasticShaderProperties[] = {
-	{"diffuse",   set_diffuse},
-	{"specular",  set_specular},
-	{"ambient",   set_ambient},
-	{"roughness", set_roughness},
-	{"ior",       set_ior},
-	{NULL,        NULL}
+	{"diffuse",      set_diffuse},
+	{"specular",     set_specular},
+	{"ambient",      set_ambient},
+	{"filter_color", set_filter_color},
+	{"roughness",    set_roughness},
+	{"ior",          set_ior},
+	{NULL,           NULL}
 };
 
 static const struct MetaInfo MyShaderMetainfo[] = {
@@ -77,6 +87,7 @@ static void *MyNew(void)
 	VEC3_SET(glass->diffuse, 0, 0, 0);
 	VEC3_SET(glass->specular, 1, 1, 1);
 	VEC3_SET(glass->ambient, 1, 1, 1);
+	VEC3_SET(glass->filter_color, .65, .45, .25);
 	glass->roughness = .1;
 	glass->ior = 1.4;
 
@@ -98,9 +109,10 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	struct TraceContext refl_cxt;
 	struct TraceContext refr_cxt;
 	double T[3], R[3];
-	float C_refl[4];
-	float C_refr[4];
+	float C_refl[4] = {0};
+	float C_refr[4] = {0};
 	double Kt, Kr;
+	double t_hit = FLT_MAX;
 
 	glass = (struct GlassShader *) self;
 
@@ -115,15 +127,22 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	/* reflect */
 	refl_cxt = SlReflectContext(cxt, in->shaded_object);
 	SlReflect(in->I, in->N, R);
-	SlTrace(&refl_cxt, in->P, R, .0001, 1000, C_refl);
+	SlTrace(&refl_cxt, in->P, R, .0001, 1000, C_refl, &t_hit);
 	out->Cs[0] += Kr * C_refl[0];
 	out->Cs[1] += Kr * C_refl[1];
 	out->Cs[2] += Kr * C_refl[2];
 
-	/* refract_depth */
+	/* refract */
 	refr_cxt = SlRefractContext(cxt, in->shaded_object);
 	SlRefract(in->I, in->N, 1/glass->ior, T);
-	SlTrace(&refr_cxt, in->P, T, .0001, 1000, C_refr);
+	SlTrace(&refr_cxt, in->P, T, .0001, 1000, C_refr, &t_hit);
+
+	if (VEC3_DOT(in->I, in->N) < 0) {
+		C_refr[0] *= pow(glass->filter_color[0], t_hit);
+		C_refr[1] *= pow(glass->filter_color[1], t_hit);
+		C_refr[2] *= pow(glass->filter_color[2], t_hit);
+	}
+
 	out->Cs[0] += Kt * C_refr[0];
 	out->Cs[1] += Kt * C_refr[1];
 	out->Cs[2] += Kt * C_refr[2];
@@ -166,6 +185,19 @@ static int set_ambient(void *self, const struct PropertyValue *value)
 	ambient[1] = MAX(0, value->vector[1]);
 	ambient[2] = MAX(0, value->vector[2]);
 	VEC3_COPY(glass->ambient, ambient);
+
+	return 0;
+}
+
+static int set_filter_color(void *self, const struct PropertyValue *value)
+{
+	struct GlassShader *glass = (struct GlassShader *) self;
+	float filter_color[3];
+
+	filter_color[0] = MAX(0, value->vector[0]);
+	filter_color[1] = MAX(0, value->vector[1]);
+	filter_color[2] = MAX(0, value->vector[2]);
+	VEC3_COPY(glass->filter_color, filter_color);
 
 	return 0;
 }

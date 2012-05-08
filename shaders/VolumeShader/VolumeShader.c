@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2011-2012 Hiroshi Tsubokawa
+See LICENSE and README
+*/
+
 #include "Shader.h"
 #include "Vector.h"
 #include "Numeric.h"

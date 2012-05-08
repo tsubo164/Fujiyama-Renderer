@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2011-2012 Hiroshi Tsubokawa
+See LICENSE and README
+*/
+
 #include "Shader.h"
 #include "Vector.h"
 #include "Numeric.h"
@@ -114,10 +119,11 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	int nlights;
 	int i;
 
-	float diff[5] = {0};
+	float diff[3] = {0};
 	float spec[3] = {0};
 
-	float C_refl[4];
+	float C_refl[4] = {0};
+	double t_hit = FLT_MAX;
 	double refldir[3];
 	double Kr;
 
@@ -173,7 +179,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	if (plastic->do_reflect) {
 		relf_cxt = SlReflectContext(cxt, in->shaded_object);
 		SlReflect(in->I, in->N, refldir);
-		SlTrace(&relf_cxt, in->P, refldir, .001, 1000, C_refl);
+		SlTrace(&relf_cxt, in->P, refldir, .001, 1000, C_refl, &t_hit);
 
 		Kr = SlFresnel(in->I, in->N, 1/plastic->ior);
 		out->Cs[0] += Kr * C_refl[0] * plastic->reflect[0];

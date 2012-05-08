@@ -22,6 +22,7 @@ See LICENSE and README
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <float.h>
 
 struct Renderer {
 	struct Camera *camera;
@@ -329,11 +330,12 @@ static int render_scene(struct Renderer *renderer)
 
 		while ((smp = SmpGetNextSample(sampler)) != NULL) {
 			int hit;
+			double t_hit = FLT_MAX;
 			float C_trace[4] = {0};
 
 			CamGetRay(cam, smp->uv, &ray);
 
-			hit = SlTrace(&cxt, ray.orig, ray.dir, ray.tmin, ray.tmax, C_trace);
+			hit = SlTrace(&cxt, ray.orig, ray.dir, ray.tmin, ray.tmax, C_trace, &t_hit);
 			VEC4_COPY(smp->data, C_trace);
 
 			PrgIncrement(progress);

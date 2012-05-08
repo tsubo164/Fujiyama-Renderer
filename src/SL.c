@@ -125,7 +125,7 @@ void SlRefract(const double *I, const double *N, double ior, double *T)
 
 int SlTrace(const struct TraceContext *cxt,
 		const double *ray_orig, const double *ray_dir,
-		double ray_tmin, double ray_tmax, float *out_rgba)
+		double ray_tmin, double ray_tmax, float *out_rgba, double *t_hit)
 {
 	struct Ray ray = {{0}};
 	struct Intersection isect;
@@ -160,6 +160,7 @@ int SlTrace(const struct TraceContext *cxt,
 		VEC4_SET(surface_color, out.Cs[0], out.Cs[1], out.Cs[2], out.Os);
 
 		ray.tmax = isect.t_hit;
+		*t_hit = isect.t_hit;
 	}
 
 	if (cxt->ray_context == CXT_SHADOW_RAY && surface_color[3] > cxt->opacity_threshold) {
@@ -378,11 +379,12 @@ int SlIlluminace(const struct TraceContext *cxt, int light_id,
 
 	if (cxt->cast_shadow) {
 		struct TraceContext shad_cxt;
-		float C_occl[4];
+		double t_hit = FLT_MAX;
+		float C_occl[4] = {0};
 		int hit;
 
 		shad_cxt = SlShadowContext(cxt, in->shaded_object);
-		hit = SlTrace(&shad_cxt, in->P, out->Ln, .0001, out->distance, C_occl);
+		hit = SlTrace(&shad_cxt, in->P, out->Ln, .0001, out->distance, C_occl, &t_hit);
 
 		if (hit) {
 			/*

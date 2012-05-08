@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2011-2012 Hiroshi Tsubokawa
+See LICENSE and README
+*/
+
 #include "Shader.h"
 #include "Vector.h"
 #include "Numeric.h"
@@ -82,15 +87,25 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
 	const struct ConstantShader *constant;
-	float Ctex[3];
+	float C_tex[3] = {0};
 
 	constant = (struct ConstantShader *) self;
 
-	/* Ctex */
-	TexLookup(constant->texture, in->uv[0], in->uv[1], Ctex);
+	/* C_tex */
+	if (constant->texture != NULL) {
+		TexLookup(constant->texture, in->uv[0], in->uv[1], C_tex);
+		C_tex[0] *= constant->diffuse[0];
+		C_tex[1] *= constant->diffuse[1];
+		C_tex[2] *= constant->diffuse[2];
+	}
+	else {
+		C_tex[0] = constant->diffuse[0];
+		C_tex[1] = constant->diffuse[1];
+		C_tex[2] = constant->diffuse[2];
+	}
 
 	/* Cs */
-	VEC3_COPY(out->Cs, Ctex);
+	VEC3_COPY(out->Cs, C_tex);
 	out->Os = 1;
 }
 
