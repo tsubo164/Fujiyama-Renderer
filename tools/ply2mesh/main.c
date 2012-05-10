@@ -33,21 +33,21 @@ struct PlyFace {
 };
 
 PlyProperty vert_props[] = { /* list of property information for a vertex */
-	{"x", PLY_FLOAT, PLY_DOUBLE, offsetof(struct PlyVertex,x) , 0, 0, 0, 0},
-	{"y", PLY_FLOAT, PLY_DOUBLE, offsetof(struct PlyVertex,y) , 0, 0, 0, 0},
-	{"z", PLY_FLOAT, PLY_DOUBLE, offsetof(struct PlyVertex,z) , 0, 0, 0, 0},
-	{"nx", PLY_FLOAT, PLY_DOUBLE, offsetof(struct PlyVertex,r) , 0, 0, 0, 0},
-	{"ny", PLY_FLOAT, PLY_DOUBLE, offsetof(struct PlyVertex,g) , 0, 0, 0, 0},
-	{"nz", PLY_FLOAT, PLY_DOUBLE, offsetof(struct PlyVertex,b) , 0, 0, 0, 0},
-	{"r", PLY_FLOAT, PLY_FLOAT, offsetof(struct PlyVertex,nx), 0, 0, 0, 0},
-	{"g", PLY_FLOAT, PLY_FLOAT, offsetof(struct PlyVertex,ny), 0, 0, 0, 0},
-	{"b", PLY_FLOAT, PLY_FLOAT, offsetof(struct PlyVertex,nz), 0, 0, 0, 0},
-	{"uv1", PLY_FLOAT, PLY_FLOAT, offsetof(struct PlyVertex,uv1), 0, 0, 0, 0},
-	{"uv2", PLY_FLOAT, PLY_FLOAT, offsetof(struct PlyVertex,uv2), 0, 0, 0, 0},
+	{(char *) "x", PLY_FLOAT, PLY_DOUBLE, offsetof(struct PlyVertex,x) , 0, 0, 0, 0},
+	{(char *) "y", PLY_FLOAT, PLY_DOUBLE, offsetof(struct PlyVertex,y) , 0, 0, 0, 0},
+	{(char *) "z", PLY_FLOAT, PLY_DOUBLE, offsetof(struct PlyVertex,z) , 0, 0, 0, 0},
+	{(char *) "nx", PLY_FLOAT, PLY_DOUBLE, offsetof(struct PlyVertex,r) , 0, 0, 0, 0},
+	{(char *) "ny", PLY_FLOAT, PLY_DOUBLE, offsetof(struct PlyVertex,g) , 0, 0, 0, 0},
+	{(char *) "nz", PLY_FLOAT, PLY_DOUBLE, offsetof(struct PlyVertex,b) , 0, 0, 0, 0},
+	{(char *) "r", PLY_FLOAT, PLY_FLOAT, offsetof(struct PlyVertex,nx), 0, 0, 0, 0},
+	{(char *) "g", PLY_FLOAT, PLY_FLOAT, offsetof(struct PlyVertex,ny), 0, 0, 0, 0},
+	{(char *) "b", PLY_FLOAT, PLY_FLOAT, offsetof(struct PlyVertex,nz), 0, 0, 0, 0},
+	{(char *) "uv1", PLY_FLOAT, PLY_FLOAT, offsetof(struct PlyVertex,uv1), 0, 0, 0, 0},
+	{(char *) "uv2", PLY_FLOAT, PLY_FLOAT, offsetof(struct PlyVertex,uv2), 0, 0, 0, 0},
 };
 
 PlyProperty face_props[] = { /* list of property information for a face */
-	{"vertex_indices", PLY_INT, PLY_INT, offsetof(struct PlyFace,verts),
+	{(char *) "vertex_indices", PLY_INT, PLY_INT, offsetof(struct PlyFace,verts),
 		1, PLY_UCHAR, PLY_UCHAR, offsetof(struct PlyFace,nverts)},
 };
 
@@ -72,13 +72,13 @@ int main(int argc, const char **argv)
 	struct MeshOutput *out;
 
 	if (argc == 2 && strcmp(argv[1], "--help") == 0) {
-		printf(USAGE);
+		printf("%s", USAGE);
 		return 0;
 	}
 
 	if (argc != 3) {
 		fprintf(stderr, "error: invalid number of arguments.\n");
-		fprintf(stderr, USAGE);
+		fprintf(stderr, "%s", USAGE);
 		return -1;
 	}
 

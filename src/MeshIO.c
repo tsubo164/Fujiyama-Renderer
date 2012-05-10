@@ -18,7 +18,7 @@ static size_t write_attriname(struct MeshOutput *out, const char *name);
 static size_t write_attridata(struct MeshOutput *out, const char *name);
 static void set_error(int err);
 
-static enum MshErrorNo error_no = ERR_MSH_NOERR;
+static int error_no = ERR_MSH_NOERR;
 
 /* error no interfaces */
 int MshGetErrorNo(void)
@@ -36,7 +36,7 @@ const char *MshGetErrorMessage(int err)
 		"Invalid file version",    /* ERR_MSH_BADVER */
 		"Invalid attribute name"   /* ERR_MSH_BADATTRNAME */
 	};
-	static const size_t nerrs = sizeof(errmsg)/sizeof(errmsg[0]);
+	static const int nerrs = (int) sizeof(errmsg)/sizeof(errmsg[0]);
 
 	if (err >= nerrs) {
 		fprintf(stderr, "fatal error: error no %d is out of range\n", err);

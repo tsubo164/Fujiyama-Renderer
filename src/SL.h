@@ -41,7 +41,7 @@ struct SurfaceInput {
 	double P[3];
 	double N[3];
 	float Cd[3];
-	float uv[3];
+	float uv[2];
 	float Alpha;
 
 	double Ng[3];

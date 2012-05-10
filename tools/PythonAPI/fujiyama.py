@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
+#Copyright (c) 2011-2012 Hiroshi Tsubokawa
+#See LICENSE and README
+
 import subprocess
+import os
 
 class SceneInterface:
 	def __init__(self):
@@ -8,10 +12,16 @@ class SceneInterface:
 		self.commands = []
 
 	def Print(self):
+		"""
+		Prints scene interface commands. No command is excuted.
+		"""
 		for cmd in self.commands:
 			print cmd
 
 	def Run(self):
+		"""
+		Runs scene parser with input stream
+		"""
 		commands = ''
 		for cmd in self.commands:
 			commands = commands + cmd + '\n'
@@ -29,8 +39,28 @@ class SceneInterface:
 		except OSError, (errno, strerror):
 			print 'error: ' + 'bin/scene' + ': ' + strerror
 
+	def Comment(self, comment):
+		"""
+		Put a comment on scene script. Max munber of characters is 128.
+		"""
+		cmd = '# %.128s' % (comment)
+		self.commands.append(cmd)
+
 	def OpenPlugin(self, plugin_path):
-		cmd = 'OpenPlugin %s' % (plugin_path)
+		"""
+		Opens a plugin. DSO extension (.so, .dll, ...) will be added when missing
+		"""
+		root, plugin_ext = os.path.splitext(plugin_path)
+		if os.name == 'posix':
+			dso_ext = '.so'
+		elif os.name == 'nt':
+			dso_ext = '.dll'
+
+		path = plugin_path
+		if plugin_ext != dso_ext:
+			path += dso_ext
+
+		cmd = 'OpenPlugin %s' % (path)
 		self.commands.append(cmd)
 
 	def RenderScene(self, renderer):
@@ -41,7 +71,6 @@ class SceneInterface:
 		cmd = 'SaveFrameBuffer %s %s' % (framebuffer, filename)
 		self.commands.append(cmd)
 
-	# Scene interfaces
 	def NewObjectInstance(self, name, accelerator):
 		cmd = 'NewObjectInstance %s %s' % (name, accelerator)
 		self.commands.append(cmd)
@@ -98,7 +127,6 @@ class SceneInterface:
 		cmd = 'AssignFrameBuffer %s %s' % (renderer, framebuffer)
 		self.commands.append(cmd)
 
-	# Property interfaces
 	def SetProperty1(self, entry_name, prop_name, v0):
 		cmd = 'SetProperty1 %s %s %s' % (entry_name, prop_name, v0)
 		self.commands.append(cmd)

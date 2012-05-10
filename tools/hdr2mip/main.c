@@ -27,13 +27,13 @@ int main(int argc, const char **argv)
 	rgbe_header_info info;
 
 	if (argc == 2 && strcmp(argv[1], "--help") == 0) {
-		printf(USAGE);
+		printf("%s", USAGE);
 		return 0;
 	}
 
 	if (argc != 3) {
 		fprintf(stderr, "error: invalid number of arguments.\n");
-		fprintf(stderr, USAGE);
+		fprintf(stderr, "%s", USAGE);
 		return -1;
 	}
 

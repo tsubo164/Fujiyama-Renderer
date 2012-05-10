@@ -194,9 +194,9 @@ static int set_filter_color(void *self, const struct PropertyValue *value)
 	struct GlassShader *glass = (struct GlassShader *) self;
 	float filter_color[3];
 
-	filter_color[0] = MAX(0, value->vector[0]);
-	filter_color[1] = MAX(0, value->vector[1]);
-	filter_color[2] = MAX(0, value->vector[2]);
+	filter_color[0] = MAX(.001, value->vector[0]);
+	filter_color[1] = MAX(.001, value->vector[1]);
+	filter_color[2] = MAX(.001, value->vector[2]);
 	VEC3_COPY(glass->filter_color, filter_color);
 
 	return 0;

@@ -390,6 +390,19 @@ int FbvLoadImage(struct FrameBufferViewer *v, const char *filename)
 		err = -1;
 	}
 
+	{
+		/* TODO define gamma function */
+		float *pixel = FbGetWritable(v->fb, 0, 0, 0);
+		const int N = FbGetWidth(v->fb) * FbGetHeight(v->fb) * FbGetChannelCount(v->fb);
+		int i;
+
+		const float gamma = 1 / 2.2;
+
+		for (i = 0; i < N; i++) {
+			pixel[i] = pow(pixel[i], gamma);
+		}
+	}
+
 	return err;
 }
 

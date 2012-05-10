@@ -34,7 +34,7 @@ const char *PlgGetErrorMessage(int err_no)
 		"Cannot allocate memory",   /* ERR_PLG_NOMEM */
 		"Fail to close dso"         /* ERR_PLG_FAILCLOSE */
 	};
-	static const size_t nerrs = sizeof(errmsg)/sizeof(errmsg[0]);
+	static const int nerrs = (int) sizeof(errmsg)/sizeof(errmsg[0]);
 
 	if (err_no >= nerrs) {
 		fprintf(stderr, "Logic error: err_no %d is out of range\n", err_no);

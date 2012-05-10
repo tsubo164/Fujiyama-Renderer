@@ -18,7 +18,7 @@ static size_t write_attriname(struct CurveOutput *out, const char *name);
 static size_t write_attridata(struct CurveOutput *out, const char *name);
 static void set_error(int err);
 
-static enum CrvErrorNo error_no = ERR_CRV_NOERR;
+static int error_no = ERR_CRV_NOERR;
 
 /* error no interfaces */
 int CrvGetErrorNo(void)
@@ -36,7 +36,7 @@ const char *CrvGetErrorMessage(int err)
 		"Invalid file version",     /* ERR_CRV_BADVER */
 		"Invalid attribute name"    /* ERR_CRV_BADATTRNAME */
 	};
-	static const size_t nerrs = sizeof(errmsg)/sizeof(errmsg[0]);
+	static const int nerrs = (int) sizeof(errmsg)/sizeof(errmsg[0]);
 
 	if (err >= nerrs) {
 		fprintf(stderr, "fatal error: error no %d is out of range\n", err);

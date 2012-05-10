@@ -46,7 +46,7 @@ struct Procedure *PrcNew(const struct Plugin *plugin)
 
 	/* commit */
 	procedure->self = tmpobj;
-	procedure->vptr = tmpvtbl;
+	procedure->vptr = (const struct ProcedureFunctionTable *) tmpvtbl;
 	procedure->plugin = plugin;
 	set_error(ERR_PRC_NOERR);
 

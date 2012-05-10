@@ -105,7 +105,7 @@ const char *SiGetErrorMessage(int err_no)
 		"new entry failed",   /*SI_ERR_FAILNEW */
 		"no memory"           /*SI_ERR_NOMEM */
 	};
-	static const size_t nerrs = sizeof(errmsg)/sizeof(errmsg[0]);
+	static const int nerrs = (int) sizeof(errmsg)/sizeof(errmsg[0]);
 
 	if (err_no >= nerrs) {
 		fprintf(stderr, "Logic error: err_no %d is out of range\n", err_no);
@@ -914,7 +914,7 @@ static int SetLightProperty3(int index, const char *name, double v0, double v1, 
 
 static int create_implicit_groups(void)
 {
-	int i;
+	size_t i;
 	struct ObjectGroup *all_objects;
 	struct Renderer *renderer;
 

@@ -48,7 +48,7 @@ struct Shader *ShdNew(const struct Plugin *plugin)
 
 	/* commit */
 	shader->self = tmpobj;
-	shader->vptr = tmpvtbl;
+	shader->vptr = (struct ShaderFunctionTable *) tmpvtbl;
 	shader->plugin = plugin;
 	set_error(ERR_SHD_NOERR);
 

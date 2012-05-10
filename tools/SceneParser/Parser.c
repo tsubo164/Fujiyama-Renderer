@@ -87,7 +87,7 @@ const char *PsrGetErrorMessage(int err_no)
 		"new entry failed",    /* ERR_PSR_FAILNEW */
 		"render faided"        /* ERR_PSR_FAILRENDER */
 	};
-	static const size_t nerrs = sizeof(errmsg)/sizeof(errmsg[0]);
+	static const int nerrs = (int) sizeof(errmsg)/sizeof(errmsg[0]);
 
 	if (err_no >= nerrs) {
 		fprintf(stderr, "Logic error: err_no %d is out of range\n", err_no);
@@ -115,7 +115,7 @@ int PsrParseLine(struct Parser *parser, const char *line)
 		return 0;
 
 	{
-		int s, e;
+		size_t s, e;
 		size_t ncpy;
 		size_t len = strlen(line);
 		for (s = 0; s < len; s++) {

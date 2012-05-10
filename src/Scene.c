@@ -21,7 +21,7 @@ See LICENSE and README
 	struct type **nodes; \
 	if (LIST(scn,type) == NULL) break; \
 	nodes = (struct type ** ) LIST(scn,type)->data; \
-	for (i = 0; i < LIST(scn,type)->nelems; i++) { \
+	for (i = 0; i < (int) LIST(scn,type)->nelems; i++) { \
 		freefn(nodes[i]); \
 		/* printf("\t"#type" %d: freed\n", i); */ \
 	} \
@@ -40,7 +40,7 @@ struct Type **ScnGet##Type##List(const struct Scene *scn) \
 } \
 struct Type *ScnGet##Type(const struct Scene *scn, int index) \
 { \
-	if((index) < 0 || (index) >= ScnGet##Type##Count((scn))) return NULL; \
+	if((index) < 0 || (index) >= (int) ScnGet##Type##Count((scn))) return NULL; \
 	return ScnGet##Type##List((scn))[(index)]; \
 }
 
@@ -90,79 +90,79 @@ void ScnFree(struct Scene *scn)
 /* ObjectInstance */
 struct ObjectInstance *ScnNewObjectInstance(struct Scene *scn, const struct Accelerator *acc)
 {
-	return push_entry(scn->ObjectInstanceList, ObjNew(acc));
+	return (struct ObjectInstance *) push_entry(scn->ObjectInstanceList, ObjNew(acc));
 }
 
 /* Accelerator */
 struct Accelerator *ScnNewAccelerator(struct Scene *scn, int accelerator_type)
 {
-	return push_entry(scn->AcceleratorList, AccNew(accelerator_type));
+	return (struct Accelerator *) push_entry(scn->AcceleratorList, AccNew(accelerator_type));
 }
 
 /* FrameBuffer */
 struct FrameBuffer *ScnNewFrameBuffer(struct Scene *scn)
 {
-	return push_entry(scn->FrameBufferList, FbNew());
+	return (struct FrameBuffer *) push_entry(scn->FrameBufferList, FbNew());
 }
 
 /* ObjectGroup */
 struct ObjectGroup *ScnNewObjectGroup(struct Scene *scn)
 {
-	return push_entry(scn->ObjectGroupList, ObjGroupNew());
+	return (struct ObjectGroup *) push_entry(scn->ObjectGroupList, ObjGroupNew());
 }
 
 /* Renderer */
 struct Renderer *ScnNewRenderer(struct Scene *scn)
 {
-	return push_entry(scn->RendererList, RdrNew());
+	return (struct Renderer *) push_entry(scn->RendererList, RdrNew());
 }
 
 /* Texture */
 struct Texture *ScnNewTexture(struct Scene *scn)
 {
-	return push_entry(scn->TextureList, TexNew());
+	return (struct Texture *) push_entry(scn->TextureList, TexNew());
 }
 
 /* Camera */
 struct Camera *ScnNewCamera(struct Scene *scn, const char *type)
 {
-	return push_entry(scn->CameraList, CamNew(type));
+	return (struct Camera *) push_entry(scn->CameraList, CamNew(type));
 }
 
 /* Plugin */
 struct Plugin *ScnOpenPlugin(struct Scene *scn, const char *filename)
 {
-	return push_entry(scn->PluginList, PlgOpen(filename));
+	return (struct Plugin *) push_entry(scn->PluginList, PlgOpen(filename));
 }
 
 /* Shader */
 struct Shader *ScnNewShader(struct Scene *scn, const struct Plugin *plugin)
 {
-	return push_entry(scn->ShaderList, ShdNew(plugin));
+	return (struct Shader *) push_entry(scn->ShaderList, ShdNew(plugin));
 }
 
 /* Volume */
 struct Volume *ScnNewVolume(struct Scene *scn)
 {
-	return push_entry(scn->VolumeList, VolNew());
+	return (struct Volume *) push_entry(scn->VolumeList, VolNew());
 }
 
 /* Curve */
 struct Curve *ScnNewCurve(struct Scene *scn)
 {
-	return push_entry(scn->CurveList, CrvNew());
+	return (struct Curve *) push_entry(scn->CurveList, CrvNew());
 }
 
 /* Light */
 struct Light *ScnNewLight(struct Scene *scn, const char *type)
 {
-	return push_entry(scn->LightList, LgtNew(type));
+	return (struct Light *) push_entry(scn->LightList, LgtNew(type));
 }
 
 /* Mesh */
 struct Mesh *ScnNewMesh(struct Scene *scn)
 {
-	return push_entry(scn->MeshList, MshNew());
+	return (struct Mesh *) push_entry(scn->MeshList, MshNew());
 }
 
 DEFINE_LIST_FUNCTIONS(ObjectInstance)

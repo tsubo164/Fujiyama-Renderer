@@ -48,7 +48,7 @@ char *ArrPush(struct Array *a, const void *data)
 	}
 
 	dst = a->data + a->elemsize * a->nelems;
-	src = data;
+	src = (const char *) data;
 	memcpy(dst, src, a->elemsize);
 	a->nelems++;
 

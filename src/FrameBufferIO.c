@@ -17,7 +17,7 @@ See LICENSE and README
 
 static void set_error(int err);
 
-static enum FbErrorNo error_no = ERR_FB_NOERR;
+static int error_no = ERR_FB_NOERR;
 
 int FbGetErrorNo(void)
 {
@@ -33,7 +33,7 @@ const char *FbGetErrorMessage(int err)
 		"Not framebuffer file",  /* ERR_FB_NOTFB */
 		"Invalid file version"   /* ERR_FB_BADVER */
 	};
-	static const size_t nerrs = sizeof(errmsg)/sizeof(errmsg[0]);
+	static const int nerrs = (int )sizeof(errmsg)/sizeof(errmsg[0]);
 
 	if (err >= nerrs) {
 		fprintf(stderr, "fatal error: error no %d is out of range\n", err);

@@ -22,7 +22,7 @@ See LICENSE and README
 
 #define ROUND(x_) (floor((x_)+.5))
 
-static enum MipErrorNo error_no = ERR_MIP_NOERR;
+static int error_no = ERR_MIP_NOERR;
 static int pow2[POW2_SIZE] = {
 	1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768
 };
@@ -50,7 +50,7 @@ const char *MipGetErrorMessage(int err)
 		"Not mipmap file",        /* ERR_MIP_NOTMIP */
 		"Invalid file version"    /* ERR_MIP_BADVER */
 	};
-	static const size_t nerrs = sizeof(errmsg)/sizeof(errmsg[0]);
+	static const int nerrs = (int) sizeof(errmsg)/sizeof(errmsg[0]);
 
 	if (err >= nerrs) {
 		fprintf(stderr, "fatal error: error no %d is out of range\n", err);
