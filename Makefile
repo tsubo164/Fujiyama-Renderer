@@ -151,6 +151,16 @@ $(eval $(call submodule))
 
 install_procedures += $(subtgt_)
 
+srcdir_  := procedures/CloudVolumeProcedure
+tgtdir_  := lib
+files_   := CloudVolumeProcedure
+subtgt_  := CloudVolumeProcedure.so
+cflags_  := -fPIC
+ldflags_ := -shared -lscene
+$(eval $(call submodule))
+
+install_procedures += $(subtgt_)
+
 #tools
 srcdir_  := tools/SceneParser
 tgtdir_  := bin

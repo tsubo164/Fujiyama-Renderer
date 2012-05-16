@@ -16,17 +16,6 @@ See LICENSE and README
 
 #define GET_LAST_ADDED_ID(Type) (ScnGet##Type##Count(scene) - 1)
 
-#define GET_PTR_OR_RETURN_FAIL(Type,id,ptr) do { \
-	int type__ = 0; \
-	int index__ = 0; \
-	decode_id((id), &type__, &index__); \
-	if (type__ != Type_##Type) \
-		return SI_FAIL; \
-	(ptr) = ScnGet##Type(scene, index__); \
-	if ((ptr) == NULL) \
-		return SI_FAIL; \
-} while(0)
-
 enum { TYPE_ID_OFFSET = 10000000 };
 
 enum {
@@ -44,6 +33,7 @@ enum {
 	Type_ObjectInstance = 1,
 	Type_Accelerator,
 	Type_FrameBuffer,
+	Type_Procedure,
 	Type_Renderer,
 	Type_Texture,
 	Type_Camera,
@@ -56,6 +46,11 @@ enum {
 	Type_End
 };
 
+struct Entry {
+	int type;
+	int index;
+};
+
 static struct Scene *scene = NULL;
 static int si_errno = SI_NOERR;
 
@@ -64,6 +59,8 @@ static ID encode_id(int type, int index);
 static int decode_id(ID id, int *type, int *index);
 static int create_implicit_groups(void);
 static void set_errno(int err_no);
+
+static struct Entry decode_id2(ID id);
 
 /* Property interfaces */
 static int SetObjectInstanceProperty1(int index, const char *name, double v0);
@@ -82,6 +79,8 @@ static int SetShaderProperty3(int index, const char *name, double v0, double v1,
 
 static int SetLightProperty1(int index, const char *name, double v0);
 static int SetLightProperty3(int index, const char *name, double v0, double v1, double v2);
+
+static int SetProcedurePropertyID(int index, const char *name, ID assigned);
 
 /* Error interfaces */
 static void set_errno(int err_no)
@@ -159,6 +158,7 @@ Status SiRenderScene(ID renderer)
 		return SI_FAIL;
 	}
 
+	/* TODO fix hard-coded renderer index */
 	err = RdrRender(ScnGetRenderer(scene, 0));
 	if (err) {
 		/* TODO error handling */
@@ -171,23 +171,54 @@ Status SiRenderScene(ID renderer)
 
 Status SiSaveFrameBuffer(ID framebuffer, const char *filename)
 {
-	struct FrameBuffer *framebuffer_ptr;
-#if 0
-	GET_PTR_OR_RETURN_FAIL(FrameBuffer, framebuffer, framebuffer_ptr);
-#endif
-	{
-		int type = 0;
-		int index = 0;
-		decode_id(framebuffer, &type, &index);
+	struct FrameBuffer *framebuffer_ptr = NULL;
+	int type = 0;
+	int index = 0;
+	int err = 0;
 
-		if (type != Type_FrameBuffer)
-			return SI_FAIL;
+	decode_id(framebuffer, &type, &index);
 
-		framebuffer_ptr = ScnGetFrameBuffer(scene, index);
-		if (framebuffer_ptr == NULL)
-			return SI_FAIL;
+	if (type != Type_FrameBuffer)
+		return SI_FAIL;
+
+	framebuffer_ptr = ScnGetFrameBuffer(scene, index);
+	if (framebuffer_ptr == NULL)
+		return SI_FAIL;
+
+	err = FbSaveCroppedData(framebuffer_ptr, filename);
+	if (err) {
+		/* TODO error handling */
+		return SI_FAIL;
 	}
-	return FbSaveCroppedData(framebuffer_ptr, filename);
+
+	set_errno(SI_NOERR);
+	return SI_SUCCESS;
+}
+
+Status SiRunProcedure(ID procedure)
+{
+	struct Procedure *procedure_ptr = NULL;
+	int type = 0;
+	int index = 0;
+	int err = 0;
+
+	decode_id(procedure, &type, &index);
+
+	if (type != Type_Procedure)
+		return SI_FAIL;
+
+	procedure_ptr = ScnGetProcedure(scene, index);
+	if (procedure_ptr == NULL)
+		return SI_FAIL;
+
+	err = PrcRun(procedure_ptr);
+	if (err) {
+		/* TODO error handling */
+		return SI_FAIL;
+	}
+
+	set_errno(SI_NOERR);
+	return SI_SUCCESS;
 }
 
 ID SiNewObjectInstance(ID accelerator)
@@ -280,6 +311,32 @@ ID SiNewFrameBuffer(const char *arg)
 	return encode_id(Type_FrameBuffer, GET_LAST_ADDED_ID(FrameBuffer));
 }
 
+ID SiNewProcedure(const char *plugin_name)
+{
+	struct Plugin **plugins = ScnGetPluginList(scene);
+	struct Plugin *found = NULL;
+	const int N = (int) ScnGetPluginCount(scene);
+	int i;
+
+	for (i = 0; i < N; i++) {
+		if (strcmp(plugin_name, PlgGetName(plugins[i])) == 0) {
+			found = plugins[i];
+			break;
+		}
+	}
+	if (found == NULL) {
+		set_errno(SI_ERR_FAILNEW);
+		return SI_BADID;
+	}
+	if (ScnNewProcedure(scene, found) == NULL) {
+		set_errno(SI_ERR_FAILNEW);
+		return SI_BADID;
+	}
+
+	set_errno(SI_NOERR);
+	return encode_id(Type_Procedure, GET_LAST_ADDED_ID(Procedure));
+}
+
 ID SiNewRenderer(void)
 {
 	if (ScnNewRenderer(scene) == NULL) {
@@ -291,7 +348,7 @@ ID SiNewRenderer(void)
 	return encode_id(Type_Renderer, GET_LAST_ADDED_ID(Renderer));
 }
 
-ID SiNewTexture(const char *arg)
+ID SiNewTexture(const char *filename)
 {
 	struct Texture *tex;
 
@@ -300,7 +357,7 @@ ID SiNewTexture(const char *arg)
 		set_errno(SI_ERR_FAILNEW);
 		return SI_BADID;
 	}
-	if (TexLoadFile(tex, arg)) {
+	if (TexLoadFile(tex, filename)) {
 		set_errno(SI_ERR_FAILLOAD);
 		return SI_FAIL;
 	}
@@ -320,15 +377,15 @@ ID SiNewCamera(const char *arg)
 	return encode_id(Type_Camera, GET_LAST_ADDED_ID(Camera));
 }
 
-ID SiNewShader(const char *arg)
+ID SiNewShader(const char *plugin_name)
 {
 	struct Plugin **plugins = ScnGetPluginList(scene);
 	struct Plugin *found = NULL;
-	const int N = ScnGetPluginCount(scene);
+	const int N = (int) ScnGetPluginCount(scene);
 	int i;
 
 	for (i = 0; i < N; i++) {
-		if (strcmp(arg, PlgGetName(plugins[i])) == 0) {
+		if (strcmp(plugin_name, PlgGetName(plugins[i])) == 0) {
 			found = plugins[i];
 			break;
 		}
@@ -604,7 +661,7 @@ Status SiSetProperty1(ID id, const char *name, double v0)
 		assert(!is_valid_type(type) && "Some types are not implemented yet");
 		break;
 	}
-	return SI_FAIL;
+	return SI_SUCCESS;
 }
 
 Status SiSetProperty2(ID id, const char *name, double v0, double v1)
@@ -624,7 +681,7 @@ Status SiSetProperty2(ID id, const char *name, double v0, double v1)
 		assert(!is_valid_type(type) && "Some types are not implemented yet");
 		break;
 	}
-	return SI_FAIL;
+	return SI_SUCCESS;
 }
 
 Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2)
@@ -650,7 +707,7 @@ Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2)
 		assert(!is_valid_type(type) && "Some types are not implemented yet");
 		break;
 	}
-	return SI_FAIL;
+	return SI_SUCCESS;
 }
 
 Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, double v3)
@@ -667,7 +724,55 @@ Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, 
 		assert(!is_valid_type(type) && "Some types are not implemented yet");
 		break;
 	}
-	return SI_FAIL;
+	return SI_SUCCESS;
+}
+
+Status SiSetPropertyID(ID id, const char *name, ID assigned)
+{
+	const struct Entry entry = decode_id2(id);
+
+	switch (entry.type) {
+	case Type_Procedure:
+		SetProcedurePropertyID(entry.index, name, assigned);
+		break;
+	default:
+		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
+		break;
+	}
+
+	return SI_SUCCESS;
+}
+
+Status SiAssignVolume(ID id, const char *name, ID volume)
+{
+	const struct Entry entry = decode_id2(id);
+	const struct Entry volume_ent = decode_id2(volume);
+	struct PropertyValue value = InitPropValue();
+	int err = 0;
+
+	if (volume_ent.type != Type_Volume)
+		return SI_FAIL;
+
+	value.volume = ScnGetVolume(scene, volume_ent.index);
+	if (value.volume == NULL)
+		return SI_FAIL;
+
+	switch (entry.type) {
+	case Type_Procedure:
+		{
+			struct Procedure *procedure_ptr = ScnGetProcedure(scene, entry.index);
+			err = PrcSetProperty(procedure_ptr, name, &value);
+		}
+		break;
+	default:
+		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
+		break;
+	}
+
+	if (err)
+		return SI_FAIL;
+
+	return SI_SUCCESS;
 }
 
 static int is_valid_type(int type)
@@ -692,6 +797,20 @@ static int decode_id(ID id, int *type, int *index)
 	*index = id - (tp * TYPE_ID_OFFSET);
 
 	return SI_SUCCESS;
+}
+
+static struct Entry decode_id2(ID id)
+{
+	struct Entry entry = {-1, -1};
+	const int type = id / TYPE_ID_OFFSET;
+
+	if (!is_valid_type(type))
+		return entry;
+
+	entry.type = type;
+	entry.index = id - (type * TYPE_ID_OFFSET);
+
+	return entry;
 }
 
 /* ObjectInstance Property */
@@ -910,6 +1029,29 @@ static int SetLightProperty3(int index, const char *name, double v0, double v1, 
 	}
 
 	return result;
+}
+
+/* Property Property */
+static int SetProcedurePropertyID(int index, const char *name, ID assigned)
+{
+	const struct Entry entry = decode_id2(assigned);
+	/*
+	struct PropertyValue value = InitPropValue();
+	*/
+	struct Procedure *procedure = ScnGetProcedure(scene, index);
+
+	if (procedure == NULL)
+		return SI_FAIL;
+
+	switch (entry.type) {
+	case Type_Volume:
+		break;
+	default:
+		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
+		break;
+	}
+
+	return SI_SUCCESS;
 }
 
 static int create_implicit_groups(void)

@@ -9,7 +9,7 @@ See LICENSE and README
 
 struct PropertyValue InitPropValue(void)
 {
-	const struct PropertyValue value = {{0, 0, 0, 0}, NULL};
+	const struct PropertyValue value = INIT_PROPERTYVALUE;
 	return value;
 }
 

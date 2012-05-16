@@ -194,6 +194,24 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 		}
 	}
+	else if (strcmp(cmd, "RunProcedure") == 0) {
+		err = parse_args("s", argline, args, MAX_ARGS);
+		if (err)
+			return -1;
+
+		ent = TblLookup(parser->table, args[0].str);
+		if (ent == NULL) {
+			set_errno(ERR_PSR_NAMENOTFOUND);
+			return -1;
+		}
+
+		printf(PROMPT"%s: [%s]\n", cmd, args[0].str);
+		err = SiRunProcedure(EntGetID(ent));
+		if (err == SI_FAIL) {
+			set_errno(ERR_PSR_FAILRENDER);
+			return -1;
+		}
+	}
 	else if (strcmp(cmd, "NewObjectInstance") == 0) {
 		err = parse_args("ss", argline, args, MAX_ARGS);
 		if (err)
@@ -231,6 +249,25 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
 		id = SiNewFrameBuffer(args[1].str);
+		if (id == SI_BADID) {
+			set_errno(ERR_PSR_FAILNEW);
+			return -1;
+		}
+
+		TblAdd(parser->table, args[0].str, id);
+	}
+	else if (strcmp(cmd, "NewProcedure") == 0) {
+		err = parse_args("ss", argline, args, MAX_ARGS);
+		if (err)
+			return -1;
+
+		if (TblLookup(parser->table, args[0].str)) {
+			set_errno(ERR_PSR_NAMEEXISTS);
+			return -1;
+		}
+
+		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
+		id = SiNewProcedure(args[1].str);
 		if (id == SI_BADID) {
 			set_errno(ERR_PSR_FAILNEW);
 			return -1;
@@ -488,6 +525,29 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
 		SiAssignFrameBuffer(renderer_id, framebuffer_id);
+	}
+	else if (strcmp(cmd, "AssignVolume") == 0) {
+		ID id, volume_id;
+		err = parse_args("sss", argline, args, MAX_ARGS);
+		if (err)
+			return -1;
+
+		ent = TblLookup(parser->table, args[0].str);
+		if (ent == NULL) {
+			set_errno(ERR_PSR_NAMENOTFOUND);
+			return -1;
+		}
+		id = EntGetID(ent);
+
+		ent = TblLookup(parser->table, args[2].str);
+		if (ent == NULL) {
+			set_errno(ERR_PSR_NAMENOTFOUND);
+			return -1;
+		}
+		volume_id = EntGetID(ent);
+
+		printf(PROMPT"%s: [%s] [%s] [%s]\n", cmd, args[0].str, args[1].str, args[2].str);
+		SiAssignVolume(id, args[1].str, volume_id);
 	}
 	else if (strcmp(cmd, "SetProperty1") == 0) {
 		err = parse_args("ssf", argline, args, MAX_ARGS);

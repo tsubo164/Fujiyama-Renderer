@@ -17,7 +17,7 @@ struct Procedure;
 
 struct ProcedureFunctionTable {
 	const struct Property *(*MyPropertyList)(void);
-	int (*MyProcess)(void *self);
+	int (*MyRun)(void *self);
 };
 
 enum PrcErrorNo {
@@ -30,7 +30,7 @@ enum PrcErrorNo {
 extern struct Procedure *PrcNew(const struct Plugin *plugin);
 extern void PrcFree(struct Procedure *procedure);
 
-extern int PrcProcess(struct Procedure *procedure);
+extern int PrcRun(struct Procedure *procedure);
 
 extern const struct Property *PrcGetPropertyList(const struct Procedure *procedure);
 extern int PrcSetProperty(struct Procedure *procedure,

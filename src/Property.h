@@ -10,10 +10,24 @@ See LICENSE and README
 extern "C" {
 #endif
 
+struct Texture;
+struct Shader;
+struct Volume;
+
 struct PropertyValue {
 	double vector[4];
+	struct Texture *texture;
+	struct Shader *shader;
+	struct Volume *volume;
 	const void *pointer;
 };
+
+#define INIT_PROPERTYVALUE { \
+	{0, 0, 0, 0}, \
+	NULL, \
+	NULL, \
+	NULL, \
+	NULL}
 
 struct Property {
 	const char *name;

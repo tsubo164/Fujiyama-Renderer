@@ -27,13 +27,15 @@ extern Status SiOpenScene(void);
 extern Status SiCloseScene(void);
 extern Status SiRenderScene(ID renderer);
 extern Status SiSaveFrameBuffer(ID framebuffer, const char *filename);
+extern Status SiRunProcedure(ID procedure);
 
 extern ID SiNewObjectInstance(ID accelerator);
 extern ID SiNewFrameBuffer(const char *arg);
+extern ID SiNewProcedure(const char *plugin_name);
 extern ID SiNewRenderer(void);
-extern ID SiNewTexture(const char *arg);
+extern ID SiNewTexture(const char *filename);
 extern ID SiNewCamera(const char *arg);
-extern ID SiNewShader(const char *arg);
+extern ID SiNewShader(const char *plugin_name);
 extern ID SiNewVolume(void);
 extern ID SiNewCurve(const char *filename);
 extern ID SiNewLight(const char *arg);
@@ -49,6 +51,9 @@ extern Status SiSetProperty1(ID id, const char *name, double v0);
 extern Status SiSetProperty2(ID id, const char *name, double v0, double v1);
 extern Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2);
 extern Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, double v3);
+
+extern Status SiSetPropertyID(ID id, const char *name, ID assigned);
+extern Status SiAssignVolume(ID id, const char *name, ID volume);
 
 #ifdef __cplusplus
 } /* extern "C" */

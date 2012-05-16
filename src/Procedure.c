@@ -62,9 +62,9 @@ void PrcFree(struct Procedure *procedure)
 	free(procedure);
 }
 
-int PrcProcess(struct Procedure *procedure)
+int PrcRun(struct Procedure *procedure)
 {
-	return procedure->vptr->MyProcess(procedure->self);
+	return procedure->vptr->MyRun(procedure->self);
 }
 
 const struct Property *PrcGetPropertyList(const struct Procedure *procedure)

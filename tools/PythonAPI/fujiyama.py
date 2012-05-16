@@ -71,12 +71,20 @@ class SceneInterface:
 		cmd = 'SaveFrameBuffer %s %s' % (framebuffer, filename)
 		self.commands.append(cmd)
 
+	def RunProcedure(self, procedure):
+		cmd = 'RunProcedure %s' % (procedure)
+		self.commands.append(cmd)
+
 	def NewObjectInstance(self, name, accelerator):
 		cmd = 'NewObjectInstance %s %s' % (name, accelerator)
 		self.commands.append(cmd)
 
 	def NewFrameBuffer(self, name, arg):
 		cmd = 'NewFrameBuffer %s %s' % (name, arg)
+		self.commands.append(cmd)
+
+	def NewProcedure(self, name, arg):
+		cmd = 'NewProcedure %s %s' % (name, arg)
 		self.commands.append(cmd)
 
 	def NewRenderer(self, name):
