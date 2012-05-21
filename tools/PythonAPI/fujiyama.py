@@ -135,6 +135,10 @@ class SceneInterface:
 		cmd = 'AssignFrameBuffer %s %s' % (renderer, framebuffer)
 		self.commands.append(cmd)
 
+	def AssignVolume(self, entry_name, prop_name, volume):
+		cmd = 'AssignVolume %s %s %s' % (entry_name, prop_name, volume)
+		self.commands.append(cmd)
+
 	def SetProperty1(self, entry_name, prop_name, v0):
 		cmd = 'SetProperty1 %s %s %s' % (entry_name, prop_name, v0)
 		self.commands.append(cmd)

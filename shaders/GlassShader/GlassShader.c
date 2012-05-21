@@ -44,13 +44,13 @@ static int set_roughness(void *self, const struct PropertyValue *value);
 static int set_ior(void *self, const struct PropertyValue *value);
 
 static const struct Property PlasticShaderProperties[] = {
-	{"diffuse",      set_diffuse},
-	{"specular",     set_specular},
-	{"ambient",      set_ambient},
-	{"filter_color", set_filter_color},
-	{"roughness",    set_roughness},
-	{"ior",          set_ior},
-	{NULL,           NULL}
+	{PROP_VECTOR3, "diffuse",      set_diffuse},
+	{PROP_VECTOR3, "specular",     set_specular},
+	{PROP_VECTOR3, "ambient",      set_ambient},
+	{PROP_VECTOR3, "filter_color", set_filter_color},
+	{PROP_SCALAR,  "roughness",    set_roughness},
+	{PROP_SCALAR,  "ior",          set_ior},
+	{PROP_NONE,    NULL,           NULL}
 };
 
 static const struct MetaInfo MyShaderMetainfo[] = {
@@ -78,7 +78,7 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-	struct GlassShader *glass;
+	struct GlassShader *glass = NULL;
 
 	glass = (struct GlassShader *) malloc(sizeof(struct GlassShader));
 	if (glass == NULL)
@@ -105,13 +105,14 @@ static void MyFree(void *self)
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
-	const struct GlassShader *glass;
+	const struct GlassShader *glass = NULL;
 	struct TraceContext refl_cxt;
 	struct TraceContext refr_cxt;
-	double T[3], R[3];
+	double T[3] = {0};
+	double R[3] = {0};
 	float C_refl[4] = {0};
 	float C_refr[4] = {0};
-	double Kt, Kr;
+	double Kt = 0, Kr = 0;
 	double t_hit = FLT_MAX;
 
 	glass = (struct GlassShader *) self;
@@ -153,7 +154,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 static int set_diffuse(void *self, const struct PropertyValue *value)
 {
 	struct GlassShader *glass = (struct GlassShader *) self;
-	float diffuse[3];
+	float diffuse[3] = {0};
 
 	diffuse[0] = MAX(0, value->vector[0]);
 	diffuse[1] = MAX(0, value->vector[1]);
@@ -166,7 +167,7 @@ static int set_diffuse(void *self, const struct PropertyValue *value)
 static int set_specular(void *self, const struct PropertyValue *value)
 {
 	struct GlassShader *glass = (struct GlassShader *) self;
-	float specular[3];
+	float specular[3] = {0};
 
 	specular[0] = MAX(0, value->vector[0]);
 	specular[1] = MAX(0, value->vector[1]);
@@ -179,7 +180,7 @@ static int set_specular(void *self, const struct PropertyValue *value)
 static int set_ambient(void *self, const struct PropertyValue *value)
 {
 	struct GlassShader *glass = (struct GlassShader *) self;
-	float ambient[3];
+	float ambient[3] = {0};
 
 	ambient[0] = MAX(0, value->vector[0]);
 	ambient[1] = MAX(0, value->vector[1]);
@@ -192,7 +193,7 @@ static int set_ambient(void *self, const struct PropertyValue *value)
 static int set_filter_color(void *self, const struct PropertyValue *value)
 {
 	struct GlassShader *glass = (struct GlassShader *) self;
-	float filter_color[3];
+	float filter_color[3] = {0};
 
 	filter_color[0] = MAX(.001, value->vector[0]);
 	filter_color[1] = MAX(.001, value->vector[1]);

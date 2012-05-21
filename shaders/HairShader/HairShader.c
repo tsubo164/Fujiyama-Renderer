@@ -20,7 +20,6 @@ struct HairShader {
 	float roughness;
 
 	float reflect[3];
-	float ior;
 };
 
 static void *MyNew(void);
@@ -40,20 +39,18 @@ static int set_specular(void *self, const struct PropertyValue *value);
 static int set_ambient(void *self, const struct PropertyValue *value);
 static int set_roughness(void *self, const struct PropertyValue *value);
 static int set_reflect(void *self, const struct PropertyValue *value);
-static int set_ior(void *self, const struct PropertyValue *value);
 
 /* hair shading implementations */
 static float kajiya_diffuse(const double *tangent, const double *Ln);
 static float kajiya_specular(const double *tangent, const double *Ln, const double *I);
 
 static const struct Property PlasticShaderProperties[] = {
-	{"diffuse",   set_diffuse},
-	{"specular",  set_specular},
-	{"ambient",   set_ambient},
-	{"roughness", set_roughness},
-	{"reflect",   set_reflect},
-	{"ior",       set_ior},
-	{NULL,        NULL}
+	{PROP_VECTOR3, "diffuse",   set_diffuse},
+	{PROP_VECTOR3, "specular",  set_specular},
+	{PROP_VECTOR3, "ambient",   set_ambient},
+	{PROP_SCALAR,  "roughness", set_roughness},
+	{PROP_VECTOR3, "reflect",   set_reflect},
+	{PROP_NONE,    NULL,        NULL}
 };
 
 static const struct MetaInfo MyShaderMetainfo[] = {
@@ -93,7 +90,6 @@ static void *MyNew(void)
 	hair->roughness = .1;
 
 	VEC3_SET(hair->reflect, 1, 1, 1);
-	hair->ior = 1.4;
 
 	return hair;
 }
@@ -201,17 +197,6 @@ static int set_reflect(void *self, const struct PropertyValue *value)
 	reflect[1] = MAX(0, value->vector[1]);
 	reflect[2] = MAX(0, value->vector[2]);
 	VEC3_COPY(hair->reflect, reflect);
-
-	return 0;
-}
-
-static int set_ior(void *self, const struct PropertyValue *value)
-{
-	struct HairShader *hair = (struct HairShader *) self;
-	float ior = value->vector[0];
-
-	ior = MAX(0, ior);
-	hair->ior = ior;
 
 	return 0;
 }

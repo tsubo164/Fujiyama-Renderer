@@ -20,7 +20,6 @@ enum { TYPE_ID_OFFSET = 10000000 };
 
 enum {
 	SI_NOERR = 0,
-	SI_ERR_BADARG,
 	SI_ERR_BADTYPE,
 	SI_ERR_FAILOPENPLG,
 	SI_ERR_FAILLOAD,
@@ -56,11 +55,9 @@ static int si_errno = SI_NOERR;
 
 static int is_valid_type(int type);
 static ID encode_id(int type, int index);
-static int decode_id(ID id, int *type, int *index);
+static struct Entry decode_id(ID id);
 static int create_implicit_groups(void);
 static void set_errno(int err_no);
-
-static struct Entry decode_id2(ID id);
 
 /* Property interfaces */
 static int SetObjectInstanceProperty1(int index, const char *name, double v0);
@@ -80,14 +77,7 @@ static int SetShaderProperty3(int index, const char *name, double v0, double v1,
 static int SetLightProperty1(int index, const char *name, double v0);
 static int SetLightProperty3(int index, const char *name, double v0, double v1, double v2);
 
-static int SetProcedurePropertyID(int index, const char *name, ID assigned);
-
 /* Error interfaces */
-static void set_errno(int err_no)
-{
-	si_errno = err_no;
-}
-
 int SiGetErrorNo(void)
 {
 	return si_errno;
@@ -96,13 +86,13 @@ int SiGetErrorNo(void)
 const char *SiGetErrorMessage(int err_no)
 {
 	static const char *errmsg[] = {
-		"",                   /*SI_NOERR */
-		"bad arg",            /*SI_ERR_BADARG */
-		"invalid entry type", /*SI_ERR_BADTYPE */
-		"open plugin failed", /*SI_ERR_FAILOPENPLG */
-		"load file failed",   /*SI_ERR_FAILLOAD */
-		"new entry failed",   /*SI_ERR_FAILNEW */
-		"no memory"           /*SI_ERR_NOMEM */
+		"",                   /* SI_NOERR */
+		"bad arg",            /* SI_ERR_BADARG */
+		"invalid entry type", /* SI_ERR_BADTYPE */
+		"open plugin failed", /* SI_ERR_FAILOPENPLG */
+		"load file failed",   /* SI_ERR_FAILLOAD */
+		"new entry failed",   /* SI_ERR_FAILNEW */
+		"no memory"           /* SI_ERR_NOMEM */
 	};
 	static const int nerrs = (int) sizeof(errmsg)/sizeof(errmsg[0]);
 
@@ -150,7 +140,7 @@ Status SiCloseScene(void)
 
 Status SiRenderScene(ID renderer)
 {
-	int err;
+	int err = 0;
 
 	err = create_implicit_groups();
 	if (err) {
@@ -171,17 +161,14 @@ Status SiRenderScene(ID renderer)
 
 Status SiSaveFrameBuffer(ID framebuffer, const char *filename)
 {
+	const struct Entry entry = decode_id(framebuffer);
 	struct FrameBuffer *framebuffer_ptr = NULL;
-	int type = 0;
-	int index = 0;
 	int err = 0;
 
-	decode_id(framebuffer, &type, &index);
-
-	if (type != Type_FrameBuffer)
+	if (entry.type != Type_FrameBuffer)
 		return SI_FAIL;
 
-	framebuffer_ptr = ScnGetFrameBuffer(scene, index);
+	framebuffer_ptr = ScnGetFrameBuffer(scene, entry.index);
 	if (framebuffer_ptr == NULL)
 		return SI_FAIL;
 
@@ -197,17 +184,14 @@ Status SiSaveFrameBuffer(ID framebuffer, const char *filename)
 
 Status SiRunProcedure(ID procedure)
 {
+	const struct Entry entry = decode_id(procedure);
 	struct Procedure *procedure_ptr = NULL;
-	int type = 0;
-	int index = 0;
 	int err = 0;
 
-	decode_id(procedure, &type, &index);
-
-	if (type != Type_Procedure)
+	if (entry.type != Type_Procedure)
 		return SI_FAIL;
 
-	procedure_ptr = ScnGetProcedure(scene, index);
+	procedure_ptr = ScnGetProcedure(scene, entry.index);
 	if (procedure_ptr == NULL)
 		return SI_FAIL;
 
@@ -221,58 +205,32 @@ Status SiRunProcedure(ID procedure)
 	return SI_SUCCESS;
 }
 
+/* TODO change argument name accelerator */
 ID SiNewObjectInstance(ID accelerator)
 {
-/* TODO clean old code */
-#if 0
-	struct Accelerator *acc;
-	int type = 0;
-	int index = 0;
-	decode_id(accelerator, &type, &index);
+	const struct Entry entry = decode_id(accelerator);
 
-	if (type != Type_Accelerator) {
-		set_errno(SI_ERR_BADTYPE);
-		return SI_BADID;
-	}
+	if (entry.type == Type_Accelerator) {
+		struct Accelerator *acc = NULL;
 
-	acc = ScnGetAccelerator(scene, index);
-	if (acc == NULL) {
-		set_errno(SI_ERR_BADTYPE);
-		return SI_BADID;
-	}
-
-	if (ScnNewObjectInstance(scene, acc) == NULL) {
-		set_errno(SI_ERR_FAILNEW);
-		return SI_BADID;
-	}
-
-	set_errno(SI_NOERR);
-	return encode_id(Type_ObjectInstance, GET_LAST_ADDED_ID(ObjectInstance));
-#endif
-	int type = 0;
-	int index = 0;
-	decode_id(accelerator, &type, &index);
-
-	if (type == Type_Accelerator) {
-		struct Accelerator *acc;
-
-		acc = ScnGetAccelerator(scene, index);
+		acc = ScnGetAccelerator(scene, entry.index);
 		if (acc == NULL) {
 			set_errno(SI_ERR_BADTYPE);
 			return SI_BADID;
 		}
 
+		/* TODO come up with another way to pass acc */
 		if (ScnNewObjectInstance(scene, acc) == NULL) {
 			set_errno(SI_ERR_FAILNEW);
 			return SI_BADID;
 		}
 	}
-	else if (type == Type_Volume) {
-		struct ObjectInstance *object;
-		struct Volume *volume;
-		int err;
+	else if (entry.type == Type_Volume) {
+		struct ObjectInstance *object = NULL;
+		struct Volume *volume = NULL;
+		int err = 0;
 
-		volume = ScnGetVolume(scene, index);
+		volume = ScnGetVolume(scene, entry.index);
 		if (volume == NULL) {
 			set_errno(SI_ERR_BADTYPE);
 			return SI_BADID;
@@ -316,7 +274,7 @@ ID SiNewProcedure(const char *plugin_name)
 	struct Plugin **plugins = ScnGetPluginList(scene);
 	struct Plugin *found = NULL;
 	const int N = (int) ScnGetPluginCount(scene);
-	int i;
+	int i = 0;
 
 	for (i = 0; i < N; i++) {
 		if (strcmp(plugin_name, PlgGetName(plugins[i])) == 0) {
@@ -350,7 +308,7 @@ ID SiNewRenderer(void)
 
 ID SiNewTexture(const char *filename)
 {
-	struct Texture *tex;
+	struct Texture *tex = NULL;
 
 	tex = ScnNewTexture(scene);
 	if (tex == NULL) {
@@ -382,7 +340,7 @@ ID SiNewShader(const char *plugin_name)
 	struct Plugin **plugins = ScnGetPluginList(scene);
 	struct Plugin *found = NULL;
 	const int N = (int) ScnGetPluginCount(scene);
-	int i;
+	int i = 0;
 
 	for (i = 0; i < N; i++) {
 		if (strcmp(plugin_name, PlgGetName(plugins[i])) == 0) {
@@ -405,10 +363,7 @@ ID SiNewShader(const char *plugin_name)
 
 ID SiNewVolume(void)
 {
-	struct Volume *volume;
-	/* TODO remove acc
-	struct Accelerator *acc;
-	*/
+	struct Volume *volume = NULL;
 
 	volume = ScnNewVolume(scene);
 	if (volume == NULL) {
@@ -416,26 +371,14 @@ ID SiNewVolume(void)
 		return SI_BADID;
 	}
 
-#if 0
-	acc = ScnNewAccelerator(scene, ACC_VOLUME);
-	/*
-	acc = ScnNewAccelerator(scene, ACC_GRID);
-	*/
-	if (acc == NULL) {
-		set_errno(SI_ERR_FAILNEW);
-		return SI_BADID;
-	}
-	VolSetupAccelerator(volume, acc);
-#endif
-
 	set_errno(SI_NOERR);
 	return encode_id(Type_Volume, GET_LAST_ADDED_ID(Volume));
 }
 
 ID SiNewCurve(const char *filename)
 {
-	struct Curve *curve;
-	struct Accelerator *acc;
+	struct Curve *curve = NULL;
+	struct Accelerator *acc = NULL;
 	struct PrimitiveSet primset;
 
 	curve = ScnNewCurve(scene);
@@ -474,8 +417,8 @@ ID SiNewLight(const char *arg)
 
 ID SiNewMesh(const char *filename)
 {
-	struct Mesh *mesh;
-	struct Accelerator *acc;
+	struct Mesh *mesh = NULL;
+	struct Accelerator *acc = NULL;
 	struct PrimitiveSet primset;
 
 	mesh = ScnNewMesh(scene);
@@ -503,29 +446,25 @@ ID SiNewMesh(const char *filename)
 
 Status SiAssignShader(ID object, ID shader)
 {
-	struct ObjectInstance *object_ptr;
-	struct Shader *shader_ptr;
+	struct ObjectInstance *object_ptr = NULL;
+	struct Shader *shader_ptr = NULL;
 	{
-		int type = 0;
-		int index = 0;
-		decode_id(object, &type, &index);
+		const struct Entry entry = decode_id(object);
 
-		if (type != Type_ObjectInstance)
+		if (entry.type != Type_ObjectInstance)
 			return SI_FAIL;
 
-		object_ptr = ScnGetObjectInstance(scene, index);
+		object_ptr = ScnGetObjectInstance(scene, entry.index);
 		if (object_ptr == NULL)
 			return SI_FAIL;
 	}
 	{
-		int type = 0;
-		int index = 0;
-		decode_id(shader, &type, &index);
+		const struct Entry entry = decode_id(shader);
 
-		if (type != Type_Shader)
+		if (entry.type != Type_Shader)
 			return SI_FAIL;
 
-		shader_ptr = ScnGetShader(scene, index);
+		shader_ptr = ScnGetShader(scene, entry.index);
 		if (shader_ptr == NULL)
 			return SI_FAIL;
 	}
@@ -537,62 +476,54 @@ Status SiAssignShader(ID object, ID shader)
 Status SiAssignTexture(ID shader, const char *prop_name, ID texture)
 {
 	struct PropertyValue value = InitPropValue();
-	struct Shader *shader_ptr;
-	struct Texture *texture_ptr;
+	struct Shader *shader_ptr = NULL;
+	struct Texture *texture_ptr = NULL;
 	{
-		int type = 0;
-		int index = 0;
-		decode_id(shader, &type, &index);
+		const struct Entry entry = decode_id(shader);
 
-		if (type != Type_Shader)
+		if (entry.type != Type_Shader)
 			return SI_FAIL;
 
-		shader_ptr = ScnGetShader(scene, index);
+		shader_ptr = ScnGetShader(scene, entry.index);
 		if (shader_ptr == NULL)
 			return SI_FAIL;
 	}
 	{
-		int type = 0;
-		int index = 0;
-		decode_id(texture, &type, &index);
+		const struct Entry entry = decode_id(texture);
 
-		if (type != Type_Texture)
+		if (entry.type != Type_Texture)
 			return SI_FAIL;
 
-		texture_ptr = ScnGetTexture(scene, index);
+		texture_ptr = ScnGetTexture(scene, entry.index);
 		if (texture_ptr == NULL)
 			return SI_FAIL;
 	}
 
-	value.pointer = texture_ptr;
+	value = PropTexture(texture_ptr);
 	return ShdSetProperty(shader_ptr, prop_name, &value);
 }
 
 Status SiAssignCamera(ID renderer, ID camera)
 {
-	struct Renderer *renderer_ptr;
-	struct Camera *camera_ptr;
+	struct Renderer *renderer_ptr = NULL;
+	struct Camera *camera_ptr = NULL;
 	{
-		int type = 0;
-		int index = 0;
-		decode_id(renderer, &type, &index);
+		const struct Entry entry = decode_id(renderer);
 
-		if (type != Type_Renderer)
+		if (entry.type != Type_Renderer)
 			return SI_FAIL;
 
-		renderer_ptr = ScnGetRenderer(scene, index);
+		renderer_ptr = ScnGetRenderer(scene, entry.index);
 		if (renderer_ptr == NULL)
 			return SI_FAIL;
 	}
 	{
-		int type = 0;
-		int index = 0;
-		decode_id(camera, &type, &index);
+		const struct Entry entry = decode_id(camera);
 
-		if (type != Type_Camera)
+		if (entry.type != Type_Camera)
 			return SI_FAIL;
 
-		camera_ptr = ScnGetCamera(scene, index);
+		camera_ptr = ScnGetCamera(scene, entry.index);
 		if (camera_ptr == NULL)
 			return SI_FAIL;
 	}
@@ -603,29 +534,25 @@ Status SiAssignCamera(ID renderer, ID camera)
 
 Status SiAssignFrameBuffer(ID renderer, ID framebuffer)
 {
-	struct Renderer *renderer_ptr;
-	struct FrameBuffer *framebuffer_ptr;
+	struct Renderer *renderer_ptr = NULL;
+	struct FrameBuffer *framebuffer_ptr = NULL;
 	{
-		int type = 0;
-		int index = 0;
-		decode_id(renderer, &type, &index);
+		const struct Entry entry = decode_id(renderer);
 
-		if (type != Type_Renderer)
+		if (entry.type != Type_Renderer)
 			return SI_FAIL;
 
-		renderer_ptr = ScnGetRenderer(scene, index);
+		renderer_ptr = ScnGetRenderer(scene, entry.index);
 		if (renderer_ptr == NULL)
 			return SI_FAIL;
 	}
 	{
-		int type = 0;
-		int index = 0;
-		decode_id(framebuffer, &type, &index);
+		const struct Entry entry = decode_id(framebuffer);
 
-		if (type != Type_FrameBuffer)
+		if (entry.type != Type_FrameBuffer)
 			return SI_FAIL;
 
-		framebuffer_ptr = ScnGetFrameBuffer(scene, index);
+		framebuffer_ptr = ScnGetFrameBuffer(scene, entry.index);
 		if (framebuffer_ptr == NULL)
 			return SI_FAIL;
 	}
@@ -637,125 +564,125 @@ Status SiAssignFrameBuffer(ID renderer, ID framebuffer)
 
 Status SiSetProperty1(ID id, const char *name, double v0)
 {
-	int type = 0;
-	int index = 0;
-	decode_id(id, &type, &index);
-
-	switch (type) {
-	case Type_ObjectInstance:
-		SetObjectInstanceProperty1(index, name, v0);
-		break;
-	case Type_Renderer:
-		SetRendererProperty1(index, name, v0);
-		break;
-	case Type_Camera:
-		SetCameraProperty1(index, name, v0);
-		break;
-	case Type_Shader:
-		SetShaderProperty1(index, name, v0);
-		break;
-	case Type_Light:
-		SetLightProperty1(index, name, v0);
-		break;
-	default:
-		assert(!is_valid_type(type) && "Some types are not implemented yet");
-		break;
-	}
-	return SI_SUCCESS;
-}
-
-Status SiSetProperty2(ID id, const char *name, double v0, double v1)
-{
-	int type = 0;
-	int index = 0;
-	decode_id(id, &type, &index);
-
-	switch (type) {
-	case Type_Renderer:
-		SetRendererProperty2(index, name, v0, v1);
-		break;
-	case Type_Shader:
-		SetShaderProperty2(index, name, v0, v1);
-		break;
-	default:
-		assert(!is_valid_type(type) && "Some types are not implemented yet");
-		break;
-	}
-	return SI_SUCCESS;
-}
-
-Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2)
-{
-	int type = 0;
-	int index = 0;
-	decode_id(id, &type, &index);
-
-	switch (type) {
-	case Type_ObjectInstance:
-		SetObjectInstanceProperty3(index, name, v0, v1, v2);
-		break;
-	case Type_Camera:
-		SetCameraProperty3(index, name, v0, v1, v2);
-		break;
-	case Type_Shader:
-		SetShaderProperty3(index, name, v0, v1, v2);
-		break;
-	case Type_Light:
-		SetLightProperty3(index, name, v0, v1, v2);
-		break;
-	default:
-		assert(!is_valid_type(type) && "Some types are not implemented yet");
-		break;
-	}
-	return SI_SUCCESS;
-}
-
-Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, double v3)
-{
-	int type = 0;
-	int index = 0;
-	decode_id(id, &type, &index);
-
-	switch (type) {
-	case Type_Renderer:
-		SetRendererProperty4(index, name, v0, v1, v2, v3);
-		break;
-	default:
-		assert(!is_valid_type(type) && "Some types are not implemented yet");
-		break;
-	}
-	return SI_SUCCESS;
-}
-
-Status SiSetPropertyID(ID id, const char *name, ID assigned)
-{
-	const struct Entry entry = decode_id2(id);
+	const struct Entry entry = decode_id(id);
+	int err = 0;
 
 	switch (entry.type) {
-	case Type_Procedure:
-		SetProcedurePropertyID(entry.index, name, assigned);
+	case Type_ObjectInstance:
+		err = SetObjectInstanceProperty1(entry.index, name, v0);
+		break;
+	case Type_Renderer:
+		err = SetRendererProperty1(entry.index, name, v0);
+		break;
+	case Type_Camera:
+		err = SetCameraProperty1(entry.index, name, v0);
+		break;
+	case Type_Shader:
+		err = SetShaderProperty1(entry.index, name, v0);
+		break;
+	case Type_Light:
+		err = SetLightProperty1(entry.index, name, v0);
 		break;
 	default:
 		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
 		break;
 	}
 
-	return SI_SUCCESS;
+	if (err)
+		return SI_FAIL;
+	else
+		return SI_SUCCESS;
+}
+
+Status SiSetProperty2(ID id, const char *name, double v0, double v1)
+{
+	const struct Entry entry = decode_id(id);
+	int err = 0;
+
+	switch (entry.type) {
+	case Type_Renderer:
+		err = SetRendererProperty2(entry.index, name, v0, v1);
+		break;
+	case Type_Shader:
+		err = SetShaderProperty2(entry.index, name, v0, v1);
+		break;
+	default:
+		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
+		break;
+	}
+
+	if (err)
+		return SI_FAIL;
+	else
+		return SI_SUCCESS;
+}
+
+Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2)
+{
+	const struct Entry entry = decode_id(id);
+	int err = 0;
+
+	switch (entry.type) {
+	case Type_ObjectInstance:
+		err = SetObjectInstanceProperty3(entry.index, name, v0, v1, v2);
+		break;
+	case Type_Camera:
+		err = SetCameraProperty3(entry.index, name, v0, v1, v2);
+		break;
+	case Type_Shader:
+		/* TODO NEXT check return value */
+		err = SetShaderProperty3(entry.index, name, v0, v1, v2);
+		break;
+	case Type_Light:
+		err = SetLightProperty3(entry.index, name, v0, v1, v2);
+		break;
+	default:
+		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
+		break;
+	}
+
+	if (err)
+		return SI_FAIL;
+	else
+		return SI_SUCCESS;
+}
+
+Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, double v3)
+{
+	const struct Entry entry = decode_id(id);
+	int err = 0;
+
+	switch (entry.type) {
+	case Type_Renderer:
+		err = SetRendererProperty4(entry.index, name, v0, v1, v2, v3);
+		break;
+	default:
+		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
+		break;
+	}
+
+	if (err)
+		return SI_FAIL;
+	else
+		return SI_SUCCESS;
 }
 
 Status SiAssignVolume(ID id, const char *name, ID volume)
 {
-	const struct Entry entry = decode_id2(id);
-	const struct Entry volume_ent = decode_id2(volume);
+	const struct Entry entry = decode_id(id);
+	const struct Entry volume_ent = decode_id(volume);
 	struct PropertyValue value = InitPropValue();
+	struct Volume *volume_ptr = NULL;
 	int err = 0;
 
 	if (volume_ent.type != Type_Volume)
 		return SI_FAIL;
 
-	value.volume = ScnGetVolume(scene, volume_ent.index);
-	if (value.volume == NULL)
+	volume_ptr = ScnGetVolume(scene, volume_ent.index);
+	if (volume_ptr == NULL)
 		return SI_FAIL;
+
+	value = PropVolume(volume_ptr);
 
 	switch (entry.type) {
 	case Type_Procedure:
@@ -785,21 +712,7 @@ static ID encode_id(int type, int index)
 	return TYPE_ID_OFFSET * type + index;
 }
 
-static int decode_id(ID id, int *type, int *index)
-{
-	int tp;
-
-	tp = id / TYPE_ID_OFFSET;
-	if (!is_valid_type(tp))
-		return SI_FAIL;
-
-	*type = tp;
-	*index = id - (tp * TYPE_ID_OFFSET);
-
-	return SI_SUCCESS;
-}
-
-static struct Entry decode_id2(ID id)
+static struct Entry decode_id(ID id)
 {
 	struct Entry entry = {-1, -1};
 	const int type = id / TYPE_ID_OFFSET;
@@ -961,39 +874,33 @@ static int SetCameraProperty3(int index, const char *name, double v0, double v1,
 /* Shader Property */
 static int SetShaderProperty1(int index, const char *name, double v0)
 {
-	struct PropertyValue value = InitPropValue();
+	const struct PropertyValue value = PropScalar(v0);
 	struct Shader *shader = ScnGetShader(scene, index);
+
 	if (shader == NULL)
 		return SI_FAIL;
-
-	value.vector[0] = v0;
 
 	return ShdSetProperty(shader, name, &value);
 }
 
 static int SetShaderProperty2(int index, const char *name, double v0, double v1)
 {
-	struct PropertyValue value = InitPropValue();
+	const struct PropertyValue value = PropVector2(v0, v1);
 	struct Shader *shader = ScnGetShader(scene, index);
+
 	if (shader == NULL)
 		return SI_FAIL;
-
-	value.vector[0] = v0;
-	value.vector[1] = v1;
 
 	return ShdSetProperty(shader, name, &value);
 }
 
 static int SetShaderProperty3(int index, const char *name, double v0, double v1, double v2)
 {
-	struct PropertyValue value = InitPropValue();
+	const struct PropertyValue value = PropVector3(v0, v1, v2);
 	struct Shader *shader = ScnGetShader(scene, index);
+
 	if (shader == NULL)
 		return SI_FAIL;
-
-	value.vector[0] = v0;
-	value.vector[1] = v1;
-	value.vector[2] = v2;
 
 	return ShdSetProperty(shader, name, &value);
 }
@@ -1031,28 +938,7 @@ static int SetLightProperty3(int index, const char *name, double v0, double v1, 
 	return result;
 }
 
-/* Property Property */
-static int SetProcedurePropertyID(int index, const char *name, ID assigned)
-{
-	const struct Entry entry = decode_id2(assigned);
-	/*
-	struct PropertyValue value = InitPropValue();
-	*/
-	struct Procedure *procedure = ScnGetProcedure(scene, index);
-
-	if (procedure == NULL)
-		return SI_FAIL;
-
-	switch (entry.type) {
-	case Type_Volume:
-		break;
-	default:
-		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
-		break;
-	}
-
-	return SI_SUCCESS;
-}
+/* Procedure Property */
 
 static int create_implicit_groups(void)
 {
@@ -1089,5 +975,10 @@ static int create_implicit_groups(void)
 	RdrSetTargetObjects(renderer, all_objects);
 
 	return SI_SUCCESS;
+}
+
+static void set_errno(int err_no)
+{
+	si_errno = err_no;
 }
 

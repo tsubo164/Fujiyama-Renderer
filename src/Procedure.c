@@ -8,7 +8,7 @@ See LICENSE and README
 #include <string.h>
 #include <assert.h>
 
-static int error_no = ERR_PRC_NOERR;
+static int error_no = PRC_ERR_NOERR;
 
 struct Procedure {
 	void *self;
@@ -26,20 +26,20 @@ struct Procedure *PrcNew(const struct Plugin *plugin)
 
 	tmpobj = PlgCreateInstance(plugin);
 	if (tmpobj == NULL) {
-		set_error(ERR_PRC_NOOBJ);
+		set_error(PRC_ERR_NOOBJ);
 		return NULL;
 	}
 
 	tmpvtbl = PlgGetVtable(plugin);
 	if (tmpvtbl == NULL) {
-		set_error(ERR_PRC_NOVTBL);
+		set_error(PRC_ERR_NOVTBL);
 		PlgDeleteInstance(plugin, tmpobj);
 		return NULL;
 	}
 
 	procedure = (struct Procedure *) malloc(sizeof(struct Procedure));
 	if (procedure == NULL) {
-		set_error(ERR_PRC_NOMEM);
+		set_error(PRC_ERR_NOMEM);
 		PlgDeleteInstance(plugin, tmpobj);
 		return NULL;
 	}
@@ -48,7 +48,7 @@ struct Procedure *PrcNew(const struct Plugin *plugin)
 	procedure->self = tmpobj;
 	procedure->vptr = (const struct ProcedureFunctionTable *) tmpvtbl;
 	procedure->plugin = plugin;
-	set_error(ERR_PRC_NOERR);
+	set_error(PRC_ERR_NOERR);
 
 	return procedure;
 }
@@ -79,7 +79,7 @@ int PrcSetProperty(struct Procedure *procedure,
 	const struct Property *dst_prop;
 
 	prc_props = PrcGetPropertyList(procedure);
-	dst_prop = PropFind(prc_props, prop_name);
+	dst_prop = PropFind(prc_props, src_data->type, prop_name);
 	if (dst_prop == NULL)
 		return -1;
 

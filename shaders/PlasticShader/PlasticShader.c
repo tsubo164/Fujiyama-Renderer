@@ -48,14 +48,14 @@ static int set_ior(void *self, const struct PropertyValue *value);
 static int set_opacity(void *self, const struct PropertyValue *value);
 
 static const struct Property PlasticShaderProperties[] = {
-	{"diffuse",   set_diffuse},
-	{"specular",  set_specular},
-	{"ambient",   set_ambient},
-	{"roughness", set_roughness},
-	{"reflect",   set_reflect},
-	{"ior",       set_ior},
-	{"opacity",   set_opacity},
-	{NULL,        NULL}
+	{PROP_VECTOR3, "diffuse",   set_diffuse},
+	{PROP_VECTOR3, "specular",  set_specular},
+	{PROP_VECTOR3, "ambient",   set_ambient},
+	{PROP_SCALAR,  "roughness", set_roughness},
+	{PROP_VECTOR3, "reflect",   set_reflect},
+	{PROP_SCALAR,  "ior",       set_ior},
+	{PROP_SCALAR,  "opacity",   set_opacity},
+	{PROP_NONE,    NULL,        NULL}
 };
 
 static const struct MetaInfo MyShaderMetainfo[] = {
@@ -158,20 +158,28 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 #if 0
 			{
 				double C_noise[3];
-				double C_dark[3] = {.8, .5, .3};
-				double C_light[3] = {.9, .88, .85};
+				double C_dark[3] = {0, 0, 0};
+				double C_light[3] = {1, 1, 1};
 				double amp[3] = {1, 1, 1};
-				double freq[3] = {3, 3, 3};
+				double freq[3] = {1, 1, 1};
 				double offset[3] = {0, 0, 0};
-				PerlinNoise(in->P, amp, freq, offset, 2, .5, 2, C_noise);
+				PerlinNoise(in->P, amp, freq, offset, 2, .5, 4, C_noise);
 				/*
 				C_noise[0] = -.5 + C_noise[0];
 				C_noise[1] = -.5 + C_noise[1];
 				C_noise[2] = -.5 + C_noise[2];
 				VEC3_COPY(out->Cs, C_noise);
 				*/
-				C_noise[0] = SmoothStep(C_noise[0], .55, .75);
+				C_noise[0] = SmoothStep(C_noise[0], -1, 1);
 				VEC3_LERP(out->Cs, C_noise[0], C_dark, C_light);
+				/*
+				VEC3_COPY(out->Cs, C_noise);
+				*/
+				/*
+				out->Cs[0] = diff[0] * C_noise[0] * plastic->diffuse[0] + spec[0];
+				out->Cs[1] = diff[1] * C_noise[0] * plastic->diffuse[1] + spec[1];
+				out->Cs[2] = diff[2] * C_noise[0] * plastic->diffuse[2] + spec[2];
+				*/
 			}
 #endif
 
@@ -186,6 +194,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		out->Cs[1] += Kr * C_refl[1] * plastic->reflect[1];
 		out->Cs[2] += Kr * C_refl[2] * plastic->reflect[2];
 	}
+
 	out->Os = 1;
 	out->Os = plastic->opacity;
 }

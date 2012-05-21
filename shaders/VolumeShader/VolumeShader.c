@@ -6,7 +6,6 @@ See LICENSE and README
 #include "Shader.h"
 #include "Vector.h"
 #include "Numeric.h"
-#include "Noise.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -32,8 +31,8 @@ static const struct ShaderFunctionTable MyShaderFunctionTable = {
 static int set_diffuse(void *self, const struct PropertyValue *value);
 
 static const struct Property PlasticShaderProperties[] = {
-	{"diffuse",   set_diffuse},
-	{NULL,        NULL}
+	{PROP_VECTOR3, "diffuse", set_diffuse},
+	{PROP_NONE,    NULL,      NULL}
 };
 
 static const struct MetaInfo MyShaderMetainfo[] = {
@@ -61,7 +60,7 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-	struct VolumeShader *volume;
+	struct VolumeShader *volume = NULL;
 
 	volume = (struct VolumeShader *) malloc(sizeof(struct VolumeShader));
 	if (volume == NULL)
@@ -83,9 +82,9 @@ static void MyFree(void *self)
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
-	const struct VolumeShader *volume;
-	int nlights;
-	int i;
+	const struct VolumeShader *volume = NULL;
+	int nlights = 0;
+	int i = 0;
 
 	float diff[3] = {0};
 
@@ -110,15 +109,12 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 
 	/* Os */
 	out->Os = 1;
-	/*
-	printf("============ HOGE\n");
-	*/
 }
 
 static int set_diffuse(void *self, const struct PropertyValue *value)
 {
 	struct VolumeShader *volume = (struct VolumeShader *) self;
-	float diffuse[3];
+	float diffuse[3] = {0};
 
 	diffuse[0] = MAX(0, value->vector[0]);
 	diffuse[1] = MAX(0, value->vector[1]);

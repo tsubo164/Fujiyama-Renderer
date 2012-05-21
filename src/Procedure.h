@@ -21,10 +21,10 @@ struct ProcedureFunctionTable {
 };
 
 enum PrcErrorNo {
-	ERR_PRC_NOERR = 0,
-	ERR_PRC_NOOBJ,
-	ERR_PRC_NOVTBL,
-	ERR_PRC_NOMEM
+	PRC_ERR_NOERR = 0,
+	PRC_ERR_NOOBJ,
+	PRC_ERR_NOVTBL,
+	PRC_ERR_NOMEM
 };
 
 extern struct Procedure *PrcNew(const struct Plugin *plugin);

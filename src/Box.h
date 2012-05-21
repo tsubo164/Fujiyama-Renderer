@@ -32,6 +32,10 @@ extern "C" {
 
 /* BOX3 */
 /* double box3[6] {min{0, 0, 0}, max{0, 0, 0}} */
+#define BOX3_XSIZE(box) ((box)[3]-(box)[0])
+#define BOX3_YSIZE(box) ((box)[4]-(box)[1])
+#define BOX3_ZSIZE(box) ((box)[5]-(box)[2])
+
 #define BOX3_SET(dst,xmin,ymin,zmin,xmax,ymax,zmax) do { \
 	(dst)[0] = (xmin); \
 	(dst)[1] = (ymin); \

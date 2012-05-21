@@ -29,7 +29,7 @@ struct Parser {
 	struct Table *table;
 };
 
-static int parser_errno = ERR_PSR_NOERR;
+static int parser_errno = PSR_ERR_NOERR;
 static int run_command(struct Parser *parser, const char *cmd, const char *arg);
 static int parse_args(const char *fmt, const char *arg, union Argument *args, int max_args);
 static void set_errno(int err);
@@ -77,15 +77,16 @@ int PsrGetErrorNo(void)
 const char *PsrGetErrorMessage(int err_no)
 {
 	static const char *errmsg[] = {
-		"",                    /* ERR_PSR_NOERR */
-		"unknown command",     /* ERR_PSR_UNKNOWNCMD */
-		"too many arguments",  /* ERR_PSR_MANYARGS */
-		"too few arguments",   /* ERR_PSR_FEWARGS */
-		"name already exists", /* ERR_PSR_NAMEEXISTS */
-		"name not found",      /* ERR_PSR_NAMENOTFOUND */
-		"plugin not found",    /* ERR_PSR_PLUGINNOTFOUND */
-		"new entry failed",    /* ERR_PSR_FAILNEW */
-		"render faided"        /* ERR_PSR_FAILRENDER */
+		"",                    /* PSR_ERR_NOERR */
+		"unknown command",     /* PSR_ERR_UNKNOWNCMD */
+		"too many arguments",  /* PSR_ERR_MANYARGS */
+		"too few arguments",   /* PSR_ERR_FEWARGS */
+		"name already exists", /* PSR_ERR_NAMEEXISTS */
+		"name not found",      /* PSR_ERR_NAMENOTFOUND */
+		"set property faided", /* PSR_ERR_FAILSETPROP */
+		"plugin not found",    /* PSR_ERR_PLUGINNOTFOUND */
+		"new entry failed",    /* PSR_ERR_FAILNEW */
+		"render faided"        /* PSR_ERR_FAILRENDER */
 	};
 	static const int nerrs = (int) sizeof(errmsg)/sizeof(errmsg[0]);
 
@@ -142,9 +143,9 @@ int PsrParseLine(struct Parser *parser, const char *line)
 static int run_command(struct Parser *parser, const char *cmd, const char *argline)
 {
 	union Argument args[MAX_ARGS];
-	struct TableEnt *ent;
-	int err;
-	ID id;
+	struct TableEnt *ent = NULL;
+	int err = 0;
+	ID id = SI_BADID;
 
 	if (strcmp(cmd, "OpenPlugin") == 0) {
 		err = parse_args("s", argline, args, MAX_ARGS);
@@ -154,7 +155,7 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 		printf(PROMPT"%s: [%s]\n", cmd, args[0].str);
 		err = SiOpenPlugin(args[0].str);
 		if (err == SI_FAIL) {
-			set_errno(ERR_PSR_PLUGINNOTFOUND);
+			set_errno(PSR_ERR_PLUGINNOTFOUND);
 			return -1;
 		}
 	}
@@ -165,14 +166,14 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		ent = TblLookup(parser->table, args[0].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s]\n", cmd, args[0].str);
 		err = SiRenderScene(EntGetID(ent));
 		if (err == SI_FAIL) {
-			set_errno(ERR_PSR_FAILRENDER);
+			set_errno(PSR_ERR_FAILRENDER);
 			return -1;
 		}
 	}
@@ -183,14 +184,14 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		ent = TblLookup(parser->table, args[0].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
 		err = SiSaveFrameBuffer(EntGetID(ent), args[1].str);
 		if (err == SI_FAIL) {
-			set_errno(ERR_PSR_FAILRENDER);
+			set_errno(PSR_ERR_FAILRENDER);
 			return -1;
 		}
 	}
@@ -201,14 +202,14 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		ent = TblLookup(parser->table, args[0].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s]\n", cmd, args[0].str);
 		err = SiRunProcedure(EntGetID(ent));
 		if (err == SI_FAIL) {
-			set_errno(ERR_PSR_FAILRENDER);
+			set_errno(PSR_ERR_FAILRENDER);
 			return -1;
 		}
 	}
@@ -218,20 +219,20 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 
 		if (TblLookup(parser->table, args[0].str)) {
-			set_errno(ERR_PSR_NAMEEXISTS);
+			set_errno(PSR_ERR_NAMEEXISTS);
 			return -1;
 		}
 
 		ent = TblLookup(parser->table, args[1].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
 		id = SiNewObjectInstance(EntGetID(ent));
 		if (id == SI_BADID) {
-			set_errno(ERR_PSR_FAILNEW);
+			set_errno(PSR_ERR_FAILNEW);
 			return -1;
 		}
 
@@ -243,14 +244,14 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 
 		if (TblLookup(parser->table, args[0].str)) {
-			set_errno(ERR_PSR_NAMEEXISTS);
+			set_errno(PSR_ERR_NAMEEXISTS);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
 		id = SiNewFrameBuffer(args[1].str);
 		if (id == SI_BADID) {
-			set_errno(ERR_PSR_FAILNEW);
+			set_errno(PSR_ERR_FAILNEW);
 			return -1;
 		}
 
@@ -262,14 +263,14 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 
 		if (TblLookup(parser->table, args[0].str)) {
-			set_errno(ERR_PSR_NAMEEXISTS);
+			set_errno(PSR_ERR_NAMEEXISTS);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
 		id = SiNewProcedure(args[1].str);
 		if (id == SI_BADID) {
-			set_errno(ERR_PSR_FAILNEW);
+			set_errno(PSR_ERR_FAILNEW);
 			return -1;
 		}
 
@@ -281,14 +282,14 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 
 		if (TblLookup(parser->table, args[0].str)) {
-			set_errno(ERR_PSR_NAMEEXISTS);
+			set_errno(PSR_ERR_NAMEEXISTS);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s]\n", cmd, args[0].str);
 		id = SiNewRenderer();
 		if (id == SI_BADID) {
-			set_errno(ERR_PSR_FAILNEW);
+			set_errno(PSR_ERR_FAILNEW);
 			return -1;
 		}
 
@@ -300,14 +301,14 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 
 		if (TblLookup(parser->table, args[0].str)) {
-			set_errno(ERR_PSR_NAMEEXISTS);
+			set_errno(PSR_ERR_NAMEEXISTS);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
 		id = SiNewTexture(args[1].str);
 		if (id == SI_BADID) {
-			set_errno(ERR_PSR_FAILNEW);
+			set_errno(PSR_ERR_FAILNEW);
 			return -1;
 		}
 
@@ -319,14 +320,14 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 
 		if (TblLookup(parser->table, args[0].str)) {
-			set_errno(ERR_PSR_NAMEEXISTS);
+			set_errno(PSR_ERR_NAMEEXISTS);
 			return -1;
 		}
 
 		printf(PROMPT"%s: %s: %s\n", cmd, args[0].str, args[1].str);
 		id = SiNewCamera(args[1].str);
 		if (id == SI_BADID) {
-			set_errno(ERR_PSR_FAILNEW);
+			set_errno(PSR_ERR_FAILNEW);
 			return -1;
 		}
 
@@ -338,14 +339,14 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 
 		if (TblLookup(parser->table, args[0].str)) {
-			set_errno(ERR_PSR_NAMEEXISTS);
+			set_errno(PSR_ERR_NAMEEXISTS);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
 		id = SiNewShader(args[1].str);
 		if (id == SI_BADID) {
-			set_errno(ERR_PSR_FAILNEW);
+			set_errno(PSR_ERR_FAILNEW);
 			return -1;
 		}
 
@@ -357,14 +358,14 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 
 		if (TblLookup(parser->table, args[0].str)) {
-			set_errno(ERR_PSR_NAMEEXISTS);
+			set_errno(PSR_ERR_NAMEEXISTS);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s]\n", cmd, args[0].str);
 		id = SiNewVolume();
 		if (id == SI_BADID) {
-			set_errno(ERR_PSR_FAILNEW);
+			set_errno(PSR_ERR_FAILNEW);
 			return -1;
 		}
 
@@ -376,14 +377,14 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 
 		if (TblLookup(parser->table, args[0].str)) {
-			set_errno(ERR_PSR_NAMEEXISTS);
+			set_errno(PSR_ERR_NAMEEXISTS);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
 		id = SiNewCurve(args[1].str);
 		if (id == SI_BADID) {
-			set_errno(ERR_PSR_FAILNEW);
+			set_errno(PSR_ERR_FAILNEW);
 			return -1;
 		}
 
@@ -395,14 +396,14 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 
 		if (TblLookup(parser->table, args[0].str)) {
-			set_errno(ERR_PSR_NAMEEXISTS);
+			set_errno(PSR_ERR_NAMEEXISTS);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
 		id = SiNewLight(args[1].str);
 		if (id == SI_BADID) {
-			set_errno(ERR_PSR_FAILNEW);
+			set_errno(PSR_ERR_FAILNEW);
 			return -1;
 		}
 
@@ -414,7 +415,7 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 
 		if (TblLookup(parser->table, args[0].str)) {
-			set_errno(ERR_PSR_NAMEEXISTS);
+			set_errno(PSR_ERR_NAMEEXISTS);
 			return -1;
 		}
 
@@ -422,7 +423,7 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 		id = SiNewMesh(args[1].str);
 
 		if (id == SI_BADID) {
-			set_errno(ERR_PSR_FAILNEW);
+			set_errno(PSR_ERR_FAILNEW);
 			/* TODO better error message */
 #if 0
 			set_error_detail(SiGetErrorMessage(SiGetErrorNo()));
@@ -442,20 +443,24 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		ent = TblLookup(parser->table, args[0].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 		obj_id = EntGetID(ent);
 
 		ent = TblLookup(parser->table, args[1].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 		shader_id = EntGetID(ent);
 
 		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
-		SiAssignShader(obj_id, shader_id);
+		err = SiAssignShader(obj_id, shader_id);
+		if (err) {
+			set_errno(PSR_ERR_FAILSETPROP);
+			return -1;
+		}
 	}
 	else if (strcmp(cmd, "AssignTexture") == 0) {
 		ID shader_id, tex_id;
@@ -465,20 +470,24 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		ent = TblLookup(parser->table, args[0].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 		shader_id = EntGetID(ent);
 
 		ent = TblLookup(parser->table, args[2].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 		tex_id = EntGetID(ent);
 
 		printf(PROMPT"%s: [%s] [%s] [%s]\n", cmd, args[0].str, args[1].str, args[2].str);
-		SiAssignTexture(shader_id, args[1].str, tex_id);
+		err = SiAssignTexture(shader_id, args[1].str, tex_id);
+		if (err) {
+			set_errno(PSR_ERR_FAILSETPROP);
+			return -1;
+		}
 	}
 	else if (strcmp(cmd, "AssignCamera") == 0) {
 		ID renderer_id, camera_id;
@@ -488,20 +497,24 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		ent = TblLookup(parser->table, args[0].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 		renderer_id = EntGetID(ent);
 
 		ent = TblLookup(parser->table, args[1].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 		camera_id = EntGetID(ent);
 
 		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
-		SiAssignCamera(renderer_id, camera_id);
+		err = SiAssignCamera(renderer_id, camera_id);
+		if (err) {
+			set_errno(PSR_ERR_FAILSETPROP);
+			return -1;
+		}
 	}
 	else if (strcmp(cmd, "AssignFrameBuffer") == 0) {
 		ID renderer_id, framebuffer_id;
@@ -511,20 +524,24 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		ent = TblLookup(parser->table, args[0].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 		renderer_id = EntGetID(ent);
 
 		ent = TblLookup(parser->table, args[1].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 		framebuffer_id = EntGetID(ent);
 
 		printf(PROMPT"%s: [%s] [%s]\n", cmd, args[0].str, args[1].str);
-		SiAssignFrameBuffer(renderer_id, framebuffer_id);
+		err = SiAssignFrameBuffer(renderer_id, framebuffer_id);
+		if (err) {
+			set_errno(PSR_ERR_FAILSETPROP);
+			return -1;
+		}
 	}
 	else if (strcmp(cmd, "AssignVolume") == 0) {
 		ID id, volume_id;
@@ -534,20 +551,24 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		ent = TblLookup(parser->table, args[0].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 		id = EntGetID(ent);
 
 		ent = TblLookup(parser->table, args[2].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 		volume_id = EntGetID(ent);
 
 		printf(PROMPT"%s: [%s] [%s] [%s]\n", cmd, args[0].str, args[1].str, args[2].str);
-		SiAssignVolume(id, args[1].str, volume_id);
+		err = SiAssignVolume(id, args[1].str, volume_id);
+		if (err) {
+			set_errno(PSR_ERR_FAILSETPROP);
+			return -1;
+		}
 	}
 	else if (strcmp(cmd, "SetProperty1") == 0) {
 		err = parse_args("ssf", argline, args, MAX_ARGS);
@@ -556,12 +577,16 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		ent = TblLookup(parser->table, args[0].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s] [%s] [%g]\n", cmd, args[0].str, args[1].str, args[2].dbl);
-		SiSetProperty1(EntGetID(ent), args[1].str, args[2].dbl);
+		err = SiSetProperty1(EntGetID(ent), args[1].str, args[2].dbl);
+		if (err) {
+			set_errno(PSR_ERR_FAILSETPROP);
+			return -1;
+		}
 	}
 	else if (strcmp(cmd, "SetProperty2") == 0) {
 		err = parse_args("ssff", argline, args, MAX_ARGS);
@@ -570,13 +595,17 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		ent = TblLookup(parser->table, args[0].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s] [%s] [%g] [%g]\n", cmd, args[0].str, args[1].str,
 				args[2].dbl, args[3].dbl);
-		SiSetProperty2(EntGetID(ent), args[1].str, args[2].dbl, args[3].dbl);
+		err = SiSetProperty2(EntGetID(ent), args[1].str, args[2].dbl, args[3].dbl);
+		if (err) {
+			set_errno(PSR_ERR_FAILSETPROP);
+			return -1;
+		}
 	}
 	else if (strcmp(cmd, "SetProperty3") == 0) {
 		err = parse_args("ssfff", argline, args, MAX_ARGS);
@@ -585,13 +614,18 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		ent = TblLookup(parser->table, args[0].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s] [%s] [%g] [%g] [%g]\n", cmd, args[0].str, args[1].str,
 				args[2].dbl, args[3].dbl, args[4].dbl);
-		SiSetProperty3(EntGetID(ent), args[1].str, args[2].dbl, args[3].dbl, args[4].dbl);
+		/* TODO check set property error */
+		err = SiSetProperty3(EntGetID(ent), args[1].str, args[2].dbl, args[3].dbl, args[4].dbl);
+		if (err) {
+			set_errno(PSR_ERR_FAILSETPROP);
+			return -1;
+		}
 	}
 	else if (strcmp(cmd, "SetProperty4") == 0) {
 		err = parse_args("ssffff", argline, args, MAX_ARGS);
@@ -600,17 +634,21 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 
 		ent = TblLookup(parser->table, args[0].str);
 		if (ent == NULL) {
-			set_errno(ERR_PSR_NAMENOTFOUND);
+			set_errno(PSR_ERR_NAMENOTFOUND);
 			return -1;
 		}
 
 		printf(PROMPT"%s: [%s] [%s] [%g] [%g] [%g] [%g]\n", cmd, args[0].str, args[1].str,
 				args[2].dbl, args[3].dbl, args[4].dbl, args[5].dbl);
-		SiSetProperty4(EntGetID(ent),
+		err = SiSetProperty4(EntGetID(ent),
 				args[1].str, args[2].dbl, args[3].dbl, args[4].dbl, args[5].dbl);
+		if (err) {
+			set_errno(PSR_ERR_FAILSETPROP);
+			return -1;
+		}
 	}
 	else {
-		set_errno(ERR_PSR_UNKNOWNCMD);
+		set_errno(PSR_ERR_UNKNOWNCMD);
 		return -1;
 	}
 
@@ -648,7 +686,7 @@ static int parse_args(const char *fmt, const char *arg, union Argument *args, in
 			break;
 		}
 		if (nscans < 1) {
-			set_errno(ERR_PSR_FEWARGS);
+			set_errno(PSR_ERR_FEWARGS);
 			return -1;
 		}
 
@@ -658,11 +696,11 @@ static int parse_args(const char *fmt, const char *arg, union Argument *args, in
 	nreads = 0;
 	nscans = sscanf(nextarg, "%*s%n", &nreads);
 	if (nreads > 0) {
-		set_errno(ERR_PSR_MANYARGS);
+		set_errno(PSR_ERR_MANYARGS);
 		return -1;
 	}
 
-	set_errno(ERR_PSR_NOERR);
+	set_errno(PSR_ERR_NOERR);
 	return 0;
 }
 

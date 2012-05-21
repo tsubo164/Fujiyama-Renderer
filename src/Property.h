@@ -10,32 +10,54 @@ See LICENSE and README
 extern "C" {
 #endif
 
+/* TODO TEST PROP_TYPE */
+enum {
+	PROP_NONE = 0,
+	PROP_SCALAR,
+	PROP_VECTOR2,
+	PROP_VECTOR3,
+	PROP_VECTOR4,
+	PROP_TEXTURE,
+	PROP_SHADER,
+	PROP_VOLUME
+};
+
 struct Texture;
 struct Shader;
 struct Volume;
 
 struct PropertyValue {
+	int type;
 	double vector[4];
 	struct Texture *texture;
 	struct Shader *shader;
 	struct Volume *volume;
-	const void *pointer;
 };
 
 #define INIT_PROPERTYVALUE { \
+	PROP_NONE, \
 	{0, 0, 0, 0}, \
-	NULL, \
 	NULL, \
 	NULL, \
 	NULL}
 
 struct Property {
+	int type;
 	const char *name;
 	int (*SetProperty)(void *self, const struct PropertyValue *value);
 };
 
+/* TODO TEST prop make */
+extern struct PropertyValue PropScalar(double v0);
+extern struct PropertyValue PropVector2(double v0, double v1);
+extern struct PropertyValue PropVector3(double v0, double v1, double v2);
+extern struct PropertyValue PropVector4(double v0, double v1, double v2, double v3);
+
+extern struct PropertyValue PropTexture(struct Texture *texture);
+extern struct PropertyValue PropVolume(struct Volume *volume);
+
 extern struct PropertyValue InitPropValue(void);
-extern const struct Property *PropFind(const struct Property *list, const char *name);
+extern const struct Property *PropFind(const struct Property *list, int type, const char *name);
 
 #ifdef __cplusplus
 } /* extern "C" */

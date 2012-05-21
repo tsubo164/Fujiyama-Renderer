@@ -33,9 +33,9 @@ static int set_diffuse(void *self, const struct PropertyValue *value);
 static int set_texture(void *self, const struct PropertyValue *value);
 
 static const struct Property PlasticShaderProperties[] = {
-	{"diffuse", set_diffuse},
-	{"texture", set_texture},
-	{NULL,      NULL}
+	{PROP_VECTOR3, "diffuse", set_diffuse},
+	{PROP_TEXTURE, "texture", set_texture},
+	{PROP_NONE,    NULL,      NULL}
 };
 
 static const struct MetaInfo MyShaderMetainfo[] = {
@@ -63,7 +63,7 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-	struct ConstantShader *constant;
+	struct ConstantShader *constant = NULL;
 
 	constant = (struct ConstantShader *) malloc(sizeof(struct ConstantShader));
 	if (constant == NULL)
@@ -86,7 +86,7 @@ static void MyFree(void *self)
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
-	const struct ConstantShader *constant;
+	const struct ConstantShader *constant = NULL;
 	float C_tex[3] = {0};
 
 	constant = (struct ConstantShader *) self;
@@ -112,7 +112,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 static int set_diffuse(void *self, const struct PropertyValue *value)
 {
 	struct ConstantShader *constant = (struct ConstantShader *) self;
-	float diffuse[3];
+	float diffuse[3] = {0};
 
 	diffuse[0] = MAX(0, value->vector[0]);
 	diffuse[1] = MAX(0, value->vector[1]);
@@ -125,9 +125,8 @@ static int set_diffuse(void *self, const struct PropertyValue *value)
 static int set_texture(void *self, const struct PropertyValue *value)
 {
 	struct ConstantShader *constant = (struct ConstantShader *) self;
-	struct Texture *texture = (struct Texture *) value->pointer;
 
-	constant->texture = texture;
+	constant->texture = value->texture;
 
 	return 0;
 }

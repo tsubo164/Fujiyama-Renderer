@@ -9,7 +9,7 @@ See LICENSE and README
 #include <string.h>
 #include <assert.h>
 
-static int error_no = ERR_SHD_NOERR;
+static int error_no = SHD_ERR_NOERR;
 static const float NO_SHADER_COLOR[] = {.5, 1., 0.};
 
 struct Shader {
@@ -28,20 +28,20 @@ struct Shader *ShdNew(const struct Plugin *plugin)
 
 	tmpobj = PlgCreateInstance(plugin);
 	if (tmpobj == NULL) {
-		set_error(ERR_SHD_NOOBJ);
+		set_error(SHD_ERR_NOOBJ);
 		return NULL;
 	}
 
 	tmpvtbl = PlgGetVtable(plugin);
 	if (tmpvtbl == NULL) {
-		set_error(ERR_SHD_NOVTBL);
+		set_error(SHD_ERR_NOVTBL);
 		PlgDeleteInstance(plugin, tmpobj);
 		return NULL;
 	}
 
 	shader = (struct Shader *) malloc(sizeof(struct Shader));
 	if (shader == NULL) {
-		set_error(ERR_SHD_NOMEM);
+		set_error(SHD_ERR_NOMEM);
 		PlgDeleteInstance(plugin, tmpobj);
 		return NULL;
 	}
@@ -50,7 +50,7 @@ struct Shader *ShdNew(const struct Plugin *plugin)
 	shader->self = tmpobj;
 	shader->vptr = (struct ShaderFunctionTable *) tmpvtbl;
 	shader->plugin = plugin;
-	set_error(ERR_SHD_NOERR);
+	set_error(SHD_ERR_NOERR);
 
 	return shader;
 }
@@ -87,7 +87,7 @@ int ShdSetProperty(struct Shader *shader,
 	const struct Property *dst_prop;
 
 	shd_props = ShdGetPropertyList(shader);
-	dst_prop = PropFind(shd_props, prop_name);
+	dst_prop = PropFind(shd_props, src_data->type, prop_name);
 	if (dst_prop == NULL)
 		return -1;
 

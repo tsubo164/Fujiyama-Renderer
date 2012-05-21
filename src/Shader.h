@@ -25,10 +25,10 @@ struct ShaderFunctionTable {
 };
 
 enum ShdErrorNo {
-	ERR_SHD_NOERR = 0,
-	ERR_SHD_NOOBJ,
-	ERR_SHD_NOVTBL,
-	ERR_SHD_NOMEM
+	SHD_ERR_NOERR = 0,
+	SHD_ERR_NOOBJ,
+	SHD_ERR_NOVTBL,
+	SHD_ERR_NOMEM
 };
 
 extern struct Shader *ShdNew(const struct Plugin *plg);
