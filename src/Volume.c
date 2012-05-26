@@ -4,6 +4,7 @@ See LICENSE and README
 */
 
 #include "Volume.h"
+#include "Numeric.h"
 #include "Vector.h"
 #include "Box.h"
 #include <stdlib.h>
@@ -28,6 +29,9 @@ static void fill_voxel_buffer(struct VoxelBuffer *buffer, float value);
 
 static void set_buffer_value(struct VoxelBuffer *buffer, int x, int y, int z, float value);
 static float get_buffer_value(const struct VoxelBuffer *buffer, int x, int y, int z);
+
+static float trilinear_buffer_value(const struct VoxelBuffer *buffer, const double *P);
+static float nearest_buffer_value(const struct VoxelBuffer *buffer, const double *P);
 
 struct Volume *VolNew(void)
 {
@@ -85,6 +89,13 @@ void VolGetBounds(const struct Volume *volume, double *bounds)
 	BOX3_COPY(bounds, volume->bounds);
 }
 
+void VolGetResolution(const struct Volume *volume, int *resolution)
+{
+	resolution[0] = volume->buffer->xres;
+	resolution[1] = volume->buffer->yres;
+	resolution[2] = volume->buffer->zres;
+}
+
 void VolSetValue(struct Volume *volume, int x, int y, int z, float value)
 {
 	if (volume->buffer == NULL) {
@@ -102,7 +113,7 @@ int VolGetSample(const struct Volume *volume, const double *point,
 			struct VolumeSample *sample)
 {
 	const int hit = BoxContainsPoint(volume->bounds, point);
-	int x, y, z;
+	double P[3];
 
 	if (!hit) {
 		return 0;
@@ -111,11 +122,15 @@ int VolGetSample(const struct Volume *volume, const double *point,
 		return 0;
 	}
 
-	x = (int) ((point[0] - volume->bounds[0]) * volume->buffer->xres * volume->size[0]);
-	y = (int) ((point[1] - volume->bounds[1]) * volume->buffer->yres * volume->size[1]);
-	z = (int) ((point[2] - volume->bounds[2]) * volume->buffer->zres * volume->size[2]);
+	P[0] = (point[0] - volume->bounds[0]) / volume->size[0] * volume->buffer->xres;
+	P[1] = (point[1] - volume->bounds[1]) / volume->size[1] * volume->buffer->yres;
+	P[2] = (point[2] - volume->bounds[2]) / volume->size[2] * volume->buffer->zres;
 
-	sample->density = get_buffer_value(volume->buffer, x, y, z);
+	if (1) {
+		sample->density = trilinear_buffer_value(volume->buffer, P);
+	} else {
+		sample->density = nearest_buffer_value(volume->buffer, P);
+	}
 
 	return 1;
 }
@@ -204,5 +219,53 @@ static float get_buffer_value(const struct VoxelBuffer *buffer, int x, int y, in
 	index = (z * buffer->xres * buffer->yres) + (y * buffer->xres) + x;
 
 	return buffer->data[index];
+}
+
+static float trilinear_buffer_value(const struct VoxelBuffer *buffer, const double *P)
+{
+	int x, y, z;
+	int i, j, k;
+	int lowest_corner[3];
+	double P_sample[3];
+	float weight[3];
+	float value = 0;
+
+	P_sample[0] = P[0] - .5;
+	P_sample[1] = P[1] - .5;
+	P_sample[2] = P[2] - .5;
+
+	lowest_corner[0] = (int) P_sample[0];
+	lowest_corner[1] = (int) P_sample[1];
+	lowest_corner[2] = (int) P_sample[2];
+
+	for (i = 0; i < 2; i++) {
+		x = lowest_corner[0] + i;
+		weight[0] = 1 - fabs(P_sample[0] - x);
+
+		for (j = 0; j < 2; j++) {
+			y = lowest_corner[1] + j;
+			weight[1] = 1 - fabs(P_sample[1] - y);
+
+			for (k = 0; k < 2; k++) {
+				z = lowest_corner[2] + k;
+				weight[2] = 1 - fabs(P_sample[2] - z);
+
+				value += weight[0] * weight[1] * weight[2] * get_buffer_value(buffer, x, y, z);
+			}
+		}
+	}
+
+	return value;
+}
+
+static float nearest_buffer_value(const struct VoxelBuffer *buffer, const double *P)
+{
+	int x, y, z;
+
+	x = (int) P[0];
+	y = (int) P[1];
+	z = (int) P[2];
+
+	return get_buffer_value(buffer, x, y, z);
 }
 

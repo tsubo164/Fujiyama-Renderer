@@ -63,6 +63,10 @@ static void set_errno(int err_no);
 static int SetObjectInstanceProperty1(int index, const char *name, double v0);
 static int SetObjectInstanceProperty3(int index, const char *name, double v0, double v1, double v2);
 
+static int SetProcedureProperty1(int index, const char *name, double v0);
+static int SetProcedureProperty2(int index, const char *name, double v0, double v1);
+static int SetProcedureProperty3(int index, const char *name, double v0, double v1, double v2);
+
 static int SetRendererProperty1(int index, const char *name, double v0);
 static int SetRendererProperty2(int index, const char *name, double v0, double v1);
 static int SetRendererProperty4(int index, const char *name, double v0, double v1, double v2, double v3);
@@ -571,6 +575,9 @@ Status SiSetProperty1(ID id, const char *name, double v0)
 	case Type_ObjectInstance:
 		err = SetObjectInstanceProperty1(entry.index, name, v0);
 		break;
+	case Type_Procedure:
+		err = SetProcedureProperty1(entry.index, name, v0);
+		break;
 	case Type_Renderer:
 		err = SetRendererProperty1(entry.index, name, v0);
 		break;
@@ -600,6 +607,9 @@ Status SiSetProperty2(ID id, const char *name, double v0, double v1)
 	int err = 0;
 
 	switch (entry.type) {
+	case Type_Procedure:
+		err = SetProcedureProperty2(entry.index, name, v0, v1);
+		break;
 	case Type_Renderer:
 		err = SetRendererProperty2(entry.index, name, v0, v1);
 		break;
@@ -625,6 +635,9 @@ Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2)
 	switch (entry.type) {
 	case Type_ObjectInstance:
 		err = SetObjectInstanceProperty3(entry.index, name, v0, v1, v2);
+		break;
+	case Type_Procedure:
+		err = SetProcedureProperty3(entry.index, name, v0, v1, v2);
 		break;
 	case Type_Camera:
 		err = SetCameraProperty3(entry.index, name, v0, v1, v2);
@@ -763,6 +776,40 @@ static int SetObjectInstanceProperty3(int index, const char *name, double v0, do
 	}
 
 	return result;
+}
+
+/* Procedure Property */
+static int SetProcedureProperty1(int index, const char *name, double v0)
+{
+	const struct PropertyValue value = PropScalar(v0);
+	struct Procedure *procedure = ScnGetProcedure(scene, index);
+
+	if (procedure == NULL)
+		return SI_FAIL;
+
+	return PrcSetProperty(procedure, name, &value);
+}
+
+static int SetProcedureProperty2(int index, const char *name, double v0, double v1)
+{
+	const struct PropertyValue value = PropVector2(v0, v1);
+	struct Procedure *procedure = ScnGetProcedure(scene, index);
+
+	if (procedure == NULL)
+		return SI_FAIL;
+
+	return PrcSetProperty(procedure, name, &value);
+}
+
+static int SetProcedureProperty3(int index, const char *name, double v0, double v1, double v2)
+{
+	const struct PropertyValue value = PropVector3(v0, v1, v2);
+	struct Procedure *procedure = ScnGetProcedure(scene, index);
+
+	if (procedure == NULL)
+		return SI_FAIL;
+
+	return PrcSetProperty(procedure, name, &value);
 }
 
 /* Renderer Property */
@@ -938,7 +985,6 @@ static int SetLightProperty3(int index, const char *name, double v0, double v1, 
 	return result;
 }
 
-/* Procedure Property */
 
 static int create_implicit_groups(void)
 {

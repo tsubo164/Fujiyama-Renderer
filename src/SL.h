@@ -65,8 +65,6 @@ struct LightOutput {
 	double distance;
 };
 
-extern double SlSmoothStep(double x, double edge0, double edge1);
-
 extern double SlFresnel(const double *I, const double *N, double ior);
 extern double SlPhong(const double *I, const double *N, const double *L, double roughness);
 

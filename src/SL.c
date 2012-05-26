@@ -34,14 +34,6 @@ static void setup_surface_input(
 static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray,
 		float *out_rgba);
 
-double SlSmoothStep(double x, double edge0, double edge1)
-{
-	double t = 0;
-	t = (x - edge0) / (edge1 - edge0);
-	t = CLAMP(t, 0, 1);
-	return t*t*(3 - 2*t);
-}
-
 double SlFresnel(const double *I, const double *N, double ior)
 {
 	double k2 = 0;

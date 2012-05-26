@@ -21,6 +21,7 @@ extern void VolFree(struct Volume *volume);
 extern void VolResize(struct Volume *volume, int xres, int yres, int zres);
 extern void VolSetBounds(struct Volume *volume, double *bounds);
 extern void VolGetBounds(const struct Volume *volume, double *bounds);
+extern void VolGetResolution(const struct Volume *volume, int *resolution);
 
 extern void VolSetValue(struct Volume *volume, int x, int y, int z, float value);
 extern float VolGetValue(const struct Volume *volume, int x, int y, int z);

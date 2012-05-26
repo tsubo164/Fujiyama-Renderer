@@ -4,6 +4,8 @@ See LICENSE and README
 */
 
 #include "Procedure.h"
+#include "Timer.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -64,7 +66,27 @@ void PrcFree(struct Procedure *procedure)
 
 int PrcRun(struct Procedure *procedure)
 {
-	return procedure->vptr->MyRun(procedure->self);
+	struct Timer timer;
+	struct Elapse elapse;
+	int err = 0;
+
+	TimerStart(&timer);
+	/* TODO come up with the best place to put message */
+	printf("Running Procedure ...\n");
+
+	err = procedure->vptr->MyRun(procedure->self);
+
+	elapse = TimerElapsed(&timer);
+
+	if (err) {
+		printf("Error: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
+
+		return -1;
+	} else {
+		printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
+
+		return 0;
+	}
 }
 
 const struct Property *PrcGetPropertyList(const struct Procedure *procedure)
