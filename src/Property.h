@@ -10,7 +10,6 @@ See LICENSE and README
 extern "C" {
 #endif
 
-/* TODO TEST PROP_TYPE */
 enum {
 	PROP_NONE = 0,
 	PROP_SCALAR,
@@ -47,7 +46,6 @@ struct Property {
 	int (*SetProperty)(void *self, const struct PropertyValue *value);
 };
 
-/* TODO TEST prop make */
 extern struct PropertyValue PropScalar(double v0);
 extern struct PropertyValue PropVector2(double v0, double v1);
 extern struct PropertyValue PropVector3(double v0, double v1, double v2);

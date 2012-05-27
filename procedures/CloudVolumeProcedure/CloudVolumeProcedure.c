@@ -125,13 +125,14 @@ static int MyRun(void *self)
 			cloud->resolution[0], cloud->resolution[1], cloud->resolution[2]);
 
 	{
+		/* based on Production Volume Rendering (SIGGRAPH 2011) Course notes */
 		int i, j, k;
-		int res[3] = {1};
+		int res[3] = {1, 1, 1};
 		double bbox[6] = {0};
 
-		double voxelsize[3];
-		double filtersize;
-		double thresholdwidth;
+		double voxelsize[3] = {0};
+		double filtersize = 0;
+		double thresholdwidth = 0;
 
 		/* TODO come up with the best place to put progress */
 		struct Progress *progress = PrgNew();

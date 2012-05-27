@@ -7,8 +7,8 @@ Fujiyama is free and open source, distribution oriented ray-tracing renderer
 designed to handle production image rendering. 
 * Compatibility - written in pure ANSI C (x)
 * Portability - depends on no external library (xx)
-* Simplicity - requires only single C interfaces header file and library
-* Compact - the size of core library is about 120Kb
+* Simplicity - requires only single C interface header file and library
+* Compact - the core library is small and easy to embed
 * Open Source - licensed under the terms of MIT License (See LICENSE)
    (x) fb2exr is written in C++
    (xx) some external tools require OpenEXR and OpneGL/GLUT

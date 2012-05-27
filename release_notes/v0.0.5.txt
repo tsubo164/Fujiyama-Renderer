@@ -1,0 +1,22 @@
+Fujiyama Renderer v0.0.5(Alpha) Release Notes
+=============================================
+
+New features since v0.0.4
+-------------------------
+ * CloudVolumeProcedure plugin is now available. This fills volume with pyroclastic
+   noise before rendering a volume primitive.
+
+ * Classic Perlin Noise is implemented.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Other volume filling procedures
+ * Deep shadow
+ * Higher level python interfaces
+ * Displacement shader
+ * Subdivision surface
+ * Alembic support
+ * Motion blur (animation)
+ * IBL

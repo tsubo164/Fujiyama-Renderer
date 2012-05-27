@@ -34,7 +34,7 @@ static const int perm[] = {
 static double fade(double t);
 static double lerp(double t, double a, double b);
 static double grad(int hash, double x, double y, double z); 
-static double pnoise(double x, double y, double z);
+static double noise3d(double x, double y, double z);
 
 extern void PerlinNoise(const double *position, const double *amplitude,
 		const double *frequency, const double *offset,
@@ -58,7 +58,7 @@ extern void PerlinNoise(const double *position, const double *amplitude,
 
 	n = 0;
 	for (i = 0; i < octaves; i++) {
-		n += amp[0] * pnoise(P[0], P[1], P[2]);
+		n += amp[0] * noise3d(P[0], P[1], P[2]);
 
 		VEC3_MUL_ASGN(amp, persistence);
 		VEC3_MUL_ASGN(P, lacunarity);
@@ -69,7 +69,7 @@ extern void PerlinNoise(const double *position, const double *amplitude,
 	result[2] = n;
 }
 
-static double pnoise(double x, double y, double z)
+static double noise3d(double x, double y, double z)
 {
 	/* Find unit cube that contains point. */
 	const int X = (int) floor(x) & 255;
@@ -126,79 +126,8 @@ static double grad(int hash, double x, double y, double z)
 	/* Convert lo 4 bits of hash code into 12 gradient directions. */
 	const int h = hash & 15;
 	const double u = h < 8 ? x : y;
-	const double v = h < 4 ? y : h==12||h==14 ? x : z;
+	const double v = h < 4 ? y : h==12 || h==14 ? x : z;
 
 	return ((h&1) == 0 ? u : -u) + ((h&2) == 0 ? v : -v);
 }
-
-#if 0
-static double smoothstep(double x, double a, double b);
-static double rand1(double x);
-
-static double rand3(double x, double y, double z);
-static double noise3(double *position);
-#endif
-
-#if 0
-static double rand1(double x)
-{
-	srand(((unsigned int)x)%UINT_MAX);
-	return ((double) rand()) / ((double) RAND_MAX);
-}
-
-static double smoothstep(double x, double a, double b)
-{
-	const double t = (x-a) / (b-a);
-
-	if (t <= 0)
-		return 0;
-
-	if (t >= 1)
-		return 1;
-
-	return t*t*(3 - 2*t);
-}
-
-static double rand3(double x, double y, double z)
-{
-	return rand1(x + 123.456*y + 987.123*z);
-}
-
-static double noise3(double *position)
-{
-	double result;
-
-	int ix, iy, iz;
-	double biasx, biasy, biasz;
-
-	ix = floor(position[0]);
-	iy = floor(position[1]);
-	iz = floor(position[2]);
-
-	biasx = smoothstep(position[0], ix, ix+1);
-	biasy = smoothstep(position[1], iy, iy+1);
-	biasz = smoothstep(position[2], iz, iz+1);
-
-	{
-		int i, j, k;
-		double NZ[2];
-
-		for (k = 0; k <= 1; k++) {
-			double NY[2];
-
-			for (j = 0; j <= 1; j++) {
-				double NX[2];
-
-				for (i = 0; i <= 1; i++) {
-					NX[i] = rand3(ix+i, iy+j, iz+k);
-				}
-				NY[j] = LERP(biasx, NX[0], NX[1]);
-			}
-			NZ[k] = LERP(biasy, NY[0], NY[1]);
-		}
-		result = LERP(biasz, NZ[0], NZ[1]);
-	}
-	return result;
-}
-#endif
 
