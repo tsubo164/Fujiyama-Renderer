@@ -21,7 +21,13 @@ extern void VolFree(struct Volume *volume);
 extern void VolResize(struct Volume *volume, int xres, int yres, int zres);
 extern void VolSetBounds(struct Volume *volume, double *bounds);
 extern void VolGetBounds(const struct Volume *volume, double *bounds);
-extern void VolGetResolution(const struct Volume *volume, int *resolution);
+extern void VolGetResolution(const struct Volume *volume, int *i, int *j, int *k);
+
+extern double VolGetFilterSize(const struct Volume *volume);
+
+extern void VolPointToIndex(const struct Volume *volume, const double *point,
+		int *i, int *j, int *k);
+extern void VolIndexToPoint(const struct Volume *volume, int i, int j, int k, double *point);
 
 extern void VolSetValue(struct Volume *volume, int x, int y, int z, float value);
 extern float VolGetValue(const struct Volume *volume, int x, int y, int z);

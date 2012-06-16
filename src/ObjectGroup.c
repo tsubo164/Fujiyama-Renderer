@@ -165,11 +165,6 @@ static int volume_ray_intersect(const void *prim_set, int prim_id, const struct 
 		return 0;
 	}
 
-	if (!BoxRayIntersect(bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
-				&boxhit_tmin, &boxhit_tmax)) {
-		return 0;
-	}
-
 	interval->tmin = boxhit_tmin;
 	interval->tmax = boxhit_tmax;
 	interval->object = obj;

@@ -6,6 +6,7 @@ See LICENSE and README
 #include "Procedure.h"
 #include "Progress.h"
 #include "Numeric.h"
+#include "Random.h"
 #include "Vector.h"
 #include "Volume.h"
 #include "Noise.h"
@@ -15,6 +16,17 @@ See LICENSE and README
 #include <string.h>
 #include <stdio.h>
 #include <float.h>
+
+/* TODO test */
+struct Point {
+	double orig[3];
+	double udir[3];
+	double vdir[3];
+	double wdir[3];
+	double radius;
+	double speck_count;
+	double speck_radius;
+};
 
 struct CloudVolumeProcedure {
 	int resolution[3];
@@ -47,6 +59,11 @@ static int set_amplitude(void *self, const struct PropertyValue *value);
 static int set_frequency(void *self, const struct PropertyValue *value);
 static int set_offset(void *self, const struct PropertyValue *value);
 static int set_volume(void *self, const struct PropertyValue *value);
+
+static int FillWithPointClouds(struct CloudVolumeProcedure *cloud);
+static int FillWithSpecks(struct CloudVolumeProcedure *cloud);
+static int FillWithSplineSpecks(struct CloudVolumeProcedure *cloud);
+static void fill_with_sphere(struct Volume *volume, const double *center, double radius);
 
 static const struct Property MyProperties[] = {
 	{PROP_VECTOR3, "resolution", set_resolution},
@@ -115,6 +132,7 @@ static void MyFree(void *self)
 static int MyRun(void *self)
 {
 	struct CloudVolumeProcedure *cloud = (struct CloudVolumeProcedure *) self;
+	int err = 0;
 
 	if (cloud->volume == NULL) {
 		return -1;
@@ -124,75 +142,15 @@ static int MyRun(void *self)
 	VolResize(cloud->volume,
 			cloud->resolution[0], cloud->resolution[1], cloud->resolution[2]);
 
-	{
-		/* based on Production Volume Rendering (SIGGRAPH 2011) Course notes */
-		int i, j, k;
-		int res[3] = {1, 1, 1};
-		double bbox[6] = {0};
-
-		double voxelsize[3] = {0};
-		double filtersize = 0;
-		double thresholdwidth = 0;
-
-		/* TODO come up with the best place to put progress */
-		struct Progress *progress = PrgNew();
-		if (progress == NULL)
-			return -1;
-
-		VolGetResolution(cloud->volume, res);
-		VolGetBounds(cloud->volume, bbox);
-
-		voxelsize[0] = BOX3_XSIZE(bbox) / res[0];
-		voxelsize[1] = BOX3_YSIZE(bbox) / res[1];
-		voxelsize[2] = BOX3_ZSIZE(bbox) / res[2];
-		filtersize = VEC3_LEN(voxelsize);
-		thresholdwidth = filtersize * .5 / .5;
-
-		PrgStart(progress, res[0] * res[1] * res[2]);
-
-		for (k = 0; k < res[2]; k++) {
-			for (j = 0; j < res[1]; j++) {
-				for (i = 0; i < res[0]; i++) {
-					const double x = (i + .5) / res[0] * BOX3_XSIZE(bbox) + bbox[0];
-					const double y = (j + .5) / res[1] * BOX3_YSIZE(bbox) + bbox[1];
-					const double z = (k + .5) / res[2] * BOX3_ZSIZE(bbox) + bbox[2];
-					const double dist = sqrt(x*x + y*y + z*z);
-
-					const double sphere_func = dist - cloud->radius;
-
-					double noise[3] = {0};
-					double amp[3] = {1, 1, 1};
-					double freq[3] = {1, 1, 1};
-					double offset[3] = {0, 0, 0};
-					double P[3];
-					float value = 0;
-
-					VEC3_COPY(freq, cloud->frequency);
-					VEC3_COPY(offset, cloud->offset);
-
-					VEC3_SET(P, x, y, z);
-					VEC3_NORMALIZE(P);
-
-					PerlinNoise(P, amp, freq, offset, 2, .5, 8, noise);
-
-					noise[0] = ABS(noise[0]);
-					noise[0] = Gamma(noise[0], .5);
-					noise[0] *= cloud->amplitude;
-
-					value = Fit(sphere_func - noise[0],
-							-thresholdwidth, thresholdwidth, 1, 0);
-
-					VolSetValue(cloud->volume, i, j, k, 5*value);
-
-					PrgIncrement(progress);
-				}
-			}
-		}
-		PrgDone(progress);
-		PrgFree(progress);
+	if (0) {
+		err = FillWithPointClouds(cloud);
+	} else if (0) {
+		err = FillWithSpecks(cloud);
+	} else  {
+		err = FillWithSplineSpecks(cloud);
 	}
 
-	return 0;
+	return err;
 }
 
 static int set_resolution(void *self, const struct PropertyValue *value)
@@ -292,5 +250,220 @@ static int set_volume(void *self, const struct PropertyValue *value)
 	cloud->volume = value->volume;
 
 	return 0;
+}
+
+static int FillWithPointClouds(struct CloudVolumeProcedure *cloud)
+{
+	/* based on Production Volume Rendering (SIGGRAPH 2011) Course notes */
+	int i, j, k;
+	int xres, yres, zres;
+	double thresholdwidth = 0;
+
+	/* TODO come up with the best place to put progress */
+	struct Progress *progress = PrgNew();
+	if (progress == NULL)
+		return -1;
+
+	VolGetResolution(cloud->volume, &xres, &yres, &zres);
+	thresholdwidth = VolGetFilterSize(cloud->volume) / cloud->radius;
+
+	PrgStart(progress, xres * yres * zres);
+
+	for (k = 0; k < zres; k++) {
+		for (j = 0; j < yres; j++) {
+			for (i = 0; i < xres; i++) {
+				double sphere_func = 0;
+				double noise_func = 0;
+				double dist = 0;
+
+				double amp = 1;
+				double freq[3] = {1, 1, 1};
+				double offset[3] = {0, 0, 0};
+				double P[3] = {0};
+				float value = 0;
+
+				VEC3_COPY(freq, cloud->frequency);
+				VEC3_COPY(offset, cloud->offset);
+
+				VolIndexToPoint(cloud->volume, i, j, k, P);
+
+				dist = VEC3_LEN(P);
+				sphere_func = dist - cloud->radius;
+
+				VEC3_NORMALIZE(P);
+				noise_func = amp * PerlinNoise(P, freq, offset, 2, .5, 8);
+
+				noise_func = ABS(noise_func);
+				noise_func = Gamma(noise_func, .5);
+				noise_func *= cloud->amplitude;
+
+				value = Fit(sphere_func - noise_func,
+						-thresholdwidth, thresholdwidth, 1, 0);
+
+				VolSetValue(cloud->volume, i, j, k, 5*value);
+
+				PrgIncrement(progress);
+			}
+		}
+	}
+	PrgDone(progress);
+	PrgFree(progress);
+
+	return 0;
+}
+
+static int FillWithSpecks(struct CloudVolumeProcedure *cloud)
+{
+	const int NSPECKS = 100000 * 10 / 5;
+	double uvec[3] = {1, 0, 0};
+	double vvec[3] = {0, 1, 0};
+	double wvec[3] = {0, 0, 1};
+	struct XorShift xr;
+	int i;
+
+	XorInit(&xr);
+
+	for (i = 0; i < NSPECKS; i++) {
+		double uvw[3] = {0};
+		double P_speck[3] = {0};
+		double disp_vec[3] = {0};
+
+		const double amp = 1 * .5 * 0;
+		const double radius = .5;
+		/*
+		double freq[3] = {1, 1, 1};
+		*/
+		double freq[3] = {2, 2, 2};
+		double offset[3] = {0, 0, 0};
+
+		XorSolidSphereRand(&xr, uvw);
+
+		P_speck[0] = uvw[0] * uvec[0] + uvw[1] * vvec[0] + uvw[2] * wvec[0];
+		P_speck[1] = uvw[0] * uvec[1] + uvw[1] * vvec[1] + uvw[2] * wvec[1];
+		P_speck[2] = uvw[0] * uvec[2] + uvw[1] * vvec[2] + uvw[2] * wvec[2];
+
+		PerlinNoise3d(P_speck, freq, offset, 2, .5, 8, disp_vec);
+
+		P_speck[0] = radius * P_speck[0] + amp * disp_vec[0];
+		P_speck[1] = radius * P_speck[1] + amp * disp_vec[1];
+		P_speck[2] = radius * P_speck[2] + amp * disp_vec[2];
+
+		fill_with_sphere(cloud->volume, P_speck, .01);
+	}
+
+	return 0;
+}
+
+static int FillWithSplineSpecks(struct CloudVolumeProcedure *cloud)
+{
+	const int NSPECKS = 100000;
+
+	double vert0[3] = {-.75, -.5, .75};
+	double vert1[3] = {.75, .5, -.75};
+
+	double uvec[3] = {1, 0, 0};
+	double vvec[3] = {0, 1, 0};
+	double wvec[3] = {0, 0, 1};
+	struct XorShift xr;
+	int i;
+
+	XorInit(&xr);
+
+	VEC3_SUB(wvec, vert1, vert0);
+	VEC3_CROSS(uvec, wvec, vvec);
+	VEC3_CROSS(vvec, uvec, wvec);
+	VEC3_NORMALIZE(uvec);
+	VEC3_NORMALIZE(vvec);
+
+	for (i = 0; i < NSPECKS; i++) {
+		double uvw[3] = {0};
+		double P_speck[3] = {0};
+		double disp_vec[3] = {0};
+
+		const double amp = 1 * .25;
+		const double radius = .1+.3;
+		/*
+		double freq[3] = {1, 1, 1};
+		*/
+		double freq[3] = {5, 5, 3};
+		double offset[3] = {0, 0, 0};
+
+		/*
+		XorSolidDiskRand(&xr, uvw);
+		XorGaussianDiskRand(&xr, uvw);
+		*/
+		XorHollowDiskRand(&xr, uvw);
+
+		uvw[0] *= radius;
+		uvw[1] *= radius;
+		uvw[2] = XorNextFloat01(&xr);
+
+		P_speck[0] = vert0[0] + uvw[0] * uvec[0] + uvw[1] * vvec[0] + uvw[2] * wvec[0];
+		P_speck[1] = vert0[1] + uvw[0] * uvec[1] + uvw[1] * vvec[1] + uvw[2] * wvec[1];
+		P_speck[2] = vert0[2] + uvw[0] * uvec[2] + uvw[1] * vvec[2] + uvw[2] * wvec[2];
+
+		PerlinNoise3d(uvw, freq, offset, 2, .5, 8, disp_vec);
+
+		disp_vec[0] *= amp;
+		disp_vec[1] *= amp;
+		disp_vec[2] *= 0;
+
+		P_speck[0] += disp_vec[0] * uvec[0] + disp_vec[1] * vvec[0] + disp_vec[2] * wvec[0];
+		P_speck[1] += disp_vec[0] * uvec[1] + disp_vec[1] * vvec[1] + disp_vec[2] * wvec[1];
+		P_speck[2] += disp_vec[0] * uvec[2] + disp_vec[1] * vvec[2] + disp_vec[2] * wvec[2];
+
+		fill_with_sphere(cloud->volume, P_speck, .01);
+	}
+
+	return 0;
+}
+
+static void fill_with_sphere(struct Volume *volume, const double *center, double radius)
+{
+	int i, j, k;
+	int xmin, ymin, zmin;
+	int xmax, ymax, zmax;
+	double P_min[3] = {0};
+	double P_max[3] = {0};
+	double thresholdwidth = 0;
+
+	P_min[0] = center[0] - radius;
+	P_min[1] = center[1] - radius;
+	P_min[2] = center[2] - radius;
+	P_max[0] = center[0] + radius;
+	P_max[1] = center[1] + radius;
+	P_max[2] = center[2] + radius;
+
+	VolPointToIndex(volume, P_min, &xmin, &ymin, &zmin);
+	VolPointToIndex(volume, P_max, &xmax, &ymax, &zmax);
+
+	zmax += 1;
+	ymax += 1;
+	zmax += 1;
+
+	thresholdwidth = VolGetFilterSize(volume) / radius;
+
+	for (k = zmin; k < zmax; k++) {
+		for (j = ymin; j < ymax; j++) {
+			for (i = xmin; i < xmax; i++) {
+				double P[3] = {0};
+				float value = 0;
+
+				VolIndexToPoint(volume, i, j, k, P);
+
+				P[0] -= center[0];
+				P[1] -= center[1];
+				P[2] -= center[2];
+
+				value = VolGetValue(volume, i, j, k);
+				value += Fit(VEC3_LEN(P) - radius,
+						-thresholdwidth, thresholdwidth, 1, 0);
+				/*
+				value += 5 * (VEC3_LEN(P) - radius < 0 ? 1 : 0);
+				*/
+				VolSetValue(volume, i, j, k, value);
+			}
+		}
+	}
 }
 

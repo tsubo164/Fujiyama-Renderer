@@ -208,15 +208,15 @@ int main(int argc, const char **argv)
 
 			dst_Cd = VEC3_NTH(Cd, cp_id);
 			{
-				double C_noise[3];
+				double amp = 1;
+				double C_noise = 0;
 				double C_dark[3] = {.8, .5, .3};
 				double C_light[3] = {.9, .88, .85};
-				double amp[3] = {1, 1, 1};
 				double freq[3] = {3, 3, 3};
 				double offset[3] = {0, 1, 0};
-				PerlinNoise(src_P, amp, freq, offset, 2, .5, 2, C_noise);
-				C_noise[0] = SmoothStep(C_noise[0], .55, .75);
-				VEC3_LERP(dst_Cd, C_noise[0], C_dark, C_light);
+				C_noise = amp * PerlinNoise(src_P, freq, offset, 2, .5, 2);
+				C_noise = SmoothStep(C_noise, .55, .75);
+				VEC3_LERP(dst_Cd, C_noise, C_dark, C_light);
 			}
 
 			cp_id++;

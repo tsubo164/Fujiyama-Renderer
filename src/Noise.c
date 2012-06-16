@@ -4,14 +4,13 @@ See LICENSE and README
 */
 
 #include "Noise.h"
-#include "Vector.h"
-#include "Numeric.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include <limits.h>
 
 #define PERMUTAION \
-151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,\
+151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69, \
 142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252, \
 219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168, \
 68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211, \
@@ -36,37 +35,52 @@ static double lerp(double t, double a, double b);
 static double grad(int hash, double x, double y, double z); 
 static double noise3d(double x, double y, double z);
 
-extern void PerlinNoise(const double *position, const double *amplitude,
+extern double PerlinNoise(const double *position,
 		const double *frequency, const double *offset,
-		double lacunarity, double persistence, int octaves, double *result)
+		double lacunarity, double persistence, int octaves)
 {
+	double noise_value = 0;
+	double amp = 1;
 	double P[3];
-	double amp[3];
-	double freq[3];
-	double n;
 	int i;
 
-	P[0] = position[0] + offset[0];
-	P[1] = position[1] + offset[1];
-	P[2] = position[2] + offset[2];
-	P[0] *= frequency[0];
-	P[1] *= frequency[1];
-	P[2] *= frequency[2];
+	P[0] = position[0] * frequency[0] + offset[0];
+	P[1] = position[1] * frequency[1] + offset[1];
+	P[2] = position[2] * frequency[2] + offset[2];
 
-	VEC3_COPY(amp, amplitude);
-	VEC3_COPY(freq, frequency);
-
-	n = 0;
 	for (i = 0; i < octaves; i++) {
-		n += amp[0] * noise3d(P[0], P[1], P[2]);
+		noise_value += amp * noise3d(P[0], P[1], P[2]);
 
-		VEC3_MUL_ASGN(amp, persistence);
-		VEC3_MUL_ASGN(P, lacunarity);
+		amp *= persistence;
+		P[0] *= lacunarity;
+		P[1] *= lacunarity;
+		P[2] *= lacunarity;
 	}
 
-	result[0] = n;
-	result[1] = n;
-	result[2] = n;
+	return noise_value;
+}
+
+void PerlinNoise3d(const double *position,
+		const double *frequency, const double *offset,
+		double lacunarity, double persistence, int octaves,
+		double *P_out)
+{
+	double offset3d[3] = {0};
+
+	offset3d[0] = offset[0];
+	offset3d[1] = offset[1];
+	offset3d[2] = offset[2];
+	P_out[0] = PerlinNoise(position, frequency, offset3d, lacunarity, persistence, octaves);
+
+	offset3d[0] = offset[0] + 131.977;
+	offset3d[1] = offset[1] + 21.1823;
+	offset3d[2] = offset[2] + 71.0231;
+	P_out[1] = PerlinNoise(position, frequency, offset3d, lacunarity, persistence, octaves);
+
+	offset3d[0] = offset[0] + 237.492;
+	offset3d[1] = offset[1] + 11.1312;
+	offset3d[2] = offset[2] + 133.129;
+	P_out[2] = PerlinNoise(position, frequency, offset3d, lacunarity, persistence, octaves);
 }
 
 static double noise3d(double x, double y, double z)

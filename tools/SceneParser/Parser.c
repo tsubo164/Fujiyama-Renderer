@@ -213,6 +213,25 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 		}
 	}
+	else if (strcmp(cmd, "NewTurbulence") == 0) {
+		err = parse_args("s", argline, args, MAX_ARGS);
+		if (err)
+			return -1;
+
+		if (TblLookup(parser->table, args[0].str)) {
+			set_errno(PSR_ERR_NAMEEXISTS);
+			return -1;
+		}
+
+		printf(PROMPT"%s: [%s]\n", cmd, args[0].str);
+		id = SiNewTurbulence();
+		if (id == SI_BADID) {
+			set_errno(PSR_ERR_FAILNEW);
+			return -1;
+		}
+
+		TblAdd(parser->table, args[0].str, id);
+	}
 	else if (strcmp(cmd, "NewObjectInstance") == 0) {
 		err = parse_args("ss", argline, args, MAX_ARGS);
 		if (err)

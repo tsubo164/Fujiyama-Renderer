@@ -10,9 +10,14 @@ See LICENSE and README
 extern "C" {
 #endif
 
-extern void PerlinNoise(const double *position, const double *amplitude,
+extern double PerlinNoise(const double *position,
 		const double *frequency, const double *offset,
-		double lacunarity, double persistence, int octaves, double *result);
+		double lacunarity, double persistence, int octaves);
+
+extern void PerlinNoise3d(const double *position,
+		const double *frequency, const double *offset,
+		double lacunarity, double persistence, int octaves,
+		double *P_out);
 
 #ifdef __cplusplus
 } /* extern "C" */

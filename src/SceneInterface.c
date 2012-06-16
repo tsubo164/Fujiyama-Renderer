@@ -32,6 +32,7 @@ enum {
 	Type_ObjectInstance = 1,
 	Type_Accelerator,
 	Type_FrameBuffer,
+	Type_Turbulence,
 	Type_Procedure,
 	Type_Renderer,
 	Type_Texture,
@@ -271,6 +272,17 @@ ID SiNewFrameBuffer(const char *arg)
 
 	set_errno(SI_NOERR);
 	return encode_id(Type_FrameBuffer, GET_LAST_ADDED_ID(FrameBuffer));
+}
+
+ID SiNewTurbulence(void)
+{
+	if (ScnNewTurbulence(scene) == NULL) {
+		set_errno(SI_ERR_FAILNEW);
+		return SI_BADID;
+	}
+
+	set_errno(SI_NOERR);
+	return encode_id(Type_Turbulence, GET_LAST_ADDED_ID(Turbulence));
 }
 
 ID SiNewProcedure(const char *plugin_name)
@@ -820,7 +832,9 @@ static int SetRendererProperty1(int index, const char *name, double v0)
 	if (renderer == NULL)
 		return SI_FAIL;
 
-	if (strcmp(name, "cast_shadow") == 0) {
+	if (strcmp(name, "sample_jitter") == 0) {
+		RdrSetSampleJitter(renderer, v0);
+	} else if (strcmp(name, "cast_shadow") == 0) {
 		RdrSetShadowEnable(renderer, (int) v0);
 	} else if (strcmp(name, "max_reflect_depth") == 0) {
 		RdrSetMaxReflectDepth(renderer, (int) v0);

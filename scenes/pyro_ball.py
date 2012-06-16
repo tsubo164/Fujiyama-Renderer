@@ -23,10 +23,6 @@ si.NewLight('light1', 'PointLight')
 si.SetProperty3('light1', 'position', 10, 12, 10)
 
 #Shader
-si.NewShader('bunny_shader', 'PlasticShader')
-si.SetProperty3('bunny_shader', 'diffuse', .9, .6, .4)
-si.SetProperty3('bunny_shader', 'reflect', 0, 0, 0)
-
 si.NewShader('floor_shader', 'PlasticShader')
 si.SetProperty3('floor_shader', 'diffuse', .2, .25, .3)
 si.SetProperty1('floor_shader', 'ior', 2)

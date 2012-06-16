@@ -31,6 +31,7 @@ extern Status SiRunProcedure(ID procedure);
 
 extern ID SiNewObjectInstance(ID accelerator);
 extern ID SiNewFrameBuffer(const char *arg);
+extern ID SiNewTurbulence(void);
 extern ID SiNewProcedure(const char *plugin_name);
 extern ID SiNewRenderer(void);
 extern ID SiNewTexture(const char *filename);

@@ -35,6 +35,7 @@ struct Renderer {
 	int pixelsamples[2];
 	int tilesize[2];
 	float filterwidth[2];
+	float jitter;
 
 	int cast_shadow;
 	int max_reflect_depth;
@@ -66,10 +67,11 @@ struct Renderer *RdrNew(void)
 	RdrSetPixelSamples(renderer, 3, 3);
 	RdrSetTileSize(renderer, 64, 64);
 	RdrSetFilterWidth(renderer, 2, 2);
+	RdrSetSampleJitter(renderer, 1);
 
-	renderer->cast_shadow = 1;
-	renderer->max_reflect_depth = 3;
-	renderer->max_refract_depth = 3;
+	RdrSetShadowEnable(renderer, 1);
+	RdrSetMaxReflectDepth(renderer, 3);
+	RdrSetMaxRefractDepth(renderer, 3);
 
 	RdrSetRaymarchStep(renderer, .05);
 	RdrSetRaymarchShadowStep(renderer, .1);
@@ -130,6 +132,12 @@ void RdrSetFilterWidth(struct Renderer *renderer, float xfwidth, float yfwidth)
 	assert(yfwidth > 0);
 	renderer->filterwidth[0] = xfwidth;
 	renderer->filterwidth[1] = yfwidth;
+}
+
+void RdrSetSampleJitter(struct Renderer *renderer, float jitter)
+{
+	assert(jitter >= 0 && jitter <= 1);
+	renderer->jitter = jitter;
 }
 
 void RdrSetShadowEnable(struct Renderer *renderer, int enable)
@@ -264,6 +272,7 @@ static int render_scene(struct Renderer *renderer)
 	struct Tile *tile = NULL;
 
 	int region[4] = {0};
+	int render_state = 0;
 
 	const int xres = renderer->resolution[0];
 	const int yres = renderer->resolution[1];
@@ -276,23 +285,33 @@ static int render_scene(struct Renderer *renderer)
 
 	/* Progress */
 	progress = PrgNew();
-	if (progress == NULL)
-		goto fatal_error;
+	if (progress == NULL) {
+		render_state = -1;
+		goto cleanup_and_exit;
+	}
 
 	/* Sampler */
 	sampler = SmpNew(xres, yres, xrate, yrate, xfwidth, yfwidth);
-	if (sampler == NULL)
-		goto fatal_error;
+	if (sampler == NULL) {
+		render_state = -1;
+		goto cleanup_and_exit;
+	}
+
+	SmpSetJitter(sampler, renderer->jitter);
 
 	/* Filter */
 	filter = FltNew(FLT_GAUSSIAN, xfwidth, yfwidth);
-	if (filter == NULL)
-		goto fatal_error;
+	if (filter == NULL) {
+		render_state = -1;
+		goto cleanup_and_exit;
+	}
 
 	/* Tiler */
 	tiler = TlrNew(xres, yres, xtilesize, ytilesize);
-	if (tiler == NULL)
-		goto fatal_error;
+	if (tiler == NULL) {
+		render_state = -1;
+		goto cleanup_and_exit;
+	}
 
 	/* context */
 	cxt = SlCameraContext(target_objects);
@@ -316,14 +335,13 @@ static int render_scene(struct Renderer *renderer)
 	printf("Rendering ...\n");
 	while ((tile = TlrGetNextTile(tiler)) != NULL) {
 		int pixel_bounds[4];
-		int err;
 		pixel_bounds[0] = tile->xmin;
 		pixel_bounds[1] = tile->ymin;
 		pixel_bounds[2] = tile->xmax;
 		pixel_bounds[3] = tile->ymax;
-		err = SmpGenerateSamples(sampler, pixel_bounds);
-		if (err) {
-			goto fatal_error;
+		if (SmpGenerateSamples(sampler, pixel_bounds)) {
+			render_state = -1;
+			goto cleanup_and_exit;
 		}
 
 		PrgStart(progress, SmpGetSampleCount(sampler));
@@ -380,21 +398,13 @@ static int render_scene(struct Renderer *renderer)
 	elapse = TimerElapsed(&timer);
 	printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
 
-	/* clean up */
+cleanup_and_exit:
 	SmpFreePixelSamples(pixelsmps);
 	PrgFree(progress);
 	SmpFree(sampler);
 	FltFree(filter);
 	TlrFree(tiler);
-	return 0;
 
-fatal_error:
-	/* clean up (may be useless anymore...) */
-	SmpFreePixelSamples(pixelsmps);
-	PrgFree(progress);
-	SmpFree(sampler);
-	FltFree(filter);
-	TlrFree(tiler);
-	return -1;
+	return render_state;
 }
 

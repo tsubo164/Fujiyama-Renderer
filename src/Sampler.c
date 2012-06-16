@@ -4,6 +4,7 @@ See LICENSE and README
 */
 
 #include "Sampler.h"
+#include "Random.h"
 #include "Box.h"
 #include <stdlib.h>
 #include <assert.h>
@@ -13,6 +14,7 @@ struct Sampler {
 	int xres, yres;
 	int xrate, yrate;
 	float xfwidth, yfwidth;
+	float jitter;
 	struct Sample *samples;
 
 	int xnsamples, ynsamples;
@@ -22,15 +24,17 @@ struct Sampler {
 
 	int nsamples;
 	int current_index;
+
+	int need_jitter;
 };
 
 static void compute_margins(struct Sampler *sampler);
-static int allocate_all_samples(struct Sampler *sampler);
+static int allocate_samples_for_region(struct Sampler *sampler, const int *region);
 
 struct Sampler *SmpNew(int xres, int yres,
 		int xsamples, int ysamples, float xfwidth, float yfwidth)
 {
-	struct Sampler *sampler;
+	struct Sampler *sampler = NULL;
 
 	sampler = (struct Sampler *) malloc(sizeof(struct Sampler));
 	if (sampler == NULL)
@@ -49,6 +53,7 @@ struct Sampler *SmpNew(int xres, int yres,
 	sampler->yrate = ysamples;
 	sampler->xfwidth = xfwidth;
 	sampler->yfwidth = yfwidth;
+	SmpSetJitter(sampler, 1);
 	sampler->samples = NULL;
 
 	sampler->nsamples = 0;
@@ -69,9 +74,17 @@ void SmpFree(struct Sampler *sampler)
 	free(sampler);
 }
 
+void SmpSetJitter(struct Sampler *sampler, float jitter)
+{
+	assert(jitter >= 0 && jitter <= 1);
+
+	sampler->jitter = jitter;
+	sampler->need_jitter = sampler->jitter > 0 ? 1 : 0;
+}
+
 struct Sample *SmpGetNextSample(struct Sampler *sampler)
 {
-	struct Sample *sample;
+	struct Sample *sample = NULL;
 
 	if (sampler->current_index >= SmpGetSampleCount(sampler))
 		return NULL;
@@ -82,37 +95,51 @@ struct Sample *SmpGetNextSample(struct Sampler *sampler)
 	return sample;
 }
 
+/* TODO should match tiler interface e.g. xmin, ymin ... */
 int SmpGenerateSamples(struct Sampler *sampler, const int *pixel_bounds)
 {
 	int x, y;
-	double udelta;
-	double vdelta;
-	struct Sample *smp;
+	int err = 0;
+	int xoffset = 0;
+	int yoffset = 0;
+	double udelta = 0;
+	double vdelta = 0;
+	struct Sample *sample = NULL;
+	struct XorShift xr; /* random number generator */
+	XorInit(&xr);
 
-	/* region related info */
-	sampler->xnsamples = sampler->xrate * BOX2_XSIZE(pixel_bounds) + 2 * sampler->xmargin;
-	sampler->ynsamples = sampler->yrate * BOX2_YSIZE(pixel_bounds) + 2 * sampler->ymargin;
-	sampler->xpixel_start = pixel_bounds[0];
-	sampler->ypixel_start = pixel_bounds[1];
+	err = allocate_samples_for_region(sampler, pixel_bounds);
+	if (err) {
+		return -1;
+	}
 
 	/* uv delta */
 	udelta = 1./(sampler->xrate * sampler->xres + 2 * sampler->xmargin);
 	vdelta = 1./(sampler->yrate * sampler->yres + 2 * sampler->ymargin);
 
-	if (allocate_all_samples(sampler))
-		return -1;
+	/* xy offset */
+	xoffset = sampler->xpixel_start * sampler->xrate - sampler->xmargin;
+	yoffset = sampler->ypixel_start * sampler->yrate - sampler->ymargin;
 
-	smp = sampler->samples;
+	sample = sampler->samples;
 	for (y = 0; y < sampler->ynsamples; y++) {
 		for (x = 0; x < sampler->xnsamples; x++) {
-			smp->uv[0] = (.5 + x + sampler->xpixel_start * sampler->xrate - sampler->xmargin) * udelta;
-			smp->uv[1] = 1 - (.5 + y + sampler->ypixel_start * sampler->yrate - sampler->xmargin) * vdelta;
+			sample->uv[0] =     (.5 + x + xoffset) * udelta;
+			sample->uv[1] = 1 - (.5 + y + yoffset) * vdelta;
 
-			smp->data[0] = 0;
-			smp->data[1] = 0;
-			smp->data[2] = 0;
-			smp->data[3] = 0;
-			smp++;
+			if (sampler->need_jitter) {
+				const double u_jitter = XorNextFloat01(&xr) * sampler->jitter;
+				const double v_jitter = XorNextFloat01(&xr) * sampler->jitter;
+
+				sample->uv[0] += udelta * (u_jitter - .5);
+				sample->uv[1] += vdelta * (v_jitter - .5);
+			}
+
+			sample->data[0] = 0;
+			sample->data[1] = 0;
+			sample->data[2] = 0;
+			sample->data[3] = 0;
+			sample++;
 		}
 	}
 	return 0;
@@ -146,7 +173,7 @@ void SmpGetPixelSamples(struct Sampler *sampler, struct Sample *pixelsamples,
 
 struct Sample *SmpAllocatePixelSamples(struct Sampler *sampler)
 {
-	struct Sample *samples;
+	struct Sample *samples = NULL;
 
 	samples = (struct Sample *) malloc(sizeof(struct Sample) *
 			SmpGetSampleCountForPixel(sampler));
@@ -174,20 +201,29 @@ static void compute_margins(struct Sampler *sampler)
 	sampler->ynpxlsmps = sampler->yrate + 2 * sampler->ymargin;
 }
 
-static int allocate_all_samples(struct Sampler *sampler)
+static int allocate_samples_for_region(struct Sampler *sampler, const int *region)
 {
-	int old_nsamples;
+	const int XNSAMPLES = sampler->xrate * BOX2_XSIZE(region) + 2 * sampler->xmargin;
+	const int YNSAMPLES = sampler->yrate * BOX2_YSIZE(region) + 2 * sampler->ymargin;
+	const int XPIXEL_START = region[0];
+	const int YPIXEL_START = region[1];
 
-	old_nsamples = SmpGetSampleCount(sampler);
-	sampler->nsamples = sampler->xnsamples * sampler->ynsamples;
+	const int OLD_NSAMPLES = SmpGetSampleCount(sampler);
+	const int NEW_NSAMPLES = XNSAMPLES * YNSAMPLES;
 
-	if (old_nsamples < SmpGetSampleCount(sampler)) {
-		sampler->samples = (struct Sample *) malloc(sizeof(struct Sample) *
-				SmpGetSampleCount(sampler));
+	if (OLD_NSAMPLES < NEW_NSAMPLES) {
+		sampler->samples = (struct Sample *) malloc(sizeof(struct Sample) * NEW_NSAMPLES);
 		if (sampler->samples == NULL) {
 			return -1;
 		}
 	}
+
+	sampler->xnsamples = XNSAMPLES;
+	sampler->ynsamples = YNSAMPLES;
+	sampler->xpixel_start = XPIXEL_START;
+	sampler->ypixel_start = YPIXEL_START;
+
+	sampler->nsamples = NEW_NSAMPLES;
 	sampler->current_index = 0;
 
 	return 0;

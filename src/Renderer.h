@@ -23,6 +23,7 @@ extern void RdrSetRenderRegion(struct Renderer *renderer, int xmin, int ymin, in
 extern void RdrSetPixelSamples(struct Renderer *renderer, int xrate, int yrate);
 extern void RdrSetTileSize(struct Renderer *renderer, int xtilesize, int ytilesize);
 extern void RdrSetFilterWidth(struct Renderer *renderer, float xfwidth, float yfwidth);
+extern void RdrSetSampleJitter(struct Renderer *renderer, float jitter);
 
 extern void RdrSetShadowEnable(struct Renderer *renderer, int enable);
 extern void RdrSetMaxReflectDepth(struct Renderer *renderer, int max_depth);

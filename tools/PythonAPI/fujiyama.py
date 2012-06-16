@@ -75,6 +75,10 @@ class SceneInterface:
 		cmd = 'RunProcedure %s' % (procedure)
 		self.commands.append(cmd)
 
+	def NewTurbulence(self, name):
+		cmd = 'NewTurbulence %s' % (name)
+		self.commands.append(cmd)
+
 	def NewObjectInstance(self, name, accelerator):
 		cmd = 'NewObjectInstance %s %s' % (name, accelerator)
 		self.commands.append(cmd)

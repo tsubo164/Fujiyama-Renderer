@@ -23,6 +23,7 @@ See LICENSE and README
 #include <math.h>
 
 static int has_reached_bounce_limit(const struct TraceContext *cxt);
+static int shadow_ray_has_reached_opcity_limit(const struct TraceContext *cxt, float opac);
 static void setup_ray(const double *ray_orig, const double *ray_dir,
 		double ray_tmin, double ray_tmax,
 		struct Ray *ray);
@@ -31,6 +32,8 @@ static void setup_surface_input(
 		const struct Ray *ray,
 		struct SurfaceInput *in);
 
+static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
+		float *out_rgba, double *t_hit);
 static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray,
 		float *out_rgba);
 
@@ -120,11 +123,10 @@ int SlTrace(const struct TraceContext *cxt,
 		double ray_tmin, double ray_tmax, float *out_rgba, double *t_hit)
 {
 	struct Ray ray = {{0}};
-	struct Intersection isect;
 	float surface_color[4] = {0};
 	float volume_color[4] = {0};
-	int hit_surface;
-	int hit_volume;
+	int hit_surface = 0;
+	int hit_volume = 0;
 
 	VEC4_SET(out_rgba, 0, 0, 0, 0);
 	if (has_reached_bounce_limit(cxt)) {
@@ -132,35 +134,19 @@ int SlTrace(const struct TraceContext *cxt,
 	}
 
 	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
-	hit_surface = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &isect);
 
-	/* TODO handle shadow ray for surface geometry */
-	/*
-	if (cxt->ray_context == CXT_SHADOW_RAY) {
-		return hit_surface;
-	}
-	*/
+	hit_surface = trace_surface(cxt, &ray, surface_color, t_hit);
 
-	if (hit_surface) {
-		struct SurfaceInput in;
-		struct SurfaceOutput out;
-
-		setup_surface_input(&isect, &ray, &in);
-		ShdEvaluate(ObjGetShader(isect.object), cxt, &in, &out);
-
-		out.Os = CLAMP(out.Os, 0, 1);
-		VEC4_SET(surface_color, out.Cs[0], out.Cs[1], out.Cs[2], out.Os);
-
-		ray.tmax = isect.t_hit;
-		*t_hit = isect.t_hit;
-	}
-
-	if (cxt->ray_context == CXT_SHADOW_RAY && surface_color[3] > cxt->opacity_threshold) {
+	if (shadow_ray_has_reached_opcity_limit(cxt, surface_color[3])) {
 		out_rgba[0] = surface_color[0];
 		out_rgba[1] = surface_color[1];
 		out_rgba[2] = surface_color[2];
 		out_rgba[3] = surface_color[3];
 		return 1;
+	}
+
+	if (hit_surface) {
+		ray.tmax = *t_hit;
 	}
 
 	hit_volume = raymarch_volume(cxt, &ray, volume_color);
@@ -171,95 +157,6 @@ int SlTrace(const struct TraceContext *cxt,
 	out_rgba[3] = volume_color[3] + surface_color[3] * (1-volume_color[3]);
 
 	return hit_surface || hit_volume;
-
-#if 0
-	/* original */
-	struct Ray ray;
-	struct Intersection isect;
-	double t_hit = FLT_MAX;
-	int hit_surface;
-
-	VEC4_SET(out_rgba, 0, 0, 0, 0);
-	if (has_reached_bounce_limit(cxt)) {
-		return 0;
-	}
-
-	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
-	hit_surface = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &isect);
-
-	/*
-	if (cxt->ray_context == CXT_SHADOW_RAY) {
-		return hit_surface;
-	}
-	*/
-
-	if (hit_surface) {
-		struct SurfaceInput in;
-		struct SurfaceOutput out;
-
-		setup_surface_input(&isect, &ray, &in);
-		ShdEvaluate(ObjGetShader(isect.object), cxt, &in, &out);
-
-		out.Os = CLAMP(out.Os, 0, 1);
-		VEC4_SET(out_rgba, out.Cs[0], out.Cs[1], out.Cs[2], out.Os);
-	}
-
-	return hit_surface;
-#endif
-
-#if 0
-	/* original + transparent */
-	struct Ray ray;
-	struct Ray ray;
-	struct Intersection isect;
-	double t_hit = FLT_MAX;
-	int hit;
-
-	VEC4_SET(out_rgba, 0, 0, 0, 0);
-	if (has_reached_bounce_limit(cxt)) {
-		return 0;
-	}
-
-	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
-
-	while (out_rgba[3] < .9995) {
-		t_hit = FLT_MAX;
-		hit = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), &ray, &isect, &t_hit);
-
-		if (!hit) {
-			break;
-		}
-
-		/*
-		if (cxt->ray_context == CXT_SHADOW_RAY) {
-			out_rgba[3] = 1;
-			break;
-		}
-		*/
-
-		if (hit) {
-			struct SurfaceInput in;
-			struct SurfaceOutput out;
-
-			setup_surface_input(&isect, &ray, &in);
-			ShdEvaluate(ObjGetShader(isect.object), cxt, &in, &out);
-
-			out_rgba[0] = out_rgba[0] + out.Cs[0] * (1-out_rgba[3]);
-			out_rgba[1] = out_rgba[1] + out.Cs[1] * (1-out_rgba[3]);
-			out_rgba[2] = out_rgba[2] + out.Cs[2] * (1-out_rgba[3]);
-			out_rgba[3] = out_rgba[3] + CLAMP(out.Os, 0, 1) * (1-out_rgba[3]);
-		}
-
-		{
-			double next_orig[3];
-			POINT_ON_RAY(next_orig, ray.orig, ray.dir, t_hit);
-			VEC3_COPY(ray.orig, next_orig);
-		}
-	}
-	out_rgba[3] = CLAMP(out_rgba[3], 0, 1);
-
-	return hit;
-#endif
 }
 
 struct TraceContext SlCameraContext(const struct ObjectGroup *target)
@@ -286,9 +183,8 @@ struct TraceContext SlCameraContext(const struct ObjectGroup *target)
 struct TraceContext SlReflectContext(const struct TraceContext *cxt,
 		const struct ObjectInstance *obj)
 {
-	struct TraceContext refl_cxt;
+	struct TraceContext refl_cxt = *cxt;
 
-	refl_cxt = *cxt;
 	refl_cxt.reflect_depth++;
 	refl_cxt.ray_context = CXT_REFLECT_RAY;
 	refl_cxt.trace_target = ObjGetReflectTarget(obj);
@@ -299,9 +195,8 @@ struct TraceContext SlReflectContext(const struct TraceContext *cxt,
 struct TraceContext SlRefractContext(const struct TraceContext *cxt,
 		const struct ObjectInstance *obj)
 {
-	struct TraceContext refr_cxt;
+	struct TraceContext refr_cxt = *cxt;
 
-	refr_cxt = *cxt;
 	refr_cxt.refract_depth++;
 	refr_cxt.ray_context = CXT_REFRACT_RAY;
 	refr_cxt.trace_target = ObjGetRefractTarget(obj);
@@ -312,9 +207,8 @@ struct TraceContext SlRefractContext(const struct TraceContext *cxt,
 struct TraceContext SlShadowContext(const struct TraceContext *cxt,
 		const struct ObjectInstance *obj)
 {
-	struct TraceContext shad_cxt;
+	struct TraceContext shad_cxt = *cxt;
 
-	shad_cxt = *cxt;
 	shad_cxt.ray_context = CXT_SHADOW_RAY;
 	/* turn off the secondary trance on occluding objects */
 	shad_cxt.max_reflect_depth = 0;
@@ -373,15 +267,14 @@ int SlIlluminace(const struct TraceContext *cxt, int light_id,
 		struct TraceContext shad_cxt;
 		double t_hit = FLT_MAX;
 		float C_occl[4] = {0};
-		int hit;
+		int hit = 0;
 
 		shad_cxt = SlShadowContext(cxt, in->shaded_object);
 		hit = SlTrace(&shad_cxt, in->P, out->Ln, .0001, out->distance, C_occl, &t_hit);
 
 		if (hit) {
-			/*
-			return 0;
-			*/
+			/* return 0; */
+			/* TODO handle light_color for shadow ray */
 			VEC3_MUL_ASGN(light_color, 1-C_occl[3]);
 		}
 	}
@@ -469,6 +362,38 @@ static void setup_surface_input(
 
 	VEC3_COPY(in->dPds, isect->dPds);
 	VEC3_COPY(in->dPdt, isect->dPdt);
+}
+
+static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
+		float *out_rgba, double *t_hit)
+{
+	struct Intersection isect = {{0}};
+	int hit = 0;
+
+	VEC4_SET(out_rgba, 0, 0, 0, 0);
+	hit = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), ray, &isect);
+
+	/* TODO handle shadow ray for surface geometry */
+	/*
+	if (cxt->ray_context == CXT_SHADOW_RAY) {
+		return hit;
+	}
+	*/
+
+	if (hit) {
+		struct SurfaceInput in;
+		struct SurfaceOutput out;
+
+		setup_surface_input(&isect, ray, &in);
+		ShdEvaluate(ObjGetShader(isect.object), cxt, &in, &out);
+
+		out.Os = CLAMP(out.Os, 0, 1);
+		VEC4_SET(out_rgba, out.Cs[0], out.Cs[1], out.Cs[2], out.Os);
+
+		*t_hit = isect.t_hit;
+	}
+
+	return hit;
 }
 
 static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray,
@@ -584,5 +509,14 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 
 	IntervalListFree(intervals);
 	return hit;
+}
+
+static int shadow_ray_has_reached_opcity_limit(const struct TraceContext *cxt, float opac)
+{
+	if (cxt->ray_context == CXT_SHADOW_RAY && opac > cxt->opacity_threshold) {
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
