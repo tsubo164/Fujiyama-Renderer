@@ -13,17 +13,17 @@ extern "C" {
 struct Turbulence;
 
 extern struct Turbulence *TrbNew(void);
-extern void TrbFree(struct Turbulence *turb);
+extern void TrbFree(struct Turbulence *turbulence);
 
-extern void TrbSetAmplitude(struct Turbulence *turb, double x, double y, double z);
-extern void TrbSetFrequency(struct Turbulence *turb, double x, double y, double z);
-extern void TrbSetOffset(struct Turbulence *turb, double x, double y, double z);
-extern void TrbSetLacunarity(struct Turbulence *turb, double lacunarity);
-extern void TrbSetGain(struct Turbulence *turb, double gain);
-extern void TrbSetOctaves(struct Turbulence *turb, int octaves);
+extern void TrbSetAmplitude(struct Turbulence *turbulence, double x, double y, double z);
+extern void TrbSetFrequency(struct Turbulence *turbulence, double x, double y, double z);
+extern void TrbSetOffset(struct Turbulence *turbulence, double x, double y, double z);
+extern void TrbSetLacunarity(struct Turbulence *turbulence, double lacunarity);
+extern void TrbSetGain(struct Turbulence *turbulence, double gain);
+extern void TrbSetOctaves(struct Turbulence *turbulence, int octaves);
 
-extern double TrbEvaluate(struct Turbulence *turb, double *position);
-extern void TrbEvaluate3(struct Turbulence *turb, double *position, double *out_noise);
+extern double TrbEvaluate(struct Turbulence *turbulence, double *position);
+extern void TrbEvaluate3d(struct Turbulence *turbulence, double *position, double *out_noise);
 
 #ifdef __cplusplus
 } /* extern "C" */

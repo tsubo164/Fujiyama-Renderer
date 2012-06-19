@@ -562,6 +562,33 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 		}
 	}
+	else if (strcmp(cmd, "AssignTurbulence") == 0) {
+		ID id, turbulence_id;
+		err = parse_args("sss", argline, args, MAX_ARGS);
+		if (err)
+			return -1;
+
+		ent = TblLookup(parser->table, args[0].str);
+		if (ent == NULL) {
+			set_errno(PSR_ERR_NAMENOTFOUND);
+			return -1;
+		}
+		id = EntGetID(ent);
+
+		ent = TblLookup(parser->table, args[2].str);
+		if (ent == NULL) {
+			set_errno(PSR_ERR_NAMENOTFOUND);
+			return -1;
+		}
+		turbulence_id = EntGetID(ent);
+
+		printf(PROMPT"%s: [%s] [%s] [%s]\n", cmd, args[0].str, args[1].str, args[2].str);
+		err = SiAssignTurbulence(id, args[1].str, turbulence_id);
+		if (err) {
+			set_errno(PSR_ERR_FAILSETPROP);
+			return -1;
+		}
+	}
 	else if (strcmp(cmd, "AssignVolume") == 0) {
 		ID id, volume_id;
 		err = parse_args("sss", argline, args, MAX_ARGS);

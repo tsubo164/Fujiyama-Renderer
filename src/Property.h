@@ -16,11 +16,13 @@ enum {
 	PROP_VECTOR2,
 	PROP_VECTOR3,
 	PROP_VECTOR4,
+	PROP_TURBULENCE,
 	PROP_TEXTURE,
 	PROP_SHADER,
 	PROP_VOLUME
 };
 
+struct Turbulence;
 struct Texture;
 struct Shader;
 struct Volume;
@@ -28,6 +30,7 @@ struct Volume;
 struct PropertyValue {
 	int type;
 	double vector[4];
+	struct Turbulence *turbulence;
 	struct Texture *texture;
 	struct Shader *shader;
 	struct Volume *volume;
@@ -36,6 +39,7 @@ struct PropertyValue {
 #define INIT_PROPERTYVALUE { \
 	PROP_NONE, \
 	{0, 0, 0, 0}, \
+	NULL, \
 	NULL, \
 	NULL, \
 	NULL}
@@ -51,6 +55,7 @@ extern struct PropertyValue PropVector2(double v0, double v1);
 extern struct PropertyValue PropVector3(double v0, double v1, double v2);
 extern struct PropertyValue PropVector4(double v0, double v1, double v2, double v3);
 
+extern struct PropertyValue PropTurbulence(struct Turbulence *turbulence);
 extern struct PropertyValue PropTexture(struct Texture *texture);
 extern struct PropertyValue PropVolume(struct Volume *volume);
 

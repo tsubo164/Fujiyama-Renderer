@@ -11,13 +11,14 @@ extern "C" {
 #endif
 
 extern double PerlinNoise(const double *position,
-		const double *frequency, const double *offset,
 		double lacunarity, double persistence, int octaves);
 
 extern void PerlinNoise3d(const double *position,
-		const double *frequency, const double *offset,
 		double lacunarity, double persistence, int octaves,
 		double *P_out);
+
+/* periodic noise 3d */
+extern double PNoise3d(double x, double y, double z);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -214,7 +214,13 @@ int main(int argc, const char **argv)
 				double C_light[3] = {.9, .88, .85};
 				double freq[3] = {3, 3, 3};
 				double offset[3] = {0, 1, 0};
-				C_noise = amp * PerlinNoise(src_P, freq, offset, 2, .5, 2);
+				double src_Q[3] = {0};
+
+				src_Q[0] = src_P[0] * freq[0] + offset[0];
+				src_Q[1] = src_P[1] * freq[1] + offset[1];
+				src_Q[2] = src_P[2] * freq[2] + offset[2];
+
+				C_noise = amp * PerlinNoise(src_Q, 2, .5, 2);
 				C_noise = SmoothStep(C_noise, .55, .75);
 				VEC3_LERP(dst_Cd, C_noise, C_dark, C_light);
 			}

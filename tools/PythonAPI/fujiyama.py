@@ -139,6 +139,10 @@ class SceneInterface:
 		cmd = 'AssignFrameBuffer %s %s' % (renderer, framebuffer)
 		self.commands.append(cmd)
 
+	def AssignTurbulence(self, entry_name, prop_name, volume):
+		cmd = 'AssignTurbulence %s %s %s' % (entry_name, prop_name, volume)
+		self.commands.append(cmd)
+
 	def AssignVolume(self, entry_name, prop_name, volume):
 		cmd = 'AssignVolume %s %s %s' % (entry_name, prop_name, volume)
 		self.commands.append(cmd)

@@ -4,17 +4,16 @@ See LICENSE and README
 */
 
 #include "Procedure.h"
+#include "Turbulence.h"
 #include "Progress.h"
 #include "Numeric.h"
 #include "Random.h"
 #include "Vector.h"
 #include "Volume.h"
-#include "Noise.h"
 #include "Box.h"
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <float.h>
 
 /* TODO test */
@@ -33,11 +32,9 @@ struct CloudVolumeProcedure {
 	double bounds[6];
 
 	double radius;
-	double amplitude;
-	double frequency[3];
-	double offset[3];
 
 	struct Volume *volume;
+	struct Turbulence *turbulence;
 };
 
 static void *MyNew(void);
@@ -55,10 +52,8 @@ static int set_resolution(void *self, const struct PropertyValue *value);
 static int set_bounds_min(void *self, const struct PropertyValue *value);
 static int set_bounds_max(void *self, const struct PropertyValue *value);
 static int set_radius(void *self, const struct PropertyValue *value);
-static int set_amplitude(void *self, const struct PropertyValue *value);
-static int set_frequency(void *self, const struct PropertyValue *value);
-static int set_offset(void *self, const struct PropertyValue *value);
 static int set_volume(void *self, const struct PropertyValue *value);
+static int set_turbulence(void *self, const struct PropertyValue *value);
 
 static int FillWithPointClouds(struct CloudVolumeProcedure *cloud);
 static int FillWithSpecks(struct CloudVolumeProcedure *cloud);
@@ -66,15 +61,13 @@ static int FillWithSplineSpecks(struct CloudVolumeProcedure *cloud);
 static void fill_with_sphere(struct Volume *volume, const double *center, double radius);
 
 static const struct Property MyProperties[] = {
-	{PROP_VECTOR3, "resolution", set_resolution},
-	{PROP_VECTOR3, "bounds_min", set_bounds_min},
-	{PROP_VECTOR3, "bounds_max", set_bounds_max},
-	{PROP_SCALAR,  "radius",     set_radius},
-	{PROP_SCALAR,  "amplitude",  set_amplitude},
-	{PROP_VECTOR3, "frequency",  set_frequency},
-	{PROP_VECTOR3, "offset",     set_offset},
-	{PROP_VOLUME,  "volume",     set_volume},
-	{PROP_NONE,    NULL,         NULL}
+	{PROP_VECTOR3,    "resolution", set_resolution},
+	{PROP_VECTOR3,    "bounds_min", set_bounds_min},
+	{PROP_VECTOR3,    "bounds_max", set_bounds_max},
+	{PROP_SCALAR,     "radius",     set_radius},
+	{PROP_VOLUME,     "volume",     set_volume},
+	{PROP_TURBULENCE, "turbulence", set_turbulence},
+	{PROP_NONE,       NULL,         NULL}
 };
 
 static const struct MetaInfo MyMetainfo[] = {
@@ -112,11 +105,9 @@ static void *MyNew(void)
 	BOX3_SET(cloud->bounds, -1, -1, -1, 1, 1, 1);
 
 	cloud->radius = 1;
-	cloud->amplitude = 1;
-	VEC3_SET(cloud->frequency, 1, 1, 1);
-	VEC3_SET(cloud->offset, 0, 0, 0);
 
 	cloud->volume = NULL;
+	cloud->turbulence = NULL;
 
 	return cloud;
 }
@@ -203,43 +194,6 @@ static int set_radius(void *self, const struct PropertyValue *value)
 	return 0;
 }
 
-static int set_amplitude(void *self, const struct PropertyValue *value)
-{
-	struct CloudVolumeProcedure *cloud = (struct CloudVolumeProcedure *) self;
-	float amplitude = 0;
-
-	amplitude = value->vector[0];
-	cloud->amplitude = amplitude;
-
-	return 0;
-}
-
-static int set_frequency(void *self, const struct PropertyValue *value)
-{
-	struct CloudVolumeProcedure *cloud = (struct CloudVolumeProcedure *) self;
-	float frequency[3] = {0};
-
-	frequency[0] = value->vector[0];
-	frequency[1] = value->vector[1];
-	frequency[2] = value->vector[2];
-	VEC3_COPY(cloud->frequency, frequency);
-
-	return 0;
-}
-
-static int set_offset(void *self, const struct PropertyValue *value)
-{
-	struct CloudVolumeProcedure *cloud = (struct CloudVolumeProcedure *) self;
-	float offset[3] = {0};
-
-	offset[0] = value->vector[0];
-	offset[1] = value->vector[1];
-	offset[2] = value->vector[2];
-	VEC3_COPY(cloud->offset, offset);
-
-	return 0;
-}
-
 static int set_volume(void *self, const struct PropertyValue *value)
 {
 	struct CloudVolumeProcedure *cloud = (struct CloudVolumeProcedure *) self;
@@ -248,6 +202,18 @@ static int set_volume(void *self, const struct PropertyValue *value)
 		return -1;
 
 	cloud->volume = value->volume;
+
+	return 0;
+}
+
+static int set_turbulence(void *self, const struct PropertyValue *value)
+{
+	struct CloudVolumeProcedure *cloud = (struct CloudVolumeProcedure *) self;
+
+	if (value->turbulence == NULL)
+		return -1;
+
+	cloud->turbulence = value->turbulence;
 
 	return 0;
 }
@@ -277,13 +243,8 @@ static int FillWithPointClouds(struct CloudVolumeProcedure *cloud)
 				double dist = 0;
 
 				double amp = 1;
-				double freq[3] = {1, 1, 1};
-				double offset[3] = {0, 0, 0};
 				double P[3] = {0};
 				float value = 0;
-
-				VEC3_COPY(freq, cloud->frequency);
-				VEC3_COPY(offset, cloud->offset);
 
 				VolIndexToPoint(cloud->volume, i, j, k, P);
 
@@ -291,11 +252,10 @@ static int FillWithPointClouds(struct CloudVolumeProcedure *cloud)
 				sphere_func = dist - cloud->radius;
 
 				VEC3_NORMALIZE(P);
-				noise_func = amp * PerlinNoise(P, freq, offset, 2, .5, 8);
+				noise_func = amp * TrbEvaluate(cloud->turbulence, P);
 
 				noise_func = ABS(noise_func);
 				noise_func = Gamma(noise_func, .5);
-				noise_func *= cloud->amplitude;
 
 				value = Fit(sphere_func - noise_func,
 						-thresholdwidth, thresholdwidth, 1, 0);
@@ -328,13 +288,8 @@ static int FillWithSpecks(struct CloudVolumeProcedure *cloud)
 		double P_speck[3] = {0};
 		double disp_vec[3] = {0};
 
-		const double amp = 1 * .5 * 0;
+		const double amp = 1 * .5;
 		const double radius = .5;
-		/*
-		double freq[3] = {1, 1, 1};
-		*/
-		double freq[3] = {2, 2, 2};
-		double offset[3] = {0, 0, 0};
 
 		XorSolidSphereRand(&xr, uvw);
 
@@ -342,7 +297,7 @@ static int FillWithSpecks(struct CloudVolumeProcedure *cloud)
 		P_speck[1] = uvw[0] * uvec[1] + uvw[1] * vvec[1] + uvw[2] * wvec[1];
 		P_speck[2] = uvw[0] * uvec[2] + uvw[1] * vvec[2] + uvw[2] * wvec[2];
 
-		PerlinNoise3d(P_speck, freq, offset, 2, .5, 8, disp_vec);
+		TrbEvaluate3d(cloud->turbulence, uvw, disp_vec);
 
 		P_speck[0] = radius * P_speck[0] + amp * disp_vec[0];
 		P_speck[1] = radius * P_speck[1] + amp * disp_vec[1];
@@ -382,11 +337,6 @@ static int FillWithSplineSpecks(struct CloudVolumeProcedure *cloud)
 
 		const double amp = 1 * .25;
 		const double radius = .1+.3;
-		/*
-		double freq[3] = {1, 1, 1};
-		*/
-		double freq[3] = {5, 5, 3};
-		double offset[3] = {0, 0, 0};
 
 		/*
 		XorSolidDiskRand(&xr, uvw);
@@ -402,7 +352,7 @@ static int FillWithSplineSpecks(struct CloudVolumeProcedure *cloud)
 		P_speck[1] = vert0[1] + uvw[0] * uvec[1] + uvw[1] * vvec[1] + uvw[2] * wvec[1];
 		P_speck[2] = vert0[2] + uvw[0] * uvec[2] + uvw[1] * vvec[2] + uvw[2] * wvec[2];
 
-		PerlinNoise3d(uvw, freq, offset, 2, .5, 8, disp_vec);
+		TrbEvaluate3d(cloud->turbulence, uvw, disp_vec);
 
 		disp_vec[0] *= amp;
 		disp_vec[1] *= amp;
@@ -458,9 +408,6 @@ static void fill_with_sphere(struct Volume *volume, const double *center, double
 				value = VolGetValue(volume, i, j, k);
 				value += Fit(VEC3_LEN(P) - radius,
 						-thresholdwidth, thresholdwidth, 1, 0);
-				/*
-				value += 5 * (VEC3_LEN(P) - radius < 0 ? 1 : 0);
-				*/
 				VolSetValue(volume, i, j, k, value);
 			}
 		}

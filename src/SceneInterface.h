@@ -42,10 +42,10 @@ extern ID SiNewCurve(const char *filename);
 extern ID SiNewLight(const char *arg);
 extern ID SiNewMesh(const char *filename);
 
-extern Status SiAssignShader(ID object, ID shader);
+extern Status SiAssignFrameBuffer(ID renderer, ID framebuffer);
 extern Status SiAssignTexture(ID shader, const char *prop_name, ID texture);
 extern Status SiAssignCamera(ID renderer, ID camera);
-extern Status SiAssignFrameBuffer(ID renderer, ID framebuffer);
+extern Status SiAssignShader(ID object, ID shader);
 
 /* Property interfaces */
 extern Status SiSetProperty1(ID id, const char *name, double v0);
@@ -53,6 +53,7 @@ extern Status SiSetProperty2(ID id, const char *name, double v0, double v1);
 extern Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2);
 extern Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, double v3);
 
+extern Status SiAssignTurbulence(ID id, const char *name, ID turbulence);
 extern Status SiAssignVolume(ID id, const char *name, ID volume);
 
 #ifdef __cplusplus

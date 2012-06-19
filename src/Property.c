@@ -55,6 +55,16 @@ struct PropertyValue PropVector4(double v0, double v1, double v2, double v3)
 	return value;
 }
 
+struct PropertyValue PropTurbulence(struct Turbulence *turbulence)
+{
+	struct PropertyValue value = INIT_PROPERTYVALUE;
+
+	value.type = PROP_TURBULENCE;
+	value.turbulence = turbulence;
+
+	return value;
+}
+
 struct PropertyValue PropTexture(struct Texture *texture)
 {
 	struct PropertyValue value = INIT_PROPERTYVALUE;

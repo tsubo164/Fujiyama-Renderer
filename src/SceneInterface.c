@@ -64,6 +64,9 @@ static void set_errno(int err_no);
 static int SetObjectInstanceProperty1(int index, const char *name, double v0);
 static int SetObjectInstanceProperty3(int index, const char *name, double v0, double v1, double v2);
 
+static int SetTurbulenceProperty1(int index, const char *name, double v0);
+static int SetTurbulenceProperty3(int index, const char *name, double v0, double v1, double v2);
+
 static int SetProcedureProperty1(int index, const char *name, double v0);
 static int SetProcedureProperty2(int index, const char *name, double v0, double v1);
 static int SetProcedureProperty3(int index, const char *name, double v0, double v1, double v2);
@@ -81,6 +84,41 @@ static int SetShaderProperty3(int index, const char *name, double v0, double v1,
 
 static int SetLightProperty1(int index, const char *name, double v0);
 static int SetLightProperty3(int index, const char *name, double v0, double v1, double v2);
+
+/* TODO TEST ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+#if 0
+static int set_Light_intensity(void *self, const struct PropertyValue *value)
+{
+	struct Light *light = (struct Light *) self;
+	LgtSetIntensity(light, value->vector[0]);
+	return 0;
+}
+
+static int set_Light_position(void *self, const struct PropertyValue *value)
+{
+	struct Light *light = (struct Light *) self;
+	LgtSetPosition(light, value->vector[0], value->vector[1], value->vector[2]);
+	return 0;
+}
+
+static const struct Property LightProperties[] = {
+	{PROP_SCALAR,  "intensity", set_Light_intensity},
+	{PROP_VECTOR3, "position",  set_Light_position},
+	{PROP_NONE,    NULL,      NULL}
+};
+
+static int find_and_set_property(void *self, const struct Property *src_props,
+		const char *prop_name, const struct PropertyValue *src_data)
+{
+	const struct Property *dst_prop = PropFind(src_props, src_data->type, prop_name);
+	if (dst_prop == NULL)
+		return -1;
+
+	assert(dst_prop->SetProperty != NULL);
+	return dst_prop->SetProperty(self, src_data);
+}
+#endif
+/* TODO TEST ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 /* Error interfaces */
 int SiGetErrorNo(void)
@@ -587,6 +625,9 @@ Status SiSetProperty1(ID id, const char *name, double v0)
 	case Type_ObjectInstance:
 		err = SetObjectInstanceProperty1(entry.index, name, v0);
 		break;
+	case Type_Turbulence:
+		err = SetTurbulenceProperty1(entry.index, name, v0);
+		break;
 	case Type_Procedure:
 		err = SetProcedureProperty1(entry.index, name, v0);
 		break;
@@ -602,6 +643,15 @@ Status SiSetProperty1(ID id, const char *name, double v0)
 	case Type_Light:
 		err = SetLightProperty1(entry.index, name, v0);
 		break;
+		/*
+		{
+			struct PropertyValue value = PropScalar(v0);
+			struct Light *light = ScnGetLight(scene, entry.index);
+			if (light == NULL)
+				return SI_FAIL;
+			find_and_set_property(light, LightProperties, name, &value);
+		}
+		*/
 	default:
 		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
 		break;
@@ -648,6 +698,9 @@ Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2)
 	case Type_ObjectInstance:
 		err = SetObjectInstanceProperty3(entry.index, name, v0, v1, v2);
 		break;
+	case Type_Turbulence:
+		err = SetTurbulenceProperty3(entry.index, name, v0, v1, v2);
+		break;
 	case Type_Procedure:
 		err = SetProcedureProperty3(entry.index, name, v0, v1, v2);
 		break;
@@ -690,6 +743,41 @@ Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, 
 		return SI_FAIL;
 	else
 		return SI_SUCCESS;
+}
+
+Status SiAssignTurbulence(ID id, const char *name, ID turbulence)
+{
+	const struct Entry entry = decode_id(id);
+	const struct Entry turbulence_ent = decode_id(turbulence);
+	struct PropertyValue value = InitPropValue();
+	struct Turbulence *turbulence_ptr = NULL;
+	int err = 0;
+
+	if (turbulence_ent.type != Type_Turbulence)
+		return SI_FAIL;
+
+	turbulence_ptr = ScnGetTurbulence(scene, turbulence_ent.index);
+	if (turbulence_ptr == NULL)
+		return SI_FAIL;
+
+	value = PropTurbulence(turbulence_ptr);
+
+	switch (entry.type) {
+	case Type_Procedure:
+		{
+			struct Procedure *procedure_ptr = ScnGetProcedure(scene, entry.index);
+			err = PrcSetProperty(procedure_ptr, name, &value);
+		}
+		break;
+	default:
+		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
+		break;
+	}
+
+	if (err)
+		return SI_FAIL;
+
+	return SI_SUCCESS;
 }
 
 Status SiAssignVolume(ID id, const char *name, ID volume)
@@ -783,6 +871,47 @@ static int SetObjectInstanceProperty3(int index, const char *name, double v0, do
 		ObjSetRotate(obj, v0, v1, v2);
 	} else if (strcmp(name, "scale") == 0) {
 		ObjSetScale(obj, v0, v1, v2);
+	} else {
+		result = SI_FAIL;
+	}
+
+	return result;
+}
+
+/* Turbulence Property */
+static int SetTurbulenceProperty1(int index, const char *name, double v0)
+{
+	int result = SI_SUCCESS;
+	struct Turbulence *turb = ScnGetTurbulence(scene, index);
+	if (turb == NULL)
+		return SI_FAIL;
+
+	if (strcmp(name, "lacunarity") == 0) {
+		TrbSetLacunarity(turb, v0);
+	} else if (strcmp(name, "gain") == 0) {
+		TrbSetGain(turb, v0);
+	} else if (strcmp(name, "octaves") == 0) {
+		TrbSetOctaves(turb, v0);
+	} else {
+		result = SI_FAIL;
+	}
+
+	return result;
+}
+
+static int SetTurbulenceProperty3(int index, const char *name, double v0, double v1, double v2)
+{
+	int result = SI_SUCCESS;
+	struct Turbulence *turb = ScnGetTurbulence(scene, index);
+	if (turb == NULL)
+		return SI_FAIL;
+
+	if (strcmp(name, "amplitude") == 0) {
+		TrbSetAmplitude(turb, v0, v1, v2);
+	} else if (strcmp(name, "frequency") == 0) {
+		TrbSetFrequency(turb, v0, v1, v2);
+	} else if (strcmp(name, "offset") == 0) {
+		TrbSetOffset(turb, v0, v1, v2);
 	} else {
 		result = SI_FAIL;
 	}

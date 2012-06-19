@@ -33,10 +33,8 @@ static const int perm[] = {
 static double fade(double t);
 static double lerp(double t, double a, double b);
 static double grad(int hash, double x, double y, double z); 
-static double noise3d(double x, double y, double z);
 
 extern double PerlinNoise(const double *position,
-		const double *frequency, const double *offset,
 		double lacunarity, double persistence, int octaves)
 {
 	double noise_value = 0;
@@ -44,12 +42,12 @@ extern double PerlinNoise(const double *position,
 	double P[3];
 	int i;
 
-	P[0] = position[0] * frequency[0] + offset[0];
-	P[1] = position[1] * frequency[1] + offset[1];
-	P[2] = position[2] * frequency[2] + offset[2];
+	P[0] = position[0];
+	P[1] = position[1];
+	P[2] = position[2];
 
 	for (i = 0; i < octaves; i++) {
-		noise_value += amp * noise3d(P[0], P[1], P[2]);
+		noise_value += amp * PNoise3d(P[0], P[1], P[2]);
 
 		amp *= persistence;
 		P[0] *= lacunarity;
@@ -61,29 +59,28 @@ extern double PerlinNoise(const double *position,
 }
 
 void PerlinNoise3d(const double *position,
-		const double *frequency, const double *offset,
 		double lacunarity, double persistence, int octaves,
 		double *P_out)
 {
-	double offset3d[3] = {0};
+	double P[3] = {0};
 
-	offset3d[0] = offset[0];
-	offset3d[1] = offset[1];
-	offset3d[2] = offset[2];
-	P_out[0] = PerlinNoise(position, frequency, offset3d, lacunarity, persistence, octaves);
+	P[0] = position[0];
+	P[1] = position[1];
+	P[2] = position[2];
+	P_out[0] = PerlinNoise(P, lacunarity, persistence, octaves);
 
-	offset3d[0] = offset[0] + 131.977;
-	offset3d[1] = offset[1] + 21.1823;
-	offset3d[2] = offset[2] + 71.0231;
-	P_out[1] = PerlinNoise(position, frequency, offset3d, lacunarity, persistence, octaves);
+	P[0] = position[0] + 131.977;
+	P[1] = position[1] + 21.1823;
+	P[2] = position[2] + 71.0231;
+	P_out[1] = PerlinNoise(P, lacunarity, persistence, octaves);
 
-	offset3d[0] = offset[0] + 237.492;
-	offset3d[1] = offset[1] + 11.1312;
-	offset3d[2] = offset[2] + 133.129;
-	P_out[2] = PerlinNoise(position, frequency, offset3d, lacunarity, persistence, octaves);
+	P[0] = position[0] + 237.492;
+	P[1] = position[1] + 11.1312;
+	P[2] = position[2] + 133.129;
+	P_out[2] = PerlinNoise(P, lacunarity, persistence, octaves);
 }
 
-static double noise3d(double x, double y, double z)
+double PNoise3d(double x, double y, double z)
 {
 	/* Find unit cube that contains point. */
 	const int X = (int) floor(x) & 255;
