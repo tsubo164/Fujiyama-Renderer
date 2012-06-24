@@ -8,6 +8,7 @@ See LICENSE and README
 #include "PrimitiveSet.h"
 #include "CurveIO.h"
 #include "MeshIO.h"
+#include "Shader.h"
 #include "Scene.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,66 +60,14 @@ static ID encode_id(int type, int index);
 static struct Entry decode_id(ID id);
 static int create_implicit_groups(void);
 static void set_errno(int err_no);
+static Status status_of_error(int err);
 
-/* Property interfaces */
-static int SetObjectInstanceProperty1(int index, const char *name, double v0);
-static int SetObjectInstanceProperty3(int index, const char *name, double v0, double v1, double v2);
+/*
+#include "property_list_include.c"
+*/
 
-static int SetTurbulenceProperty1(int index, const char *name, double v0);
-static int SetTurbulenceProperty3(int index, const char *name, double v0, double v1, double v2);
-
-static int SetProcedureProperty1(int index, const char *name, double v0);
-static int SetProcedureProperty2(int index, const char *name, double v0, double v1);
-static int SetProcedureProperty3(int index, const char *name, double v0, double v1, double v2);
-
-static int SetRendererProperty1(int index, const char *name, double v0);
-static int SetRendererProperty2(int index, const char *name, double v0, double v1);
-static int SetRendererProperty4(int index, const char *name, double v0, double v1, double v2, double v3);
-
-static int SetCameraProperty1(int index, const char *name, double v0);
-static int SetCameraProperty3(int index, const char *name, double v0, double v1, double v2);
-
-static int SetShaderProperty1(int index, const char *name, double v0);
-static int SetShaderProperty2(int index, const char *name, double v0, double v1);
-static int SetShaderProperty3(int index, const char *name, double v0, double v1, double v2);
-
-static int SetLightProperty1(int index, const char *name, double v0);
-static int SetLightProperty3(int index, const char *name, double v0, double v1, double v2);
-
-/* TODO TEST ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-#if 0
-static int set_Light_intensity(void *self, const struct PropertyValue *value)
-{
-	struct Light *light = (struct Light *) self;
-	LgtSetIntensity(light, value->vector[0]);
-	return 0;
-}
-
-static int set_Light_position(void *self, const struct PropertyValue *value)
-{
-	struct Light *light = (struct Light *) self;
-	LgtSetPosition(light, value->vector[0], value->vector[1], value->vector[2]);
-	return 0;
-}
-
-static const struct Property LightProperties[] = {
-	{PROP_SCALAR,  "intensity", set_Light_intensity},
-	{PROP_VECTOR3, "position",  set_Light_position},
-	{PROP_NONE,    NULL,      NULL}
-};
-
-static int find_and_set_property(void *self, const struct Property *src_props,
-		const char *prop_name, const struct PropertyValue *src_data)
-{
-	const struct Property *dst_prop = PropFind(src_props, src_data->type, prop_name);
-	if (dst_prop == NULL)
-		return -1;
-
-	assert(dst_prop->SetProperty != NULL);
-	return dst_prop->SetProperty(self, src_data);
-}
-#endif
-/* TODO TEST ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+static int set_property(const struct Entry *entry,
+		const char *name, const struct PropertyValue *value);
 
 /* Error interfaces */
 int SiGetErrorNo(void)
@@ -615,134 +564,40 @@ Status SiAssignFrameBuffer(ID renderer, ID framebuffer)
 	return SI_SUCCESS;
 }
 
-
 Status SiSetProperty1(ID id, const char *name, double v0)
 {
 	const struct Entry entry = decode_id(id);
-	int err = 0;
+	const struct PropertyValue value = PropScalar(v0);
+	const int err = set_property(&entry, name, &value);
 
-	switch (entry.type) {
-	case Type_ObjectInstance:
-		err = SetObjectInstanceProperty1(entry.index, name, v0);
-		break;
-	case Type_Turbulence:
-		err = SetTurbulenceProperty1(entry.index, name, v0);
-		break;
-	case Type_Procedure:
-		err = SetProcedureProperty1(entry.index, name, v0);
-		break;
-	case Type_Renderer:
-		err = SetRendererProperty1(entry.index, name, v0);
-		break;
-	case Type_Camera:
-		err = SetCameraProperty1(entry.index, name, v0);
-		break;
-	case Type_Shader:
-		err = SetShaderProperty1(entry.index, name, v0);
-		break;
-	case Type_Light:
-		err = SetLightProperty1(entry.index, name, v0);
-		break;
-		/*
-		{
-			struct PropertyValue value = PropScalar(v0);
-			struct Light *light = ScnGetLight(scene, entry.index);
-			if (light == NULL)
-				return SI_FAIL;
-			find_and_set_property(light, LightProperties, name, &value);
-		}
-		*/
-	default:
-		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
-		break;
-	}
-
-	if (err)
-		return SI_FAIL;
-	else
-		return SI_SUCCESS;
+	return status_of_error(err);
 }
 
 Status SiSetProperty2(ID id, const char *name, double v0, double v1)
 {
 	const struct Entry entry = decode_id(id);
-	int err = 0;
+	const struct PropertyValue value = PropVector2(v0, v1);
+	const int err = set_property(&entry, name, &value);
 
-	switch (entry.type) {
-	case Type_Procedure:
-		err = SetProcedureProperty2(entry.index, name, v0, v1);
-		break;
-	case Type_Renderer:
-		err = SetRendererProperty2(entry.index, name, v0, v1);
-		break;
-	case Type_Shader:
-		err = SetShaderProperty2(entry.index, name, v0, v1);
-		break;
-	default:
-		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
-		break;
-	}
-
-	if (err)
-		return SI_FAIL;
-	else
-		return SI_SUCCESS;
+	return status_of_error(err);
 }
 
 Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2)
 {
 	const struct Entry entry = decode_id(id);
-	int err = 0;
+	const struct PropertyValue value = PropVector3(v0, v1, v2);
+	const int err = set_property(&entry, name, &value);
 
-	switch (entry.type) {
-	case Type_ObjectInstance:
-		err = SetObjectInstanceProperty3(entry.index, name, v0, v1, v2);
-		break;
-	case Type_Turbulence:
-		err = SetTurbulenceProperty3(entry.index, name, v0, v1, v2);
-		break;
-	case Type_Procedure:
-		err = SetProcedureProperty3(entry.index, name, v0, v1, v2);
-		break;
-	case Type_Camera:
-		err = SetCameraProperty3(entry.index, name, v0, v1, v2);
-		break;
-	case Type_Shader:
-		/* TODO NEXT check return value */
-		err = SetShaderProperty3(entry.index, name, v0, v1, v2);
-		break;
-	case Type_Light:
-		err = SetLightProperty3(entry.index, name, v0, v1, v2);
-		break;
-	default:
-		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
-		break;
-	}
-
-	if (err)
-		return SI_FAIL;
-	else
-		return SI_SUCCESS;
+	return status_of_error(err);
 }
 
 Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, double v3)
 {
 	const struct Entry entry = decode_id(id);
-	int err = 0;
+	const struct PropertyValue value = PropVector4(v0, v1, v2, v3);
+	const int err = set_property(&entry, name, &value);
 
-	switch (entry.type) {
-	case Type_Renderer:
-		err = SetRendererProperty4(entry.index, name, v0, v1, v2, v3);
-		break;
-	default:
-		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
-		break;
-	}
-
-	if (err)
-		return SI_FAIL;
-	else
-		return SI_SUCCESS;
+	return status_of_error(err);
 }
 
 Status SiAssignTurbulence(ID id, const char *name, ID turbulence)
@@ -761,23 +616,9 @@ Status SiAssignTurbulence(ID id, const char *name, ID turbulence)
 		return SI_FAIL;
 
 	value = PropTurbulence(turbulence_ptr);
+	err = set_property(&entry, name, &value);
 
-	switch (entry.type) {
-	case Type_Procedure:
-		{
-			struct Procedure *procedure_ptr = ScnGetProcedure(scene, entry.index);
-			err = PrcSetProperty(procedure_ptr, name, &value);
-		}
-		break;
-	default:
-		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
-		break;
-	}
-
-	if (err)
-		return SI_FAIL;
-
-	return SI_SUCCESS;
+	return status_of_error(err);
 }
 
 Status SiAssignVolume(ID id, const char *name, ID volume)
@@ -796,24 +637,52 @@ Status SiAssignVolume(ID id, const char *name, ID volume)
 		return SI_FAIL;
 
 	value = PropVolume(volume_ptr);
+	err = set_property(&entry, name, &value);
 
-	switch (entry.type) {
-	case Type_Procedure:
-		{
-			struct Procedure *procedure_ptr = ScnGetProcedure(scene, entry.index);
-			err = PrcSetProperty(procedure_ptr, name, &value);
-		}
-		break;
-	default:
-		assert(!is_valid_type(entry.type) && "Some types are not implemented yet");
-		break;
+	return status_of_error(err);
+}
+
+#if 0
+Status SiGetHelp(const char *entry_type, char *help_buffer, unsigned int buffer_size)
+{
+	const struct Property *help_props = NULL;
+
+	/* plugin object properties */
+	if (strcmp(entry_type, "Procedure") == 0) {
+		struct Procedure *procedure = ScnGetProcedure(scene, entry->index);
+		if (procedure == NULL)
+			return SI_FAIL;
+
+		help_props = PrcGetPropertyList(procedure);
+	}
+	else if (strcmp(entry_type, "Shader") == 0) {
+		struct Shader *shader = ScnGetShader(scene, entry->index);
+		if (shader == NULL)
+			return SI_FAIL;
+
+		help_props = ShdGetPropertyList(shader);
 	}
 
-	if (err)
-		return SI_FAIL;
+	/* builtin object properties */
+	if (strcmp(entry_type, "ObjectInstance") == 0) {
+		help_props = ObjectInstance_properties;
+	}
+	else if (strcmp(entry_type, "Turbulence") == 0) {
+		help_props = Turbulence_properties;
+	}
+	else if (strcmp(entry_type, "Renderer") == 0) {
+		help_props = Renderer_properties;
+	}
+	else if (strcmp(entry_type, "Camera") == 0) {
+		help_props = Camera_properties;
+	}
+	else if (strcmp(entry_type, "Light") == 0) {
+		help_props = Light_properties;
+	}
 
 	return SI_SUCCESS;
 }
+#endif
 
 static int is_valid_type(int type)
 {
@@ -838,296 +707,6 @@ static struct Entry decode_id(ID id)
 
 	return entry;
 }
-
-/* ObjectInstance Property */
-static int SetObjectInstanceProperty1(int index, const char *name, double v0)
-{
-	int result = SI_SUCCESS;
-	struct ObjectInstance *obj = ScnGetObjectInstance(scene, index);
-	if (obj == NULL)
-		return SI_FAIL;
-
-	if (strcmp(name, "transform_order") == 0) {
-		ObjSetTransformOrder(obj, (int) v0);
-	} else if (strcmp(name, "rotate_order") == 0) {
-		ObjSetRotateOrder(obj, (int) v0);
-	} else {
-		result = SI_FAIL;
-	}
-
-	return result;
-}
-
-static int SetObjectInstanceProperty3(int index, const char *name, double v0, double v1, double v2)
-{
-	int result = SI_SUCCESS;
-	struct ObjectInstance *obj = ScnGetObjectInstance(scene, index);
-	if (obj == NULL)
-		return SI_FAIL;
-
-	if (strcmp(name, "translate") == 0) {
-		ObjSetTranslate(obj, v0, v1, v2);
-	} else if (strcmp(name, "rotate") == 0) {
-		ObjSetRotate(obj, v0, v1, v2);
-	} else if (strcmp(name, "scale") == 0) {
-		ObjSetScale(obj, v0, v1, v2);
-	} else {
-		result = SI_FAIL;
-	}
-
-	return result;
-}
-
-/* Turbulence Property */
-static int SetTurbulenceProperty1(int index, const char *name, double v0)
-{
-	int result = SI_SUCCESS;
-	struct Turbulence *turb = ScnGetTurbulence(scene, index);
-	if (turb == NULL)
-		return SI_FAIL;
-
-	if (strcmp(name, "lacunarity") == 0) {
-		TrbSetLacunarity(turb, v0);
-	} else if (strcmp(name, "gain") == 0) {
-		TrbSetGain(turb, v0);
-	} else if (strcmp(name, "octaves") == 0) {
-		TrbSetOctaves(turb, v0);
-	} else {
-		result = SI_FAIL;
-	}
-
-	return result;
-}
-
-static int SetTurbulenceProperty3(int index, const char *name, double v0, double v1, double v2)
-{
-	int result = SI_SUCCESS;
-	struct Turbulence *turb = ScnGetTurbulence(scene, index);
-	if (turb == NULL)
-		return SI_FAIL;
-
-	if (strcmp(name, "amplitude") == 0) {
-		TrbSetAmplitude(turb, v0, v1, v2);
-	} else if (strcmp(name, "frequency") == 0) {
-		TrbSetFrequency(turb, v0, v1, v2);
-	} else if (strcmp(name, "offset") == 0) {
-		TrbSetOffset(turb, v0, v1, v2);
-	} else {
-		result = SI_FAIL;
-	}
-
-	return result;
-}
-
-/* Procedure Property */
-static int SetProcedureProperty1(int index, const char *name, double v0)
-{
-	const struct PropertyValue value = PropScalar(v0);
-	struct Procedure *procedure = ScnGetProcedure(scene, index);
-
-	if (procedure == NULL)
-		return SI_FAIL;
-
-	return PrcSetProperty(procedure, name, &value);
-}
-
-static int SetProcedureProperty2(int index, const char *name, double v0, double v1)
-{
-	const struct PropertyValue value = PropVector2(v0, v1);
-	struct Procedure *procedure = ScnGetProcedure(scene, index);
-
-	if (procedure == NULL)
-		return SI_FAIL;
-
-	return PrcSetProperty(procedure, name, &value);
-}
-
-static int SetProcedureProperty3(int index, const char *name, double v0, double v1, double v2)
-{
-	const struct PropertyValue value = PropVector3(v0, v1, v2);
-	struct Procedure *procedure = ScnGetProcedure(scene, index);
-
-	if (procedure == NULL)
-		return SI_FAIL;
-
-	return PrcSetProperty(procedure, name, &value);
-}
-
-/* Renderer Property */
-static int SetRendererProperty1(int index, const char *name, double v0)
-{
-	int result = SI_SUCCESS;
-	struct Renderer *renderer = ScnGetRenderer(scene, index);
-	if (renderer == NULL)
-		return SI_FAIL;
-
-	if (strcmp(name, "sample_jitter") == 0) {
-		RdrSetSampleJitter(renderer, v0);
-	} else if (strcmp(name, "cast_shadow") == 0) {
-		RdrSetShadowEnable(renderer, (int) v0);
-	} else if (strcmp(name, "max_reflect_depth") == 0) {
-		RdrSetMaxReflectDepth(renderer, (int) v0);
-	} else if (strcmp(name, "max_refract_depth") == 0) {
-		RdrSetMaxRefractDepth(renderer, (int) v0);
-	} else if (strcmp(name, "raymarch_step") == 0) {
-		RdrSetRaymarchStep(renderer, v0);
-	} else if (strcmp(name, "raymarch_shadow_step") == 0) {
-		RdrSetRaymarchShadowStep(renderer, v0);
-	} else if (strcmp(name, "raymarch_reflect_step") == 0) {
-		RdrSetRaymarchReflectStep(renderer, v0);
-	} else if (strcmp(name, "raymarch_refract_step") == 0) {
-		RdrSetRaymarchRefractStep(renderer, v0);
-	} else {
-		result = SI_FAIL;
-	}
-
-	return result;
-}
-
-static int SetRendererProperty2(int index, const char *name, double v0, double v1)
-{
-	int result = SI_SUCCESS;
-	struct Renderer *renderer = ScnGetRenderer(scene, index);
-	if (renderer == NULL)
-		return SI_FAIL;
-
-	if (strcmp(name, "resolution") == 0) {
-		RdrSetResolution(renderer, (int) v0, (int) v1);
-	} else if (strcmp(name, "pixelsamples") == 0) {
-		RdrSetPixelSamples(renderer, (int) v0, (int) v1);
-	} else if (strcmp(name, "tilesize") == 0) {
-		RdrSetTileSize(renderer, (int) v0, (int) v1);
-	} else if (strcmp(name, "filterwidth") == 0) {
-		RdrSetFilterWidth(renderer, v0, v1);
-	} else {
-		result = SI_FAIL;
-	}
-
-	return result;
-}
-
-static int SetRendererProperty4(int index, const char *name, double v0, double v1, double v2, double v3)
-{
-	int result = SI_SUCCESS;
-	struct Renderer *renderer = ScnGetRenderer(scene, index);
-	if (renderer == NULL)
-		return SI_FAIL;
-
-	if (strcmp(name, "render_region") == 0) {
-		RdrSetRenderRegion(renderer, (int) v0, (int) v1, (int) v2, (int) v3);
-	} else {
-		result = SI_FAIL;
-	}
-
-	return result;
-}
-
-/* Camera Property */
-static int SetCameraProperty1(int index, const char *name, double v0)
-{
-	int result = SI_SUCCESS;
-	struct Camera *cam = ScnGetCamera(scene, index);
-	if (cam == NULL)
-		return SI_FAIL;
-
-	if (strcmp(name, "fov") == 0) {
-		CamSetFov(cam, v0);
-	} else if (strcmp(name, "znear") == 0) {
-		CamSetNearPlane(cam, v0);
-	} else if (strcmp(name, "zfar") == 0) {
-		CamSetFarPlane(cam, v0);
-	} else {
-		result = SI_FAIL;
-	}
-
-	return result;
-}
-
-static int SetCameraProperty3(int index, const char *name, double v0, double v1, double v2)
-{
-	int result = SI_SUCCESS;
-	struct Camera *cam = ScnGetCamera(scene, index);
-	if (cam == NULL)
-		return SI_FAIL;
-
-	if (strcmp(name, "position") == 0) {
-		CamSetPosition(cam, v0, v1, v2);
-	} else if (strcmp(name, "direction") == 0) {
-		CamSetDirection(cam, v0, v1, v2);
-	} else {
-		result = SI_FAIL;
-	}
-
-	return result;
-}
-
-/* Shader Property */
-static int SetShaderProperty1(int index, const char *name, double v0)
-{
-	const struct PropertyValue value = PropScalar(v0);
-	struct Shader *shader = ScnGetShader(scene, index);
-
-	if (shader == NULL)
-		return SI_FAIL;
-
-	return ShdSetProperty(shader, name, &value);
-}
-
-static int SetShaderProperty2(int index, const char *name, double v0, double v1)
-{
-	const struct PropertyValue value = PropVector2(v0, v1);
-	struct Shader *shader = ScnGetShader(scene, index);
-
-	if (shader == NULL)
-		return SI_FAIL;
-
-	return ShdSetProperty(shader, name, &value);
-}
-
-static int SetShaderProperty3(int index, const char *name, double v0, double v1, double v2)
-{
-	const struct PropertyValue value = PropVector3(v0, v1, v2);
-	struct Shader *shader = ScnGetShader(scene, index);
-
-	if (shader == NULL)
-		return SI_FAIL;
-
-	return ShdSetProperty(shader, name, &value);
-}
-
-/* Light Property */
-static int SetLightProperty1(int index, const char *name, double v0)
-{
-	int result = SI_SUCCESS;
-	struct Light *light = ScnGetLight(scene, index);
-	if (light == NULL)
-		return SI_FAIL;
-
-	if (strcmp(name, "intensity") == 0) {
-		LgtSetIntensity(light, v0);
-	} else {
-		result = SI_FAIL;
-	}
-
-	return result;
-}
-
-static int SetLightProperty3(int index, const char *name, double v0, double v1, double v2)
-{
-	int result = SI_SUCCESS;
-	struct Light *light = ScnGetLight(scene, index);
-	if (light == NULL)
-		return SI_FAIL;
-
-	if (strcmp(name, "position") == 0) {
-		LgtSetPosition(light, v0, v1, v2);
-	} else {
-		result = SI_FAIL;
-	}
-
-	return result;
-}
-
 
 static int create_implicit_groups(void)
 {
@@ -1169,5 +748,339 @@ static int create_implicit_groups(void)
 static void set_errno(int err_no)
 {
 	si_errno = err_no;
+}
+
+static Status status_of_error(int err)
+{
+	if (err)
+		return SI_FAIL;
+	else
+		return SI_SUCCESS;
+}
+
+/* property settings */
+static int set_ObjectInstance_transform_order(void *self, const struct PropertyValue *value)
+{
+	ObjSetTransformOrder((struct ObjectInstance *) self, (int) value->vector[0]);
+	return 0;
+}
+
+static int set_ObjectInstance_rotate_order(void *self, const struct PropertyValue *value)
+{
+	ObjSetRotateOrder((struct ObjectInstance *) self, (int) value->vector[0]);
+	return 0;
+}
+
+static int set_ObjectInstance_translate(void *self, const struct PropertyValue *value)
+{
+	ObjSetTranslate((struct ObjectInstance *) self,
+			value->vector[0], value->vector[1], value->vector[2]);
+	return 0;
+}
+
+static int set_ObjectInstance_rotate(void *self, const struct PropertyValue *value)
+{
+	ObjSetRotate((struct ObjectInstance *) self,
+			value->vector[0], value->vector[1], value->vector[2]);
+	return 0;
+}
+
+static int set_ObjectInstance_scale(void *self, const struct PropertyValue *value)
+{
+	ObjSetScale((struct ObjectInstance *) self,
+			value->vector[0], value->vector[1], value->vector[2]);
+	return 0;
+}
+
+static int set_Turbulence_lacunarity(void *self, const struct PropertyValue *value)
+{
+	TrbSetLacunarity((struct Turbulence *) self, value->vector[0]);
+	return 0;
+}
+
+static int set_Turbulence_gain(void *self, const struct PropertyValue *value)
+{
+	TrbSetGain((struct Turbulence *) self, value->vector[0]);
+	return 0;
+}
+
+static int set_Turbulence_octaves(void *self, const struct PropertyValue *value)
+{
+	TrbSetOctaves((struct Turbulence *) self, (int) value->vector[0]);
+	return 0;
+}
+
+static int set_Turbulence_amplitude(void *self, const struct PropertyValue *value)
+{
+	TrbSetAmplitude((struct Turbulence *) self,
+			value->vector[0], value->vector[1], value->vector[2]);
+	return 0;
+}
+
+static int set_Turbulence_frequency(void *self, const struct PropertyValue *value)
+{
+	TrbSetFrequency((struct Turbulence *) self,
+			value->vector[0], value->vector[1], value->vector[2]);
+	return 0;
+}
+
+static int set_Turbulence_offset(void *self, const struct PropertyValue *value)
+{
+	TrbSetOffset((struct Turbulence *) self,
+			value->vector[0], value->vector[1], value->vector[2]);
+	return 0;
+}
+
+static int set_Renderer_sample_jitter(void *self, const struct PropertyValue *value)
+{
+	RdrSetSampleJitter((struct Renderer *) self, value->vector[0]);
+	return 0;
+}
+
+static int set_Renderer_cast_shadow(void *self, const struct PropertyValue *value)
+{
+	RdrSetShadowEnable((struct Renderer *) self, (int) value->vector[0]);
+	return 0;
+}
+
+static int set_Renderer_max_reflect_depth(void *self, const struct PropertyValue *value)
+{
+	RdrSetMaxReflectDepth((struct Renderer *) self, (int) value->vector[0]);
+	return 0;
+}
+
+static int set_Renderer_max_refract_depth(void *self, const struct PropertyValue *value)
+{
+	RdrSetMaxRefractDepth((struct Renderer *) self, (int) value->vector[0]);
+	return 0;
+}
+
+static int set_Renderer_raymarch_step(void *self, const struct PropertyValue *value)
+{
+	RdrSetRaymarchStep((struct Renderer *) self, value->vector[0]);
+	return 0;
+}
+
+static int set_Renderer_raymarch_shadow_step(void *self, const struct PropertyValue *value)
+{
+	RdrSetRaymarchShadowStep((struct Renderer *) self, value->vector[0]);
+	return 0;
+}
+
+static int set_Renderer_raymarch_reflect_step(void *self, const struct PropertyValue *value)
+{
+	RdrSetRaymarchReflectStep((struct Renderer *) self, value->vector[0]);
+	return 0;
+}
+
+static int set_Renderer_raymarch_refract_step(void *self, const struct PropertyValue *value)
+{
+	RdrSetRaymarchRefractStep((struct Renderer *) self, value->vector[0]);
+	return 0;
+}
+
+static int set_Renderer_resolution(void *self, const struct PropertyValue *value)
+{
+	RdrSetResolution((struct Renderer *) self, (int) value->vector[0], (int) value->vector[1]);
+	return 0;
+}
+
+static int set_Renderer_pixelsamples(void *self, const struct PropertyValue *value)
+{
+	RdrSetPixelSamples((struct Renderer *) self,
+			(int) value->vector[0], (int) value->vector[1]);
+	return 0;
+}
+
+static int set_Renderer_tilesize(void *self, const struct PropertyValue *value)
+{
+	RdrSetTileSize((struct Renderer *) self, (int) value->vector[0], (int) value->vector[1]);
+	return 0;
+}
+
+static int set_Renderer_filterwidth(void *self, const struct PropertyValue *value)
+{
+	RdrSetFilterWidth((struct Renderer *) self, value->vector[0], value->vector[1]);
+	return 0;
+}
+
+static int set_Renderer_render_region(void *self, const struct PropertyValue *value)
+{
+	RdrSetRenderRegion((struct Renderer *) self,
+			(int) value->vector[0], (int) value->vector[1],
+			(int) value->vector[2], (int) value->vector[3]);
+	return 0;
+}
+
+static int set_Camera_fov(void *self, const struct PropertyValue *value)
+{
+	CamSetFov((struct Camera *) self, value->vector[0]);
+	return 0;
+}
+
+static int set_Camera_znear(void *self, const struct PropertyValue *value)
+{
+	CamSetNearPlane((struct Camera *) self, value->vector[0]);
+	return 0;
+}
+
+static int set_Camera_zfar(void *self, const struct PropertyValue *value)
+{
+	CamSetFarPlane((struct Camera *) self, value->vector[0]);
+	return 0;
+}
+
+static int set_Camera_position(void *self, const struct PropertyValue *value)
+{
+	CamSetPosition((struct Camera *) self,
+			value->vector[0], value->vector[1], value->vector[2]);
+	return 0;
+}
+
+static int set_Camera_direction(void *self, const struct PropertyValue *value)
+{
+	CamSetDirection((struct Camera *) self,
+			value->vector[0], value->vector[1], value->vector[2]);
+	return 0;
+}
+
+static int set_Light_intensity(void *self, const struct PropertyValue *value)
+{
+	struct Light *light = (struct Light *) self;
+	LgtSetIntensity(light, value->vector[0]);
+	return 0;
+}
+
+static int set_Light_position(void *self, const struct PropertyValue *value)
+{
+	struct Light *light = (struct Light *) self;
+	LgtSetPosition(light, value->vector[0], value->vector[1], value->vector[2]);
+	return 0;
+}
+
+static const struct Property ObjectInstance_properties[] = {
+	{PROP_SCALAR, "transform_order", set_ObjectInstance_transform_order},
+	{PROP_SCALAR, "rotate_order",    set_ObjectInstance_rotate_order},
+	{PROP_VECTOR3, "translate", set_ObjectInstance_translate},
+	{PROP_VECTOR3, "rotate",    set_ObjectInstance_rotate},
+	{PROP_VECTOR3, "scale",     set_ObjectInstance_scale},
+	{PROP_NONE, NULL, NULL}
+};
+
+static const struct Property Turbulence_properties[] = {
+	{PROP_SCALAR, "lacunarity", set_Turbulence_lacunarity},
+	{PROP_SCALAR, "gain",       set_Turbulence_gain},
+	{PROP_SCALAR, "octaves",    set_Turbulence_octaves},
+	{PROP_VECTOR3, "amplitude", set_Turbulence_amplitude},
+	{PROP_VECTOR3, "frequency", set_Turbulence_frequency},
+	{PROP_VECTOR3, "offset",    set_Turbulence_offset},
+	{PROP_NONE, NULL, NULL}
+};
+
+static const struct Property Renderer_properties[] = {
+	{PROP_SCALAR,  "sample_jitter",          set_Renderer_sample_jitter},
+	{PROP_SCALAR,  "cast_shadow",            set_Renderer_cast_shadow},
+	{PROP_SCALAR,  "max_reflect_depth",      set_Renderer_max_reflect_depth},
+	{PROP_SCALAR,  "max_refract_depth",      set_Renderer_max_refract_depth},
+	{PROP_SCALAR,  "raymarch_step",          set_Renderer_raymarch_step},
+	{PROP_SCALAR,  "raymarch_shadow_step",   set_Renderer_raymarch_shadow_step},
+	{PROP_SCALAR,  "raymarch_reflect_step",  set_Renderer_raymarch_reflect_step},
+	{PROP_SCALAR,  "raymarch_refract_step",  set_Renderer_raymarch_refract_step},
+	{PROP_VECTOR2, "resolution",   set_Renderer_resolution},
+	{PROP_VECTOR2, "pixelsamples", set_Renderer_pixelsamples},
+	{PROP_VECTOR2, "tilesize",     set_Renderer_tilesize},
+	{PROP_VECTOR2, "filterwidth",  set_Renderer_filterwidth},
+	{PROP_VECTOR4, "render_region", set_Renderer_render_region},
+	{PROP_NONE, NULL, NULL}
+};
+
+static const struct Property Camera_properties[] = {
+	{PROP_SCALAR,  "fov",       set_Camera_fov},
+	{PROP_SCALAR,  "znear",     set_Camera_znear},
+	{PROP_SCALAR,  "zfar",      set_Camera_zfar},
+	{PROP_VECTOR3, "position",  set_Camera_position},
+	{PROP_VECTOR3, "direction", set_Camera_direction},
+	{PROP_NONE, NULL, NULL}
+};
+
+static const struct Property Light_properties[] = {
+	{PROP_SCALAR,  "intensity", set_Light_intensity},
+	{PROP_VECTOR3, "position",  set_Light_position},
+	{PROP_NONE, NULL, NULL}
+};
+
+static int find_and_set_property(void *self, const struct Property *src_props,
+		const char *prop_name, const struct PropertyValue *src_data)
+{
+	const struct Property *dst_prop = PropFind(src_props, src_data->type, prop_name);
+	if (dst_prop == NULL)
+		return -1;
+
+	if (self == NULL)
+		return -1;
+
+	assert(dst_prop->SetProperty != NULL);
+	return dst_prop->SetProperty(self, src_data);
+}
+
+static int set_property(const struct Entry *entry,
+		const char *name, const struct PropertyValue *value)
+{
+	const struct Property *src_props = NULL;
+	void *dst_object = NULL;
+
+	/* plugin object properties */
+	if (entry->type == Type_Procedure) {
+		struct Procedure *procedure = ScnGetProcedure(scene, entry->index);
+		if (procedure == NULL)
+			return SI_FAIL;
+
+		return PrcSetProperty(procedure, name, value);
+	}
+	else if (entry->type == Type_Shader) {
+		struct Shader *shader = ScnGetShader(scene, entry->index);
+		if (shader == NULL)
+			return SI_FAIL;
+
+		return ShdSetProperty(shader, name, value);
+	}
+
+	/* builtin object properties */
+	switch (entry->type) {
+	case Type_ObjectInstance:
+		dst_object = ScnGetObjectInstance(scene, entry->index);
+		src_props = ObjectInstance_properties;
+		break;
+	case Type_Turbulence:
+		dst_object = ScnGetTurbulence(scene, entry->index);
+		src_props = Turbulence_properties;
+		break;
+	case Type_Procedure:
+		assert(!is_valid_type(entry->type) && "Should not be here!");
+		break;
+	case Type_Renderer:
+		dst_object = ScnGetRenderer(scene, entry->index);
+		src_props = Renderer_properties;
+		break;
+	case Type_Camera:
+		dst_object = ScnGetCamera(scene, entry->index);
+		src_props = Camera_properties;
+		break;
+	case Type_Shader:
+		assert(!is_valid_type(entry->type) && "Should not be here!");
+		break;
+	case Type_Light:
+		dst_object = ScnGetLight(scene, entry->index);
+		src_props = Light_properties;
+		break;
+	default:
+		assert(!is_valid_type(entry->type) && "Some types are not implemented yet");
+		break;
+	}
+
+	if (dst_object == NULL)
+		return -1;
+
+	return find_and_set_property(dst_object, src_props, name, value);
 }
 
