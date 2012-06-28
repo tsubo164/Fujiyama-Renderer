@@ -163,6 +163,10 @@ class SceneInterface:
 		cmd = 'SetProperty4 %s %s %s %s %s %s' % (entry_name, prop_name, v0, v1, v2, v3)
 		self.commands.append(cmd)
 
+	def ShowPropertyList(self, type_name):
+		cmd = 'ShowPropertyList %s' % (type_name)
+		self.commands.append(cmd)
+
 if __name__ == '__main__':
 	si = SceneInterface()
 

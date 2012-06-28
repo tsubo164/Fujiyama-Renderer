@@ -46,7 +46,7 @@ const char *PlgGetErrorMessage(int err_no)
 struct Plugin *PlgOpen(const char *filename)
 {
 	void *tmpdso;
-	struct Plugin *plg;
+	struct Plugin *plugin;
 	struct PluginInfo info;
 	PlgInitializeFn initialize_plugin;
 
@@ -73,32 +73,33 @@ struct Plugin *PlgOpen(const char *filename)
 		return NULL;
 	}
 
+	/* TODO this is checked in initialize_plugin */
 	if (!is_valid_pluginfo(&info)) {
 		error_no = ERR_PLG_BADINFO;
 		OsDlclose(tmpdso);
 		return NULL;
 	}
 
-	plg = (struct Plugin *) malloc(sizeof(struct Plugin));
-	if (plg == NULL) {
+	plugin = (struct Plugin *) malloc(sizeof(struct Plugin));
+	if (plugin == NULL) {
 		error_no = ERR_PLG_NOMEM;
 		OsDlclose(tmpdso);
 		return NULL;
 	}
 
 	/* commit */
-	plg->dso = tmpdso;
-	plg->info = info;
+	plugin->dso = tmpdso;
+	plugin->info = info;
 
-	return plg;
+	return plugin;
 }
 
-int PlgClose(struct Plugin *plg)
+int PlgClose(struct Plugin *plugin)
 {
 	int err;
 
-	err = OsDlclose(plg->dso);
-	free(plg);
+	err = OsDlclose(plugin->dso);
+	free(plugin);
 
 	if (err) {
 		error_no = ERR_PLG_FAILCLOSE;
@@ -109,48 +110,92 @@ int PlgClose(struct Plugin *plg)
 	}
 }
 
-void *PlgCreateInstance(const struct Plugin *plg)
+void *PlgCreateInstance(const struct Plugin *plugin)
 {
-	return plg->info.create_instance();
+	return plugin->info.create_instance();
 }
 
-void PlgDeleteInstance(const struct Plugin *plg, void *obj)
+void PlgDeleteInstance(const struct Plugin *plugin, void *obj)
 {
-	plg->info.delete_instance(obj);
+	plugin->info.delete_instance(obj);
 }
 
-const struct MetaInfo *PlgMetainfo(const struct Plugin *plg)
+const struct Property *PlgGetPropertyList(const struct Plugin *plugin)
 {
-	return plg->info.meta;
+	return plugin->info.properties;
 }
 
-const void *PlgGetVtable(const struct Plugin *plg)
+const struct MetaInfo *PlgMetainfo(const struct Plugin *plugin)
 {
-	return plg->info.vtbl;
+	return plugin->info.meta;
 }
 
-const char *PlgGetName(const struct Plugin *plg)
+const void *PlgGetVtable(const struct Plugin *plugin)
 {
-	return plg->info.name;
+	return plugin->info.vtbl;
+}
+
+const char *PlgGetName(const struct Plugin *plugin)
+{
+	return plugin->info.plugin_name;
+}
+
+const char *PlgGetType(const struct Plugin *plugin)
+{
+	return plugin->info.plugin_type;
+}
+
+int PlgTypeMatch(const struct Plugin *plugin, const char *type)
+{
+	return strcmp(PlgGetType(plugin), type) == 0;
+}
+
+int PlgSetupInfo(struct PluginInfo *info,
+		int api_version,
+		const char *plugin_type,
+		const char *plugin_name,
+		PlgCreateInstanceFn create_instance,
+		PlgDeleteInstanceFn delete_instance,
+		const void *vtbl,
+		const struct Property *properties,
+		const struct MetaInfo *meta)
+{
+	info->api_version = api_version;
+	info->plugin_type = plugin_type;
+	info->plugin_name = plugin_name;
+	info->create_instance = create_instance;
+	info->delete_instance = delete_instance;
+	info->vtbl = vtbl;
+	info->properties = properties;
+	info->meta = meta;
+
+	if (is_valid_pluginfo(info))
+		return 0;
+	else
+		return -1;
 }
 
 void clear_pluginfo(struct PluginInfo *info)
 {
 	info->api_version = 0;
-	info->name = NULL;
+	info->plugin_type = NULL;
+	info->plugin_name = NULL;
 	info->create_instance = NULL;
 	info->delete_instance = NULL;
 	info->vtbl = NULL;
+	info->properties = NULL;
 	info->meta = NULL;
 }
 
 int is_valid_pluginfo(const struct PluginInfo *info)
 {
 	if (info->api_version != PLUGIN_API_VERSION ||
-		info->name == NULL ||
+		info->plugin_type == NULL ||
+		info->plugin_name == NULL ||
 		info->create_instance == NULL ||
 		info->delete_instance == NULL ||
 		info->vtbl == NULL ||
+		info->properties == NULL ||
 		info->meta == NULL)
 		return 0;
 	else

@@ -9,6 +9,8 @@ See LICENSE and README
 #include "Property.h"
 #include "Plugin.h"
 
+#define PROCEDURE_PLUGIN_TYPE "Procedure"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -16,12 +18,12 @@ extern "C" {
 struct Procedure;
 
 struct ProcedureFunctionTable {
-	const struct Property *(*MyPropertyList)(void);
 	int (*MyRun)(void *self);
 };
 
 enum PrcErrorNo {
 	PRC_ERR_NOERR = 0,
+	PRC_ERR_TYPE_NOT_MATCH,
 	PRC_ERR_NOOBJ,
 	PRC_ERR_NOVTBL,
 	PRC_ERR_NOMEM

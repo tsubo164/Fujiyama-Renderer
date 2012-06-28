@@ -29,13 +29,11 @@ struct PlasticShader {
 
 static void *MyNew(void);
 static void MyFree(void *self);
-static const struct Property *MyPropertyList(void);
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		const struct SurfaceInput *in, struct SurfaceOutput *out);
 
 static const char MyPluginName[] = "PlasticShader";
-static const struct ShaderFunctionTable MyShaderFunctionTable = {
-	MyPropertyList,
+static const struct ShaderFunctionTable MyFunctionTable = {
 	MyEvaluate
 };
 
@@ -47,7 +45,7 @@ static int set_reflect(void *self, const struct PropertyValue *value);
 static int set_ior(void *self, const struct PropertyValue *value);
 static int set_opacity(void *self, const struct PropertyValue *value);
 
-static const struct Property PlasticShaderProperties[] = {
+static const struct Property MyProperties[] = {
 	{PROP_VECTOR3, "diffuse",   set_diffuse},
 	{PROP_VECTOR3, "specular",  set_specular},
 	{PROP_VECTOR3, "ambient",   set_ambient},
@@ -58,27 +56,23 @@ static const struct Property PlasticShaderProperties[] = {
 	{PROP_NONE,    NULL,        NULL}
 };
 
-static const struct MetaInfo MyShaderMetainfo[] = {
+static const struct MetaInfo MyMetainfo[] = {
 	{"help", "A plastic shader."},
 	{"plugin_type", "Shader"},
 	{NULL, NULL}
 };
 
-static const struct Property *MyPropertyList(void)
-{
-	return PlasticShaderProperties;
-}
-
 int Initialize(struct PluginInfo *info)
 {
-	info->api_version = PLUGIN_API_VERSION;
-	info->name = MyPluginName;
-	info->create_instance = MyNew;
-	info->delete_instance = MyFree;
-	info->vtbl = &MyShaderFunctionTable;
-	info->meta = MyShaderMetainfo;
-
-	return 0;
+	return PlgSetupInfo(info,
+			PLUGIN_API_VERSION,
+			SHADER_PLUGIN_TYPE,
+			MyPluginName,
+			MyNew,
+			MyFree,
+			&MyFunctionTable,
+			MyProperties,
+			MyMetainfo);
 }
 
 static void *MyNew(void)

@@ -5,8 +5,6 @@ See LICENSE and README
 
 #include "SceneInterface.h"
 #include "Parser.h"
-#include "Vector.h"
-#include "Box.h"
 
 #include <stdio.h>
 #include <stdlib.h>

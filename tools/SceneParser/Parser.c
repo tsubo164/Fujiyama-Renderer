@@ -693,6 +693,35 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			return -1;
 		}
 	}
+	else if (strcmp(cmd, "ShowPropertyList") == 0) {
+		err = parse_args("s", argline, args, MAX_ARGS);
+		if (err)
+			return -1;
+
+		printf(PROMPT"%s: [%s]\n", cmd, args[0].str);
+		{
+			const char **prop_types = NULL;
+			const char **prop_names = NULL;
+			const char *type_name = args[0].str;
+			int nprops = 0;
+			int err = 0;
+			int i = 0;
+
+			err = SiGetPropertyList(type_name, &prop_types, &prop_names, &nprops);
+			if (err) {
+				printf("#   No property is available for %s\n", type_name);
+				printf("#   Make sure the type name is correct.\n");
+				printf("#   If you requested properties for a plugin,\n");
+				printf("#   make sure it is opened before calling this command.\n");
+				return -1;
+			}
+
+			printf("#   %s Properties\n", type_name);
+			for (i = 0; i < nprops; i++) {
+				printf("#   %15.15s : %-20.20s\n", prop_types[i], prop_names[i]);
+			}
+		}
+	}
 	else {
 		set_errno(PSR_ERR_UNKNOWNCMD);
 		return -1;

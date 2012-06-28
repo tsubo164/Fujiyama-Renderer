@@ -26,6 +26,11 @@ struct Shader *ShdNew(const struct Plugin *plugin)
 	const void *tmpvtbl;
 	void *tmpobj;
 
+	if (!PlgTypeMatch(plugin, SHADER_PLUGIN_TYPE)) {
+		set_error(SHD_ERR_TYPE_NOT_MATCH);
+		return NULL;
+	}
+
 	tmpobj = PlgCreateInstance(plugin);
 	if (tmpobj == NULL) {
 		set_error(SHD_ERR_NOOBJ);
@@ -77,7 +82,7 @@ void ShdEvaluate(const struct Shader *shader, const struct TraceContext *cxt,
 
 const struct Property *ShdGetPropertyList(const struct Shader *shader)
 {
-	return shader->vptr->MyPropertyList();
+	return PlgGetPropertyList(shader->plugin);
 }
 
 int ShdSetProperty(struct Shader *shader,

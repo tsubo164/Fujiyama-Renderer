@@ -12,6 +12,8 @@ See LICENSE and README
 #include "SL.h"
 #include <stddef.h>
 
+#define SHADER_PLUGIN_TYPE "Shader"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,13 +21,13 @@ extern "C" {
 struct Shader;
 
 struct ShaderFunctionTable {
-	const struct Property *(*MyPropertyList)(void);
 	void (*MyEvaluate)(const void *self, const struct TraceContext *cxt,
 			const struct SurfaceInput *in, struct SurfaceOutput *out);
 };
 
 enum ShdErrorNo {
 	SHD_ERR_NOERR = 0,
+	SHD_ERR_TYPE_NOT_MATCH,
 	SHD_ERR_NOOBJ,
 	SHD_ERR_NOVTBL,
 	SHD_ERR_NOMEM

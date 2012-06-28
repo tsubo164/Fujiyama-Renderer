@@ -26,6 +26,11 @@ struct Procedure *PrcNew(const struct Plugin *plugin)
 	const void *tmpvtbl;
 	void *tmpobj;
 
+	if (!PlgTypeMatch(plugin, PROCEDURE_PLUGIN_TYPE)) {
+		set_error(PRC_ERR_TYPE_NOT_MATCH);
+		return NULL;
+	}
+
 	tmpobj = PlgCreateInstance(plugin);
 	if (tmpobj == NULL) {
 		set_error(PRC_ERR_NOOBJ);
@@ -91,7 +96,7 @@ int PrcRun(struct Procedure *procedure)
 
 const struct Property *PrcGetPropertyList(const struct Procedure *procedure)
 {
-	return procedure->vptr->MyPropertyList();
+	return PlgGetPropertyList(procedure->plugin);
 }
 
 int PrcSetProperty(struct Procedure *procedure,

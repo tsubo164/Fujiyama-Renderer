@@ -69,6 +69,11 @@ static Status status_of_error(int err);
 static int set_property(const struct Entry *entry,
 		const char *name, const struct PropertyValue *value);
 
+static int get_property_list(const char *type_name,
+		const char ***property_types,
+		const char ***property_names,
+		int *property_count);
+
 /* Error interfaces */
 int SiGetErrorNo(void)
 {
@@ -642,47 +647,13 @@ Status SiAssignVolume(ID id, const char *name, ID volume)
 	return status_of_error(err);
 }
 
-#if 0
-Status SiGetHelp(const char *entry_type, char *help_buffer, unsigned int buffer_size)
+Status SiGetPropertyList(const char *type_name,
+		const char ***property_types,
+		const char ***property_names,
+		int *property_count)
 {
-	const struct Property *help_props = NULL;
-
-	/* plugin object properties */
-	if (strcmp(entry_type, "Procedure") == 0) {
-		struct Procedure *procedure = ScnGetProcedure(scene, entry->index);
-		if (procedure == NULL)
-			return SI_FAIL;
-
-		help_props = PrcGetPropertyList(procedure);
-	}
-	else if (strcmp(entry_type, "Shader") == 0) {
-		struct Shader *shader = ScnGetShader(scene, entry->index);
-		if (shader == NULL)
-			return SI_FAIL;
-
-		help_props = ShdGetPropertyList(shader);
-	}
-
-	/* builtin object properties */
-	if (strcmp(entry_type, "ObjectInstance") == 0) {
-		help_props = ObjectInstance_properties;
-	}
-	else if (strcmp(entry_type, "Turbulence") == 0) {
-		help_props = Turbulence_properties;
-	}
-	else if (strcmp(entry_type, "Renderer") == 0) {
-		help_props = Renderer_properties;
-	}
-	else if (strcmp(entry_type, "Camera") == 0) {
-		help_props = Camera_properties;
-	}
-	else if (strcmp(entry_type, "Light") == 0) {
-		help_props = Light_properties;
-	}
-
-	return SI_SUCCESS;
+	return get_property_list(type_name, property_types, property_names, property_count);
 }
-#endif
 
 static int is_valid_type(int type)
 {
@@ -1082,5 +1053,82 @@ static int set_property(const struct Entry *entry,
 		return -1;
 
 	return find_and_set_property(dst_object, src_props, name, value);
+}
+
+static int get_property_list(const char *type_name,
+		const char ***property_types,
+		const char ***property_names,
+		int *property_count)
+{
+	const struct Property *prop = NULL;
+	const struct Property *help_props = NULL;
+	static const char *prop_types[1024] = {NULL};
+	static const char *prop_names[1024] = {NULL};
+	int i = 0;
+
+	/* builtin object properties */
+	if (strcmp(type_name, "ObjectInstance") == 0) {
+		help_props = ObjectInstance_properties;
+	}
+	else if (strcmp(type_name, "Turbulence") == 0) {
+		help_props = Turbulence_properties;
+	}
+	else if (strcmp(type_name, "Renderer") == 0) {
+		help_props = Renderer_properties;
+	}
+	else if (strcmp(type_name, "Camera") == 0) {
+		help_props = Camera_properties;
+	}
+	else if (strcmp(type_name, "Light") == 0) {
+		help_props = Light_properties;
+	}
+	else {
+	/* plugin object properties */
+		const char *plugin_name = type_name;
+		struct Plugin **plugins = ScnGetPluginList(scene);
+		struct Plugin *found = NULL;
+		const int N = (int) ScnGetPluginCount(scene);
+		int i = 0;
+
+		for (i = 0; i < N; i++) {
+			if (strcmp(plugin_name, PlgGetName(plugins[i])) == 0) {
+				found = plugins[i];
+				break;
+			}
+		}
+		if (found == NULL) {
+			set_errno(SI_ERR_FAILNEW);
+			return SI_BADID;
+		}
+		help_props = PlgGetPropertyList(found);
+	}
+
+	if (help_props == NULL) {
+		/* TODO error handling */
+		return SI_FAIL;
+	}
+
+	for (prop = help_props; prop->name != NULL; prop++, i++) {
+		switch (prop->type) {
+		case PROP_SCALAR:      prop_types[i] = "scalar"; break;
+		case PROP_VECTOR2:     prop_types[i] = "vector2"; break;
+		case PROP_VECTOR3:     prop_types[i] = "vector3"; break;
+		case PROP_VECTOR4:     prop_types[i] = "vector4"; break;
+		case PROP_TURBULENCE:  prop_types[i] = "Turbulence"; break;
+		case PROP_TEXTURE:     prop_types[i] = "Texture"; break;
+		case PROP_SHADER:      prop_types[i] = "Shader"; break;
+		case PROP_VOLUME:      prop_types[i] = "Volume"; break;
+		default:               prop_types[i] = NULL; break;
+		}
+		prop_names[i] = prop->name;
+	}
+	prop_types[i] = NULL;
+	prop_names[i] = NULL;
+
+	*property_types = prop_types;
+	*property_names = prop_names;
+	*property_count = i;
+
+	return SI_SUCCESS;
 }
 

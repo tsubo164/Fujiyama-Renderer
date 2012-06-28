@@ -14,6 +14,7 @@ extern "C" {
 
 struct Plugin;
 struct PluginInfo;
+struct Property;
 struct MetaInfo;
 
 typedef int (*PlgInitializeFn)(struct PluginInfo *info);
@@ -32,10 +33,12 @@ enum PlgErrorNo {
 
 struct PluginInfo {
 	int api_version;
-	const char *name;
+	const char *plugin_type;
+	const char *plugin_name;
 	PlgCreateInstanceFn create_instance;
 	PlgDeleteInstanceFn delete_instance;
 	const void *vtbl;
+	const struct Property *properties;
 	const struct MetaInfo *meta;
 };
 
@@ -48,14 +51,27 @@ extern int PlgGetErrorNo(void);
 extern const char *PlgGetErrorMessage(int err_no);
 
 extern struct Plugin *PlgOpen(const char *filename);
-extern int PlgClose(struct Plugin *plg);
+extern int PlgClose(struct Plugin *plugin);
 
-extern void *PlgCreateInstance(const struct Plugin *plg);
-extern void PlgDeleteInstance(const struct Plugin *plg, void *obj);
+extern void *PlgCreateInstance(const struct Plugin *plugin);
+extern void PlgDeleteInstance(const struct Plugin *plugin, void *obj);
 
-extern const struct MetaInfo *PlgMetainfo(const struct Plugin *plg);
-extern const void *PlgGetVtable(const struct Plugin *plg);
-extern const char *PlgGetName(const struct Plugin *plg);
+extern const struct Property *PlgGetPropertyList(const struct Plugin *plugin);
+extern const struct MetaInfo *PlgMetainfo(const struct Plugin *plugin);
+extern const void *PlgGetVtable(const struct Plugin *plugin);
+extern const char *PlgGetName(const struct Plugin *plugin);
+extern const char *PlgGetType(const struct Plugin *plugin);
+extern int PlgTypeMatch(const struct Plugin *plugin, const char *type);
+
+extern int PlgSetupInfo(struct PluginInfo *info,
+		int api_version,
+		const char *plugin_type,
+		const char *plugin_name,
+		PlgCreateInstanceFn create_instance,
+		PlgDeleteInstanceFn delete_instance,
+		const void *vtbl,
+		const struct Property *properties,
+		const struct MetaInfo *meta);
 
 #ifdef __cplusplus
 } /* extern "C" */

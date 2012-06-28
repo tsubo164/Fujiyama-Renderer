@@ -14,7 +14,6 @@ typedef long int ID;
 typedef int Status;
 enum { SI_BADID = -1 };
 enum { SI_FAIL = -1, SI_SUCCESS = 0 };
-enum { SI_HELP_MAX_SIZE = 4096 };
 
 /* Error interfaces */
 extern int SiGetErrorNo(void);
@@ -57,9 +56,10 @@ extern Status SiSetProperty4(ID id, const char *name, double v0, double v1, doub
 extern Status SiAssignTurbulence(ID id, const char *name, ID turbulence);
 extern Status SiAssignVolume(ID id, const char *name, ID volume);
 
-#if 0
-extern Status SiGetHelp(const char *entry_type, char *help_buffer, unsigned int buffer_size);
-#endif
+extern Status SiGetPropertyList(const char *type_name,
+		const char ***property_types,
+		const char ***property_names,
+		int *property_count);
 
 #ifdef __cplusplus
 } /* extern "C" */

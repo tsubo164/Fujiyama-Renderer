@@ -39,12 +39,10 @@ struct CloudVolumeProcedure {
 
 static void *MyNew(void);
 static void MyFree(void *self);
-static const struct Property *MyPropertyList(void);
 static int MyRun(void *self);
 
 static const char MyPluginName[] = "CloudVolumeProcedure";
 static const struct ProcedureFunctionTable MyFunctionTable = {
-	MyPropertyList,
 	MyRun
 };
 
@@ -76,21 +74,17 @@ static const struct MetaInfo MyMetainfo[] = {
 	{NULL, NULL}
 };
 
-static const struct Property *MyPropertyList(void)
-{
-	return MyProperties;
-}
-
 int Initialize(struct PluginInfo *info)
 {
-	info->api_version = PLUGIN_API_VERSION;
-	info->name = MyPluginName;
-	info->create_instance = MyNew;
-	info->delete_instance = MyFree;
-	info->vtbl = &MyFunctionTable;
-	info->meta = MyMetainfo;
-
-	return 0;
+	return PlgSetupInfo(info,
+			PLUGIN_API_VERSION,
+			PROCEDURE_PLUGIN_TYPE,
+			MyPluginName,
+			MyNew,
+			MyFree,
+			&MyFunctionTable,
+			MyProperties,
+			MyMetainfo);
 }
 
 static void *MyNew(void)
