@@ -78,15 +78,18 @@ void TrbSetOctaves(struct Turbulence *turbulence, int octaves)
 double TrbEvaluate(struct Turbulence *turbulence, double *position)
 {
 	double P[3] = {0};
+	double noise_value = 0;
 
 	P[0] = position[0] * turbulence->frequency[0] + turbulence->offset[0];
 	P[1] = position[1] * turbulence->frequency[1] + turbulence->offset[1];
 	P[2] = position[2] * turbulence->frequency[2] + turbulence->offset[2];
 
-	return PerlinNoise(P,
+	noise_value = PerlinNoise(P,
 			turbulence->lacunarity,
 			turbulence->gain,
 			turbulence->octaves);
+
+	return noise_value * turbulence->amplitude[0];
 }
 
 void TrbEvaluate3d(struct Turbulence *turbulence, double *position, double *out_noise)

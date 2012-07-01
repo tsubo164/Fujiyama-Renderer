@@ -154,22 +154,7 @@ static int volume_ray_intersect(const void *prim_set, int prim_id, const struct 
 		struct Interval *interval)
 {
 	const struct ObjectInstance **objects = (const struct ObjectInstance **) prim_set;
-	const struct ObjectInstance *obj = objects[prim_id];
-	double boxhit_tmin;
-	double boxhit_tmax;
-	double bounds[6];
-
-	ObjGetBounds(obj, bounds);
-	if (!BoxRayIntersect(bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
-				&boxhit_tmin, &boxhit_tmax)) {
-		return 0;
-	}
-
-	interval->tmin = boxhit_tmin;
-	interval->tmax = boxhit_tmax;
-	interval->object = obj;
-
-	return 1;
+	return ObjVolumeIntersect(objects[prim_id], ray, interval);
 }
 
 static struct ObjectList *obj_list_new(void)

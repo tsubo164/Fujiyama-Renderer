@@ -6,6 +6,7 @@ See LICENSE and README
 #include "ObjectInstance.h"
 #include "Intersection.h"
 #include "Accelerator.h"
+#include "Interval.h"
 #include "Vector.h"
 #include "Volume.h"
 #include "Matrix.h"
@@ -189,18 +190,18 @@ void ObjGetBounds(const struct ObjectInstance *obj, double *bounds)
 int ObjIntersect(const struct ObjectInstance *obj, const struct Ray *ray,
 		struct Intersection *isect)
 {
-	struct Ray ray_in_objspace;
-	int hit;
+	struct Ray ray_object_space;
+	int hit = 0;
 
 	if (!ObjIsSurface(obj))
 		return 0;
 
 	/* transform ray to object space */
-	ray_in_objspace = *ray;
-	XfmTransformPointInverse(&obj->transform, ray_in_objspace.orig);
-	XfmTransformVectorInverse(&obj->transform, ray_in_objspace.dir);
+	ray_object_space = *ray;
+	XfmTransformPointInverse(&obj->transform, ray_object_space.orig);
+	XfmTransformVectorInverse(&obj->transform, ray_object_space.dir);
 
-	hit = AccIntersect(obj->acc, &ray_in_objspace, isect);
+	hit = AccIntersect(obj->acc, &ray_object_space, isect);
 	if (!hit)
 		return 0;
 
@@ -214,6 +215,43 @@ int ObjIntersect(const struct ObjectInstance *obj, const struct Ray *ray,
 	XfmTransformVector(&obj->transform, isect->dPdt);
 
 	isect->object = obj;
+
+	return 1;
+}
+
+int ObjVolumeIntersect(const struct ObjectInstance *obj, const struct Ray *ray,
+			struct Interval *interval)
+{
+	struct Ray ray_object_space;
+	double volume_bounds[6] = {0};
+	double boxhit_tmin = 0;
+	double boxhit_tmax = 0;
+	int hit = 0;
+
+	if (!ObjIsVolume(obj))
+		return 0;
+
+	VolGetBounds(obj->volume, volume_bounds);
+
+	/* transform ray to object space */
+	ray_object_space = *ray;
+	XfmTransformPointInverse(&obj->transform, ray_object_space.orig);
+	XfmTransformVectorInverse(&obj->transform, ray_object_space.dir);
+
+	hit = BoxRayIntersect(volume_bounds,
+			ray_object_space.orig,
+			ray_object_space.dir,
+			ray_object_space.tmin,
+			ray_object_space.tmax,
+			&boxhit_tmin, &boxhit_tmax);
+
+	if (!hit) {
+		return 0;
+	}
+
+	interval->tmin = boxhit_tmin;
+	interval->tmax = boxhit_tmax;
+	interval->object = obj;
 
 	return 1;
 }

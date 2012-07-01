@@ -15,6 +15,7 @@ extern "C" {
 struct Intersection;
 struct VolumeSample;
 struct Accelerator;
+struct Interval;
 struct Shader;
 struct Volume;
 struct Light;
@@ -57,6 +58,9 @@ extern void ObjGetBounds(const struct ObjectInstance *obj, double *bounds);
 
 extern int ObjIntersect(const struct ObjectInstance *obj, const struct Ray *ray,
 			struct Intersection *isect);
+extern int ObjVolumeIntersect(const struct ObjectInstance *obj, const struct Ray *ray,
+			struct Interval *interval);
+
 extern int ObjGetVolumeSample(const struct ObjectInstance *obj, const double *point,
 			struct VolumeSample *sample);
 
