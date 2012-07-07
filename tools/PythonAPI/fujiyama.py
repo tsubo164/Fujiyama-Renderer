@@ -164,6 +164,11 @@ class SceneInterface:
 		self.commands.append(cmd)
 
 	def ShowPropertyList(self, type_name):
+		"""
+		Show property list of type (ObjectInstance, Volume, ...) or
+		plugin (PlasticShader, ...). When showing list of plugin properties,
+		the plugin must be opened before this command.
+		"""
 		cmd = 'ShowPropertyList %s' % (type_name)
 		self.commands.append(cmd)
 

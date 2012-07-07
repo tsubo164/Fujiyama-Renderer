@@ -30,7 +30,7 @@ extern "C" {
 #define CLAMP(x,a,b) ((x)<(a)?(a):((x)>(b)?(b):(x)))
 #define RADIAN(deg) ((deg)*N_PI_180)
 
-#define LERP(x,a,b) (((1-(x))*(a))+((b)*(x)))
+#define LERP(a,b,t) (((1-(t))*(a))+((b)*(t)))
 
 extern double SmoothStep(double x, double a, double b);
 extern double Gamma(double x, double g);

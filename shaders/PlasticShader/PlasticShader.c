@@ -165,7 +165,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 				VEC3_COPY(out->Cs, C_noise);
 				*/
 				C_noise[0] = SmoothStep(C_noise[0], -1, 1);
-				VEC3_LERP(out->Cs, C_noise[0], C_dark, C_light);
+				VEC3_LERP(out->Cs, C_dark, C_light, C_noise[0]);
 				/*
 				VEC3_COPY(out->Cs, C_noise);
 				*/

@@ -235,7 +235,7 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, const struct R
 		/* Cd */
 		Cd_curve0 = VEC3_NTH(curve->Cd, curve->indices[prim_id]);
 		Cd_curve1 = VEC3_NTH(curve->Cd, curve->indices[prim_id]+2);
-		VEC3_LERP(isect->Cd, v_hit, Cd_curve0, Cd_curve1);
+		VEC3_LERP(isect->Cd, Cd_curve0, Cd_curve1, v_hit);
 	}
 
 	return hit;
@@ -497,7 +497,7 @@ static double get_bezier3_max_radius(const struct Bezier3 *bezier)
 
 static double get_bezier3_width(const struct Bezier3 *bezier, double t)
 {
-	return LERP(t, bezier->width[0], bezier->width[1]);
+	return LERP(bezier->width[0], bezier->width[1], t);
 }
 
 static void get_bezier3_bounds(const struct Bezier3 *bezier, double *bounds)

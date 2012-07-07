@@ -110,6 +110,13 @@ double VolGetFilterSize(const struct Volume *volume)
 	return volume->filtersize;
 }
 
+void VolIndexToPoint(const struct Volume *volume, int i, int j, int k, double *point)
+{
+	point[0] = (i + .5) / volume->buffer->res[0] * volume->size[0] + volume->bounds[0];
+	point[1] = (j + .5) / volume->buffer->res[1] * volume->size[1] + volume->bounds[1];
+	point[2] = (k + .5) / volume->buffer->res[2] * volume->size[2] + volume->bounds[2];
+}
+
 void VolPointToIndex(const struct Volume *volume, const double *point,
 		int *i, int *j, int *k)
 {
@@ -125,11 +132,23 @@ void VolPointToIndex(const struct Volume *volume, const double *point,
 		*k -= 1;
 }
 
-void VolIndexToPoint(const struct Volume *volume, int i, int j, int k, double *point)
+void VolGetIndexRange(const struct Volume *volume,
+		const double *center, double radius,
+		int *xmin, int *ymin, int *zmin,
+		int *xmax, int *ymax, int *zmax)
 {
-	point[0] = (i + .5) / volume->buffer->res[0] * volume->size[0] + volume->bounds[0];
-	point[1] = (j + .5) / volume->buffer->res[1] * volume->size[1] + volume->bounds[1];
-	point[2] = (k + .5) / volume->buffer->res[2] * volume->size[2] + volume->bounds[2];
+	double P_min[3] = {0};
+	double P_max[3] = {0};
+
+	P_min[0] = center[0] - radius;
+	P_min[1] = center[1] - radius;
+	P_min[2] = center[2] - radius;
+	P_max[0] = center[0] + radius;
+	P_max[1] = center[1] + radius;
+	P_max[2] = center[2] + radius;
+
+	VolPointToIndex(volume, P_min, xmin, ymin, zmin);
+	VolPointToIndex(volume, P_max, xmax, ymax, zmax);
 }
 
 void VolSetValue(struct Volume *volume, int x, int y, int z, float value)
@@ -233,7 +252,7 @@ static void compute_filter_size(struct Volume *volume)
 	voxelsize[1] = volume->size[1] / volume->buffer->res[1];
 	voxelsize[2] = volume->size[2] / volume->buffer->res[2];
 
-	volume->filtersize = VEC3_LEN(voxelsize) * .5;
+	volume->filtersize = VEC3_LEN(voxelsize);
 }
 
 static void set_buffer_value(struct VoxelBuffer *buffer, int x, int y, int z, float value)

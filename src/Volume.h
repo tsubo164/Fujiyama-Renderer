@@ -11,6 +11,7 @@ extern "C" {
 #endif
 
 struct Volume;
+
 struct VolumeSample {
 	float density;
 };
@@ -25,9 +26,14 @@ extern void VolGetResolution(const struct Volume *volume, int *i, int *j, int *k
 
 extern double VolGetFilterSize(const struct Volume *volume);
 
+extern void VolIndexToPoint(const struct Volume *volume, int i, int j, int k, double *point);
 extern void VolPointToIndex(const struct Volume *volume, const double *point,
 		int *i, int *j, int *k);
-extern void VolIndexToPoint(const struct Volume *volume, int i, int j, int k, double *point);
+
+extern void VolGetIndexRange(const struct Volume *volume,
+		const double *center, double radius,
+		int *xmin, int *ymin, int *zmin,
+		int *xmax, int *ymax, int *zmax);
 
 extern void VolSetValue(struct Volume *volume, int x, int y, int z, float value);
 extern float VolGetValue(const struct Volume *volume, int x, int y, int z);

@@ -883,6 +883,47 @@ static int set_Renderer_render_region(void *self, const struct PropertyValue *va
 	return 0;
 }
 
+/* Volume property settings */
+static int set_Volume_resolution(void *self, const struct PropertyValue *value)
+{
+	VolResize((struct Volume *) self,
+			value->vector[0], value->vector[1], value->vector[2]);
+	return 0;
+}
+
+static int set_Volume_bounds_min(void *self, const struct PropertyValue *value)
+{
+	struct Volume *volume = (struct Volume *) self;
+	double bounds[6] = {0};
+
+	VolGetBounds(volume, bounds);
+
+	bounds[0] = value->vector[0];
+	bounds[1] = value->vector[1];
+	bounds[2] = value->vector[2];
+
+	VolSetBounds(volume, bounds);
+
+	return 0;
+}
+
+static int set_Volume_bounds_max(void *self, const struct PropertyValue *value)
+{
+	struct Volume *volume = (struct Volume *) self;
+	double bounds[6] = {0};
+
+	VolGetBounds(volume, bounds);
+
+	bounds[3] = value->vector[0];
+	bounds[4] = value->vector[1];
+	bounds[5] = value->vector[2];
+
+	VolSetBounds(volume, bounds);
+
+	return 0;
+}
+
+/* Camera property settings */
 static int set_Camera_fov(void *self, const struct PropertyValue *value)
 {
 	CamSetFov((struct Camera *) self, value->vector[0]);
@@ -965,6 +1006,13 @@ static const struct Property Renderer_properties[] = {
 	{PROP_NONE, NULL, NULL}
 };
 
+static const struct Property Volume_properties[] = {
+	{PROP_VECTOR3, "resolution",       set_Volume_resolution},
+	{PROP_VECTOR3, "bounds_min",       set_Volume_bounds_min},
+	{PROP_VECTOR3, "bounds_max",       set_Volume_bounds_max},
+	{PROP_NONE, NULL, NULL}
+};
+
 static const struct Property Camera_properties[] = {
 	{PROP_SCALAR,  "fov",       set_Camera_fov},
 	{PROP_SCALAR,  "znear",     set_Camera_znear},
@@ -1033,6 +1081,10 @@ static int set_property(const struct Entry *entry,
 		dst_object = ScnGetRenderer(scene, entry->index);
 		src_props = Renderer_properties;
 		break;
+	case Type_Volume:
+		dst_object = ScnGetVolume(scene, entry->index);
+		src_props = Volume_properties;
+		break;
 	case Type_Camera:
 		dst_object = ScnGetCamera(scene, entry->index);
 		src_props = Camera_properties;
@@ -1075,6 +1127,9 @@ static int get_property_list(const char *type_name,
 	}
 	else if (strcmp(type_name, "Renderer") == 0) {
 		help_props = Renderer_properties;
+	}
+	else if (strcmp(type_name, "Volume") == 0) {
+		help_props = Volume_properties;
 	}
 	else if (strcmp(type_name, "Camera") == 0) {
 		help_props = Camera_properties;

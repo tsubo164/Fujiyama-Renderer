@@ -222,7 +222,7 @@ int main(int argc, const char **argv)
 
 				C_noise = amp * PerlinNoise(src_Q, 2, .5, 2);
 				C_noise = SmoothStep(C_noise, .55, .75);
-				VEC3_LERP(dst_Cd, C_noise, C_dark, C_light);
+				VEC3_LERP(dst_Cd, C_dark, C_light, C_noise);
 			}
 
 			cp_id++;

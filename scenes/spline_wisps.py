@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# 1 pyroclastic  ball with 1 point light
+# 1 wisps line with 1 point light
 # Copyright (c) 2011-2012 Hiroshi Tsubokawa
 
 import fujiyama
@@ -11,7 +11,7 @@ si = fujiyama.SceneInterface()
 si.OpenPlugin('ConstantShader')
 si.OpenPlugin('PlasticShader')
 si.OpenPlugin('VolumeShader')
-si.OpenPlugin('PointCloudsProcedure')
+si.OpenPlugin('SplineWispsProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -26,27 +26,29 @@ si.SetProperty3('light1', 'position', 10, 12, 10)
 si.NewShader('floor_shader', 'PlasticShader')
 si.SetProperty3('floor_shader', 'diffuse', .2, .25, .3)
 si.SetProperty1('floor_shader', 'ior', 2)
-si.NewShader('volume_shader1', 'VolumeShader')
+
+si.NewShader('volume_shader', 'VolumeShader')
+si.SetProperty3('volume_shader', 'diffuse', .5, .4, .3)
 
 si.NewShader('dome_shader', 'ConstantShader')
 si.SetProperty3('dome_shader', 'diffuse', .8, .8, .8)
 
 #Turbulence
 si.NewTurbulence('turbulence_data')
-si.SetProperty3('turbulence_data', 'amplitude', .25*.5, 1, 1)
-si.SetProperty3('turbulence_data', 'offset', -.9, -.2, 0)
+si.SetProperty3('turbulence_data', 'frequency', .5, .5, 5)
+si.SetProperty3('turbulence_data', 'amplitude', 1, 1, .5)
 
 #Volume
 si.NewVolume('volume_data')
 si.SetProperty3('volume_data', 'bounds_min', -1, -1, -1)
 si.SetProperty3('volume_data', 'bounds_max', 1, 1, 1)
-si.SetProperty3('volume_data', 'resolution', 500, 500, 500)
+#si.SetProperty3('volume_data', 'resolution', 50, 50, 50)
+si.SetProperty3('volume_data', 'resolution', 600, 600, 600)
 
 #Procedure
-si.NewProcedure('proc1', 'PointCloudsProcedure')
+si.NewProcedure('proc1', 'SplineWispsProcedure')
 si.AssignVolume('proc1', 'volume', 'volume_data')
 si.AssignTurbulence('proc1', 'turbulence', 'turbulence_data')
-
 si.RunProcedure('proc1')
 
 #Mesh
@@ -54,12 +56,12 @@ si.NewMesh('dome_mesh', '../../mesh/dome.mesh')
 si.NewMesh('floor_mesh', '../../mesh/floor.mesh')
 
 #ObjectInstance
+si.NewObjectInstance('volume1', 'volume_data')
+si.AssignShader('volume1', 'volume_shader')
+si.SetProperty3('volume1', 'translate', 0, .75, 0)
+
 si.NewObjectInstance('floor1', 'floor_mesh')
 si.AssignShader('floor1', 'floor_shader')
-
-si.NewObjectInstance('volume1', 'volume_data')
-si.AssignShader('volume1', 'volume_shader1')
-si.SetProperty3('volume1', 'translate', 0, .75, 0)
 
 si.NewObjectInstance('dome1', 'dome_mesh')
 si.AssignShader('dome1', 'dome_shader')
@@ -82,7 +84,7 @@ si.SetProperty1('ren1', 'raymarch_reflect_step', .02)
 si.RenderScene('ren1')
 
 #Output
-si.SaveFrameBuffer('fb1', '../pyro_ball.fb')
+si.SaveFrameBuffer('fb1', '../spline_wisps.fb')
 
 #Run commands
 si.Run()

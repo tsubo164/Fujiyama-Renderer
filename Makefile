@@ -79,7 +79,7 @@ files_   := Accelerator Array Box Camera Curve CurveIO Filter FrameBuffer FrameB
 	Intersection Interval IO Light Matrix Mesh MeshIO Mipmap Noise Numeric ObjectGroup \
 	ObjectInstance OS Plugin PrimitiveSet Procedure Progress Property Random Renderer \
 	Sampler Scene SceneInterface Shader String SL Texture Tiler Timer Transform Triangle \
-	Turbulence Volume VolumeAccelerator
+	Turbulence Volume VolumeAccelerator VolumeFilling
 
 subtgt_  := libscene.so
 cflags_  := -fPIC
@@ -151,10 +151,20 @@ install_shaders += $(subtgt_)
 #
 #install_procedures += $(subtgt_)
 
-srcdir_  := procedures/CloudVolumeProcedure
+srcdir_  := procedures/PointCloudsProcedure
 tgtdir_  := lib
-files_   := CloudVolumeProcedure
-subtgt_  := CloudVolumeProcedure.so
+files_   := PointCloudsProcedure
+subtgt_  := PointCloudsProcedure.so
+cflags_  := -fPIC
+ldflags_ := -shared -lscene
+$(eval $(call submodule))
+
+install_procedures += $(subtgt_)
+
+srcdir_  := procedures/SplineWispsProcedure
+tgtdir_  := lib
+files_   := SplineWispsProcedure
+subtgt_  := SplineWispsProcedure.so
 cflags_  := -fPIC
 ldflags_ := -shared -lscene
 $(eval $(call submodule))
