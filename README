@@ -20,6 +20,10 @@ designed to handle production image rendering.
   + Bezier Curves - Unlimited smoothness subdividing in render time 
   + Volume Primitive - Ray traced self-shadowing
 
+* Procedure Plugin
+  + Volume Filling Procedure - Pyroclastic clouds procedure provided
+  + Volume Filling Procedure - Spline wisps procedure provided
+
 * File format
   + Original mesh format - ply2mesh is provided
   + Original curve format - curvegen is provided
@@ -41,7 +45,8 @@ designed to handle production image rendering.
 
 * Sampling and Filtering
   + Gaussian and Box pixel filters - supports filter width bigger than 1 pixel
-  + Uniform grid pixel sampling 
+  + Uniform grid pixel sampling
+  + Jittered pixel sampling 
 
 * Rendering
   + Region rendering - accelerates distribution rendering pipeline
