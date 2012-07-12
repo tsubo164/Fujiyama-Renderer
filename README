@@ -23,6 +23,7 @@ designed to handle production image rendering.
 * Procedure Plugin
   + Volume Filling Procedure - Pyroclastic clouds procedure provided
   + Volume Filling Procedure - Spline wisps procedure provided
+  + Volume Filling Procedure - Surface wisps procedure provided
 
 * File format
   + Original mesh format - ply2mesh is provided
