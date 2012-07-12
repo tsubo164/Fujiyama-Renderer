@@ -171,6 +171,16 @@ $(eval $(call submodule))
 
 install_procedures += $(subtgt_)
 
+srcdir_  := procedures/SurfaceWispsProcedure
+tgtdir_  := lib
+files_   := SurfaceWispsProcedure
+subtgt_  := SurfaceWispsProcedure.so
+cflags_  := -fPIC
+ldflags_ := -shared -lscene
+$(eval $(call submodule))
+
+install_procedures += $(subtgt_)
+
 #tools
 srcdir_  := tools/SceneParser
 tgtdir_  := bin

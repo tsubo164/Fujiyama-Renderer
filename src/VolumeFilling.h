@@ -43,6 +43,11 @@ extern void LerpWispConstrolPoint(struct WispsControlPoint *cp,
 		const struct WispsControlPoint *cp0, const struct WispsControlPoint *cp1,
 		double t);
 
+extern void BilerpWispConstrolPoint(struct WispsControlPoint *cp,
+		const struct WispsControlPoint *cp00, const struct WispsControlPoint *cp10,
+		const struct WispsControlPoint *cp01, const struct WispsControlPoint *cp11,
+		double s, double t);
+
 extern void FillWithSphere(struct Volume *volume,
 		const double *center, double radius, float density);
 

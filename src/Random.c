@@ -82,6 +82,13 @@ void XorSolidDiskRand(struct XorShift *xr, double *out_position)
 	}
 }
 
+void XorSolidCubeRand(struct XorShift *xr, double *out_position)
+{
+	out_position[0] = 2 * XorNextFloat01(xr) - 1;
+	out_position[1] = 2 * XorNextFloat01(xr) - 1;
+	out_position[2] = 2 * XorNextFloat01(xr) - 1;
+}
+
 void XorHollowDiskRand(struct XorShift *xr, double *out_position)
 {
 	double dot = 0;

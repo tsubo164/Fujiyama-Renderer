@@ -22,6 +22,7 @@ extern void XorSolidSphereRand(struct XorShift *xr, double *out_position);
 extern void XorHollowSphereRand(struct XorShift *xr, double *out_position);
 extern void XorSolidDiskRand(struct XorShift *xr, double *out_position);
 extern void XorHollowDiskRand(struct XorShift *xr, double *out_position);
+extern void XorSolidCubeRand(struct XorShift *xr, double *out_position);
 extern void XorGaussianDiskRand(struct XorShift *xr, double *out_position);
 
 extern double XorGaussianRand(struct XorShift *xr);

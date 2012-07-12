@@ -35,6 +35,7 @@ extern "C" {
 extern double SmoothStep(double x, double a, double b);
 extern double Gamma(double x, double g);
 extern double Fit(double x, double src0, double src1, double dst0, double dst1);
+extern double Bilerp(double v00, double v10, double v01, double v11, double s, double t);
 
 #ifdef __cplusplus
 } /* extern "C" */

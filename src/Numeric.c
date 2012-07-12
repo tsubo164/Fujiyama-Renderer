@@ -35,3 +35,10 @@ double Fit(double x, double src0, double src1, double dst0, double dst1)
 	return dst0 + (dst1 - dst0) * ((x - src0) / (src1 - src0));
 }
 
+double Bilerp(double v00, double v10, double v01, double v11, double s, double t)
+{
+	const double a = LERP(v00, v01, t);
+	const double b = LERP(v10, v11, t);
+	return LERP(a, b, s);
+}
+
