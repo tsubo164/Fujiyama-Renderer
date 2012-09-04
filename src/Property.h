@@ -34,6 +34,8 @@ struct PropertyValue {
 	struct Texture *texture;
 	struct Shader *shader;
 	struct Volume *volume;
+
+	double time;
 };
 
 #define INIT_PROPERTYVALUE { \
@@ -42,7 +44,8 @@ struct PropertyValue {
 	NULL, \
 	NULL, \
 	NULL, \
-	NULL}
+	NULL, \
+	0}
 
 struct Property {
 	int type;

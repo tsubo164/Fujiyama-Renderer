@@ -26,6 +26,7 @@ struct Sampler {
 	int current_index;
 
 	int need_jitter;
+	int need_time_sampling;
 };
 
 static void compute_margins(struct Sampler *sampler);
@@ -54,6 +55,7 @@ struct Sampler *SmpNew(int xres, int yres,
 	sampler->xfwidth = xfwidth;
 	sampler->yfwidth = yfwidth;
 	SmpSetJitter(sampler, 1);
+	SmpSetTimeSampling(sampler);
 	sampler->samples = NULL;
 
 	sampler->nsamples = 0;
@@ -82,6 +84,11 @@ void SmpSetJitter(struct Sampler *sampler, float jitter)
 	sampler->need_jitter = sampler->jitter > 0 ? 1 : 0;
 }
 
+void SmpSetTimeSampling(struct Sampler *sampler)
+{
+	sampler->need_time_sampling = 1;
+}
+
 struct Sample *SmpGetNextSample(struct Sampler *sampler)
 {
 	struct Sample *sample = NULL;
@@ -106,6 +113,8 @@ int SmpGenerateSamples(struct Sampler *sampler, const int *pixel_bounds)
 	double vdelta = 0;
 	struct Sample *sample = NULL;
 	struct XorShift xr; /* random number generator */
+	struct XorShift rng_time; /* for time sampling jitter */
+	XorInit(&rng_time);
 	XorInit(&xr);
 
 	err = allocate_samples_for_region(sampler, pixel_bounds);
@@ -133,6 +142,12 @@ int SmpGenerateSamples(struct Sampler *sampler, const int *pixel_bounds)
 
 				sample->uv[0] += udelta * (u_jitter - .5);
 				sample->uv[1] += vdelta * (v_jitter - .5);
+			}
+
+			if (sampler->need_time_sampling) {
+				sample->time = XorNextFloat01(&rng_time);
+			} else {
+				sample->time = 0;
 			}
 
 			sample->data[0] = 0;

@@ -172,6 +172,11 @@ class SceneInterface:
 		cmd = 'ShowPropertyList %s' % (type_name)
 		self.commands.append(cmd)
 
+	#TODO TEST SetSampleProperty3
+	def SetSampleProperty3(self, entry_name, prop_name, v0, v1, v2, time):
+		cmd = 'SetSampleProperty3 %s %s %s %s %s %s' % (entry_name, prop_name, v0, v1, v2, time)
+		self.commands.append(cmd)
+
 if __name__ == '__main__':
 	si = SceneInterface()
 

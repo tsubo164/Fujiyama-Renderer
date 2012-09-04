@@ -52,6 +52,14 @@ extern void XfmSetRotate(struct Transform *transform, double rx, double ry, doub
 extern void XfmSetScale(struct Transform *transform, double sx, double sy, double sz);
 extern void XfmSetTransformOrder(struct Transform *transform, int order);
 extern void XfmSetRotateOrder(struct Transform *transform, int order);
+extern void XfmSetTransform(struct Transform *transform,
+		int transform_order, int rotate_order,
+		double tx, double ty, double tz,
+		double rx, double ry, double rz,
+		double sx, double sy, double sz);
+
+extern int XfmIsTransformOrder(int order);
+extern int XfmIsRotateOrder(int order);
 
 #ifdef __cplusplus
 } /* extern "C" */

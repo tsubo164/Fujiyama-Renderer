@@ -144,6 +144,13 @@ extern "C" {
 	(a)[3] *= val; \
 	} while(0)
 
+#define VEC4_LERP(dst,a,b,t) do { \
+	(dst)[0] = (1-(t)) * (a)[0] + (t) * (b)[0]; \
+	(dst)[1] = (1-(t)) * (a)[1] + (t) * (b)[1]; \
+	(dst)[2] = (1-(t)) * (a)[2] + (t) * (b)[2]; \
+	(dst)[3] = (1-(t)) * (a)[3] + (t) * (b)[3]; \
+	} while(0)
+
 /* no check for zero division */
 #define VEC4_DIV(a,val) do { \
 	double inv = 1. / val; \

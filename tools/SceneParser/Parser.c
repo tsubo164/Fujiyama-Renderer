@@ -722,6 +722,28 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 			}
 		}
 	}
+	/* TODO TEST SetSampleProperty3 */
+	else if (strcmp(cmd, "SetSampleProperty3") == 0) {
+		err = parse_args("ssffff", argline, args, MAX_ARGS);
+		if (err)
+			return -1;
+
+		ent = TblLookup(parser->table, args[0].str);
+		if (ent == NULL) {
+			set_errno(PSR_ERR_NAMENOTFOUND);
+			return -1;
+		}
+
+		printf(PROMPT"%s: [%s] [%s] [%g] [%g] [%g] [%g]\n", cmd, args[0].str, args[1].str,
+				args[2].dbl, args[3].dbl, args[4].dbl, args[5].dbl);
+		/* TODO check set property error */
+		err = SiSetSampleProperty3(EntGetID(ent),
+				args[1].str, args[2].dbl, args[3].dbl, args[4].dbl, args[5].dbl);
+		if (err) {
+			set_errno(PSR_ERR_FAILSETPROP);
+			return -1;
+		}
+	}
 	else {
 		set_errno(PSR_ERR_UNKNOWNCMD);
 		return -1;

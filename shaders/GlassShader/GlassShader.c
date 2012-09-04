@@ -21,6 +21,8 @@ struct GlassShader {
 
 	float roughness;
 	float ior;
+
+	int do_color_filter;
 };
 
 static void *MyNew(void);
@@ -81,9 +83,11 @@ static void *MyNew(void)
 	VEC3_SET(glass->diffuse, 0, 0, 0);
 	VEC3_SET(glass->specular, 1, 1, 1);
 	VEC3_SET(glass->ambient, 1, 1, 1);
-	VEC3_SET(glass->filter_color, .65, .45, .25);
+	VEC3_SET(glass->filter_color, 1, 1, 1);
 	glass->roughness = .1;
 	glass->ior = 1.4;
+
+	glass->do_color_filter = 0;
 
 	return glass;
 }
@@ -132,7 +136,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	SlRefract(in->I, in->N, 1/glass->ior, T);
 	SlTrace(&refr_cxt, in->P, T, .0001, 1000, C_refr, &t_hit);
 
-	if (VEC3_DOT(in->I, in->N) < 0) {
+	if (glass->do_color_filter && VEC3_DOT(in->I, in->N) < 0) {
 		C_refr[0] *= pow(glass->filter_color[0], t_hit);
 		C_refr[1] *= pow(glass->filter_color[1], t_hit);
 		C_refr[2] *= pow(glass->filter_color[2], t_hit);
@@ -193,6 +197,15 @@ static int set_filter_color(void *self, const struct PropertyValue *value)
 	filter_color[1] = MAX(.001, value->vector[1]);
 	filter_color[2] = MAX(.001, value->vector[2]);
 	VEC3_COPY(glass->filter_color, filter_color);
+
+	if (glass->filter_color[0] == 1 &&
+		glass->filter_color[1] == 1 &&
+		glass->filter_color[2] == 1) {
+		glass->do_color_filter = 0;
+	}
+	else {
+		glass->do_color_filter = 1;
+	}
 
 	return 0;
 }

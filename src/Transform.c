@@ -95,6 +95,30 @@ void XfmSetRotateOrder(struct Transform *transform, int order)
 	update_matrix(transform);
 }
 
+void XfmSetTransform(struct Transform *transform,
+		int transform_order, int rotate_order,
+		double tx, double ty, double tz,
+		double rx, double ry, double rz,
+		double sx, double sy, double sz)
+{
+	transform->transform_order = transform_order;
+	transform->rotate_order = rotate_order;
+	VEC3_SET(transform->translate, tx, ty, tz);
+	VEC3_SET(transform->rotate, rx, ry, rz);
+	VEC3_SET(transform->scale, sx, sy, sz);
+	update_matrix(transform);
+}
+
+int XfmIsTransformOrder(int order)
+{
+	return is_transform_order(order);
+}
+
+int XfmIsRotateOrder(int order)
+{
+	return is_rotate_order(order);
+}
+
 static void update_matrix(struct Transform *transform)
 {
 	make_transform_matrix(transform->transform_order, transform->rotate_order,
