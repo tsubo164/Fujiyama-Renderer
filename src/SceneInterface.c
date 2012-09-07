@@ -129,7 +129,7 @@ Status SiOpenScene(void)
 Status SiCloseScene(void)
 {
 	ScnFree(scene);
-    scene = NULL;
+	scene = NULL;
 
 	set_errno(SI_NOERR);
 	return SI_SUCCESS;
@@ -605,7 +605,7 @@ Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, 
 	return status_of_error(err);
 }
 
-/* TODO TEST sample property */
+/* time variable property */
 Status SiSetSampleProperty3(ID id, const char *name, double v0, double v1, double v2, double time)
 {
 	const struct Entry entry = decode_id(id);
@@ -695,8 +695,8 @@ static struct Entry decode_id(ID id)
 static int create_implicit_groups(void)
 {
 	size_t i;
-	struct ObjectGroup *all_objects;
-	struct Renderer *renderer;
+	struct ObjectGroup *all_objects = NULL;
+	struct Renderer *renderer = NULL;
 
 	all_objects = ScnNewObjectGroup(scene);
 	if (all_objects == NULL) {
@@ -955,20 +955,6 @@ static int set_Camera_zfar(void *self, const struct PropertyValue *value)
 	return 0;
 }
 
-static int set_Camera_position(void *self, const struct PropertyValue *value)
-{
-	CamSetPosition((struct Camera *) self,
-			value->vector[0], value->vector[1], value->vector[2]);
-	return 0;
-}
-
-static int set_Camera_direction(void *self, const struct PropertyValue *value)
-{
-	CamSetDirection((struct Camera *) self,
-			value->vector[0], value->vector[1], value->vector[2]);
-	return 0;
-}
-
 static int set_Camera_translate(void *self, const struct PropertyValue *value)
 {
 	CamSetTranslate((struct Camera *) self,
@@ -980,6 +966,18 @@ static int set_Camera_rotate(void *self, const struct PropertyValue *value)
 {
 	CamSetRotate((struct Camera *) self,
 			value->vector[0], value->vector[1], value->vector[2], value->time);
+	return 0;
+}
+
+static int set_Camera_transform_order(void *self, const struct PropertyValue *value)
+{
+	CamSetTransformOrder((struct Camera *) self, (int) value->vector[0]);
+	return 0;
+}
+
+static int set_Camera_rotate_order(void *self, const struct PropertyValue *value)
+{
+	CamSetRotateOrder((struct Camera *) self, (int) value->vector[0]);
 	return 0;
 }
 
@@ -1041,13 +1039,13 @@ static const struct Property Volume_properties[] = {
 };
 
 static const struct Property Camera_properties[] = {
-	{PROP_SCALAR,  "fov",          set_Camera_fov},
-	{PROP_SCALAR,  "znear",        set_Camera_znear},
-	{PROP_SCALAR,  "zfar",         set_Camera_zfar},
-	{PROP_VECTOR3, "position",     set_Camera_position},
-	{PROP_VECTOR3, "direction",    set_Camera_direction},
-	{PROP_VECTOR3, "translate",    set_Camera_translate},
-	{PROP_VECTOR3, "rotate",       set_Camera_rotate},
+	{PROP_SCALAR,  "fov",             set_Camera_fov},
+	{PROP_SCALAR,  "znear",           set_Camera_znear},
+	{PROP_SCALAR,  "zfar",            set_Camera_zfar},
+	{PROP_VECTOR3, "translate",       set_Camera_translate},
+	{PROP_VECTOR3, "rotate",          set_Camera_rotate},
+	{PROP_VECTOR3, "transform_order", set_Camera_transform_order},
+	{PROP_VECTOR3, "rotate_order",    set_Camera_rotate_order},
 	{PROP_NONE, NULL, NULL}
 };
 
@@ -1145,7 +1143,6 @@ static int get_property_list(const char *type_name,
 	const struct Property *help_props = NULL;
 	static const char *prop_types[1024] = {NULL};
 	static const char *prop_names[1024] = {NULL};
-	int i = 0;
 
 	/* builtin object properties */
 	if (strcmp(type_name, "ObjectInstance") == 0) {
@@ -1192,26 +1189,29 @@ static int get_property_list(const char *type_name,
 		return SI_FAIL;
 	}
 
-	for (prop = help_props; prop->name != NULL; prop++, i++) {
-		switch (prop->type) {
-		case PROP_SCALAR:      prop_types[i] = "scalar"; break;
-		case PROP_VECTOR2:     prop_types[i] = "vector2"; break;
-		case PROP_VECTOR3:     prop_types[i] = "vector3"; break;
-		case PROP_VECTOR4:     prop_types[i] = "vector4"; break;
-		case PROP_TURBULENCE:  prop_types[i] = "Turbulence"; break;
-		case PROP_TEXTURE:     prop_types[i] = "Texture"; break;
-		case PROP_SHADER:      prop_types[i] = "Shader"; break;
-		case PROP_VOLUME:      prop_types[i] = "Volume"; break;
-		default:               prop_types[i] = NULL; break;
+	{
+		int i = 0;
+		for (prop = help_props; prop->name != NULL; prop++, i++) {
+			switch (prop->type) {
+			case PROP_SCALAR:      prop_types[i] = "scalar"; break;
+			case PROP_VECTOR2:     prop_types[i] = "vector2"; break;
+			case PROP_VECTOR3:     prop_types[i] = "vector3"; break;
+			case PROP_VECTOR4:     prop_types[i] = "vector4"; break;
+			case PROP_TURBULENCE:  prop_types[i] = "Turbulence"; break;
+			case PROP_TEXTURE:     prop_types[i] = "Texture"; break;
+			case PROP_SHADER:      prop_types[i] = "Shader"; break;
+			case PROP_VOLUME:      prop_types[i] = "Volume"; break;
+			default:               prop_types[i] = NULL; break;
+			}
+			prop_names[i] = prop->name;
 		}
-		prop_names[i] = prop->name;
-	}
-	prop_types[i] = NULL;
-	prop_names[i] = NULL;
+		prop_types[i] = NULL;
+		prop_names[i] = NULL;
 
-	*property_types = prop_types;
-	*property_names = prop_names;
-	*property_count = i;
+		*property_types = prop_types;
+		*property_names = prop_names;
+		*property_count = i;
+	}
 
 	return SI_SUCCESS;
 }

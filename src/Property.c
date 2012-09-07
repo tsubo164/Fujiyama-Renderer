@@ -4,10 +4,16 @@ See LICENSE and README
 */
 
 #include "Property.h"
+#include "Numeric.h"
+#include "Vector.h"
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
 static int prop_is_valid(const struct Property *prop);
+static int compare_property_sample(const void *ptr0, const void *ptr1);
+static void append_sample(struct PropertySampleList *list, const struct PropertySample *sample);
+static void sort_by_sample_time(struct PropertySampleList *list);
 
 struct PropertyValue PropScalar(double v0)
 {
@@ -106,6 +112,70 @@ const struct Property *PropFind(const struct Property *list, int type, const cha
 	return found;
 }
 
+/* for time variable properties */
+void PropInitSampleList(struct PropertySampleList *list)
+{
+	const struct PropertySample initial_value = INIT_PROPERTYSAMPLE;
+	int i;
+
+	for (i = 0; i < MAX_PROPERTY_SAMPLES; i++) {
+		list->samples[i] = initial_value;
+	}
+
+	list->sample_count = 1;
+}
+
+int PropPushSample(struct PropertySampleList *list, const struct PropertySample *sample)
+{
+	int i;
+
+	if (list->sample_count >= MAX_PROPERTY_SAMPLES) {
+		return -1;
+	}
+
+	for (i = 0; i < list->sample_count; i++) {
+		if (list->samples[i].time == sample->time) {
+			list->samples[i] = *sample;
+			return 0;
+		}
+	}
+
+	append_sample(list, sample);
+	sort_by_sample_time(list);
+
+	return 0;
+}
+
+void PropLerpSamples(const struct PropertySampleList *list, double time,
+		struct PropertySample *dst)
+{
+	int i;
+
+	if (list->samples[0].time >= time || list->sample_count == 1) {
+		VEC4_COPY(dst->vector, list->samples[0].vector);
+		return;
+	}
+
+	if (list->samples[list->sample_count-1].time <= time) {
+		VEC4_COPY(dst->vector, list->samples[list->sample_count-1].vector);
+		return;
+	}
+
+	for (i = 0; i < list->sample_count; i++) {
+		if (list->samples[i].time == time) {
+			VEC4_COPY(dst->vector, list->samples[i].vector);
+			return;
+		}
+		if (list->samples[i].time > time) {
+			const struct PropertySample *sample0 = &list->samples[i-1];
+			const struct PropertySample *sample1 = &list->samples[i];
+			const double t = Fit(time, sample0->time, sample1->time, 0, 1);
+			VEC4_LERP(dst->vector, sample0->vector, sample1->vector, t);
+			return;
+		}
+	}
+}
+
 static int prop_is_valid(const struct Property *prop)
 {
 	if (prop->type == PROP_NONE)
@@ -115,5 +185,36 @@ static int prop_is_valid(const struct Property *prop)
 		return 0;
 
 	return 1;
+}
+
+static int compare_property_sample(const void *ptr0, const void *ptr1)
+{
+	const struct PropertySample *sample0 = (const struct PropertySample *) ptr0;
+	const struct PropertySample *sample1 = (const struct PropertySample *) ptr1;
+	const double x = sample0->time;
+	const double y = sample1->time;
+
+	if (x > y)
+		return 1;
+	else if (x < y)
+		return -1;
+	else
+		return 0;
+}
+
+static void append_sample(struct PropertySampleList *list, const struct PropertySample *sample)
+{
+	const int next_index = list->sample_count;
+	assert(list->sample_count < MAX_PROPERTY_SAMPLES);
+
+	list->samples[next_index] = *sample;
+	list->sample_count++;
+}
+
+static void sort_by_sample_time(struct PropertySampleList *list)
+{
+	qsort(list->samples, list->sample_count,
+			sizeof(struct PropertySample),
+			compare_property_sample);
 }
 

@@ -8,8 +8,8 @@ OpenPlugin HairShader.so
 
 #Camera
 NewCamera cam1 PerspectiveCamera
-SetProperty3 cam1 position 1.6 .8 1.8
-SetProperty3 cam1 direction -1 -.2 -1
+SetProperty3 cam1 translate 1.6 .8 1.8
+SetProperty3 cam1 rotate -8.0494669755283983 45 0
 
 #Light
 NewLight light0 PointLight
@@ -156,6 +156,7 @@ NewRenderer       ren1
 AssignCamera      ren1 cam1
 AssignFrameBuffer ren1 fb1
 SetProperty2 ren1 resolution 640 480
+#SetProperty2 ren1 resolution 160 120
 
 #Rendering
 RenderScene ren1

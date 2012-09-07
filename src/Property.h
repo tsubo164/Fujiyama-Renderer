@@ -10,7 +10,7 @@ See LICENSE and README
 extern "C" {
 #endif
 
-enum {
+enum PropertyType {
 	PROP_NONE = 0,
 	PROP_SCALAR,
 	PROP_VECTOR2,
@@ -64,6 +64,28 @@ extern struct PropertyValue PropVolume(struct Volume *volume);
 
 extern struct PropertyValue InitPropValue(void);
 extern const struct Property *PropFind(const struct Property *list, int type, const char *name);
+
+/* for time variable properties */
+enum { MAX_PROPERTY_SAMPLES = 8 };
+
+struct PropertySample {
+	double vector[4];
+	double time;
+};
+
+#define INIT_PROPERTYSAMPLE { \
+	{0, 0, 0, 0}, \
+	0}
+
+struct PropertySampleList {
+	struct PropertySample samples[MAX_PROPERTY_SAMPLES];
+	int sample_count;
+};
+
+extern void PropInitSampleList(struct PropertySampleList *list);
+extern int PropPushSample(struct PropertySampleList *list, const struct PropertySample *sample);
+extern void PropLerpSamples(const struct PropertySampleList *list, double time,
+		struct PropertySample *dst);
 
 #ifdef __cplusplus
 } /* extern "C" */

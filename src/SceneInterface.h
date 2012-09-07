@@ -53,7 +53,7 @@ extern Status SiSetProperty2(ID id, const char *name, double v0, double v1);
 extern Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2);
 extern Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, double v3);
 
-/* TODO TEST key property */
+/* time variable property */
 extern Status SiSetSampleProperty3(ID id, const char *name, double v0, double v1, double v2, double time);
 
 extern Status SiAssignTurbulence(ID id, const char *name, ID turbulence);

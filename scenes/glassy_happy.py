@@ -14,8 +14,7 @@ si.OpenPlugin('GlassShader')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
-si.SetProperty3('cam1', 'position', 0, 1.5, 7)
-si.SetProperty3('cam1', 'direction', 0, 0, -1)
+si.SetProperty3('cam1', 'translate', 0, 1.5, 7)
 
 #Light
 si.NewLight('light1', 'PointLight')

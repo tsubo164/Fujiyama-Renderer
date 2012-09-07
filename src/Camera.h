@@ -22,10 +22,7 @@ extern void CamSetAspect(struct Camera *cam, double aspect);
 extern void CamSetFov(struct Camera *cam, double fov);
 extern void CamSetNearPlane(struct Camera *cam, double znear);
 extern void CamSetFarPlane(struct Camera *cam, double zfar);
-extern void CamSetPosition(struct Camera *cam, double xpos, double ypos, double zpos);
-extern void CamSetDirection(struct Camera *cam, double xdir, double ydir, double zdir);
 
-extern void CamSetTimeSamples(struct Camera *cam, int time_sample_count);
 extern void CamSetTranslate(struct Camera *cam, double tx, double ty, double tz, double time);
 extern void CamSetRotate(struct Camera *cam, double rx, double ry, double rz, double time);
 extern void CamSetTransformOrder(struct Camera *cam, int order);

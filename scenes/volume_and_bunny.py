@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 # 1 cube fog volume and bunny with 1 point light
+# NOTE this scene renders volumes on ONLY v.0.0.3
+# On v.0.0.4 or higher, it renders floor and bunny
+# though there is still a empty volume primitive.
 # Copyright (c) 2011-2012 Hiroshi Tsubokawa
 
 import fujiyama
@@ -13,8 +16,11 @@ si.OpenPlugin('VolumeShader.so')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
-si.SetProperty3('cam1', 'position', 5, .2, 5)
-si.SetProperty3('cam1', 'direction', -1, -.1, -1)
+# NOTE Obsoleted properties from v0.0.8
+#si.SetProperty3('cam1', 'position', 5, .2, 5)
+#si.SetProperty3('cam1', 'direction', -1, -.1, -1)
+si.SetProperty3('cam1', 'translate', 5, .2, 5)
+si.SetProperty3('cam1', 'rotate', -4.0446912353862681, 45, 0)
 
 #Light
 si.NewLight('light1', 'PointLight')

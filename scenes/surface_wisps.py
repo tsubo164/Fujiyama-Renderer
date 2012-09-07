@@ -15,8 +15,8 @@ si.OpenPlugin('SurfaceWispsProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
-si.SetProperty3('cam1', 'position', 0, 2, 6)
-si.SetProperty3('cam1', 'direction', 0, -.2, -1)
+si.SetProperty3('cam1', 'translate', 0, 2, 6)
+si.SetProperty3('cam1', 'rotate', -11.309932474020213, 0, 0)
 
 #Light
 si.NewLight('light1', 'PointLight')
