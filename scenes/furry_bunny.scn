@@ -1,4 +1,7 @@
 # 1 furry_bunny with 32 point lights
+# NOTE curvegen generates different curve color
+# since noise functions have been changed since v0.0.5.
+# The sample image was rendered by v0.0.2.
 # Copyright (c) 2011-2012 Hiroshi Tsubokawa
 
 #plugins

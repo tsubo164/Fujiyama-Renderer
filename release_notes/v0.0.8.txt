@@ -1,0 +1,27 @@
+Fujiyama Renderer v0.0.8(Alpha) Release Notes
+=============================================
+
+New features since v0.0.7
+-------------------------
+ * Camera motion blur has been implemented. It interpolates transform values not its matrix
+   so that it can solve accurate matrix in sample time.
+
+ * Removed camera properties 'position' and 'direction'. Added 'translate', 'rotate',
+   'transform_order' and 'rotate_order' instead. This means that users have to compute
+   transform data from look-at direction if needed.
+
+ * Added new scene interfaces called SiSetSampleProperty3. It assigns properties
+   in the specified sample time.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Other volume filling procedures
+ * Deep shadow
+ * Higher level python interfaces
+ * Displacement shader
+ * Subdivision surface
+ * Alembic support
+ * Motion blur (animation)
+ * IBL
