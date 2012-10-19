@@ -39,9 +39,9 @@ extern int ObjSetVolume(struct ObjectInstance *obj, const struct Volume *volume)
 extern int ObjIsSurface(const struct ObjectInstance *obj);
 extern int ObjIsVolume(const struct ObjectInstance *obj);
 
-extern void ObjSetTranslate(struct ObjectInstance *obj, double tx, double ty, double tz);
-extern void ObjSetRotate(struct ObjectInstance *obj, double rx, double ry, double rz);
-extern void ObjSetScale(struct ObjectInstance *obj, double sx, double sy, double sz);
+extern void ObjSetTranslate(struct ObjectInstance *obj, double tx, double ty, double tz, double time);
+extern void ObjSetRotate(struct ObjectInstance *obj, double rx, double ry, double rz, double time);
+extern void ObjSetScale(struct ObjectInstance *obj, double sx, double sy, double sz, double time);
 extern void ObjSetTransformOrder(struct ObjectInstance *obj, int order);
 extern void ObjSetRotateOrder(struct ObjectInstance *obj, int order);
 extern void ObjSetShader(struct ObjectInstance *obj, const struct Shader *shader);

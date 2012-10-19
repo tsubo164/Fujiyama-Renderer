@@ -12,7 +12,7 @@ See LICENSE and README
 
 static int prop_is_valid(const struct Property *prop);
 static int compare_property_sample(const void *ptr0, const void *ptr1);
-static void append_sample(struct PropertySampleList *list, const struct PropertySample *sample);
+static void push_sample(struct PropertySampleList *list, const struct PropertySample *sample);
 static void sort_by_sample_time(struct PropertySampleList *list);
 
 struct PropertyValue PropScalar(double v0)
@@ -140,7 +140,7 @@ int PropPushSample(struct PropertySampleList *list, const struct PropertySample 
 		}
 	}
 
-	append_sample(list, sample);
+	push_sample(list, sample);
 	sort_by_sample_time(list);
 
 	return 0;
@@ -202,7 +202,7 @@ static int compare_property_sample(const void *ptr0, const void *ptr1)
 		return 0;
 }
 
-static void append_sample(struct PropertySampleList *list, const struct PropertySample *sample)
+static void push_sample(struct PropertySampleList *list, const struct PropertySample *sample)
 {
 	const int next_index = list->sample_count;
 	assert(list->sample_count < MAX_PROPERTY_SAMPLES);

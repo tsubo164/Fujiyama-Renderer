@@ -758,21 +758,21 @@ static int set_ObjectInstance_rotate_order(void *self, const struct PropertyValu
 static int set_ObjectInstance_translate(void *self, const struct PropertyValue *value)
 {
 	ObjSetTranslate((struct ObjectInstance *) self,
-			value->vector[0], value->vector[1], value->vector[2]);
+			value->vector[0], value->vector[1], value->vector[2], value->time);
 	return 0;
 }
 
 static int set_ObjectInstance_rotate(void *self, const struct PropertyValue *value)
 {
 	ObjSetRotate((struct ObjectInstance *) self,
-			value->vector[0], value->vector[1], value->vector[2]);
+			value->vector[0], value->vector[1], value->vector[2], value->time);
 	return 0;
 }
 
 static int set_ObjectInstance_scale(void *self, const struct PropertyValue *value)
 {
 	ObjSetScale((struct ObjectInstance *) self,
-			value->vector[0], value->vector[1], value->vector[2]);
+			value->vector[0], value->vector[1], value->vector[2], value->time);
 	return 0;
 }
 

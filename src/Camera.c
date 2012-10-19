@@ -37,8 +37,13 @@ struct Camera *CamNew(const char *type)
 
 	PropInitSampleList(&cam->translate_list);
 	PropInitSampleList(&cam->rotate_list);
+#if 0
 	CamSetTransformOrder(cam, ORDER_SRT);
 	CamSetRotateOrder(cam, ORDER_ZXY);
+#endif
+	/* need to both orders before calling XfmSetTransform */
+	cam->transform_order = ORDER_SRT;
+	cam->rotate_order = ORDER_ZXY;
 
 	CamSetAspect(cam, 1);
 	CamSetFov(cam, 30);
