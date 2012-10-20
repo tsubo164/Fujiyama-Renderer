@@ -29,8 +29,8 @@ struct Bezier3 {
 };
 
 /* curve interfaces */
-static int curve_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct Intersection *isect);
+static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
+		const struct Ray *ray, struct Intersection *isect);
 static void curve_bounds(const void *prim_set, int prim_id, double *bounds);
 
 /* bezier curve interfaces */
@@ -186,8 +186,8 @@ void CrvGetPrimitiveSet(const struct Curve *curve, struct PrimitiveSet *primset)
 			curve_bounds);
 }
 
-static int curve_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct Intersection *isect)
+static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
+		const struct Ray *ray, struct Intersection *isect)
 {
 	const struct Curve *curve = (const struct Curve *) prim_set;
 	struct Bezier3 bezier;

@@ -13,8 +13,8 @@ extern "C" {
 struct Intersection;
 struct Ray;
 
-typedef int (*PrimIntersectFunction)(const void *primset, int prim_id, const struct Ray *ray,
-			struct Intersection *isect);
+typedef int (*PrimIntersectFunction)(const void *primset, int prim_id, double time,
+			const struct Ray *ray, struct Intersection *isect);
 typedef void (*PrimBoundsFunction)(const void *primset, int prim_id, double *bounds);
 
 /* PrimitiveSet abstract a set of primitives that is used by Accelerator */
@@ -39,7 +39,7 @@ extern void InitPrimitiveSet(struct PrimitiveSet *primset);
 extern const char *PrmGetName(const struct PrimitiveSet *primset);
 extern int PrmGetPrimitiveCount(const struct PrimitiveSet *primset);
 extern void PrmGetBounds(const struct PrimitiveSet *primset, double *bounds);
-extern int PrmRayIntersect(const struct PrimitiveSet *primset, int prim_id,
+extern int PrmRayIntersect(const struct PrimitiveSet *primset, int prim_id, double time,
 		const struct Ray *ray, struct Intersection *isect);
 extern void PrmGetPrimitiveBounds(const struct PrimitiveSet *primset, int prim_id, double *bounds);
 

@@ -20,8 +20,8 @@ enum VolumeAcceleratorType {
 	VOLACC_BVH
 };
 
-typedef int (*VolumeIntersectFunction)(const void *volume_set, int volume_id, const struct Ray *ray,
-			struct Interval *interval);
+typedef int (*VolumeIntersectFunction)(const void *volume_set, int volume_id, double time,
+			const struct Ray *ray, struct Interval *interval);
 typedef void (*VolumeBoundsFunction)(const void *volume_set, int volume_id, double *bounds);
 
 extern struct VolumeAccelerator *VolumeAccNew(int accelerator_type);
@@ -34,8 +34,8 @@ extern void VolumeAccSetTargetGeometry(struct VolumeAccelerator *acc,
 	VolumeBoundsFunction prim_bounds_function);
 
 extern int VolumeAccBuild(struct VolumeAccelerator *acc);
-extern int VolumeAccIntersect(const struct VolumeAccelerator *acc, const struct Ray *ray,
-		struct IntervalList *intervals);
+extern int VolumeAccIntersect(const struct VolumeAccelerator *acc, double time,
+		const struct Ray *ray, struct IntervalList *intervals);
 
 #ifdef __cplusplus
 } /* extern "C" */

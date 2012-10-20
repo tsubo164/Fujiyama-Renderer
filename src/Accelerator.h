@@ -27,8 +27,8 @@ extern void AccGetBounds(const struct Accelerator *acc, double *bounds);
 extern void AccSetPrimitiveSet(struct Accelerator *acc, const struct PrimitiveSet *primset);
 
 extern int AccBuild(struct Accelerator *acc);
-extern int AccIntersect(const struct Accelerator *acc, const struct Ray *ray,
-		struct Intersection *isect);
+extern int AccIntersect(const struct Accelerator *acc, double time,
+		const struct Ray *ray, struct Intersection *isect);
 
 #ifdef __cplusplus
 } /* extern "C" */

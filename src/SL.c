@@ -171,6 +171,8 @@ struct TraceContext SlCameraContext(const struct ObjectGroup *target)
 	cxt.cast_shadow = 1;
 	cxt.trace_target = target;
 
+	cxt.time = 0;
+
 	cxt.opacity_threshold = .995;
 	cxt.raymarch_step = .05;
 	cxt.raymarch_shadow_step = .05;
@@ -367,11 +369,13 @@ static void setup_surface_input(
 static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
 		float *out_rgba, double *t_hit)
 {
+	const struct Accelerator *acc = NULL;
 	struct Intersection isect = {{0}};
 	int hit = 0;
 
 	VEC4_SET(out_rgba, 0, 0, 0, 0);
-	hit = AccIntersect(ObjGroupGetSurfaceAccelerator(cxt->trace_target), ray, &isect);
+	acc = ObjGroupGetSurfaceAccelerator(cxt->trace_target),
+	hit = AccIntersect(acc, cxt->time, ray, &isect);
 
 	/* TODO handle shadow ray for surface geometry */
 	/*
@@ -412,7 +416,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 	}
 
 	acc = ObjGroupGetVolumeAccelerator(cxt->trace_target);
-	hit = VolumeAccIntersect(acc, ray, intervals);
+	hit = VolumeAccIntersect(acc, cxt->time, ray, intervals);
 
 	if (!hit) {
 		IntervalListFree(intervals);

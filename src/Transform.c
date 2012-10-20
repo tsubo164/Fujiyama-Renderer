@@ -119,6 +119,91 @@ int XfmIsRotateOrder(int order)
 	return is_rotate_order(order);
 }
 
+void XfmInitTransformSampleList(struct TransformSampleList *list)
+{
+	PropInitSampleList(&list->translate);
+	PropInitSampleList(&list->rotate);
+	PropInitSampleList(&list->scale);
+
+	list->last_sample_time = -FLT_MAX;
+	list->transform_order = ORDER_SRT;
+	list->rotate_order = ORDER_ZXY;
+
+	VEC3_SET(list->scale.samples[0].vector, 1, 1, 1);
+}
+
+void XfmPushTranslateSample(struct TransformSampleList *list,
+		double tx, double ty, double tz, double time)
+{
+	struct PropertySample sample = {{0, 0, 0}, 0};
+
+	sample.vector[0] = tx;
+	sample.vector[1] = ty;
+	sample.vector[2] = tz;
+	sample.time = time;
+
+	PropPushSample(&list->translate, &sample);
+}
+
+void XfmPushRotateSample(struct TransformSampleList *list,
+		double rx, double ry, double rz, double time)
+{
+	struct PropertySample sample = {{0, 0, 0}, 0};
+
+	sample.vector[0] = rx;
+	sample.vector[1] = ry;
+	sample.vector[2] = rz;
+	sample.time = time;
+
+	PropPushSample(&list->rotate, &sample);
+}
+
+void XfmPushScaleSample(struct TransformSampleList *list,
+		double sx, double sy, double sz, double time)
+{
+	struct PropertySample sample = {{0, 0, 0}, 0};
+
+	sample.vector[0] = sx;
+	sample.vector[1] = sy;
+	sample.vector[2] = sz;
+	sample.time = time;
+
+	PropPushSample(&list->scale, &sample);
+}
+
+void XfmSetSampleTransformOrder(struct TransformSampleList *list, int order)
+{
+	assert(is_transform_order(order));
+	list->transform_order = order;
+}
+
+void XfmSetSampleRotateOrder(struct TransformSampleList *list, int order)
+{
+	assert(is_rotate_order(order));
+	list->rotate_order = order;
+}
+
+void XfmLerpTransformSample(struct TransformSampleList *list, double time)
+{
+	struct PropertySample T = INIT_PROPERTYSAMPLE;
+	struct PropertySample R = INIT_PROPERTYSAMPLE;
+	struct PropertySample S = INIT_PROPERTYSAMPLE;
+
+	if (list->last_sample_time != time) {
+		PropLerpSamples(&list->translate, time, &T);
+		PropLerpSamples(&list->rotate, time, &R);
+		PropLerpSamples(&list->scale, time, &S);
+
+		XfmSetTransform(&list->transform_sample,
+			list->transform_order, list->rotate_order,
+			T.vector[0], T.vector[1], T.vector[2],
+			R.vector[0], R.vector[1], R.vector[2],
+			S.vector[0], S.vector[1], S.vector[2]);
+
+		list->last_sample_time = time;
+	}
+}
+
 static void update_matrix(struct Transform *transform)
 {
 	make_transform_matrix(transform->transform_order, transform->rotate_order,

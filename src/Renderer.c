@@ -352,6 +352,7 @@ static int render_scene(struct Renderer *renderer)
 			float C_trace[4] = {0};
 
 			CamGetRay(cam, smp->uv, smp->time, &ray);
+			cxt.time = smp->time;
 
 			hit = SlTrace(&cxt, ray.orig, ray.dir, ray.tmin, ray.tmax, C_trace, &t_hit);
 			VEC4_COPY(smp->data, C_trace);

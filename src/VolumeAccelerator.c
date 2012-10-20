@@ -33,14 +33,14 @@ struct VolumeAccelerator {
 	char *derived;
 	void (*FreeDerived)(struct VolumeAccelerator *acc);
 	int (*Build)(struct VolumeAccelerator *acc);
-	int (*Intersect)(const struct VolumeAccelerator *acc, const struct Ray *ray,
+	int (*Intersect)(const struct VolumeAccelerator *acc, double time, const struct Ray *ray,
 			struct IntervalList *intervals);
 };
 
 /* -------------------------------------------------------------------------- */
 /* VolumeAccelerator */
 static int ray_volume_intersect(const struct VolumeAccelerator *acc, int volume_id,
-	const struct Ray *ray, struct IntervalList *intervals);
+	double time, const struct Ray *ray, struct IntervalList *intervals);
 #if 0
 static void swap_isect_ptr(struct IntervalList **isect0, struct IntervalList **isect1);
 #endif
@@ -55,8 +55,8 @@ struct VolumeBruteForceAccelerator {
 static struct VolumeBruteForceAccelerator *new_bruteforce_accel(void);
 static void free_bruteforce_accel(struct VolumeAccelerator *acc);
 static int build_bruteforce_accel(struct VolumeAccelerator *acc);
-static int intersect_bruteforce_accel(const struct VolumeAccelerator *acc, const struct Ray *ray,
-		struct IntervalList *intervals);
+static int intersect_bruteforce_accel(const struct VolumeAccelerator *acc, double time,
+		const struct Ray *ray, struct IntervalList *intervals);
 
 /* -------------------------------------------------------------------------- */
 /* VolumeBVHAccelerator */
@@ -97,10 +97,11 @@ struct VolumeBVHAccelerator {
 static struct VolumeBVHAccelerator *new_bvh_accel(void);
 static void free_bvh_accel(struct VolumeAccelerator *acc);
 static int build_bvh_accel(struct VolumeAccelerator *acc);
-static int intersect_bvh_accel(const struct VolumeAccelerator *acc, const struct Ray *ray,
-		struct IntervalList *intervals);
+static int intersect_bvh_accel(const struct VolumeAccelerator *acc, double time,
+		const struct Ray *ray, struct IntervalList *intervals);
 
-static int intersect_bvh_recursive(const struct VolumeAccelerator *acc, const struct VolumeBVHNode *node,
+static int intersect_bvh_recursive(const struct VolumeAccelerator *acc,
+		const struct VolumeBVHNode *node, double time,
 		const struct Ray *ray, struct IntervalList *intervals);
 #if 0
 static int intersect_bvh_loop(const struct VolumeAccelerator *acc, const struct VolumeBVHNode *root,
@@ -202,8 +203,8 @@ int VolumeAccBuild(struct VolumeAccelerator *acc)
 	return 0;
 }
 
-int VolumeAccIntersect(const struct VolumeAccelerator *acc, const struct Ray *ray,
-		struct IntervalList *intervals)
+int VolumeAccIntersect(const struct VolumeAccelerator *acc, double time,
+		const struct Ray *ray, struct IntervalList *intervals)
 {
 	double boxhit_tmin;
 	double boxhit_tmax;
@@ -221,7 +222,7 @@ int VolumeAccIntersect(const struct VolumeAccelerator *acc, const struct Ray *ra
 		fflush(stdout);
 	}
 
-	return acc->Intersect(acc, ray, intervals);
+	return acc->Intersect(acc, time, ray, intervals);
 }
 
 void VolumeAccSetTargetGeometry(struct VolumeAccelerator *acc,
@@ -267,15 +268,15 @@ static int build_bruteforce_accel(struct VolumeAccelerator *acc)
 	return 0;
 }
 
-static int intersect_bruteforce_accel(const struct VolumeAccelerator *acc, const struct Ray *ray,
-		struct IntervalList *intervals)
+static int intersect_bruteforce_accel(const struct VolumeAccelerator *acc, double time,
+		const struct Ray *ray, struct IntervalList *intervals)
 {
 	int hit;
 	int i;
 
 	hit = 0;
 	for (i = 0; i < acc->num_volumes; i++) {
-		hit += ray_volume_intersect(acc, i, ray, intervals);
+		hit += ray_volume_intersect(acc, i, time, ray, intervals);
 	}
 
 	return hit > 0;
@@ -346,8 +347,8 @@ static int build_bvh_accel(struct VolumeAccelerator *acc)
 	return 0;
 }
 
-static int intersect_bvh_accel(const struct VolumeAccelerator *acc, const struct Ray *ray,
-		struct IntervalList *intervals)
+static int intersect_bvh_accel(const struct VolumeAccelerator *acc, double time,
+		const struct Ray *ray, struct IntervalList *intervals)
 {
 	const struct VolumeBVHAccelerator *bvh = (const struct VolumeBVHAccelerator *) acc->derived;
 
@@ -356,10 +357,11 @@ static int intersect_bvh_accel(const struct VolumeAccelerator *acc, const struct
 		return intersect_bvh_loop(acc, bvh->root, ray, intervals);
 	else
 #endif
-		return intersect_bvh_recursive(acc, bvh->root, ray, intervals);
+		return intersect_bvh_recursive(acc, bvh->root, time, ray, intervals);
 }
 
-static int intersect_bvh_recursive(const struct VolumeAccelerator *acc, const struct VolumeBVHNode *node,
+static int intersect_bvh_recursive(const struct VolumeAccelerator *acc,
+		const struct VolumeBVHNode *node, double time,
 		const struct Ray *ray, struct IntervalList *intervals)
 {
 	double boxhit_tmin;
@@ -375,11 +377,11 @@ static int intersect_bvh_recursive(const struct VolumeAccelerator *acc, const st
 	}
 
 	if (is_bvh_leaf(node)) {
-		return ray_volume_intersect(acc, node->volume_id, ray, intervals);
+		return ray_volume_intersect(acc, node->volume_id, time, ray, intervals);
 	}
 
-	hit_left  = intersect_bvh_recursive(acc, node->left,  ray, intervals);
-	hit_right = intersect_bvh_recursive(acc, node->right, ray, intervals);
+	hit_left  = intersect_bvh_recursive(acc, node->left,  time, ray, intervals);
+	hit_right = intersect_bvh_recursive(acc, node->right, time, ray, intervals);
 
 	return hit_left || hit_right;
 }
@@ -620,12 +622,12 @@ static int volume_compare_z(const void *a, const void *b)
 }
 
 static int ray_volume_intersect (const struct VolumeAccelerator *acc, int volume_id,
-	const struct Ray *ray, struct IntervalList *intervals)
+	double time, const struct Ray *ray, struct IntervalList *intervals)
 {
 	struct Interval interval;
 	int hit;
 
-	hit = acc->VolumeIntersect(acc->volume_set, volume_id, ray, &interval);
+	hit = acc->VolumeIntersect(acc->volume_set, volume_id, time, ray, &interval);
 	if (!hit) {
 		return 0;
 	}

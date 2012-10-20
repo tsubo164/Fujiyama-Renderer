@@ -14,8 +14,8 @@ See LICENSE and README
 #include <string.h>
 #include <float.h>
 
-static int triangle_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct Intersection *isect);
+static int triangle_ray_intersect(const void *prim_set, int prim_id, double time,
+		const struct Ray *ray, struct Intersection *isect);
 static void triangle_bounds(const void *prim_set, int prim_id, double *bounds);
 
 struct Mesh *MshNew(void)
@@ -121,8 +121,8 @@ void MshGetPrimitiveSet(const struct Mesh *mesh, struct PrimitiveSet *primset)
 			triangle_bounds);
 }
 
-static int triangle_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct Intersection *isect)
+static int triangle_ray_intersect(const void *prim_set, int prim_id, double time,
+		const struct Ray *ray, struct Intersection *isect)
 {
 	const struct Mesh *mesh = (const struct Mesh *) prim_set;
 	const double *v0, *v1, *v2;

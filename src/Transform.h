@@ -6,6 +6,8 @@ See LICENSE and README
 #ifndef TRANSFORM_H
 #define TRANSFORM_H
 
+#include "Property.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -60,6 +62,31 @@ extern void XfmSetTransform(struct Transform *transform,
 
 extern int XfmIsTransformOrder(int order);
 extern int XfmIsRotateOrder(int order);
+
+/* TransformSampleList */
+struct TransformSampleList {
+	struct PropertySampleList translate;
+	struct PropertySampleList rotate;
+	struct PropertySampleList scale;
+	int transform_order;
+	int rotate_order;
+
+	struct Transform transform_sample;
+	double last_sample_time;
+};
+
+extern void XfmInitTransformSampleList(struct TransformSampleList *list);
+extern void XfmLerpTransformSample(struct TransformSampleList *list, double time);
+
+extern void XfmPushTranslateSample(struct TransformSampleList *list,
+		double tx, double ty, double tz, double time);
+extern void XfmPushRotateSample(struct TransformSampleList *list,
+		double rx, double ry, double rz, double time);
+extern void XfmPushScaleSample(struct TransformSampleList *list,
+		double sx, double sy, double sz, double time);
+
+extern void XfmSetSampleTransformOrder(struct TransformSampleList *list, int order);
+extern void XfmSetSampleRotateOrder(struct TransformSampleList *list, int order);
 
 #ifdef __cplusplus
 } /* extern "C" */

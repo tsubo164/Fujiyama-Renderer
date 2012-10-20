@@ -28,6 +28,8 @@ struct TraceContext {
 	int max_refract_depth;
 	int cast_shadow;
 
+	double time;
+
 	float opacity_threshold;
 	double raymarch_step;
 	double raymarch_shadow_step;

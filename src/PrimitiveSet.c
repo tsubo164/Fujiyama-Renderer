@@ -49,10 +49,10 @@ void PrmGetBounds(const struct PrimitiveSet *primset, double *bounds)
 	BOX3_COPY(bounds, primset->bounds);
 }
 
-int PrmRayIntersect(const struct PrimitiveSet *primset, int prim_id,
+int PrmRayIntersect(const struct PrimitiveSet *primset, int prim_id, double time,
 		const struct Ray *ray, struct Intersection *isect)
 {
-	return primset->PrimitiveIntersect(primset->data, prim_id, ray, isect);
+	return primset->PrimitiveIntersect(primset->data, prim_id, time, ray, isect);
 }
 
 void PrmGetPrimitiveBounds(const struct PrimitiveSet *primset, int prim_id, double *bounds)

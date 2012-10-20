@@ -29,10 +29,10 @@ static void obj_list_free(struct ObjectList *list);
 static void obj_list_add(struct ObjectList *list, const struct ObjectInstance *obj);
 
 static void object_bounds(const void *prim_set, int prim_id, double *bounds);
-static int object_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct Intersection *isect);
-static int volume_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct Interval *interval);
+static int object_ray_intersect(const void *prim_set, int prim_id, double time,
+		const struct Ray *ray, struct Intersection *isect);
+static int volume_ray_intersect(const void *prim_set, int prim_id, double time,
+		const struct Ray *ray, struct Interval *interval);
 
 struct ObjectGroup {
 	struct ObjectList *surface_list;
@@ -143,18 +143,18 @@ static void object_bounds(const void *prim_set, int prim_id, double *bounds)
 	ObjGetBounds(objects[prim_id], bounds);
 }
 
-static int object_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct Intersection *isect)
+static int object_ray_intersect(const void *prim_set, int prim_id, double time,
+		const struct Ray *ray, struct Intersection *isect)
 {
 	const struct ObjectInstance **objects = (const struct ObjectInstance **) prim_set;
-	return ObjIntersect(objects[prim_id], ray, isect);
+	return ObjIntersect(objects[prim_id], time, ray, isect);
 }
 
-static int volume_ray_intersect(const void *prim_set, int prim_id, const struct Ray *ray,
-		struct Interval *interval)
+static int volume_ray_intersect(const void *prim_set, int prim_id, double time,
+		const struct Ray *ray, struct Interval *interval)
 {
 	const struct ObjectInstance **objects = (const struct ObjectInstance **) prim_set;
-	return ObjVolumeIntersect(objects[prim_id], ray, interval);
+	return ObjVolumeIntersect(objects[prim_id], time, ray, interval);
 }
 
 static struct ObjectList *obj_list_new(void)
