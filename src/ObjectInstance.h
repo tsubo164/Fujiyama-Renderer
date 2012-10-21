@@ -39,9 +39,12 @@ extern int ObjSetVolume(struct ObjectInstance *obj, const struct Volume *volume)
 extern int ObjIsSurface(const struct ObjectInstance *obj);
 extern int ObjIsVolume(const struct ObjectInstance *obj);
 
-extern void ObjSetTranslate(struct ObjectInstance *obj, double tx, double ty, double tz, double time);
-extern void ObjSetRotate(struct ObjectInstance *obj, double rx, double ry, double rz, double time);
-extern void ObjSetScale(struct ObjectInstance *obj, double sx, double sy, double sz, double time);
+extern void ObjSetTranslate(struct ObjectInstance *obj,
+		double tx, double ty, double tz, double time);
+extern void ObjSetRotate(struct ObjectInstance *obj,
+		double rx, double ry, double rz, double time);
+extern void ObjSetScale(struct ObjectInstance *obj,
+		double sx, double sy, double sz, double time);
 extern void ObjSetTransformOrder(struct ObjectInstance *obj, int order);
 extern void ObjSetRotateOrder(struct ObjectInstance *obj, int order);
 extern void ObjSetShader(struct ObjectInstance *obj, const struct Shader *shader);
@@ -61,8 +64,8 @@ extern int ObjIntersect(const struct ObjectInstance *obj, double time,
 extern int ObjVolumeIntersect(const struct ObjectInstance *obj, double time,
 			const struct Ray *ray, struct Interval *interval);
 
-extern int ObjGetVolumeSample(const struct ObjectInstance *obj, const double *point,
-			struct VolumeSample *sample);
+extern int ObjGetVolumeSample(const struct ObjectInstance *obj, double time,
+			const double *point, struct VolumeSample *sample);
 
 #ifdef __cplusplus
 } /* extern "C" */

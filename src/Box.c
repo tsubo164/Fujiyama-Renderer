@@ -6,6 +6,7 @@ See LICENSE and README
 #include "Box.h"
 #include "Numeric.h"
 #include <stdio.h>
+#include <math.h>
 
 int BoxContainsPoint(const double *box, const double *point)
 {
@@ -91,6 +92,22 @@ int BoxRayIntersect(const double *box,
 	}
 
 	return hit;
+}
+
+void BoxCentroid(const double *box, double *centroid)
+{
+	centroid[0] = .5 * (box[0] + box[3]);
+	centroid[1] = .5 * (box[1] + box[4]);
+	centroid[2] = .5 * (box[2] + box[5]);
+}
+
+double BoxDiagonal(const double *box)
+{
+	const double xsize = BOX3_XSIZE(box);
+	const double ysize = BOX3_YSIZE(box);
+	const double zsize = BOX3_ZSIZE(box);
+
+	return .5 * sqrt(xsize * xsize + ysize * ysize + zsize * zsize);
 }
 
 void BoxPrint(const double *box)

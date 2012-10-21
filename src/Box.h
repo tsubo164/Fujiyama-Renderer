@@ -72,6 +72,9 @@ extern int BoxRayIntersect(const double *box,
 		double ray_tmin, double ray_tmax,
 		double *hit_tmin, double *hit_tmax);
 
+extern void BoxCentroid(const double *box, double *centroid);
+extern double BoxDiagonal(const double *box);
+
 extern void BoxPrint(const double *box);
 
 #ifdef __cplusplus

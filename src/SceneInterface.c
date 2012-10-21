@@ -745,12 +745,20 @@ static Status status_of_error(int err)
 /* property settings */
 static int set_ObjectInstance_transform_order(void *self, const struct PropertyValue *value)
 {
+	/* TODO error handling */
+	if (!XfmIsTransformOrder((int) value->vector[0]))
+		return -1;
+
 	ObjSetTransformOrder((struct ObjectInstance *) self, (int) value->vector[0]);
 	return 0;
 }
 
 static int set_ObjectInstance_rotate_order(void *self, const struct PropertyValue *value)
 {
+	/* TODO error handling */
+	if (!XfmIsRotateOrder((int) value->vector[0]))
+		return -1;
+
 	ObjSetRotateOrder((struct ObjectInstance *) self, (int) value->vector[0]);
 	return 0;
 }
@@ -1055,6 +1063,7 @@ static const struct Property Light_properties[] = {
 	{PROP_NONE, NULL, NULL}
 };
 
+/* TODO refactoring in terms of variable names */
 static int find_and_set_property(void *self, const struct Property *src_props,
 		const char *prop_name, const struct PropertyValue *src_data)
 {

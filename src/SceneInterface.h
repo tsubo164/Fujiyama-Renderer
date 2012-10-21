@@ -6,6 +6,21 @@ See LICENSE and README
 #ifndef SCENEINTERFACES_H
 #define SCENEINTERFACES_H
 
+/* transform orders */
+#define SI_ORDER_SRT 0
+#define SI_ORDER_STR 1
+#define SI_ORDER_RST 2
+#define SI_ORDER_RTS 3
+#define SI_ORDER_TRS 4
+#define SI_ORDER_TSR 5
+/* rotate orders */
+#define SI_ORDER_XYZ 6
+#define SI_ORDER_XZY 7
+#define SI_ORDER_YXZ 8
+#define SI_ORDER_YZX 9
+#define SI_ORDER_ZXY 10
+#define SI_ORDER_ZYX 11
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -54,7 +69,8 @@ extern Status SiSetProperty3(ID id, const char *name, double v0, double v1, doub
 extern Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, double v3);
 
 /* time variable property */
-extern Status SiSetSampleProperty3(ID id, const char *name, double v0, double v1, double v2, double time);
+extern Status SiSetSampleProperty3(ID id, const char *name,
+		double v0, double v1, double v2, double time);
 
 extern Status SiAssignTurbulence(ID id, const char *name, ID turbulence);
 extern Status SiAssignVolume(ID id, const char *name, ID volume);

@@ -7,6 +7,21 @@ import subprocess
 import os
 
 class SceneInterface:
+# transform orders
+	ORDER_SRT = 0
+	ORDER_STR = 1
+	ORDER_RST = 2
+	ORDER_RTS = 3
+	ORDER_TRS = 4
+	ORDER_TSR = 5
+# rotate orders
+	ORDER_XYZ = 6
+	ORDER_XZY = 7
+	ORDER_YXZ = 8
+	ORDER_YZX = 9
+	ORDER_ZXY = 10
+	ORDER_ZYX = 11
+
 	def __init__(self):
 		self.parser = 'scene'
 		self.commands = []

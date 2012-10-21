@@ -473,7 +473,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 			/* loop over volume candidates at this sample point */
 			for (; interval != NULL; interval = interval->next) {
 				struct VolumeSample sample;
-				ObjGetVolumeSample(interval->object, P, &sample);
+				ObjGetVolumeSample(interval->object, cxt->time, P, &sample);
 
 				/* merge volume with max density */
 				opacity = MAX(opacity, t_delta * sample.density);
