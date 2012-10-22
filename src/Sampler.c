@@ -4,6 +4,7 @@ See LICENSE and README
 */
 
 #include "Sampler.h"
+#include "Numeric.h"
 #include "Random.h"
 #include "Box.h"
 #include <stdlib.h>
@@ -27,6 +28,9 @@ struct Sampler {
 
 	int need_jitter;
 	int need_time_sampling;
+
+	double sample_time_start;
+	double sample_time_end;
 };
 
 static void compute_margins(struct Sampler *sampler);
@@ -35,9 +39,8 @@ static int allocate_samples_for_region(struct Sampler *sampler, const int *regio
 struct Sampler *SmpNew(int xres, int yres,
 		int xsamples, int ysamples, float xfwidth, float yfwidth)
 {
-	struct Sampler *sampler = NULL;
+	struct Sampler *sampler = (struct Sampler *) malloc(sizeof(struct Sampler));
 
-	sampler = (struct Sampler *) malloc(sizeof(struct Sampler));
 	if (sampler == NULL)
 		return NULL;
 
@@ -55,7 +58,7 @@ struct Sampler *SmpNew(int xres, int yres,
 	sampler->xfwidth = xfwidth;
 	sampler->yfwidth = yfwidth;
 	SmpSetJitter(sampler, 1);
-	SmpSetTimeSampling(sampler);
+	SmpSetSampleTimeRange(sampler, 0, 1);
 	sampler->samples = NULL;
 
 	sampler->nsamples = 0;
@@ -84,8 +87,14 @@ void SmpSetJitter(struct Sampler *sampler, float jitter)
 	sampler->need_jitter = sampler->jitter > 0 ? 1 : 0;
 }
 
-void SmpSetTimeSampling(struct Sampler *sampler)
+void SmpSetSampleTimeRange(struct Sampler *sampler, double start_time, double end_time)
 {
+	assert(start_time <= end_time);
+
+	sampler->sample_time_start = start_time;
+	sampler->sample_time_end = end_time;
+
+	/* TODO need this member? */
 	sampler->need_time_sampling = 1;
 }
 
@@ -146,6 +155,11 @@ int SmpGenerateSamples(struct Sampler *sampler, const int *pixel_bounds)
 
 			if (sampler->need_time_sampling) {
 				sample->time = XorNextFloat01(&rng_time);
+				sample->time = Fit(sample->time,
+						0,
+						1,
+						sampler->sample_time_start,
+						sampler->sample_time_end);
 			} else {
 				sample->time = 0;
 			}
@@ -188,9 +202,7 @@ void SmpGetPixelSamples(struct Sampler *sampler, struct Sample *pixelsamples,
 
 struct Sample *SmpAllocatePixelSamples(struct Sampler *sampler)
 {
-	struct Sample *samples = NULL;
-
-	samples = (struct Sample *) malloc(sizeof(struct Sample) *
+	struct Sample *samples = (struct Sample *) malloc(sizeof(struct Sample) *
 			SmpGetSampleCountForPixel(sampler));
 
 	return samples;

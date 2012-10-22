@@ -24,7 +24,7 @@ extern struct Sampler *SmpNew(int xres, int yres,
 extern void SmpFree(struct Sampler *sampler);
 
 extern void SmpSetJitter(struct Sampler *sampler, float jitter);
-extern void SmpSetTimeSampling(struct Sampler *sampler);
+extern void SmpSetSampleTimeRange(struct Sampler *sampler, double start_time, double end_time);
 
 /* interfaces for a region */
 extern int SmpGenerateSamples(struct Sampler *sampler, const int *pixel_bounds);

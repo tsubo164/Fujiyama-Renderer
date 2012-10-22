@@ -2,6 +2,7 @@
 #See LICENSE and README
 
 CC = gcc
+#CC = g++
 CXX = g++
 OPT = -O2
 CFLAGS = -Isrc -Wall -ansi -pedantic-errors $(OPT)

@@ -36,6 +36,8 @@ struct Renderer {
 	int tilesize[2];
 	float filterwidth[2];
 	float jitter;
+	double sample_time_start;
+	double sample_time_end;
 
 	int cast_shadow;
 	int max_reflect_depth;
@@ -68,6 +70,7 @@ struct Renderer *RdrNew(void)
 	RdrSetTileSize(renderer, 64, 64);
 	RdrSetFilterWidth(renderer, 2, 2);
 	RdrSetSampleJitter(renderer, 1);
+	RdrSetSampleTimeRange(renderer, 0, 1);
 
 	RdrSetShadowEnable(renderer, 1);
 	RdrSetMaxReflectDepth(renderer, 3);
@@ -138,6 +141,14 @@ void RdrSetSampleJitter(struct Renderer *renderer, float jitter)
 {
 	assert(jitter >= 0 && jitter <= 1);
 	renderer->jitter = jitter;
+}
+
+void RdrSetSampleTimeRange(struct Renderer *renderer, double start_time, double end_time)
+{
+	assert(start_time <= end_time);
+
+	renderer->sample_time_start = start_time;
+	renderer->sample_time_end = end_time;
 }
 
 void RdrSetShadowEnable(struct Renderer *renderer, int enable)
@@ -296,8 +307,8 @@ static int render_scene(struct Renderer *renderer)
 		render_state = -1;
 		goto cleanup_and_exit;
 	}
-
 	SmpSetJitter(sampler, renderer->jitter);
+	SmpSetSampleTimeRange(sampler, renderer->sample_time_start, renderer->sample_time_end);
 
 	/* Filter */
 	filter = FltNew(FLT_GAUSSIAN, xfwidth, yfwidth);

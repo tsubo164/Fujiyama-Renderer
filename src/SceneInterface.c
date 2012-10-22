@@ -871,6 +871,12 @@ static int set_Renderer_raymarch_refract_step(void *self, const struct PropertyV
 	return 0;
 }
 
+static int set_Renderer_sample_time_range(void *self, const struct PropertyValue *value)
+{
+	RdrSetSampleTimeRange((struct Renderer *) self, value->vector[0], value->vector[1]);
+	return 0;
+}
+
 static int set_Renderer_resolution(void *self, const struct PropertyValue *value)
 {
 	RdrSetResolution((struct Renderer *) self, (int) value->vector[0], (int) value->vector[1]);
@@ -1031,6 +1037,7 @@ static const struct Property Renderer_properties[] = {
 	{PROP_SCALAR,  "raymarch_shadow_step",  set_Renderer_raymarch_shadow_step},
 	{PROP_SCALAR,  "raymarch_reflect_step", set_Renderer_raymarch_reflect_step},
 	{PROP_SCALAR,  "raymarch_refract_step", set_Renderer_raymarch_refract_step},
+	{PROP_VECTOR2, "sample_time_range",     set_Renderer_sample_time_range},
 	{PROP_VECTOR2, "resolution",            set_Renderer_resolution},
 	{PROP_VECTOR2, "pixelsamples",          set_Renderer_pixelsamples},
 	{PROP_VECTOR2, "tilesize",              set_Renderer_tilesize},
@@ -1084,7 +1091,7 @@ static int set_property(const struct Entry *entry,
 	const struct Property *src_props = NULL;
 	void *dst_object = NULL;
 
-	/* plugin object properties */
+	/* procedure and shader object properties */
 	if (entry->type == Type_Procedure) {
 		struct Procedure *procedure = ScnGetProcedure(scene, entry->index);
 		if (procedure == NULL)

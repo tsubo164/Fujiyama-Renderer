@@ -70,9 +70,8 @@ static void *push_entry(struct Array *array, void *entry);
 /* Scene */
 struct Scene *ScnNew(void)
 {
-	struct Scene *scene;
+	struct Scene *scene = (struct Scene *) malloc(sizeof(struct Scene));
 
-	scene = (struct Scene *) malloc(sizeof(struct Scene));
 	if (scene == NULL)
 		return NULL;
 
