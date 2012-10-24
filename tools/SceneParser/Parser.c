@@ -17,6 +17,19 @@ See LICENSE and README
 
 #define PROMPT "-- "
 
+enum PsrErroNo {
+	PSR_ERR_NOERR = 1024, /* offset to avoid conflict with SI_ERR */
+	PSR_ERR_UNKNOWNCMD,
+	PSR_ERR_MANYARGS,
+	PSR_ERR_FEWARGS,
+	PSR_ERR_NAMEEXISTS,
+	PSR_ERR_NAMENOTFOUND,
+	PSR_ERR_FAILSETPROP,
+	PSR_ERR_PLUGINNOTFOUND,
+	PSR_ERR_FAILNEW,
+	PSR_ERR_FAILRENDER
+};
+
 enum { MAX_ARGS = 6 };
 
 union Argument {
@@ -29,10 +42,13 @@ struct Parser {
 	struct Table *table;
 };
 
+static const char *error_message = NULL;
 static int parser_errno = PSR_ERR_NOERR;
+
 static int run_command(struct Parser *parser, const char *cmd, const char *arg);
 static int parse_args(const char *fmt, const char *arg, union Argument *args, int max_args);
 static void set_errno(int err);
+static void set_error_message(int current_errno);
 
 struct Parser *PsrNew(void)
 {
@@ -64,45 +80,21 @@ void PsrFree(struct Parser *parser)
 	free(parser);
 }
 
-static void set_errno(int err)
+const char *PsrGetErrorMessage(void)
 {
-	parser_errno = err;
-}
+	const int err_no = parser_errno;
+	/* TODO this is a temporal solution for plugin errors */
+	/* TODO other errors will be handled in the same ways */
+	if (err_no == PSR_ERR_PLUGINNOTFOUND) {
+		if (error_message == NULL)
+			return "";
 
-int PsrGetErrorNo(void)
-{
-	return parser_errno;
-}
-
-const char *PsrGetErrorMessage(int err_no)
-{
-	static const char *errmsg[] = {
-		"",                    /* PSR_ERR_NOERR */
-		"unknown command",     /* PSR_ERR_UNKNOWNCMD */
-		"too many arguments",  /* PSR_ERR_MANYARGS */
-		"too few arguments",   /* PSR_ERR_FEWARGS */
-		"name already exists", /* PSR_ERR_NAMEEXISTS */
-		"name not found",      /* PSR_ERR_NAMENOTFOUND */
-		"set property faided", /* PSR_ERR_FAILSETPROP */
-		"plugin not found",    /* PSR_ERR_PLUGINNOTFOUND */
-		"new entry failed",    /* PSR_ERR_FAILNEW */
-		"render faided"        /* PSR_ERR_FAILRENDER */
-	};
-	static const int nerrs = (int) sizeof(errmsg)/sizeof(errmsg[0]);
-
-	if (err_no >= nerrs) {
-		fprintf(stderr, "Logic error: err_no %d is out of range\n", err_no);
-		abort();
+		return error_message;
+	} else {
+		set_error_message(err_no);
+		return error_message;
 	}
-	return errmsg[err_no];
 }
-
-#if 0
-const char *PsrGetErrorDetail(void)
-{
-	return error_detail;
-}
-#endif
 
 int PsrParseLine(struct Parser *parser, const char *line)
 {
@@ -155,6 +147,7 @@ static int run_command(struct Parser *parser, const char *cmd, const char *argli
 		printf(PROMPT"%s: [%s]\n", cmd, args[0].str);
 		err = SiOpenPlugin(args[0].str);
 		if (err == SI_FAIL) {
+			set_error_message(SiGetErrorNo());
 			set_errno(PSR_ERR_PLUGINNOTFOUND);
 			return -1;
 		}
@@ -799,5 +792,48 @@ static int parse_args(const char *fmt, const char *arg, union Argument *args, in
 
 	set_errno(PSR_ERR_NOERR);
 	return 0;
+}
+
+static void set_errno(int err)
+{
+	parser_errno = err;
+}
+
+/* TODO should move this to SceneInterface.c? */
+struct SiError {
+	int number;
+	const char *message;
+};
+
+static void set_error_message(int current_errno)
+{
+	static const struct SiError errors[] = {
+		/* from Parser */
+		{PSR_ERR_NOERR, ""},
+		{PSR_ERR_UNKNOWNCMD,     "unknown command"},
+		{PSR_ERR_MANYARGS,       "too many arguments"},
+		{PSR_ERR_FEWARGS,        "too few arguments"},
+		{PSR_ERR_NAMEEXISTS,     "name already exists"},
+		{PSR_ERR_NAMENOTFOUND,   "name not found"},
+		{PSR_ERR_FAILSETPROP,    "set property faided"},
+		{PSR_ERR_PLUGINNOTFOUND, "plugin not found"},
+		{PSR_ERR_FAILNEW,        "new entry failed"},
+		{PSR_ERR_FAILRENDER ,    "render faided"},
+		/* from SceneInterface */
+		{SI_ERR_PLUGIN_NOT_FOUND,           "plugin not found"},
+		{SI_ERR_INIT_PLUGIN_FUNC_NOT_FOUND, "initialize function not found in the plugin"},
+		{SI_ERR_INIT_PLUGIN_FUNC_FAIL,      "initialize plugin function failed"},
+		{SI_ERR_BAD_PLUGIN_INFO,            "invalid plugin info in the plugin"},
+		{SI_ERR_CLOSE_PLUGIN_FAIL,          "close plugin function failed"},
+		{SI_ERR_NONE, ""}
+	};
+	const struct SiError *error = NULL;
+
+	for (error = errors; error->number != SI_ERR_NONE; error++) {
+		if (error->number == current_errno) {
+			error_message = error->message;
+			break;
+		}
+	}
 }
 

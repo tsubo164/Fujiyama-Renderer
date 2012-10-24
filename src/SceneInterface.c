@@ -20,15 +20,6 @@ See LICENSE and README
 enum { TYPE_ID_OFFSET = 10000000 };
 
 enum {
-	SI_NOERR = 0,
-	SI_ERR_BADTYPE,
-	SI_ERR_FAILOPENPLG,
-	SI_ERR_FAILLOAD,
-	SI_ERR_FAILNEW,
-	SI_ERR_NOMEM
-};
-
-enum {
 	Type_Begin = 0,
 	Type_ObjectInstance = 1,
 	Type_Accelerator,
@@ -53,7 +44,7 @@ struct Entry {
 };
 
 static struct Scene *scene = NULL;
-static int si_errno = SI_NOERR;
+static int si_errno = SI_ERR_NONE;
 
 static int is_valid_type(int type);
 static ID encode_id(int type, int index);
@@ -80,35 +71,37 @@ int SiGetErrorNo(void)
 	return si_errno;
 }
 
-const char *SiGetErrorMessage(int err_no)
-{
-	static const char *errmsg[] = {
-		"",                   /* SI_NOERR */
-		"bad arg",            /* SI_ERR_BADARG */
-		"invalid entry type", /* SI_ERR_BADTYPE */
-		"open plugin failed", /* SI_ERR_FAILOPENPLG */
-		"load file failed",   /* SI_ERR_FAILLOAD */
-		"new entry failed",   /* SI_ERR_FAILNEW */
-		"no memory"           /* SI_ERR_NOMEM */
-	};
-	static const int nerrs = (int) sizeof(errmsg)/sizeof(errmsg[0]);
-
-	if (err_no >= nerrs) {
-		fprintf(stderr, "Logic error: err_no %d is out of range\n", err_no);
-		abort();
-	}
-	return errmsg[err_no];
-}
-
 /* Plugin interfaces */
 Status SiOpenPlugin(const char *filename)
 {
 	if (ScnOpenPlugin(scene, filename) == NULL) {
-		set_errno(SI_ERR_FAILOPENPLG);
+		/* TODO make a mapping function */
+		switch (PlgGetErrorNo()) {
+		case PLG_ERR_NOPLUGIN:
+			set_errno(SI_ERR_PLUGIN_NOT_FOUND);
+			break;
+		case PLG_ERR_NOINITFUNC:
+			set_errno(SI_ERR_INIT_PLUGIN_FUNC_NOT_FOUND);
+			break;
+		case PLG_ERR_INITFAIL:
+			set_errno(SI_ERR_INIT_PLUGIN_FUNC_FAIL);
+			break;
+		case PLG_ERR_BADINFO:
+			set_errno(SI_ERR_BAD_PLUGIN_INFO);
+			break;
+		case PLG_ERR_NOMEM:
+			set_errno(SI_ERR_NOMEM);
+			break;
+		case PLG_ERR_CLOSEFAIL:
+			set_errno(SI_ERR_CLOSE_PLUGIN_FAIL);
+			break;
+		default:
+			break;
+		}
 		return SI_FAIL;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return SI_SUCCESS;
 }
 
@@ -122,7 +115,7 @@ Status SiOpenScene(void)
 		return SI_FAIL;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return SI_SUCCESS;
 }
 
@@ -131,7 +124,7 @@ Status SiCloseScene(void)
 	ScnFree(scene);
 	scene = NULL;
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return SI_SUCCESS;
 }
 
@@ -152,7 +145,7 @@ Status SiRenderScene(ID renderer)
 		return SI_FAIL;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return SI_SUCCESS;
 }
 
@@ -175,7 +168,7 @@ Status SiSaveFrameBuffer(ID framebuffer, const char *filename)
 		return SI_FAIL;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return SI_SUCCESS;
 }
 
@@ -198,7 +191,7 @@ Status SiRunProcedure(ID procedure)
 		return SI_FAIL;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return SI_SUCCESS;
 }
 
@@ -251,7 +244,7 @@ ID SiNewObjectInstance(ID accelerator)
 		return SI_BADID;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return encode_id(Type_ObjectInstance, GET_LAST_ADDED_ID(ObjectInstance));
 }
 
@@ -262,7 +255,7 @@ ID SiNewFrameBuffer(const char *arg)
 		return SI_BADID;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return encode_id(Type_FrameBuffer, GET_LAST_ADDED_ID(FrameBuffer));
 }
 
@@ -273,7 +266,7 @@ ID SiNewTurbulence(void)
 		return SI_BADID;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return encode_id(Type_Turbulence, GET_LAST_ADDED_ID(Turbulence));
 }
 
@@ -299,7 +292,7 @@ ID SiNewProcedure(const char *plugin_name)
 		return SI_BADID;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return encode_id(Type_Procedure, GET_LAST_ADDED_ID(Procedure));
 }
 
@@ -310,7 +303,7 @@ ID SiNewRenderer(void)
 		return SI_BADID;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return encode_id(Type_Renderer, GET_LAST_ADDED_ID(Renderer));
 }
 
@@ -328,7 +321,7 @@ ID SiNewTexture(const char *filename)
 		return SI_FAIL;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return encode_id(Type_Texture, GET_LAST_ADDED_ID(Texture));
 }
 
@@ -339,7 +332,7 @@ ID SiNewCamera(const char *arg)
 		return SI_BADID;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return encode_id(Type_Camera, GET_LAST_ADDED_ID(Camera));
 }
 
@@ -365,7 +358,7 @@ ID SiNewShader(const char *plugin_name)
 		return SI_BADID;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return encode_id(Type_Shader, GET_LAST_ADDED_ID(Shader));
 }
 
@@ -379,7 +372,7 @@ ID SiNewVolume(void)
 		return SI_BADID;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return encode_id(Type_Volume, GET_LAST_ADDED_ID(Volume));
 }
 
@@ -408,7 +401,7 @@ ID SiNewCurve(const char *filename)
 	CrvGetPrimitiveSet(curve, &primset);
 	AccSetPrimitiveSet(acc, &primset);
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
 }
 
@@ -419,7 +412,7 @@ ID SiNewLight(const char *arg)
 		return SI_BADID;
 	}
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return encode_id(Type_Light, GET_LAST_ADDED_ID(Light));
 }
 
@@ -448,7 +441,7 @@ ID SiNewMesh(const char *filename)
 	MshGetPrimitiveSet(mesh, &primset);
 	AccSetPrimitiveSet(acc, &primset);
 
-	set_errno(SI_NOERR);
+	set_errno(SI_ERR_NONE);
 	return encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
 }
 

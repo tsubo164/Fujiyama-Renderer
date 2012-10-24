@@ -28,8 +28,8 @@ extern void CamSetRotate(struct Camera *cam, double rx, double ry, double rz, do
 extern void CamSetTransformOrder(struct Camera *cam, int order);
 extern void CamSetRotateOrder(struct Camera *cam, int order);
 
-extern void CamGetRay(const struct Camera *cam, const double *screen_uv, double time,
-		struct Ray *ray);
+extern void CamGetRay(const struct Camera *cam, const double *screen_uv,
+		double time, struct Ray *ray);
 
 #ifdef __cplusplus
 } /* extern "C" */

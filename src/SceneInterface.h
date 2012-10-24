@@ -6,21 +6,6 @@ See LICENSE and README
 #ifndef SCENEINTERFACES_H
 #define SCENEINTERFACES_H
 
-/* transform orders */
-#define SI_ORDER_SRT 0
-#define SI_ORDER_STR 1
-#define SI_ORDER_RST 2
-#define SI_ORDER_RTS 3
-#define SI_ORDER_TRS 4
-#define SI_ORDER_TSR 5
-/* rotate orders */
-#define SI_ORDER_XYZ 6
-#define SI_ORDER_XZY 7
-#define SI_ORDER_YXZ 8
-#define SI_ORDER_YZX 9
-#define SI_ORDER_ZXY 10
-#define SI_ORDER_ZYX 11
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,9 +15,43 @@ typedef int Status;
 enum { SI_BADID = -1 };
 enum { SI_FAIL = -1, SI_SUCCESS = 0 };
 
+/* TODO should be combined with Status? */
+enum SiErrorNo {
+	SI_ERR_NONE = 0,
+	SI_ERR_BADTYPE,
+	SI_ERR_FAILOPENPLG,
+	SI_ERR_FAILLOAD,
+	SI_ERR_FAILNEW,
+	SI_ERR_NOMEM,
+	/* plugin */
+	SI_ERR_PLUGIN_NOT_FOUND,
+	SI_ERR_INIT_PLUGIN_FUNC_NOT_FOUND,
+	SI_ERR_INIT_PLUGIN_FUNC_FAIL,
+	SI_ERR_BAD_PLUGIN_INFO,
+	SI_ERR_CLOSE_PLUGIN_FAIL,
+	/* unknown */
+	SI_ERR_UNKNOWN
+};
+
+enum SiTransformOrder {
+	/* transform orders */
+	SI_ORDER_SRT = 0,
+	SI_ORDER_STR,
+	SI_ORDER_RST,
+	SI_ORDER_RTS,
+	SI_ORDER_TRS,
+	SI_ORDER_TSR,
+	/* rotate orders */
+	SI_ORDER_XYZ,
+	SI_ORDER_XZY,
+	SI_ORDER_YXZ,
+	SI_ORDER_YZX,
+	SI_ORDER_ZXY,
+	SI_ORDER_ZYX
+};
+
 /* Error interfaces */
 extern int SiGetErrorNo(void);
-extern const char *SiGetErrorMessage(int err_no);
 
 /* Plugin interfaces */
 extern Status SiOpenPlugin(const char *filename);

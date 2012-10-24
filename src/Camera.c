@@ -13,10 +13,7 @@ See LICENSE and README
 #include <assert.h>
 
 struct Camera {
-	struct PropertySampleList translate_list;
-	struct PropertySampleList rotate_list;
-	int transform_order;
-	int rotate_order;
+	struct TransformSampleList transform_samples;
 
 	double aspect;
 	double znear;
@@ -28,6 +25,8 @@ struct Camera {
 
 static void compute_uv_size(struct Camera *cam);
 static void compute_ray_target(const struct Camera *cam, const double *uv, double *target);
+static const struct Transform *get_interpolated_transform(const struct Camera *cam,
+		double time);
 
 struct Camera *CamNew(const char *type)
 {
@@ -35,15 +34,7 @@ struct Camera *CamNew(const char *type)
 	if (cam == NULL)
 		return NULL;
 
-	PropInitSampleList(&cam->translate_list);
-	PropInitSampleList(&cam->rotate_list);
-#if 0
-	CamSetTransformOrder(cam, ORDER_SRT);
-	CamSetRotateOrder(cam, ORDER_ZXY);
-#endif
-	/* need to both orders before calling XfmSetTransform */
-	cam->transform_order = ORDER_SRT;
-	cam->rotate_order = ORDER_ZXY;
+	XfmInitTransformSampleList(&cam->transform_samples);
 
 	CamSetAspect(cam, 1);
 	CamSetFov(cam, 30);
@@ -93,66 +84,34 @@ void CamSetFarPlane(struct Camera *cam, double zfar)
 
 void CamSetTranslate(struct Camera *cam, double tx, double ty, double tz, double time)
 {
-	struct PropertySample sample = {{0, 0, 0}, 0};
-
-	sample.vector[0] = tx;
-	sample.vector[1] = ty;
-	sample.vector[2] = tz;
-	sample.time = time;
-
-	PropPushSample(&cam->translate_list, &sample);
+	XfmPushTranslateSample(&cam->transform_samples, tx, ty, tz, time);
 }
 
 void CamSetRotate(struct Camera *cam, double rx, double ry, double rz, double time)
 {
-	struct PropertySample sample = {{0, 0, 0}, 0};
-
-	sample.vector[0] = rx;
-	sample.vector[1] = ry;
-	sample.vector[2] = rz;
-	sample.time = time;
-
-	PropPushSample(&cam->rotate_list, &sample);
+	XfmPushRotateSample(&cam->transform_samples, rx, ry, rz, time);
 }
 
 void CamSetTransformOrder(struct Camera *cam, int order)
 {
-	if (!XfmIsTransformOrder(order)) {
-		return;
-	}
-	cam->transform_order = order;
+	XfmSetSampleTransformOrder(&cam->transform_samples, order);
 }
 
 void CamSetRotateOrder(struct Camera *cam, int order)
 {
-	if (!XfmIsRotateOrder(order)) {
-		return;
-	}
-	cam->rotate_order = order;
+	XfmSetSampleRotateOrder(&cam->transform_samples, order);
 }
 
-void CamGetRay(const struct Camera *cam, const double *screen_uv, double time,
-		struct Ray *ray)
+void CamGetRay(const struct Camera *cam, const double *screen_uv,
+		double time, struct Ray *ray)
 {
+	const struct Transform *transform_interp = get_interpolated_transform(cam, time);
 	double target[3] = {0, 0, 0};
 	double eye[3] = {0, 0, 0};
-	struct Transform transform;
-
-	struct PropertySample T = INIT_PROPERTYSAMPLE;
-	struct PropertySample R = INIT_PROPERTYSAMPLE;
-
-	PropLerpSamples(&cam->translate_list, time, &T);
-	PropLerpSamples(&cam->rotate_list, time, &R);
-
-	XfmSetTransform(&transform,
-		cam->transform_order, cam->rotate_order,
-		T.vector[0], T.vector[1], T.vector[2],
-		R.vector[0], R.vector[1], R.vector[2],
-		1, 1, 1);
 
 	compute_ray_target(cam, screen_uv, target);
-	XfmTransformPoint(&transform, target);
-	XfmTransformPoint(&transform, eye);
+	XfmTransformPoint(transform_interp, target);
+	XfmTransformPoint(transform_interp, eye);
 
 	VEC3_SUB(ray->dir, target, eye);
 	VEC3_NORMALIZE(ray->dir);
@@ -173,5 +132,15 @@ static void compute_ray_target(const struct Camera *cam, const double *uv, doubl
 	target[0] = (uv[0] - .5) * cam->uv_size[0];
 	target[1] = (uv[1] - .5) * cam->uv_size[1];
 	target[2] = -1;
+}
+
+static const struct Transform *get_interpolated_transform(const struct Camera *cam,
+		double time)
+{
+	struct TransformSampleList *mutable_transform_list =
+			(struct TransformSampleList *) &cam->transform_samples;
+
+	XfmLerpTransformSample(mutable_transform_list, time);
+	return &cam->transform_samples.transform_sample;
 }
 

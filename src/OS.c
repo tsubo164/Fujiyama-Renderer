@@ -4,6 +4,7 @@ See LICENSE and README
 */
 
 #include "OS.h"
+#include <stdio.h>
 #include <stddef.h>
 
 /* system dependent */
@@ -12,12 +13,16 @@ See LICENSE and README
 
 void *OsDlopen(const char *filename)
 {
-	return dlopen(filename, RTLD_LAZY);
+	void *handle = dlopen(filename, RTLD_LAZY);
+	/* fputs(dlerror(), stderr); */
+	return handle;
 }
 
 void *OsDlsym(void *handle, const char *symbol)
 {
-	return dlsym(handle, symbol);
+	void *sym = dlsym(handle, symbol);
+	/* fputs(dlerror(), stderr); */
+	return sym;
 }
 
 char *OsDlerror(void *handle)
@@ -27,6 +32,9 @@ char *OsDlerror(void *handle)
 
 int OsDlclose(void *handle)
 {
+	if (handle == NULL)
+		return 0;
+
 	/* dlclose() returns non-0 when error */
 	if (dlclose(handle))
 		return -1;

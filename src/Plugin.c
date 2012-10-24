@@ -9,103 +9,79 @@ See LICENSE and README
 #include <stdlib.h>
 #include <string.h>
 
+static int error_no = PLG_ERR_NONE;
+static void clear_pluginfo(struct PluginInfo *info);
+static int is_valid_pluginfo(const struct PluginInfo *info);
+static void set_errno(int err_no);
+
 struct Plugin {
 	void *dso;
 	struct PluginInfo info;
 };
 
-static int error_no = ERR_PLG_NOERR;
-static void clear_pluginfo(struct PluginInfo *info);
-static int is_valid_pluginfo(const struct PluginInfo *info);
-
-int PlgGetErrorNo(void)
-{
-	return error_no;
-}
-
-const char *PlgGetErrorMessage(int err_no)
-{
-	static const char *errmsg[] = {
-		"",                         /* ERR_PLG_NOERR */
-		"No such plugin",           /* ERR_PLG_NOPLG */
-		"No initialize function",   /* ERR_PLG_NOINIT */
-		"Initialize plugin failed", /* ERR_PLG_INITFAIL */
-		"Invalid plugin info",      /* ERR_PLG_BADINFO */
-		"Cannot allocate memory",   /* ERR_PLG_NOMEM */
-		"Fail to close dso"         /* ERR_PLG_FAILCLOSE */
-	};
-	static const int nerrs = (int) sizeof(errmsg)/sizeof(errmsg[0]);
-
-	if (err_no >= nerrs) {
-		fprintf(stderr, "Logic error: err_no %d is out of range\n", err_no);
-		abort();
-	}
-	return errmsg[err_no];
-}
-
 struct Plugin *PlgOpen(const char *filename)
 {
-	void *tmpdso;
-	struct Plugin *plugin;
+	int err = 0;
+	void *tmpdso = NULL;
+	struct Plugin *plugin = NULL;
 	struct PluginInfo info;
-	PlgInitializeFn initialize_plugin;
+	PlgInitializeFn initialize_plugin = NULL;
 
-	error_no = ERR_PLG_NOERR;
+	set_errno(PLG_ERR_NONE);
 	tmpdso = OsDlopen(filename);
 	if (tmpdso == NULL) {
-		error_no = ERR_PLG_NOPLG;
-		return NULL;
+		set_errno(PLG_ERR_NOPLUGIN);
+		goto plugin_error;
 	}
 
 	/* ISO C forbids conversion of object pointer to function pointer type.
 	This does void pointer -> long int -> function pointer */
 	initialize_plugin = (PlgInitializeFn) (long) OsDlsym(tmpdso, "Initialize");
 	if (initialize_plugin == NULL) {
-		error_no = ERR_PLG_NOINIT;
-		OsDlclose(tmpdso);
-		return NULL;
+		set_errno(PLG_ERR_NOINITFUNC);
+		goto plugin_error;
 	}
 
 	clear_pluginfo(&info);
-	if (initialize_plugin(&info)) {
-		error_no = ERR_PLG_INITFAIL;
-		OsDlclose(tmpdso);
-		return NULL;
+	err = initialize_plugin(&info);
+	if (err) {
+		set_errno(PLG_ERR_INITFAIL);
+		goto plugin_error;
 	}
 
 	/* TODO this is checked in initialize_plugin */
 	if (!is_valid_pluginfo(&info)) {
-		error_no = ERR_PLG_BADINFO;
-		OsDlclose(tmpdso);
-		return NULL;
+		set_errno(PLG_ERR_BADINFO);
+		goto plugin_error;
 	}
 
 	plugin = (struct Plugin *) malloc(sizeof(struct Plugin));
 	if (plugin == NULL) {
-		error_no = ERR_PLG_NOMEM;
-		OsDlclose(tmpdso);
-		return NULL;
+		set_errno(PLG_ERR_NOMEM);
+		goto plugin_error;
 	}
 
 	/* commit */
 	plugin->dso = tmpdso;
 	plugin->info = info;
-
 	return plugin;
+
+plugin_error:
+	OsDlclose(tmpdso);
+	return NULL;
 }
 
 int PlgClose(struct Plugin *plugin)
 {
-	int err;
+	const int err = OsDlclose(plugin->dso);
 
-	err = OsDlclose(plugin->dso);
 	free(plugin);
 
 	if (err) {
-		error_no = ERR_PLG_FAILCLOSE;
+		set_errno(PLG_ERR_CLOSEFAIL);
 		return -1;
 	} else {
-		error_no = ERR_PLG_NOERR;
+		set_errno(PLG_ERR_NONE);
 		return 0;
 	}
 }
@@ -175,7 +151,17 @@ int PlgSetupInfo(struct PluginInfo *info,
 		return -1;
 }
 
-void clear_pluginfo(struct PluginInfo *info)
+int PlgGetErrorNo(void)
+{
+	return error_no;
+}
+
+static void set_errno(int err_no)
+{
+	error_no = err_no;
+}
+
+static void clear_pluginfo(struct PluginInfo *info)
 {
 	info->api_version = 0;
 	info->plugin_type = NULL;
@@ -187,7 +173,7 @@ void clear_pluginfo(struct PluginInfo *info)
 	info->meta = NULL;
 }
 
-int is_valid_pluginfo(const struct PluginInfo *info)
+static int is_valid_pluginfo(const struct PluginInfo *info)
 {
 	if (info->api_version != PLUGIN_API_VERSION ||
 		info->plugin_type == NULL ||

@@ -6,11 +6,11 @@ See LICENSE and README
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
+#define PLUGIN_API_VERSION 1
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define PLUGIN_API_VERSION 1
 
 struct Plugin;
 struct PluginInfo;
@@ -22,13 +22,13 @@ typedef void *(*PlgCreateInstanceFn)(void);
 typedef void (*PlgDeleteInstanceFn)(void *obj);
 
 enum PlgErrorNo {
-	ERR_PLG_NOERR = 0,
-	ERR_PLG_NOPLG,
-	ERR_PLG_NOINIT,
-	ERR_PLG_INITFAIL,
-	ERR_PLG_BADINFO,
-	ERR_PLG_NOMEM,
-	ERR_PLG_FAILCLOSE
+	PLG_ERR_NONE = 0,
+	PLG_ERR_NOPLUGIN,   /* plugin not found */
+	PLG_ERR_NOINITFUNC, /* init func not exist */
+	PLG_ERR_INITFAIL,   /* init func failed */
+	PLG_ERR_BADINFO,    /* bad plugin info */
+	PLG_ERR_NOMEM,      /* no memory for plugin */
+	PLG_ERR_CLOSEFAIL   /* close plugin failed */
 };
 
 struct PluginInfo {
@@ -46,9 +46,6 @@ struct MetaInfo {
 	const char *name;
 	const char *data;
 };
-
-extern int PlgGetErrorNo(void);
-extern const char *PlgGetErrorMessage(int err_no);
 
 extern struct Plugin *PlgOpen(const char *filename);
 extern int PlgClose(struct Plugin *plugin);
@@ -72,6 +69,8 @@ extern int PlgSetupInfo(struct PluginInfo *info,
 		const void *vtbl,
 		const struct Property *properties,
 		const struct MetaInfo *meta);
+
+extern int PlgGetErrorNo(void);
 
 #ifdef __cplusplus
 } /* extern "C" */
