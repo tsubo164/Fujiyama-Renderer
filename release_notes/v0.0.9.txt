@@ -1,0 +1,24 @@
+Fujiyama Renderer v0.0.9(Alpha) Release Notes
+=============================================
+
+New features since v0.0.8
+-------------------------
+ * Transform motion blur has been implemented. It interpolates transform values not its matrix
+   so that it can solve accurate matrix in sample time.
+
+ * 'sample_time_range' property has been added to Renderer. It allows you to change
+   the shutter open/close time and its range without changing animation.
+
+ * Added transform order enum such as ORDER_SRT, to SceneInterface and Python interface.
+
+ * Improved error messages that show up when loading plugins.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Deep shadow
+ * Displacement shader
+ * Subdivision surface
+ * Alembic support
+ * IBL

@@ -23,12 +23,12 @@ typedef void (*PlgDeleteInstanceFn)(void *obj);
 
 enum PlgErrorNo {
 	PLG_ERR_NONE = 0,
-	PLG_ERR_NOPLUGIN,   /* plugin not found */
-	PLG_ERR_NOINITFUNC, /* init func not exist */
-	PLG_ERR_INITFAIL,   /* init func failed */
-	PLG_ERR_BADINFO,    /* bad plugin info */
-	PLG_ERR_NOMEM,      /* no memory for plugin */
-	PLG_ERR_CLOSEFAIL   /* close plugin failed */
+	PLG_ERR_PLUGIN_NOT_FOUND,
+	PLG_ERR_INIT_PLUGIN_FUNC_NOT_EXIST,
+	PLG_ERR_INIT_PLUGIN_FUNC_FAIL,
+	PLG_ERR_BAD_PLUGIN_INFO,
+	PLG_ERR_CLOSE_PLUGIN_FAIL,
+	PLG_ERR_NO_MEMORY
 };
 
 struct PluginInfo {

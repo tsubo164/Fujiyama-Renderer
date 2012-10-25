@@ -821,7 +821,7 @@ static void set_error_message(int current_errno)
 		{PSR_ERR_FAILRENDER ,    "render faided"},
 		/* from SceneInterface */
 		{SI_ERR_PLUGIN_NOT_FOUND,           "plugin not found"},
-		{SI_ERR_INIT_PLUGIN_FUNC_NOT_FOUND, "initialize function not found in the plugin"},
+		{SI_ERR_INIT_PLUGIN_FUNC_NOT_EXIST, "initialize plugin function not exit"},
 		{SI_ERR_INIT_PLUGIN_FUNC_FAIL,      "initialize plugin function failed"},
 		{SI_ERR_BAD_PLUGIN_INFO,            "invalid plugin info in the plugin"},
 		{SI_ERR_CLOSE_PLUGIN_FAIL,          "close plugin function failed"},

@@ -3,8 +3,8 @@ Copyright (c) 2011-2012 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef SCENEINTERFACES_H
-#define SCENEINTERFACES_H
+#ifndef SCENEINTERFACE_H
+#define SCENEINTERFACE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,15 +22,14 @@ enum SiErrorNo {
 	SI_ERR_FAILOPENPLG,
 	SI_ERR_FAILLOAD,
 	SI_ERR_FAILNEW,
-	SI_ERR_NOMEM,
 	/* plugin */
 	SI_ERR_PLUGIN_NOT_FOUND,
-	SI_ERR_INIT_PLUGIN_FUNC_NOT_FOUND,
+	SI_ERR_INIT_PLUGIN_FUNC_NOT_EXIST,
 	SI_ERR_INIT_PLUGIN_FUNC_FAIL,
 	SI_ERR_BAD_PLUGIN_INFO,
 	SI_ERR_CLOSE_PLUGIN_FAIL,
-	/* unknown */
-	SI_ERR_UNKNOWN
+	/* no memory */
+	SI_ERR_NO_MEMORY
 };
 
 enum SiTransformOrder {

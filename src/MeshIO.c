@@ -14,36 +14,10 @@ See LICENSE and README
 #define MSH_MAGIC_SIZE 4
 #define MAX_ATTRNAME_SIZE 32
 
+static int error_no = MSH_ERR_NONE;
 static size_t write_attriname(struct MeshOutput *out, const char *name);
 static size_t write_attridata(struct MeshOutput *out, const char *name);
 static void set_error(int err);
-
-static int error_no = ERR_MSH_NOERR;
-
-/* error no interfaces */
-int MshGetErrorNo(void)
-{
-	return error_no;
-}
-
-const char *MshGetErrorMessage(int err)
-{
-	static const char *errmsg[] = {
-		"",                        /* ERR_MSH_NOERR */
-		"No memory for MeshInput", /* ERR_MSH_NOMEM */
-		"No such file",            /* ERR_MSH_NOFILE */
-		"Not mesh file",           /* ERR_MSH_NOTMESH */
-		"Invalid file version",    /* ERR_MSH_BADVER */
-		"Invalid attribute name"   /* ERR_MSH_BADATTRNAME */
-	};
-	static const int nerrs = (int) sizeof(errmsg)/sizeof(errmsg[0]);
-
-	if (err >= nerrs) {
-		fprintf(stderr, "fatal error: error no %d is out of range\n", err);
-		abort();
-	}
-	return errmsg[err];
-}
 
 /* mesh input file interfaces */
 struct MeshInput *MshOpenInputFile(const char *filename)
@@ -52,13 +26,13 @@ struct MeshInput *MshOpenInputFile(const char *filename)
 
 	in = (struct MeshInput *) malloc(sizeof(struct MeshInput));
 	if (in == NULL) {
-		set_error(ERR_MSH_NOMEM);
+		set_error(MSH_ERR_NO_MEMORY);
 		return NULL;
 	}
 
 	in->file = fopen(filename, "rb");
 	if (in->file == NULL) {
-		set_error(ERR_MSH_NOFILE);
+		set_error(MSH_ERR_FILE_NOT_EXIST);
 		free(in);
 		return NULL;
 	}
@@ -102,12 +76,12 @@ int MshReadHeader(struct MeshInput *in)
 
 	nreads += fread(magic, sizeof(char), MSH_MAGIC_SIZE, in->file);
 	if (memcmp(magic, MSH_FILE_MAGIC, MSH_MAGIC_SIZE) != 0) {
-		set_error(ERR_MSH_NOTMESH);
+		set_error(MSH_ERR_BAD_MAGIC_NUMBER);
 		return -1;
 	}
 	nreads += fread(&in->version, sizeof(int), 1, in->file);
 	if (in->version != MSH_FILE_VERSION) {
-		set_error(ERR_MSH_BADVER);
+		set_error(MSH_ERR_BAD_FILE_VERSION);
 		return -1;
 	}
 	nreads += fread(&in->nverts, sizeof(int), 1, in->file);
@@ -126,7 +100,7 @@ int MshReadHeader(struct MeshInput *in)
 
 		nreads += fread(&namesize, sizeof(size_t), 1, in->file);
 		if (namesize > MAX_ATTRNAME_SIZE-1) {
-			set_error(ERR_MSH_BADATTRNAME);
+			set_error(MSH_ERR_LONG_ATTRIB_NAME);
 			return -1;
 		}
 		nreads += fread(attrname, sizeof(char), namesize, in->file);
@@ -153,13 +127,13 @@ struct MeshOutput *MshOpenOutputFile(const char *filename)
 
 	out = (struct MeshOutput *) malloc(sizeof(struct MeshOutput));
 	if (out == NULL) {
-		set_error(ERR_MSH_NOMEM);
+		set_error(MSH_ERR_NO_MEMORY);
 		return NULL;
 	}
 
 	out->file = fopen(filename, "wb");
 	if (out->file == NULL) {
-		set_error(ERR_MSH_NOFILE);
+		set_error(MSH_ERR_FILE_NOT_EXIST);
 		free(out);
 		return NULL;
 	}
@@ -265,6 +239,16 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
 	return 0;
 }
 
+int MshGetErrorNo(void)
+{
+	return error_no;
+}
+
+static void set_error(int err)
+{
+	error_no = err;
+}
+
 static size_t write_attriname(struct MeshOutput *out, const char *name)
 {
 	size_t namesize;
@@ -336,10 +320,5 @@ static size_t write_attridata(struct MeshOutput *out, const char *name)
 		fwrite(out->indices, sizeof(int), 3 * out->nfaces, out->file);
 	}
 	return nwrotes;
-}
-
-static void set_error(int err)
-{
-	error_no = err;
 }
 

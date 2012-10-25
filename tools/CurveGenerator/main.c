@@ -74,8 +74,33 @@ int main(int argc, const char **argv)
 	}
 
 	if (MshLoadFile(mesh, meshfile)) {
+		const char *err_msg = NULL;
 		MshFree(mesh);
-		fprintf(stderr, "error: %s: %s\n", MshGetErrorMessage(MshGetErrorNo()), meshfile);
+
+		switch (MshGetErrorNo()) {
+		case MSH_ERR_NONE:
+			err_msg = "";
+			break;
+		case MSH_ERR_FILE_NOT_EXIST:
+			err_msg = "mesh file not found";
+			break;
+		case MSH_ERR_BAD_MAGIC_NUMBER:
+			err_msg = "invalid magic number";
+			break;
+		case MSH_ERR_BAD_FILE_VERSION:
+			err_msg = "invalid file format version";
+			break;
+		case MSH_ERR_LONG_ATTRIB_NAME:
+			err_msg = "too long attribute name was detected";
+			break;
+		case MSH_ERR_NO_MEMORY:
+			err_msg = "no memory to allocate";
+			break;
+		default:
+			err_msg = "";
+			break;
+		}
+		fprintf(stderr, "error: %s: %s\n", err_msg, meshfile);
 		return -1;
 	}
 

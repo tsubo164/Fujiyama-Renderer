@@ -14,6 +14,15 @@ extern "C" {
 
 struct Mesh;
 
+enum MshErrorNo {
+	MSH_ERR_NONE = 0,
+	MSH_ERR_FILE_NOT_EXIST,
+	MSH_ERR_BAD_MAGIC_NUMBER,
+	MSH_ERR_BAD_FILE_VERSION,
+	MSH_ERR_LONG_ATTRIB_NAME,
+	MSH_ERR_NO_MEMORY
+};
+
 struct MeshInput {
 	FILE *file;
 	int version;
@@ -44,19 +53,6 @@ struct MeshOutput {
 	int *indices;
 };
 
-enum MshErrorNo {
-	ERR_MSH_NOERR = 0,
-	ERR_MSH_NOMEM,
-	ERR_MSH_NOFILE,
-	ERR_MSH_NOTMESH,
-	ERR_MSH_BADVER,
-	ERR_MSH_BADATTRNAME
-};
-
-/* error no interfaces */
-extern int MshGetErrorNo(void);
-extern const char *MshGetErrorMessage(int err);
-
 /* mesh input file interfaces */
 extern struct MeshInput *MshOpenInputFile(const char *filename);
 extern void MshCloseInputFile(struct MeshInput *in);
@@ -70,6 +66,9 @@ extern void MshWriteFile(struct MeshOutput *out);
 
 /* high level interface for loading mesh file */
 extern int MshLoadFile(struct Mesh *mesh, const char *filename);
+
+/* error no interfaces */
+extern int MshGetErrorNo(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

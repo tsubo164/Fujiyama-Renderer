@@ -24,7 +24,7 @@ si.NewTexture('tex1', '../../mip/doge2.mip')
 
 #Shader
 si.NewShader('armadillo_shader', 'PlasticShader')
-si.SetProperty3('armadillo_shader', 'diffuse', .6, .01, .0)
+si.SetProperty3('armadillo_shader', 'diffuse', .7, .05, .2)
 
 si.NewShader('floor_shader', 'PlasticShader')
 si.SetProperty3('floor_shader', 'diffuse', .2, .25, .3)

@@ -77,22 +77,22 @@ Status SiOpenPlugin(const char *filename)
 	if (ScnOpenPlugin(scene, filename) == NULL) {
 		/* TODO make a mapping function */
 		switch (PlgGetErrorNo()) {
-		case PLG_ERR_NOPLUGIN:
+		case PLG_ERR_PLUGIN_NOT_FOUND:
 			set_errno(SI_ERR_PLUGIN_NOT_FOUND);
 			break;
-		case PLG_ERR_NOINITFUNC:
-			set_errno(SI_ERR_INIT_PLUGIN_FUNC_NOT_FOUND);
+		case PLG_ERR_INIT_PLUGIN_FUNC_NOT_EXIST:
+			set_errno(SI_ERR_INIT_PLUGIN_FUNC_NOT_EXIST);
 			break;
-		case PLG_ERR_INITFAIL:
+		case PLG_ERR_INIT_PLUGIN_FUNC_FAIL:
 			set_errno(SI_ERR_INIT_PLUGIN_FUNC_FAIL);
 			break;
-		case PLG_ERR_BADINFO:
+		case PLG_ERR_BAD_PLUGIN_INFO:
 			set_errno(SI_ERR_BAD_PLUGIN_INFO);
 			break;
-		case PLG_ERR_NOMEM:
-			set_errno(SI_ERR_NOMEM);
+		case PLG_ERR_NO_MEMORY:
+			set_errno(SI_ERR_NO_MEMORY);
 			break;
-		case PLG_ERR_CLOSEFAIL:
+		case PLG_ERR_CLOSE_PLUGIN_FAIL:
 			set_errno(SI_ERR_CLOSE_PLUGIN_FAIL);
 			break;
 		default:
@@ -111,7 +111,7 @@ Status SiOpenScene(void)
 	scene = ScnNew();
 
 	if (scene == NULL) {
-		set_errno(SI_ERR_NOMEM);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_FAIL;
 	}
 

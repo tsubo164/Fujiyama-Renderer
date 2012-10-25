@@ -30,7 +30,7 @@ struct Plugin *PlgOpen(const char *filename)
 	set_errno(PLG_ERR_NONE);
 	tmpdso = OsDlopen(filename);
 	if (tmpdso == NULL) {
-		set_errno(PLG_ERR_NOPLUGIN);
+		set_errno(PLG_ERR_PLUGIN_NOT_FOUND);
 		goto plugin_error;
 	}
 
@@ -38,26 +38,26 @@ struct Plugin *PlgOpen(const char *filename)
 	This does void pointer -> long int -> function pointer */
 	initialize_plugin = (PlgInitializeFn) (long) OsDlsym(tmpdso, "Initialize");
 	if (initialize_plugin == NULL) {
-		set_errno(PLG_ERR_NOINITFUNC);
+		set_errno(PLG_ERR_INIT_PLUGIN_FUNC_NOT_EXIST);
 		goto plugin_error;
 	}
 
 	clear_pluginfo(&info);
 	err = initialize_plugin(&info);
 	if (err) {
-		set_errno(PLG_ERR_INITFAIL);
+		set_errno(PLG_ERR_INIT_PLUGIN_FUNC_FAIL);
 		goto plugin_error;
 	}
 
 	/* TODO this is checked in initialize_plugin */
 	if (!is_valid_pluginfo(&info)) {
-		set_errno(PLG_ERR_BADINFO);
+		set_errno(PLG_ERR_BAD_PLUGIN_INFO);
 		goto plugin_error;
 	}
 
 	plugin = (struct Plugin *) malloc(sizeof(struct Plugin));
 	if (plugin == NULL) {
-		set_errno(PLG_ERR_NOMEM);
+		set_errno(PLG_ERR_NO_MEMORY);
 		goto plugin_error;
 	}
 
@@ -78,7 +78,7 @@ int PlgClose(struct Plugin *plugin)
 	free(plugin);
 
 	if (err) {
-		set_errno(PLG_ERR_CLOSEFAIL);
+		set_errno(PLG_ERR_CLOSE_PLUGIN_FAIL);
 		return -1;
 	} else {
 		set_errno(PLG_ERR_NONE);
