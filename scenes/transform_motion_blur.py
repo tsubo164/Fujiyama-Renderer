@@ -24,7 +24,7 @@ si.NewTexture('tex1', '../../mip/doge2.mip')
 
 #Shader
 si.NewShader('armadillo_shader', 'PlasticShader')
-si.SetProperty3('armadillo_shader', 'diffuse', .7, .05, .2)
+si.SetProperty3('armadillo_shader', 'diffuse', .7, .05, .1)
 
 si.NewShader('floor_shader', 'PlasticShader')
 si.SetProperty3('floor_shader', 'diffuse', .2, .25, .3)
@@ -61,9 +61,9 @@ si.NewFrameBuffer('fb1', 'rgba')
 si.NewRenderer('ren1')
 si.AssignCamera('ren1', 'cam1')
 si.AssignFrameBuffer('ren1', 'fb1')
-#si.SetProperty2('ren1', 'resolution', 640, 480)
-si.SetProperty2('ren1', 'resolution', 160, 120)
-#si.SetProperty2('ren1', 'pixelsamples', 9, 9)
+si.SetProperty2('ren1', 'resolution', 640, 480)
+#si.SetProperty2('ren1', 'resolution', 160, 120)
+si.SetProperty2('ren1', 'pixelsamples', 9, 9)
 #si.SetProperty2('ren1', 'sample_time_range', 0, 1)
 
 #Rendering

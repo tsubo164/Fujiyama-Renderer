@@ -15,7 +15,7 @@ INSTALL = install
 .PHONY: all all_ clean install install_library install_shaders install_procedures install_bin install_tools sample scenes/cube.fb
 all: all_
 
-prefix = $(HOME)
+prefix = /usr/local
 
 #******************************************************************************
 # $(eval $(call submodule, $(srcdir_), $(files_), $(subtgt_), $(cflags_), $(ldflags_)))

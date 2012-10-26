@@ -89,8 +89,8 @@ static void clear_image_viewer(struct FrameBufferViewer *v)
 
 struct FrameBufferViewer *FbvNewViewer(void)
 {
-	struct FrameBufferViewer *v;
-	v = (struct FrameBufferViewer *) malloc(sizeof(struct FrameBufferViewer));
+	struct FrameBufferViewer *v =
+			(struct FrameBufferViewer *) malloc(sizeof(struct FrameBufferViewer));
 
 	if (v == NULL)
 		return NULL;
@@ -368,8 +368,8 @@ int FbvLoadImage(struct FrameBufferViewer *v, const char *filename)
 {
 	char try_filename[1024] = {'\0'};
 	const size_t MAXCPY = 1024-1;
-	const char *ext;
-	int err;
+	const char *ext = NULL;
+	int err = 0;
 
 	StrCopyAndTerminate(try_filename, filename, MAXCPY);
 	if (strcmp(v->filename, try_filename) != 0) {
@@ -387,7 +387,7 @@ int FbvLoadImage(struct FrameBufferViewer *v, const char *filename)
 		err = load_mip(v);
 	}
 	else {
-		err = -1;
+		return -1;
 	}
 
 	{
@@ -484,9 +484,8 @@ static void set_to_home_position(struct FrameBufferViewer *v)
 
 static int load_fb(struct FrameBufferViewer *v)
 {
-	struct FbInput *in;
+	struct FbInput *in = FbOpenInputFile(v->filename);
 
-	in = FbOpenInputFile(v->filename);
 	if (in == NULL)
 		return -1;
 
@@ -519,9 +518,8 @@ static int load_fb(struct FrameBufferViewer *v)
 
 static int load_mip(struct FrameBufferViewer *v)
 {
-	struct MipInput *in;
+	struct MipInput *in = MipOpenInputFile(v->filename);
 
-	in = MipOpenInputFile(v->filename);
 	if (in == NULL)
 		return -1;
 
@@ -546,10 +544,10 @@ static int load_mip(struct FrameBufferViewer *v)
 
 	{
 		int x, y;
-		struct FrameBuffer *tilebuf;
+		struct FrameBuffer *tilebuf = FbNew();
 
-		tilebuf = FbNew();
 		if (tilebuf == NULL) {
+			/* TODO error handling */
 		}
 		FbResize(tilebuf, in->tilesize, in->tilesize, in->nchannels);
 
