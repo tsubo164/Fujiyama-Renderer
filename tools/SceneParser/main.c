@@ -50,7 +50,7 @@ int main(int argc, const char **argv)
 		err = PsrParseLine(parser, buf);
 		if (err) {
 			fprintf(stderr, "error: %s: %d: %s",
-					PsrGetErrorMessage(), PsrGetLineNo(parser), buf);
+					PsrGetErrorMessage(parser), PsrGetLineNo(parser), buf);
 			return -1;
 		}
 	}

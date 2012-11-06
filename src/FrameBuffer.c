@@ -22,9 +22,8 @@ static void free_buffer(struct FrameBuffer *fb);
 
 struct FrameBuffer *FbNew(void)
 {
-	struct FrameBuffer *fb;
+	struct FrameBuffer *fb = (struct FrameBuffer *) malloc(sizeof(struct FrameBuffer));
 
-	fb = (struct FrameBuffer *) malloc(sizeof(struct FrameBuffer));
 	if (fb == NULL)
 		return NULL;
 
@@ -63,7 +62,7 @@ int FbGetChannelCount(const struct FrameBuffer *fb)
 float *FbResize(struct FrameBuffer *fb, int width, int height, int nchannels)
 {
 	float *buftmp = NULL;
-	int total_alloc;
+	int total_alloc = 0;
 
 	assert(width >= 0);
 	assert(height >= 0);
@@ -97,7 +96,7 @@ float *FbResize(struct FrameBuffer *fb, int width, int height, int nchannels)
 
 int FbComputeBounds(struct FrameBuffer *fb, int *bounds)
 {
-	const float *tmp;
+	const float *tmp = 0;
 	int x, y;
 	int xmin, ymin, xmax, ymax;
 

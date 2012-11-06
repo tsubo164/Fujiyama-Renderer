@@ -44,9 +44,8 @@ const char *FbGetErrorMessage(int err)
 
 struct FbInput *FbOpenInputFile(const char *filename)
 {
-	struct FbInput *in;
+	struct FbInput *in = (struct FbInput *) malloc(sizeof(struct FbInput));
 
-	in = (struct FbInput *) malloc(sizeof(struct FbInput));
 	if (in == NULL) {
 		set_error(ERR_FB_NOMEM);
 		return NULL;
@@ -85,7 +84,7 @@ void FbCloseInputFile(struct FbInput *in)
 int FbReadHeader(struct FbInput *in)
 {
 	size_t nreads = 0;
-	char magic[FB_MAGIC_SIZE];
+	char magic[FB_MAGIC_SIZE] = {'\0'};
 
 	nreads += fread(magic, sizeof(char), FB_MAGIC_SIZE, in->file);
 	if (memcmp(magic, FB_FILE_MAGIC, FB_MAGIC_SIZE) != 0) {
@@ -119,9 +118,8 @@ int FbReadData(struct FbInput *in)
 
 struct FbOutput *FbOpenOutputFile(const char *filename)
 {
-	struct FbOutput *out;
+	struct FbOutput *out = (struct FbOutput *) malloc(sizeof(struct FbOutput));
 
-	out = (struct FbOutput *) malloc(sizeof(struct FbOutput));
 	if (out == NULL) {
 		set_error(ERR_FB_NOMEM);
 		return NULL;
@@ -174,10 +172,10 @@ int FbSaveCroppedData(struct FrameBuffer *fb, const char *filename)
 {
 	int x, y;
 	int xmin, ymin, xmax, ymax;
-	int viewbox[4];
-	int databox[4];
-	struct FrameBuffer *cropped;
-	struct FbOutput *out;
+	int viewbox[4] = {0, 0, 0, 0};
+	int databox[4] = {0, 0, 0, 0};
+	struct FrameBuffer *cropped = NULL;
+	struct FbOutput *out = NULL;
 
 	out = FbOpenOutputFile(filename);
 	if (out == NULL) {
