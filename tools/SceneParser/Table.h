@@ -6,11 +6,11 @@ See LICENSE and README
 #ifndef TABLE_H
 #define TABLE_H
 
+#include "SceneInterface.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "SceneInterface.h"
 
 struct Table;
 struct TableEnt;

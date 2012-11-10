@@ -19,7 +19,7 @@ See LICENSE and README
 
 enum { TYPE_ID_OFFSET = 10000000 };
 
-enum {
+enum EntryType {
 	Type_Begin = 0,
 	Type_ObjectInstance = 1,
 	Type_Accelerator,
@@ -201,6 +201,7 @@ ID SiNewObjectInstance(ID accelerator)
 	const struct Entry entry = decode_id(accelerator);
 
 	if (entry.type == Type_Accelerator) {
+		struct ObjectInstance *object = NULL;
 		struct Accelerator *acc = NULL;
 
 		acc = ScnGetAccelerator(scene, entry.index);
@@ -210,8 +211,9 @@ ID SiNewObjectInstance(ID accelerator)
 		}
 
 		/* TODO come up with another way to pass acc */
-		if (ScnNewObjectInstance(scene, acc) == NULL) {
-			set_errno(SI_ERR_FAILNEW);
+		object = ScnNewObjectInstance(scene, acc);
+		if (object == NULL) {
+			set_errno(SI_ERR_NO_MEMORY);
 			return SI_BADID;
 		}
 	}
@@ -228,7 +230,7 @@ ID SiNewObjectInstance(ID accelerator)
 
 		object = ScnNewObjectInstance(scene, NULL);
 		if (object == NULL) {
-			set_errno(SI_ERR_FAILNEW);
+			set_errno(SI_ERR_NO_MEMORY);
 			return SI_BADID;
 		}
 
@@ -251,7 +253,7 @@ ID SiNewObjectInstance(ID accelerator)
 ID SiNewFrameBuffer(const char *arg)
 {
 	if (ScnNewFrameBuffer(scene) == NULL) {
-		set_errno(SI_ERR_FAILNEW);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_BADID;
 	}
 
@@ -262,7 +264,7 @@ ID SiNewFrameBuffer(const char *arg)
 ID SiNewTurbulence(void)
 {
 	if (ScnNewTurbulence(scene) == NULL) {
-		set_errno(SI_ERR_FAILNEW);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_BADID;
 	}
 
@@ -288,7 +290,7 @@ ID SiNewProcedure(const char *plugin_name)
 		return SI_BADID;
 	}
 	if (ScnNewProcedure(scene, found) == NULL) {
-		set_errno(SI_ERR_FAILNEW);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_BADID;
 	}
 
@@ -299,7 +301,7 @@ ID SiNewProcedure(const char *plugin_name)
 ID SiNewRenderer(void)
 {
 	if (ScnNewRenderer(scene) == NULL) {
-		set_errno(SI_ERR_FAILNEW);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_BADID;
 	}
 
@@ -309,11 +311,10 @@ ID SiNewRenderer(void)
 
 ID SiNewTexture(const char *filename)
 {
-	struct Texture *tex = NULL;
+	struct Texture *tex = ScnNewTexture(scene);
 
-	tex = ScnNewTexture(scene);
 	if (tex == NULL) {
-		set_errno(SI_ERR_FAILNEW);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_BADID;
 	}
 	if (TexLoadFile(tex, filename)) {
@@ -328,7 +329,7 @@ ID SiNewTexture(const char *filename)
 ID SiNewCamera(const char *arg)
 {
 	if (ScnNewCamera(scene, arg) == NULL) {
-		set_errno(SI_ERR_FAILNEW);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_BADID;
 	}
 
@@ -354,7 +355,7 @@ ID SiNewShader(const char *plugin_name)
 		return SI_BADID;
 	}
 	if (ScnNewShader(scene, found) == NULL) {
-		set_errno(SI_ERR_FAILNEW);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_BADID;
 	}
 
@@ -364,11 +365,10 @@ ID SiNewShader(const char *plugin_name)
 
 ID SiNewVolume(void)
 {
-	struct Volume *volume = NULL;
+	struct Volume *volume = ScnNewVolume(scene);
 
-	volume = ScnNewVolume(scene);
 	if (volume == NULL) {
-		set_errno(SI_ERR_FAILNEW);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_BADID;
 	}
 
@@ -384,7 +384,7 @@ ID SiNewCurve(const char *filename)
 
 	curve = ScnNewCurve(scene);
 	if (curve == NULL) {
-		set_errno(SI_ERR_FAILNEW);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_BADID;
 	}
 	if (CrvLoadFile(curve, filename)) {
@@ -394,7 +394,7 @@ ID SiNewCurve(const char *filename)
 
 	acc = ScnNewAccelerator(scene, ACC_GRID);
 	if (acc == NULL) {
-		set_errno(SI_ERR_FAILNEW);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_BADID;
 	}
 
@@ -408,7 +408,7 @@ ID SiNewCurve(const char *filename)
 ID SiNewLight(const char *arg)
 {
 	if (ScnNewLight(scene, arg) == NULL) {
-		set_errno(SI_ERR_FAILNEW);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_BADID;
 	}
 
@@ -424,7 +424,7 @@ ID SiNewMesh(const char *filename)
 
 	mesh = ScnNewMesh(scene);
 	if (mesh == NULL) {
-		set_errno(SI_ERR_FAILNEW);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_BADID;
 	}
 	if (MshLoadFile(mesh, filename)) {
@@ -434,7 +434,7 @@ ID SiNewMesh(const char *filename)
 
 	acc = ScnNewAccelerator(scene, ACC_GRID);
 	if (acc == NULL) {
-		set_errno(SI_ERR_FAILNEW);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_BADID;
 	}
 
@@ -687,13 +687,13 @@ static struct Entry decode_id(ID id)
 
 static int create_implicit_groups(void)
 {
-	size_t i;
 	struct ObjectGroup *all_objects = NULL;
 	struct Renderer *renderer = NULL;
+	size_t i;
 
 	all_objects = ScnNewObjectGroup(scene);
 	if (all_objects == NULL) {
-		set_errno(SI_ERR_FAILNEW);
+		set_errno(SI_ERR_NO_MEMORY);
 		return SI_FAIL;
 	}
 

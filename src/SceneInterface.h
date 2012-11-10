@@ -18,8 +18,8 @@ enum { SI_FAIL = -1, SI_SUCCESS = 0 };
 /* TODO should be combined with Status? */
 enum SiErrorNo {
 	SI_ERR_NONE = 0,
+	SI_ERR_NO_MEMORY,
 	SI_ERR_BADTYPE,
-	SI_ERR_FAILOPENPLG,
 	SI_ERR_FAILLOAD,
 	SI_ERR_FAILNEW,
 	/* plugin */
@@ -28,8 +28,8 @@ enum SiErrorNo {
 	SI_ERR_INIT_PLUGIN_FUNC_FAIL,
 	SI_ERR_BAD_PLUGIN_INFO,
 	SI_ERR_CLOSE_PLUGIN_FAIL,
-	/* no memory */
-	SI_ERR_NO_MEMORY
+	/* undefined */
+	SI_ERR_UNDEFINED
 };
 
 enum SiTransformOrder {

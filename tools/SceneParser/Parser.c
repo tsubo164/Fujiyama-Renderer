@@ -5,18 +5,21 @@ See LICENSE and README
 
 #include "Parser.h"
 #include "SceneInterface.h"
+#include "Command.h"
 #include "Table.h"
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <stdio.h>
 #include <ctype.h>
 
 enum PsrErroNo {
-	PSR_ERR_NOERR = 1024, /* offset to avoid conflict with SI_ERR */
+	PSR_ERR_NONE = 1024, /* offset to avoid conflict with SI_ERR */
 	PSR_ERR_UNKNOWN_COMMAND,
 	PSR_ERR_MANY_ARGS,
 	PSR_ERR_FEW_ARGS,
+	PSR_ERR_BAD_NUMBER,
 	PSR_ERR_NAME_EXISTS,
 	PSR_ERR_NAME_NOT_FOUND
 };
@@ -29,609 +32,17 @@ struct Parser {
 	int error_no;
 };
 
-struct CommandArgument {
-	/* TODO should we need token? */
-	char *token;
-	char *str;
-	double num;
-	ID id;
-};
-struct CommandResult {
-	Status status;
-	ID new_entry_id;
-	const char *new_entry_name;
-};
-#define INIT_COMMAND_RESULT {SI_SUCCESS, SI_BADID, NULL}
-
-typedef struct CommandResult (*CommandFunction)(const struct CommandArgument *args);
-enum ArgumentType {
-	ARG_NULL = 0,
-	ARG_COMMAND_NAME,
-	ARG_NEW_ENTRY_ID,
-	ARG_ENTRY_ID,
-	ARG_PROPERTY_NAME,
-	ARG_STRING,
-	ARG_NUMBER,
-	ARG_FILE_PATH,
-	ARG_UNDEFINED
-};
-
-struct Command {
-	const char *name;
-	const int *arg_types;
-	int arg_count;
-	CommandFunction Run;
-};
-
-static const struct Command *search_command(const char *command_name);
 static void print_command(const struct CommandArgument *args, int nargs);
+static int enum_to_num(struct CommandArgument *arg);
+static int scan_number(struct CommandArgument *arg);
 static int build_arguments(struct Parser *parser,
 		const struct Command *command, struct CommandArgument *arguments);
-
-static int print_property_list(const char *type_name);
-static int parse_line(struct Parser *parser, const char *line);
-
 static int tokenize_line(const char *line,
 		char *tokenized, size_t tokenized_size,
 		struct CommandArgument *args, int max_args);
+
+static int parse_line(struct Parser *parser, const char *line);
 static void parse_error(struct Parser *parser, int error_no);
-
-/* OpenPlugin */
-static const int OpenPlugin_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_FILE_PATH};
-static struct CommandResult OpenPlugin_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiOpenPlugin(args[1].str);
-	return result;
-}
-
-/* RenderScene */
-static const int RenderScene_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_ENTRY_ID};
-static struct CommandResult RenderScene_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiRenderScene(args[1].id);
-	return result;
-}
-
-/* RunProcedure */
-static const int RunProcedure_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_ENTRY_ID};
-static struct CommandResult RunProcedure_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiRunProcedure(args[1].id);
-	return result;
-}
-
-/* SaveFrameBuffer */
-static const int SaveFrameBuffer_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_ENTRY_ID,
-	ARG_FILE_PATH};
-static struct CommandResult SaveFrameBuffer_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiSaveFrameBuffer(args[1].id, args[2].str);
-	return result;
-}
-
-/* NewObjectInstance */
-static const int NewObjectInstance_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_NEW_ENTRY_ID,
-	ARG_ENTRY_ID};
-static struct CommandResult NewObjectInstance_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.new_entry_id = SiNewObjectInstance(args[2].id);
-	result.new_entry_name = args[1].str;
-	return result;
-}
-
-/* NewFrameBuffer */
-static const int NewFrameBuffer_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_NEW_ENTRY_ID,
-	ARG_STRING};
-static struct CommandResult NewFrameBuffer_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.new_entry_id = SiNewFrameBuffer(args[2].str);
-	result.new_entry_name = args[1].str;
-	return result;
-}
-
-/* NewTurbulence */
-static const int NewTurbulence_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_NEW_ENTRY_ID};
-static struct CommandResult NewTurbulence_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.new_entry_id = SiNewTurbulence();
-	result.new_entry_name = args[1].str;
-	return result;
-}
-
-/* NewProcedure */
-static const int NewProcedure_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_NEW_ENTRY_ID,
-	ARG_STRING};
-static struct CommandResult NewProcedure_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.new_entry_id = SiNewProcedure(args[2].str);
-	result.new_entry_name = args[1].str;
-	return result;
-}
-
-/* NewRenderer */
-static const int NewRenderer_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_NEW_ENTRY_ID};
-static struct CommandResult NewRenderer_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.new_entry_id = SiNewRenderer();
-	result.new_entry_name = args[1].str;
-	return result;
-}
-
-/* NewTexture */
-static const int NewTexture_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_NEW_ENTRY_ID,
-	ARG_FILE_PATH};
-static struct CommandResult NewTexture_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.new_entry_id = SiNewTexture(args[2].str);
-	result.new_entry_name = args[1].str;
-	return result;
-}
-
-/* NewShader */
-static const int NewShader_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_NEW_ENTRY_ID,
-	ARG_STRING};
-static struct CommandResult NewShader_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.new_entry_id = SiNewShader(args[2].str);
-	result.new_entry_name = args[1].str;
-	return result;
-}
-
-/* NewCamera */
-static const int NewCamera_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_NEW_ENTRY_ID,
-	ARG_STRING};
-static struct CommandResult NewCamera_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.new_entry_id = SiNewCamera(args[2].str);
-	result.new_entry_name = args[1].str;
-	return result;
-}
-
-/* NewVolume */
-static const int NewVolume_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_NEW_ENTRY_ID};
-static struct CommandResult NewVolume_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.new_entry_id = SiNewVolume();
-	result.new_entry_name = args[1].str;
-	return result;
-}
-
-/* NewCurve */
-static const int NewCurve_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_NEW_ENTRY_ID,
-	ARG_FILE_PATH};
-static struct CommandResult NewCurve_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.new_entry_id = SiNewCurve(args[2].str);
-	result.new_entry_name = args[1].str;
-	return result;
-}
-
-/* NewLight */
-static const int NewLight_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_NEW_ENTRY_ID,
-	ARG_STRING};
-static struct CommandResult NewLight_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.new_entry_id = SiNewLight(args[2].str);
-	result.new_entry_name = args[1].str;
-	return result;
-}
-
-/* NewMesh */
-static const int NewMesh_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_NEW_ENTRY_ID,
-	ARG_FILE_PATH};
-static struct CommandResult NewMesh_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.new_entry_id = SiNewMesh(args[2].str);
-	result.new_entry_name = args[1].str;
-	return result;
-}
-
-/* AssignFrameBuffer */
-static const int AssignFrameBuffer_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_ENTRY_ID,
-	ARG_ENTRY_ID};
-static struct CommandResult AssignFrameBuffer_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiAssignFrameBuffer(args[1].id, args[2].id);
-	return result;
-}
-
-/* AssignTurbulence */
-static const int AssignTurbulence_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_ENTRY_ID,
-	ARG_PROPERTY_NAME,
-	ARG_ENTRY_ID};
-static struct CommandResult AssignTurbulence_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiAssignTurbulence(args[1].id, args[2].str, args[3].id);
-	return result;
-}
-
-/* AssignTexture */
-static const int AssignTexture_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_ENTRY_ID,
-	ARG_PROPERTY_NAME,
-	ARG_ENTRY_ID};
-static struct CommandResult AssignTexture_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiAssignTexture(args[1].id, args[2].str, args[3].id);
-	return result;
-}
-
-/* AssignCamera */
-static const int AssignCamera_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_ENTRY_ID,
-	ARG_ENTRY_ID};
-static struct CommandResult AssignCamera_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiAssignCamera(args[1].id, args[2].id);
-	return result;
-}
-
-/* AssignShader */
-static const int AssignShader_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_ENTRY_ID,
-	ARG_ENTRY_ID};
-static struct CommandResult AssignShader_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiAssignShader(args[1].id, args[2].id);
-	return result;
-}
-
-/* AssignVolume */
-static const int AssignVolume_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_ENTRY_ID,
-	ARG_PROPERTY_NAME,
-	ARG_ENTRY_ID};
-static struct CommandResult AssignVolume_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiAssignVolume(args[1].id, args[2].str, args[3].id);
-	return result;
-}
-
-/* SetProperty1 */
-static const int SetProperty1_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_ENTRY_ID,
-	ARG_PROPERTY_NAME,
-	ARG_NUMBER};
-static struct CommandResult SetProperty1_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiSetProperty1(args[1].id, args[2].str, args[3].num);
-	return result;
-}
-
-/* SetProperty2 */
-static const int SetProperty2_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_ENTRY_ID,
-	ARG_PROPERTY_NAME,
-	ARG_NUMBER,
-	ARG_NUMBER};
-static struct CommandResult SetProperty2_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiSetProperty2(
-			args[1].id, args[2].str, args[3].num, args[4].num);
-	return result;
-}
-
-/* SetProperty3 */
-static const int SetProperty3_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_ENTRY_ID,
-	ARG_PROPERTY_NAME,
-	ARG_NUMBER,
-	ARG_NUMBER,
-	ARG_NUMBER};
-static struct CommandResult SetProperty3_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiSetProperty3(
-			args[1].id, args[2].str,
-			args[3].num, args[4].num, args[5].num);
-	return result;
-}
-
-/* SetProperty4 */
-static const int SetProperty4_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_ENTRY_ID,
-	ARG_PROPERTY_NAME,
-	ARG_NUMBER,
-	ARG_NUMBER,
-	ARG_NUMBER};
-static struct CommandResult SetProperty4_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiSetProperty4(
-			args[1].id, args[2].str,
-			args[3].num, args[4].num, args[5].num, args[6].num);
-	return result;
-}
-
-/* SetSampleProperty3 */
-static const int SetSampleProperty3_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_ENTRY_ID,
-	ARG_PROPERTY_NAME,
-	ARG_NUMBER,
-	ARG_NUMBER,
-	ARG_NUMBER,
-	ARG_NUMBER};
-static struct CommandResult SetSampleProperty3_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = SiSetSampleProperty3(
-			args[1].id, args[2].str,
-			args[3].num, args[4].num, args[5].num, args[6].num);
-	return result;
-}
-
-/* ShowPropertyList */
-static const int ShowPropertyList_args[] = {
-	ARG_COMMAND_NAME,
-	ARG_STRING};
-static struct CommandResult ShowPropertyList_run(const struct CommandArgument *args)
-{
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.status = print_property_list(args[1].str);
-	return result;
-}
-
-static const struct Command command_list[] = {
-#define REGISTER_COMMAND(name) {#name, name##_args, \
-		sizeof(name##_args)/sizeof(name##_args[0]), name##_run}
-	REGISTER_COMMAND(OpenPlugin),
-	REGISTER_COMMAND(RenderScene),
-	REGISTER_COMMAND(RunProcedure),
-	REGISTER_COMMAND(SaveFrameBuffer),
-	REGISTER_COMMAND(NewObjectInstance),
-	REGISTER_COMMAND(NewFrameBuffer),
-	REGISTER_COMMAND(NewTurbulence),
-	REGISTER_COMMAND(NewProcedure),
-	REGISTER_COMMAND(NewRenderer),
-	REGISTER_COMMAND(NewTexture),
-	REGISTER_COMMAND(NewShader),
-	REGISTER_COMMAND(NewCamera),
-	REGISTER_COMMAND(NewVolume),
-	REGISTER_COMMAND(NewCurve),
-	REGISTER_COMMAND(NewLight),
-	REGISTER_COMMAND(NewMesh),
-	REGISTER_COMMAND(AssignFrameBuffer),
-	REGISTER_COMMAND(AssignTurbulence),
-	REGISTER_COMMAND(AssignTexture),
-	REGISTER_COMMAND(AssignCamera),
-	REGISTER_COMMAND(AssignShader),
-	REGISTER_COMMAND(AssignVolume),
-	REGISTER_COMMAND(SetProperty1),
-	REGISTER_COMMAND(SetProperty2),
-	REGISTER_COMMAND(SetProperty3),
-	REGISTER_COMMAND(SetProperty4),
-	REGISTER_COMMAND(SetSampleProperty3),
-	REGISTER_COMMAND(ShowPropertyList),
-	{NULL, NULL, 0, NULL}
-#undef REGISTER_COMMAND
-};
-static const struct Command *search_command(const char *command_name)
-{
-	const struct Command *cmd = command_list;
-
-	for (; cmd->name != NULL; cmd++) {
-		if (strcmp(cmd->name, command_name) == 0) {
-			return cmd;
-		}
-	}
-	return NULL;
-}
-static int tokenize_line(const char *line,
-		char *tokenized, size_t tokenized_size,
-		struct CommandArgument *args, int max_args)
-{
-	struct CommandArgument *arg = args;
-	const char *src = line;
-	char *dst = tokenized;
-	int ntokens = 0;
-
-	while (*src != '\0' && *src != '\n' && ntokens < max_args) {
-		arg->token = dst;
-
-		while (*src != '\0' && isspace(*src)) {
-			src++;
-		}
-		while (*src != '\0' && !isspace(*src)) {
-			*dst++ = *src++;
-		}
-		*dst = '\0';
-		dst++;
-		arg++;
-		ntokens++;
-	}
-
-	return ntokens;
-}
-
-static void print_command(const struct CommandArgument *args, int nargs)
-{
-	int i = 0;
-
-	printf("-- %s: ", args[0].token);
-	for (i = 1; i < nargs; i++) {
-		printf("[%s]", args[i].token);
-		if (i == nargs - 1) {
-			printf("\n");
-		} else {
-			printf(" ");
-		}
-	}
-}
-
-static int build_arguments(struct Parser *parser,
-		const struct Command *command, struct CommandArgument *arguments)
-{
-	int i;
-
-	for (i = 0; i < command->arg_count; i++) {
-		struct CommandArgument *arg = &arguments[i];
-		const int *type = &command->arg_types[i];
-
-		switch(*type) {
-		case ARG_NEW_ENTRY_ID:
-			arg->str = arg->token;
-			if (TblLookup(parser->table, arg->str)) {
-				parse_error(parser, PSR_ERR_NAME_EXISTS);
-				return -1;
-			}
-			break;
-
-		case ARG_ENTRY_ID: {
-			const struct TableEnt *ent = TblLookup(parser->table, arg->token);
-			if (ent == NULL) {
-				parse_error(parser, PSR_ERR_NAME_NOT_FOUND);
-				return -1;
-			}
-			arg->str = arg->token;
-			arg->id = EntGetID(ent);
-			break;
-			}
-
-		case ARG_PROPERTY_NAME:
-			arg->str = arg->token;
-			break;
-
-		case ARG_STRING:
-			arg->str = arg->token;
-			break;
-
-		case ARG_NUMBER: {
-			char *end = NULL;
-			arg->num = strtod(arg->token, &end);
-			if (*end != '\0') {
-				printf("fail strtod\n");
-			}
-			break;
-			}
-
-		case ARG_FILE_PATH:
-			arg->str = arg->token;
-			break;
-
-		default:
-			break;
-		}
-	}
-	return 0;
-}
-
-static int parse_line(struct Parser *parser, const char *line)
-{
-	struct CommandArgument arguments[16] = {{NULL}};
-	struct CommandResult result = INIT_COMMAND_RESULT;
-	const struct Command *command = NULL;
-
-	const char *head = line;
-	char token_list[1024] = {'\0'};
-	int ntokens = 0;
-
-	while (*head != '\0' && isspace(*head)) {
-		head++;
-	}
-
-	if (head[0] == '\0') {
-		return 0;
-	}
-	if (head[0] == '#') {
-		return 0;
-	}
-
-	ntokens = tokenize_line(head, token_list, 1024, arguments, 16);
-	command = search_command(arguments[0].token);
-	if (command == NULL) {
-		parse_error(parser, PSR_ERR_UNKNOWN_COMMAND);
-		return -1;
-	}
-	if (ntokens < command->arg_count) {
-		parse_error(parser, PSR_ERR_FEW_ARGS);
-		return -1;
-	}
-	if (ntokens > command->arg_count) {
-		parse_error(parser, PSR_ERR_MANY_ARGS);
-		return -1;
-	}
-
-	build_arguments(parser, command, arguments);
-
-	print_command(arguments, command->arg_count);
-
-	result = command->Run(arguments);
-
-	if (result.new_entry_name != NULL) {
-		TblAdd(parser->table, result.new_entry_name, result.new_entry_id);
-	}
-
-	return 0;
-}
 
 struct Parser *PsrNew(void)
 {
@@ -649,7 +60,7 @@ struct Parser *PsrNew(void)
 		return NULL;
 	}
 
-	parse_error(parser, PSR_ERR_NOERR);
+	parse_error(parser, PSR_ERR_NONE);
 
 	return parser;
 }
@@ -674,15 +85,201 @@ int PsrParseLine(struct Parser *parser, const char *line)
 {
 	parser->line_no++;
 
-	if (line[0] == '\n')
-		return 0;
-
 	return parse_line(parser, line);
 }
 
 int PsrGetLineNo(const struct Parser *parser)
 {
 	return parser->line_no;
+}
+
+static int tokenize_line(const char *line,
+		char *tokenized, size_t tokenized_size,
+		struct CommandArgument *args, int max_args)
+{
+	struct CommandArgument *arg = args;
+	const char *src = line;
+	char *dst = tokenized;
+	int ntokens = 0;
+
+	while (*src != '\0' && *src != '\n' && ntokens < max_args) {
+		arg->str = dst;
+
+		while (*src != '\0' && isspace(*src)) {
+			src++;
+		}
+		while (*src != '\0' && !isspace(*src)) {
+			*dst++ = *src++;
+		}
+		*dst = '\0';
+		dst++;
+		arg++;
+		ntokens++;
+	}
+
+	return ntokens;
+}
+
+static void print_command(const struct CommandArgument *args, int nargs)
+{
+	int i = 0;
+
+	printf("-- %s: ", args[0].str);
+	for (i = 1; i < nargs; i++) {
+		printf("[%s]", args[i].str);
+		if (i == nargs - 1) {
+			printf("\n");
+		} else {
+			printf(" ");
+		}
+	}
+}
+
+static int build_arguments(struct Parser *parser,
+		const struct Command *command, struct CommandArgument *arguments)
+{
+	int i;
+
+	for (i = 0; i < command->arg_count; i++) {
+		struct CommandArgument *arg = &arguments[i];
+		const int *type = &command->arg_types[i];
+
+		switch(*type) {
+		case ARG_NEW_ENTRY_ID:
+			if (TblLookup(parser->table, arg->str)) {
+				parse_error(parser, PSR_ERR_NAME_EXISTS);
+				return -1;
+			}
+			break;
+
+		case ARG_ENTRY_ID: {
+			const struct TableEnt *ent = TblLookup(parser->table, arg->str);
+			if (ent == NULL) {
+				parse_error(parser, PSR_ERR_NAME_NOT_FOUND);
+				return -1;
+			}
+			arg->id = EntGetID(ent);
+			break;
+			}
+
+		case ARG_NUMBER: {
+			const int err = scan_number(arg);
+			if (err) {
+				parse_error(parser, PSR_ERR_BAD_NUMBER);
+				return -1;
+			}
+			break;
+			}
+
+		case ARG_PROPERTY_NAME:
+			break;
+		case ARG_FILE_PATH:
+			break;
+		case ARG_STRING:
+			break;
+		case ARG_COMMAND_NAME:
+			break;
+		default:
+			assert(!"implement error\n");
+			break;
+		}
+	}
+	return 0;
+}
+
+static int parse_line(struct Parser *parser, const char *line)
+{
+	struct CommandArgument arguments[16] = {{NULL}};
+	struct CommandResult result = INIT_COMMAND_RESULT;
+	const struct Command *command = NULL;
+
+	const char *head = line;
+	char token_list[1024] = {'\0'};
+	int ntokens = 0;
+	int err = 0;
+
+	while (*head != '\0' && isspace(*head)) {
+		head++;
+	}
+
+	if (head[0] == '\0') {
+		return 0;
+	}
+	if (head[0] == '#') {
+		return 0;
+	}
+
+	ntokens = tokenize_line(head, token_list, 1024, arguments, 16);
+	command = CmdSearchCommand(arguments[0].str);
+	if (command == NULL) {
+		parse_error(parser, PSR_ERR_UNKNOWN_COMMAND);
+		return -1;
+	}
+	if (ntokens < command->arg_count) {
+		parse_error(parser, PSR_ERR_FEW_ARGS);
+		return -1;
+	}
+	if (ntokens > command->arg_count) {
+		parse_error(parser, PSR_ERR_MANY_ARGS);
+		return -1;
+	}
+
+	err = build_arguments(parser, command, arguments);
+	if (err) {
+		return -1;
+	}
+
+	print_command(arguments, command->arg_count);
+
+	result = command->Run(arguments);
+	if (result.status == SI_FAIL) {
+		parse_error(parser, SiGetErrorNo());
+		return -1;
+	}
+
+	if (result.new_entry_name != NULL) {
+		TblAdd(parser->table, result.new_entry_name, result.new_entry_id);
+	}
+
+	return 0;
+}
+
+static int scan_number(struct CommandArgument *arg)
+{
+	char *end = NULL;
+	const int is_enum = enum_to_num(arg);
+
+	if (is_enum)
+		return 0;
+
+	arg->num = strtod(arg->str, &end);
+	if (*end != '\0') {
+		return -1;
+	}
+
+	return 0;
+}
+
+static int enum_to_num(struct CommandArgument *arg)
+{
+	const char *str = arg->str;
+
+	/* transform orders */
+	if (strcmp(str, "ORDER_SRT") == 0) {arg->num = SI_ORDER_SRT; return 1;}
+	if (strcmp(str, "ORDER_STR") == 0) {arg->num = SI_ORDER_STR; return 1;}
+	if (strcmp(str, "ORDER_RST") == 0) {arg->num = SI_ORDER_RST; return 1;}
+	if (strcmp(str, "ORDER_RTS") == 0) {arg->num = SI_ORDER_RTS; return 1;}
+	if (strcmp(str, "ORDER_TRS") == 0) {arg->num = SI_ORDER_TRS; return 1;}
+	if (strcmp(str, "ORDER_TSR") == 0) {arg->num = SI_ORDER_TSR; return 1;}
+	/* rotate orders */
+	if (strcmp(str, "ORDER_XYZ") == 0) {arg->num = SI_ORDER_XYZ; return 1;}
+	if (strcmp(str, "ORDER_XZY") == 0) {arg->num = SI_ORDER_XZY; return 1;}
+	if (strcmp(str, "ORDER_YXZ") == 0) {arg->num = SI_ORDER_YXZ; return 1;}
+	if (strcmp(str, "ORDER_YZX") == 0) {arg->num = SI_ORDER_YZX; return 1;}
+	if (strcmp(str, "ORDER_ZXY") == 0) {arg->num = SI_ORDER_ZXY; return 1;}
+	if (strcmp(str, "ORDER_ZYX") == 0) {arg->num = SI_ORDER_ZYX; return 1;}
+
+	return 0;
 }
 
 /* TODO should move this to SceneInterface.c? */
@@ -695,12 +292,13 @@ static void parse_error(struct Parser *parser, int error_no)
 {
 	static const struct SiError errors[] = {
 		/* from Parser */
-		{PSR_ERR_NOERR, ""},
-		{PSR_ERR_UNKNOWN_COMMAND,     "unknown command"},
-		{PSR_ERR_MANY_ARGS,       "too many arguments"},
-		{PSR_ERR_FEW_ARGS,        "too few arguments"},
-		{PSR_ERR_NAME_EXISTS,     "name already exists"},
-		{PSR_ERR_NAME_NOT_FOUND,   "name not found"},
+		{PSR_ERR_NONE, ""},
+		{PSR_ERR_UNKNOWN_COMMAND,  "unknown command"},
+		{PSR_ERR_MANY_ARGS,        "too many arguments"},
+		{PSR_ERR_FEW_ARGS,         "too few arguments"},
+		{PSR_ERR_BAD_NUMBER,       "bad number arguments"},
+		{PSR_ERR_NAME_EXISTS,      "entry name already exists"},
+		{PSR_ERR_NAME_NOT_FOUND,   "entry name not found"},
 		/* from SceneInterface */
 		{SI_ERR_PLUGIN_NOT_FOUND,           "plugin not found"},
 		{SI_ERR_INIT_PLUGIN_FUNC_NOT_EXIST, "initialize plugin function not exit"},
@@ -719,30 +317,5 @@ static void parse_error(struct Parser *parser, int error_no)
 			break;
 		}
 	}
-}
-
-static int print_property_list(const char *type_name)
-{
-	const char **prop_types = NULL;
-	const char **prop_names = NULL;
-	int nprops = 0;
-	int err = 0;
-	int i;
-
-	err = SiGetPropertyList(type_name, &prop_types, &prop_names, &nprops);
-	if (err) {
-		printf("#   No property is available for %s\n", type_name);
-		printf("#   Make sure the type name is correct.\n");
-		printf("#   If you requested properties for a plugin,\n");
-		printf("#   make sure it is opened before calling this command.\n");
-		return -1;
-	}
-
-	printf("#   %s Properties\n", type_name);
-	for (i = 0; i < nprops; i++) {
-		printf("#   %15.15s : %-20.20s\n", prop_types[i], prop_names[i]);
-	}
-
-	return 0;
 }
 

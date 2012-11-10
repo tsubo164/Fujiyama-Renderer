@@ -12,8 +12,8 @@ See LICENSE and README
 enum { HASH_SIZE = 1237 }; /* a prime number */
 enum { MULTIPLIER = 31 };
 
-static struct TableEnt *EntNew(const char *key, ID id);
-static void EntFree(struct TableEnt *ent);
+static struct TableEnt *new_entry(const char *key, ID id);
+static void free_entry(struct TableEnt *ent);
 
 static unsigned int hash_fn(const char *key);
 
@@ -30,9 +30,8 @@ struct Table {
 struct Table *TblNew(void)
 {
 	int i;
-	struct Table *table;
+	struct Table *table = (struct Table *) malloc(sizeof(struct Table));
 
-	table = (struct Table *) malloc(sizeof(struct Table));
 	if (table == NULL)
 		return NULL;
 
@@ -46,7 +45,7 @@ struct Table *TblNew(void)
 void TblFree(struct Table *table)
 {
 	int i;
-	struct TableEnt *next, *kill;
+	struct TableEnt *ent = NULL;
 
 	if (table == NULL)
 		return;
@@ -54,10 +53,11 @@ void TblFree(struct Table *table)
 	for (i = 0; i < HASH_SIZE; i++) {
 		if (table->table[i] == NULL)
 			continue;
-		for (next = table->table[i]; next != NULL; ) {
-			kill = next;
-			next = next->next;
-			EntFree(kill);
+		for (ent = table->table[i]; ent != NULL; ) {
+			/* need to save the entry to be freed before moving to next */
+			struct TableEnt *kill = ent;
+			ent = ent->next;
+			free_entry(kill);
 		}
 	}
 
@@ -66,10 +66,9 @@ void TblFree(struct Table *table)
 
 struct TableEnt *TblLookup(struct Table *table, const char *key)
 {
-	int h;
-	struct TableEnt *ent;
+	struct TableEnt *ent = NULL;
+	const unsigned int h = hash_fn(key);
 
-	h = hash_fn(key);
 	for (ent = table->table[h]; ent != NULL; ent = ent->next) {
 		if (strcmp(key, ent->key) == 0) {
 			break;
@@ -81,10 +80,9 @@ struct TableEnt *TblLookup(struct Table *table, const char *key)
 
 struct TableEnt *TblAdd(struct Table *table, const char *key, ID id)
 {
-	int h;
-	struct TableEnt *ent;
+	struct TableEnt *ent = NULL;
+	const unsigned int h = hash_fn(key);
 
-	h = hash_fn(key);
 	for (ent = table->table[h]; ent != NULL; ent = ent->next) {
 		if (strcmp(key, ent->key) == 0) {
 			return ent;
@@ -92,7 +90,7 @@ struct TableEnt *TblAdd(struct Table *table, const char *key, ID id)
 	}
 
 	assert(ent == NULL);
-	ent = EntNew(key, id);
+	ent = new_entry(key, id);
 	if (ent == NULL)
 		return NULL;
 
@@ -112,17 +110,16 @@ ID EntGetID(const struct TableEnt *ent)
 	return ent->id;
 }
 
-static struct TableEnt *EntNew(const char *key, ID id)
+static struct TableEnt *new_entry(const char *key, ID id)
 {
-	struct TableEnt *ent;
+	struct TableEnt *ent = (struct TableEnt *) malloc(sizeof(struct TableEnt));
 
-	ent = (struct TableEnt *) malloc(sizeof(struct TableEnt));
 	if (ent == NULL)
 		return NULL;
 
 	ent->key = StrDup(key);
 	if (ent->key == NULL) {
-		EntFree(ent);
+		free_entry(ent);
 		return NULL;
 	}
 
@@ -131,7 +128,7 @@ static struct TableEnt *EntNew(const char *key, ID id)
 	return ent;
 }
 
-static void EntFree(struct TableEnt *ent)
+static void free_entry(struct TableEnt *ent)
 {
 	if (ent == NULL)
 		return;
@@ -142,8 +139,8 @@ static void EntFree(struct TableEnt *ent)
 
 static unsigned int hash_fn(const char *key)
 {
-	unsigned int h = 0;
 	unsigned char *p = NULL;
+	unsigned int h = 0;
 
 	for (p = (unsigned char *) key; *p != '\0'; p++)
 		h = MULTIPLIER * h + *p;

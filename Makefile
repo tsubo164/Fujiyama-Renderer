@@ -185,7 +185,7 @@ install_procedures += $(subtgt_)
 #tools
 srcdir_  := tools/SceneParser
 tgtdir_  := bin
-files_   := main Parser Table
+files_   := main Parser Table Command
 subtgt_  := scene
 cflags_  :=
 ldflags_ := -lscene
