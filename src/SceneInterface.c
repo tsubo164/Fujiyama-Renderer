@@ -405,9 +405,22 @@ ID SiNewCurve(const char *filename)
 	return encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
 }
 
-ID SiNewLight(const char *arg)
+ID SiNewLight(int light_type)
 {
-	if (ScnNewLight(scene, arg) == NULL) {
+	int type = 0;
+	switch (light_type) {
+	case SI_POINT_LIGHT:
+		type = LGT_POINT;
+		break;
+	case SI_GEOMETRY_LIGHT:
+		type = LGT_GEOMETRY;
+		break;
+	default:
+		type = LGT_POINT;
+		break;
+	};
+
+	if (ScnNewLight(scene, type) == NULL) {
 		set_errno(SI_ERR_NO_MEMORY);
 		return SI_BADID;
 	}
@@ -995,6 +1008,13 @@ static int set_Light_intensity(void *self, const struct PropertyValue *value)
 	return 0;
 }
 
+static int set_Light_sample_count(void *self, const struct PropertyValue *value)
+{
+	struct Light *light = (struct Light *) self;
+	LgtSetSampleCount(light, (int) value->vector[0]);
+	return 0;
+}
+
 static int set_Light_position(void *self, const struct PropertyValue *value)
 {
 	struct Light *light = (struct Light *) self;
@@ -1058,8 +1078,9 @@ static const struct Property Camera_properties[] = {
 };
 
 static const struct Property Light_properties[] = {
-	{PROP_SCALAR,  "intensity", set_Light_intensity},
-	{PROP_VECTOR3, "position",  set_Light_position},
+	{PROP_SCALAR,  "intensity",    set_Light_intensity},
+	{PROP_SCALAR,  "sample_count", set_Light_sample_count},
+	{PROP_VECTOR3, "position",     set_Light_position},
 	{PROP_NONE, NULL, NULL}
 };
 

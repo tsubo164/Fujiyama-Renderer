@@ -2,9 +2,8 @@
 #See LICENSE and README
 
 CC = gcc
-#CC = g++
 CXX = g++
-OPT = -O2
+OPT = -O3
 CFLAGS = -Isrc -Wall -ansi -pedantic-errors $(OPT)
 LDFLAGS = -Llib
 CPPFLAGS = -Isrc -Wall $(OPT)
@@ -12,7 +11,8 @@ CPPFLAGS = -Isrc -Wall $(OPT)
 RM = rm -f
 INSTALL = install
 
-.PHONY: all all_ clean install install_library install_shaders install_procedures install_bin install_tools sample scenes/cube.fb
+.PHONY: all all_ clean install install_library install_shaders install_procedures \
+		install_bin install_tools sample scenes/cube.fb
 all: all_
 
 prefix = /usr/local

@@ -89,9 +89,17 @@ extern int SlIlluminace(const struct TraceContext *cxt, int light_id,
 		const double *Ps, const double *axis, float angle,
 		const struct SurfaceInput *in, struct LightOutput *out);
 
+/* TODO TEST */
+struct LightSample;
+
+extern int SlSampleIlluminace(const struct TraceContext *cxt, const struct LightSample *sample,
+		const double *Ps, const double *axis, float angle,
+		const struct SurfaceInput *in, struct LightOutput *out);
+
 extern int SlGetLightCount(const struct SurfaceInput *in);
-extern void SlGetLightDirection(const struct SurfaceInput *in, int light_id,
-		const double *P, double *out_light_dir);
+extern int SlGetLightSampleCount(const struct SurfaceInput *in);
+extern struct LightSample *SlNewLightSamples(const struct SurfaceInput *in);
+extern void SlFreeLightSamples(struct LightSample * samples);
 
 #ifdef __cplusplus
 } /* extern "C" */

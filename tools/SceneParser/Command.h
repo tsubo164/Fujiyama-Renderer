@@ -21,6 +21,7 @@ enum ArgumentType {
 	ARG_STRING,
 	ARG_NUMBER,
 	ARG_FILE_PATH,
+	ARG_LIGHT_TYPE,
 	ARG_UNDEFINED
 };
 
@@ -35,7 +36,7 @@ struct CommandResult {
 	ID new_entry_id;
 	const char *new_entry_name;
 };
-#define INIT_COMMAND_RESULT {SI_SUCCESS, SI_BADID, NULL}
+#define INIT_COMMAND_RESULT {SI_FAIL, SI_BADID, NULL}
 
 typedef struct CommandResult (*CommandFunction)(const struct CommandArgument *args);
 
@@ -47,6 +48,7 @@ struct Command {
 };
 
 extern const struct Command *CmdSearchCommand(const char *command_name);
+extern int CmdSuccess(const struct CommandResult *result);
 
 #ifdef __cplusplus
 } /* extern "C" */

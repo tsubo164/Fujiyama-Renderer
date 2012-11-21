@@ -227,7 +227,6 @@ int SlIlluminace(const struct TraceContext *cxt, int light_id,
 {
 	const struct Light **lights = NULL;
 	const double *light_pos = NULL;
-	const double *shaded_pos = NULL;
 	double cosangle = 0.;
 	double nml_axis[3] = {0};
 	float light_color[3] = {0};
@@ -239,9 +238,8 @@ int SlIlluminace(const struct TraceContext *cxt, int light_id,
 
 	lights = ObjGetLightList(in->shaded_object);
 	light_pos = LgtGetPosition(lights[light_id]);
-	shaded_pos = in->P;
 
-	VEC3_SUB(out->Ln, light_pos, shaded_pos);
+	VEC3_SUB(out->Ln, light_pos, Ps);
 	out->distance = VEC3_LEN(out->Ln);
 	if (out->distance > 0) {
 		VEC3_DIV_ASGN(out->Ln, out->distance);
@@ -254,7 +252,7 @@ int SlIlluminace(const struct TraceContext *cxt, int light_id,
 		return 0;
 	}
 
-	LgtIlluminate(lights[light_id], in->P, light_color);
+	LgtIlluminate(lights[light_id], Ps, light_color);
 	if (light_color[0] < .0001 &&
 		light_color[1] < .0001 &&
 		light_color[2] < .0001) {
@@ -272,7 +270,7 @@ int SlIlluminace(const struct TraceContext *cxt, int light_id,
 		int hit = 0;
 
 		shad_cxt = SlShadowContext(cxt, in->shaded_object);
-		hit = SlTrace(&shad_cxt, in->P, out->Ln, .0001, out->distance, C_occl, &t_hit);
+		hit = SlTrace(&shad_cxt, Ps, out->Ln, .0001, out->distance, C_occl, &t_hit);
 
 		if (hit) {
 			/* return 0; */
@@ -290,24 +288,114 @@ int SlGetLightCount(const struct SurfaceInput *in)
 	return ObjGetLightCount(in->shaded_object);
 }
 
-void SlGetLightDirection(const struct SurfaceInput *in, int light_id,
-		const double *P, double *out_light_dir)
+/* TODO TEST */
+int SlSampleIlluminace(const struct TraceContext *cxt, const struct LightSample *sample,
+		const double *Ps, const double *axis, float angle,
+		const struct SurfaceInput *in, struct LightOutput *out)
 {
-	const struct Light **lights = NULL;
-	const double *light_pos = NULL;
-	const double *shaded_pos = NULL;
+	double cosangle = 0.;
+	double nml_axis[3] = {0};
+	float light_color[3] = {0};
 
-	if (light_id >= SlGetLightCount(in)) {
-		VEC3_SET(out_light_dir, 0, 1, 0);
-		return;
+	VEC3_SET(out->Cl, 0, 0, 0);
+
+	VEC3_SUB(out->Ln, sample->position, Ps);
+	out->distance = VEC3_LEN(out->Ln);
+	if (out->distance > 0) {
+		VEC3_DIV_ASGN(out->Ln, out->distance);
 	}
 
-	lights = ObjGetLightList(in->shaded_object);
-	light_pos = LgtGetPosition(lights[light_id]);
-	shaded_pos = in->P;
+	VEC3_COPY(nml_axis, axis);
+	VEC3_NORMALIZE(nml_axis);
+	cosangle = VEC3_DOT(nml_axis, out->Ln);
+	if (cosangle < cos(angle)) {
+		return 0;
+	}
 
-	VEC3_SUB(out_light_dir, light_pos, shaded_pos);
-	VEC3_NORMALIZE(out_light_dir);
+	/*
+	LgtIlluminate(sample->light, Ps, light_color);
+	*/
+	LgtIlluminateFromSample(sample, Ps, light_color);
+	if (light_color[0] < .0001 &&
+		light_color[1] < .0001 &&
+		light_color[2] < .0001) {
+		return 0;
+	}
+
+	if (cxt->ray_context == CXT_SHADOW_RAY) {
+		return 0;
+	}
+
+	if (cxt->cast_shadow) {
+		struct TraceContext shad_cxt;
+		double t_hit = FLT_MAX;
+		float C_occl[4] = {0};
+		int hit = 0;
+
+		shad_cxt = SlShadowContext(cxt, in->shaded_object);
+		hit = SlTrace(&shad_cxt, Ps, out->Ln, .0001, out->distance, C_occl, &t_hit);
+
+		if (hit) {
+			/* return 0; */
+			/* TODO handle light_color for shadow ray */
+			VEC3_MUL_ASGN(light_color, 1-C_occl[3]);
+		}
+	}
+
+	VEC3_COPY(out->Cl, light_color);
+	return 1;
+}
+
+	/* TODO temp solution compute before rendering */
+int SlGetLightSampleCount(const struct SurfaceInput *in)
+{
+	const struct Light **lights = ObjGetLightList(in->shaded_object);
+	const int nlights = SlGetLightCount(in);
+	int nsamples = 0;
+	int i;
+
+	if (lights == NULL) {
+		return 0;
+	}
+
+	for (i = 0; i < nlights; i++) {
+		nsamples += LgtGetSampleCount(lights[i]);
+	}
+
+	return nsamples;
+}
+
+struct LightSample *SlNewLightSamples(const struct SurfaceInput *in)
+{
+	const struct Light **lights = ObjGetLightList(in->shaded_object);
+	const int nlights = SlGetLightCount(in);
+	const int nsamples = SlGetLightSampleCount(in);
+	int i;
+
+	struct LightSample *samples = NULL;
+	struct LightSample *sample = NULL;
+
+	if (nsamples == 0) {
+		/* TODO handling */
+		return NULL;
+	}
+
+	samples = (struct LightSample *) malloc(nsamples * sizeof(struct LightSample));
+	sample = samples;
+	for (i = 0; i < nlights; i++) {
+		const int nsmp = LgtGetSampleCount(lights[i]);
+		LgtGetSamples(lights[i], sample, nsmp);
+		sample += nsmp;
+	}
+
+	return samples;
+}
+
+void SlFreeLightSamples(struct LightSample * samples)
+{
+	if (samples == NULL)
+		return;
+	free(samples);
 }
 
 static int has_reached_bounce_limit(const struct TraceContext *cxt)
@@ -465,7 +553,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 		t = t_start;
 
 		/* raymarch */
-		while(t <= t_limit && out_rgba[3] < opacity_threshold) {
+		while (t <= t_limit && out_rgba[3] < opacity_threshold) {
 			const struct Interval *interval = IntervalListGetHead(intervals);
 			float color[3] = {0};
 			float opacity = 0;

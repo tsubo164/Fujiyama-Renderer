@@ -8,6 +8,9 @@ See LICENSE and README
 #include "Numeric.h"
 #include "Noise.h"
 
+/* TODO TEST */
+#include "Light.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -77,9 +80,9 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-	struct PlasticShader *plastic;
+	struct PlasticShader *plastic =
+			(struct PlasticShader *) malloc(sizeof(struct PlasticShader));
 
-	plastic = (struct PlasticShader *) malloc(sizeof(struct PlasticShader));
 	if (plastic == NULL)
 		return NULL;
 
@@ -109,26 +112,39 @@ static void MyFree(void *self)
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
-	const struct PlasticShader *plastic;
-	int nlights;
-	int i;
-
+	const struct PlasticShader *plastic = (struct PlasticShader *) self;
+#if 0
+	const int nlights = SlGetLightCount(in);
+#endif
 	float diff[3] = {0};
 	float spec[3] = {0};
+	int i;
 
-	float C_refl[4] = {0};
-	double t_hit = FLT_MAX;
-	double refldir[3];
-	double Kr;
+	/* TODO TEST */
+	struct LightSample *samples = SlNewLightSamples(in);
+	const int nsamples = SlGetLightSampleCount(in);
 
-	struct TraceContext relf_cxt;
+	for (i = 0; i < nsamples; i++) {
+		struct LightOutput Lout;
+		float Kd = 0;
+		SlSampleIlluminace(cxt, &samples[i], in->P, in->N, N_PI_2, in, &Lout);
+		/* spec */
+		/*
+		Ks = SlPhong(in->I, in->N, Ln, .05);
+		*/
 
-	plastic = (struct PlasticShader *) self;
-	nlights = SlGetLightCount(in);
+		/* diff */
+		Kd = VEC3_DOT(in->N, Lout.Ln);
+		Kd = MAX(0, Kd);
+		diff[0] += Kd * Lout.Cl[0];
+		diff[1] += Kd * Lout.Cl[1];
+		diff[2] += Kd * Lout.Cl[2];
+	}
 
+#if 0
 	for (i = 0; i < nlights; i++) {
 		struct LightOutput Lout;
-		float Kd;
+		float Kd = 0;
 
 		SlIlluminace(cxt, i, in->P, in->N, N_PI_2, in, &Lout);
 		/* spec */
@@ -143,43 +159,25 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		diff[1] += Kd * Lout.Cl[1];
 		diff[2] += Kd * Lout.Cl[2];
 	}
+#endif
+
+	/* TODO TEST */
+	SlFreeLightSamples(samples);
 
 	/* Cs */
 	out->Cs[0] = diff[0] * plastic->diffuse[0] + spec[0];
 	out->Cs[1] = diff[1] * plastic->diffuse[1] + spec[1];
 	out->Cs[2] = diff[2] * plastic->diffuse[2] + spec[2];
 
-#if 0
-			{
-				double C_noise[3];
-				double C_dark[3] = {0, 0, 0};
-				double C_light[3] = {1, 1, 1};
-				double amp[3] = {1, 1, 1};
-				double freq[3] = {1, 1, 1};
-				double offset[3] = {0, 0, 0};
-				PerlinNoise(in->P, amp, freq, offset, 2, .5, 4, C_noise);
-				/*
-				C_noise[0] = -.5 + C_noise[0];
-				C_noise[1] = -.5 + C_noise[1];
-				C_noise[2] = -.5 + C_noise[2];
-				VEC3_COPY(out->Cs, C_noise);
-				*/
-				C_noise[0] = SmoothStep(C_noise[0], -1, 1);
-				VEC3_LERP(out->Cs, C_dark, C_light, C_noise[0]);
-				/*
-				VEC3_COPY(out->Cs, C_noise);
-				*/
-				/*
-				out->Cs[0] = diff[0] * C_noise[0] * plastic->diffuse[0] + spec[0];
-				out->Cs[1] = diff[1] * C_noise[0] * plastic->diffuse[1] + spec[1];
-				out->Cs[2] = diff[2] * C_noise[0] * plastic->diffuse[2] + spec[2];
-				*/
-			}
-#endif
-
 	/* reflect */
 	if (plastic->do_reflect) {
-		relf_cxt = SlReflectContext(cxt, in->shaded_object);
+		float C_refl[4] = {0};
+		double refldir[3] = {0};
+		double t_hit = FLT_MAX;
+		double Kr = 0;
+
+		const struct TraceContext relf_cxt = SlReflectContext(cxt, in->shaded_object);
+
 		SlReflect(in->I, in->N, refldir);
 		SlTrace(&relf_cxt, in->P, refldir, .001, 1000, C_refl, &t_hit);
 
@@ -270,7 +268,7 @@ static int set_ior(void *self, const struct PropertyValue *value)
 	struct PlasticShader *plastic = (struct PlasticShader *) self;
 	float ior = value->vector[0];
 
-	ior = MAX(0, ior);
+	ior = MAX(.001, ior);
 	plastic->ior = ior;
 
 	return 0;

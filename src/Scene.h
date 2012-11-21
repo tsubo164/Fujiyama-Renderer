@@ -110,7 +110,7 @@ extern struct Curve *ScnGetCurve(const struct Scene *scene, int index);
 extern size_t ScnGetCurveCount(const struct Scene *scene);
 
 /* Light */
-extern struct Light *ScnNewLight(struct Scene *scene, const char *type);
+extern struct Light *ScnNewLight(struct Scene *scene, int light_type);
 extern struct Light **ScnGetLightList(const struct Scene *scene);
 extern struct Light *ScnGetLight(const struct Scene *scene, int index);
 extern size_t ScnGetLightCount(const struct Scene *scene);

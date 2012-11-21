@@ -167,9 +167,9 @@ struct Curve *ScnNewCurve(struct Scene *scene)
 }
 
 /* Light */
-struct Light *ScnNewLight(struct Scene *scene, const char *type)
+struct Light *ScnNewLight(struct Scene *scene, int light_type)
 {
-	return (struct Light *) push_entry(scene->LightList, LgtNew(type));
+	return (struct Light *) push_entry(scene->LightList, LgtNew(light_type));
 }
 
 /* Mesh */

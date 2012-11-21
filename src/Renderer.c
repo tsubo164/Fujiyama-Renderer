@@ -345,7 +345,7 @@ static int render_scene(struct Renderer *renderer)
 	TimerStart(&timer);
 	printf("Rendering ...\n");
 	while ((tile = TlrGetNextTile(tiler)) != NULL) {
-		int pixel_bounds[4];
+		int pixel_bounds[4] = {0};
 		pixel_bounds[0] = tile->xmin;
 		pixel_bounds[1] = tile->ymin;
 		pixel_bounds[2] = tile->xmax;
@@ -358,9 +358,9 @@ static int render_scene(struct Renderer *renderer)
 		PrgStart(progress, SmpGetSampleCount(sampler));
 
 		while ((smp = SmpGetNextSample(sampler)) != NULL) {
-			int hit;
-			double t_hit = FLT_MAX;
 			float C_trace[4] = {0};
+			double t_hit = FLT_MAX;
+			int hit = 0;
 
 			CamGetRay(cam, smp->uv, smp->time, &ray);
 			cxt.time = smp->time;

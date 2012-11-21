@@ -20,6 +20,7 @@ enum PsrErroNo {
 	PSR_ERR_MANY_ARGS,
 	PSR_ERR_FEW_ARGS,
 	PSR_ERR_BAD_NUMBER,
+	PSR_ERR_BAD_ENUM,
 	PSR_ERR_NAME_EXISTS,
 	PSR_ERR_NAME_NOT_FOUND
 };
@@ -171,6 +172,17 @@ static int build_arguments(struct Parser *parser,
 			break;
 			}
 
+		case ARG_LIGHT_TYPE:
+			if (strcmp(arg->str, "PointLight") == 0) {
+				arg->num = SI_POINT_LIGHT;
+			} else if (strcmp(arg->str, "GeometryLight") == 0) {
+				arg->num = SI_GEOMETRY_LIGHT;
+			} else {
+				parse_error(parser, PSR_ERR_BAD_ENUM);
+				return -1;
+			}
+			break;
+
 		case ARG_PROPERTY_NAME:
 			break;
 		case ARG_FILE_PATH:
@@ -232,7 +244,7 @@ static int parse_line(struct Parser *parser, const char *line)
 	print_command(arguments, command->arg_count);
 
 	result = command->Run(arguments);
-	if (result.status == SI_FAIL) {
+	if (!CmdSuccess(&result)) {
 		parse_error(parser, SiGetErrorNo());
 		return -1;
 	}
@@ -297,6 +309,7 @@ static void parse_error(struct Parser *parser, int error_no)
 		{PSR_ERR_MANY_ARGS,        "too many arguments"},
 		{PSR_ERR_FEW_ARGS,         "too few arguments"},
 		{PSR_ERR_BAD_NUMBER,       "bad number arguments"},
+		{PSR_ERR_BAD_ENUM,         "bad enum arguments"},
 		{PSR_ERR_NAME_EXISTS,      "entry name already exists"},
 		{PSR_ERR_NAME_NOT_FOUND,   "entry name not found"},
 		/* from SceneInterface */
@@ -305,6 +318,11 @@ static void parse_error(struct Parser *parser, int error_no)
 		{SI_ERR_INIT_PLUGIN_FUNC_FAIL,      "initialize plugin function failed"},
 		{SI_ERR_BAD_PLUGIN_INFO,            "invalid plugin info in the plugin"},
 		{SI_ERR_CLOSE_PLUGIN_FAIL,          "close plugin function failed"},
+		/* TODO FIXME temp */
+		{SI_ERR_BADTYPE,    "invalid entry type"},
+		{SI_ERR_FAILLOAD,   "load file failed"},
+		{SI_ERR_FAILNEW,    "new entry failed"},
+		{SI_ERR_NO_MEMORY,  "no memory"},
 		{SI_ERR_NONE, ""}
 	};
 	const struct SiError *error = NULL;

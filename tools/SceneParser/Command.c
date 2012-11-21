@@ -186,11 +186,11 @@ static struct CommandResult NewCurve_run(const struct CommandArgument *args)
 static const int NewLight_args[] = {
 	ARG_COMMAND_NAME,
 	ARG_NEW_ENTRY_ID,
-	ARG_STRING};
+	ARG_LIGHT_TYPE};
 static struct CommandResult NewLight_run(const struct CommandArgument *args)
 {
 	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.new_entry_id = SiNewLight(args[2].str);
+	result.new_entry_id = SiNewLight(args[2].num);
 	result.new_entry_name = args[1].str;
 	return result;
 }
@@ -420,6 +420,16 @@ const struct Command *CmdSearchCommand(const char *command_name)
 	}
 
 	return NULL;
+}
+
+int CmdSuccess(const struct CommandResult *result)
+{
+	if (result->status == SI_FAIL &&
+	    result->new_entry_id == SI_BADID) {
+		return 0;
+	} else {
+		return 1;
+	}
 }
 
 static int print_property_list(const char *type_name)

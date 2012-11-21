@@ -16,6 +16,12 @@ enum { SI_BADID = -1 };
 enum { SI_FAIL = -1, SI_SUCCESS = 0 };
 
 /* TODO should be combined with Status? */
+/*
+typedef struct Status {
+	int error;
+	ID id;
+} Status;
+*/
 enum SiErrorNo {
 	SI_ERR_NONE = 0,
 	SI_ERR_NO_MEMORY,
@@ -49,6 +55,11 @@ enum SiTransformOrder {
 	SI_ORDER_ZYX
 };
 
+enum SiLightType {
+	SI_POINT_LIGHT = 0,
+	SI_GEOMETRY_LIGHT
+};
+
 /* Error interfaces */
 extern int SiGetErrorNo(void);
 
@@ -72,7 +83,7 @@ extern ID SiNewCamera(const char *arg);
 extern ID SiNewShader(const char *plugin_name);
 extern ID SiNewVolume(void);
 extern ID SiNewCurve(const char *filename);
-extern ID SiNewLight(const char *arg);
+extern ID SiNewLight(int light_type);
 extern ID SiNewMesh(const char *filename);
 
 extern Status SiAssignFrameBuffer(ID renderer, ID framebuffer);
