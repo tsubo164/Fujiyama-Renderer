@@ -99,21 +99,26 @@ static void MyFree(void *self)
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
-	const struct HairShader *hair = NULL;
-	int nlights = 0;
+	/* TODO use hair */
+	/*
+	const struct HairShader *hair = (struct HairShader *) self;
+	*/
 	int i = 0;
 
-	hair = (struct HairShader *) self;
-	nlights = SlGetLightCount(in);
+	struct LightSample *samples = NULL;
+	const int nsamples = SlGetLightSampleCount(in);
+
+	samples = SlNewLightSamples(in);
 
 	VEC3_SET(out->Cs, 0, 0, 0);
-	for (i = 0; i < nlights; i++) {
+
+	for (i = 0; i < nsamples; i++) {
 		struct LightOutput Lout = {{0}};
 		double tangent[3] = {0};
 		float diff = 0;
 		float spec = 0;
 
-		SlIlluminace(cxt, i, in->P, in->N, N_PI, in, &Lout);
+		SlSampleIlluminance(cxt, &samples[i], in->P, in->N, N_PI, in, &Lout);
 
 		VEC3_COPY(tangent, in->dPdt);
 		VEC3_NORMALIZE(tangent);
@@ -125,6 +130,9 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		out->Cs[1] += (in->Cd[1] * diff + spec) * Lout.Cl[1];
 		out->Cs[2] += (in->Cd[2] * diff + spec) * Lout.Cl[2];
 	}
+
+	SlFreeLightSamples(samples);
+
 	out->Cs[0] += .0;
 	out->Cs[1] += .025;
 	out->Cs[2] += .05;

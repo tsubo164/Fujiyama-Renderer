@@ -103,7 +103,7 @@ static void MyFree(void *self)
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
-	const struct GlassShader *glass = NULL;
+	const struct GlassShader *glass = (struct GlassShader *) self;
 	struct TraceContext refl_cxt;
 	struct TraceContext refr_cxt;
 	double T[3] = {0};
@@ -112,8 +112,6 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	float C_refr[4] = {0};
 	double Kt = 0, Kr = 0;
 	double t_hit = FLT_MAX;
-
-	glass = (struct GlassShader *) self;
 
 	/* Cs */
 	out->Cs[0] = 0;

@@ -8,9 +8,6 @@ See LICENSE and README
 #include "Numeric.h"
 #include "Noise.h"
 
-/* TODO TEST */
-#include "Light.h"
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -56,7 +53,7 @@ static const struct Property MyProperties[] = {
 	{PROP_VECTOR3, "reflect",   set_reflect},
 	{PROP_SCALAR,  "ior",       set_ior},
 	{PROP_SCALAR,  "opacity",   set_opacity},
-	{PROP_NONE,    NULL,        NULL}
+	{PROP_NONE, NULL, NULL}
 };
 
 static const struct MetaInfo MyMetainfo[] = {
@@ -113,21 +110,19 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
 	const struct PlasticShader *plastic = (struct PlasticShader *) self;
-#if 0
-	const int nlights = SlGetLightCount(in);
-#endif
 	float diff[3] = {0};
 	float spec[3] = {0};
-	int i;
+	int i = 0;
 
-	/* TODO TEST */
-	struct LightSample *samples = SlNewLightSamples(in);
+	struct LightSample *samples = NULL;
 	const int nsamples = SlGetLightSampleCount(in);
+
+	samples = SlNewLightSamples(in);
 
 	for (i = 0; i < nsamples; i++) {
 		struct LightOutput Lout;
 		float Kd = 0;
-		SlSampleIlluminace(cxt, &samples[i], in->P, in->N, N_PI_2, in, &Lout);
+		SlSampleIlluminance(cxt, &samples[i], in->P, in->N, N_PI_2, in, &Lout);
 		/* spec */
 		/*
 		Ks = SlPhong(in->I, in->N, Ln, .05);
@@ -141,27 +136,6 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		diff[2] += Kd * Lout.Cl[2];
 	}
 
-#if 0
-	for (i = 0; i < nlights; i++) {
-		struct LightOutput Lout;
-		float Kd = 0;
-
-		SlIlluminace(cxt, i, in->P, in->N, N_PI_2, in, &Lout);
-		/* spec */
-		/*
-		Ks = SlPhong(in->I, in->N, Ln, .05);
-		*/
-
-		/* diff */
-		Kd = VEC3_DOT(in->N, Lout.Ln);
-		Kd = MAX(0, Kd);
-		diff[0] += Kd * Lout.Cl[0];
-		diff[1] += Kd * Lout.Cl[1];
-		diff[2] += Kd * Lout.Cl[2];
-	}
-#endif
-
-	/* TODO TEST */
 	SlFreeLightSamples(samples);
 
 	/* Cs */

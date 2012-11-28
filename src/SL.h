@@ -85,14 +85,16 @@ extern struct TraceContext SlRefractContext(const struct TraceContext *cxt,
 extern struct TraceContext SlShadowContext(const struct TraceContext *cxt,
 		const struct ObjectInstance *obj);
 
+/* TODO obsolete */
+#if 0
 extern int SlIlluminace(const struct TraceContext *cxt, int light_id,
 		const double *Ps, const double *axis, float angle,
 		const struct SurfaceInput *in, struct LightOutput *out);
+#endif
 
-/* TODO TEST */
 struct LightSample;
 
-extern int SlSampleIlluminace(const struct TraceContext *cxt, const struct LightSample *sample,
+extern int SlSampleIlluminance(const struct TraceContext *cxt, const struct LightSample *sample,
 		const double *Ps, const double *axis, float angle,
 		const struct SurfaceInput *in, struct LightOutput *out);
 

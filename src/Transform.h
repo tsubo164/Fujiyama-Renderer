@@ -77,6 +77,8 @@ struct TransformSampleList {
 
 extern void XfmInitTransformSampleList(struct TransformSampleList *list);
 extern void XfmLerpTransformSample(struct TransformSampleList *list, double time);
+extern void XfmLerpTransformSample2(const struct TransformSampleList *list, double time,
+		struct Transform *transform_interp);
 
 extern void XfmPushTranslateSample(struct TransformSampleList *list,
 		double tx, double ty, double tz, double time);

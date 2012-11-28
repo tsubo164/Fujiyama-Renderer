@@ -12,100 +12,100 @@ SetProperty3 cam1 translate 0 1 7
 SetProperty3 cam1 rotate -5.710593137499643 0 0
 
 #Light
-NewLight light0 SpotLight
+NewLight light0 PointLight
 SetProperty3 light0 position 0.900771 12 4.09137
 SetProperty1 light0 intensity 0.03125
-NewLight light1 SpotLight
+NewLight light1 PointLight
 SetProperty3 light1 position 2.02315 12 5.28021
 SetProperty1 light1 intensity 0.03125
-NewLight light2 SpotLight
+NewLight light2 PointLight
 SetProperty3 light2 position 10.69 12 13.918
 SetProperty1 light2 intensity 0.03125
-NewLight light3 SpotLight
+NewLight light3 PointLight
 SetProperty3 light3 position 4.28027 12 7.58462
 SetProperty1 light3 intensity 0.03125
-NewLight light4 SpotLight
+NewLight light4 PointLight
 SetProperty3 light4 position 12.9548 12 1.19914
 SetProperty1 light4 intensity 0.03125
-NewLight light5 SpotLight
+NewLight light5 PointLight
 SetProperty3 light5 position 6.55808 12 2.31772
 SetProperty1 light5 intensity 0.03125
-NewLight light6 SpotLight
+NewLight light6 PointLight
 SetProperty3 light6 position 0.169064 12 10.9623
 SetProperty1 light6 intensity 0.03125
-NewLight light7 SpotLight
+NewLight light7 PointLight
 SetProperty3 light7 position 1.25002 12 4.51314
 SetProperty1 light7 intensity 0.03125
-NewLight light8 SpotLight
+NewLight light8 PointLight
 SetProperty3 light8 position 2.46758 12 5.73382
 SetProperty1 light8 intensity 0.03125
-NewLight light9 SpotLight
+NewLight light9 PointLight
 SetProperty3 light9 position 3.55644 12 6.84334
 SetProperty1 light9 intensity 0.03125
-NewLight light10 SpotLight
+NewLight light10 PointLight
 SetProperty3 light10 position 4.76112 12 8.00264
 SetProperty1 light10 intensity 0.03125
-NewLight light11 SpotLight
+NewLight light11 PointLight
 SetProperty3 light11 position 13.3267 12 9.10333
 SetProperty1 light11 intensity 0.03125
-NewLight light12 SpotLight
+NewLight light12 PointLight
 SetProperty3 light12 position 14.4155 12 2.68084
 SetProperty1 light12 intensity 0.03125
-NewLight light13 SpotLight
+NewLight light13 PointLight
 SetProperty3 light13 position 8.10755 12 3.79629
 SetProperty1 light13 intensity 0.03125
-NewLight light14 SpotLight
+NewLight light14 PointLight
 SetProperty3 light14 position 9.21103 12 4.9484
 SetProperty1 light14 intensity 0.03125
-NewLight light15 SpotLight
+NewLight light15 PointLight
 SetProperty3 light15 position 2.83469 12 6.09221
 SetProperty1 light15 intensity 0.03125
-NewLight light16 SpotLight
+NewLight light16 PointLight
 SetProperty3 light16 position 4.00945 12 7.18302
 SetProperty1 light16 intensity 0.03125
-NewLight light17 SpotLight
+NewLight light17 PointLight
 SetProperty3 light17 position 12.6072 12 0.832089
 SetProperty1 light17 intensity 0.03125
-NewLight light18 SpotLight
+NewLight light18 PointLight
 SetProperty3 light18 position 6.21169 12 1.98055
 SetProperty1 light18 intensity 0.03125
-NewLight light19 SpotLight
+NewLight light19 PointLight
 SetProperty3 light19 position 7.39599 12 10.5563
 SetProperty1 light19 intensity 0.03125
-NewLight light20 SpotLight
+NewLight light20 PointLight
 SetProperty3 light20 position 8.52421 12 4.15086
 SetProperty1 light20 intensity 0.03125
-NewLight light21 SpotLight
+NewLight light21 PointLight
 SetProperty3 light21 position 9.5891 12 5.39715
 SetProperty1 light21 intensity 0.03125
-NewLight light22 SpotLight
+NewLight light22 PointLight
 SetProperty3 light22 position 3.18967 12 13.9542
 SetProperty1 light22 intensity 0.03125
-NewLight light23 SpotLight
+NewLight light23 PointLight
 SetProperty3 light23 position 4.41432 12 0.082813
 SetProperty1 light23 intensity 0.03125
-NewLight light24 SpotLight
+NewLight light24 PointLight
 SetProperty3 light24 position 5.48803 12 1.21856
 SetProperty1 light24 intensity 0.03125
-NewLight light25 SpotLight
+NewLight light25 PointLight
 SetProperty3 light25 position 6.57647 12 2.31432
 SetProperty1 light25 intensity 0.03125
-NewLight light26 SpotLight
+NewLight light26 PointLight
 SetProperty3 light26 position 0.265098 12 10.9453
 SetProperty1 light26 intensity 0.03125
-NewLight light27 SpotLight
+NewLight light27 PointLight
 SetProperty3 light27 position 8.84422 12 12.1117
 SetProperty1 light27 intensity 0.03125
-NewLight light28 SpotLight
+NewLight light28 PointLight
 SetProperty3 light28 position 10.0154 12 5.67625
 SetProperty1 light28 intensity 0.03125
-NewLight light29 SpotLight
+NewLight light29 PointLight
 SetProperty3 light29 position 11.0907 12 14.4043
 SetProperty1 light29 intensity 0.03125
-NewLight light30 SpotLight
+NewLight light30 PointLight
 SetProperty3 light30 position 4.71726 12 7.98851
 SetProperty1 light30 intensity 0.03125
-NewLight light31 SpotLight
+NewLight light31 PointLight
 SetProperty3 light31 position 13.3907 12 9.08986
 SetProperty1 light31 intensity 0.03125
 

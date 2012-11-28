@@ -221,6 +221,8 @@ struct TraceContext SlShadowContext(const struct TraceContext *cxt,
 	return shad_cxt;
 }
 
+/* TODO obsolete */
+#if 0
 int SlIlluminace(const struct TraceContext *cxt, int light_id,
 		const double *Ps, const double *axis, float angle,
 		const struct SurfaceInput *in, struct LightOutput *out)
@@ -282,6 +284,7 @@ int SlIlluminace(const struct TraceContext *cxt, int light_id,
 	VEC3_COPY(out->Cl, light_color);
 	return 1;
 }
+#endif
 
 int SlGetLightCount(const struct SurfaceInput *in)
 {
@@ -289,7 +292,7 @@ int SlGetLightCount(const struct SurfaceInput *in)
 }
 
 /* TODO TEST */
-int SlSampleIlluminace(const struct TraceContext *cxt, const struct LightSample *sample,
+int SlSampleIlluminance(const struct TraceContext *cxt, const struct LightSample *sample,
 		const double *Ps, const double *axis, float angle,
 		const struct SurfaceInput *in, struct LightOutput *out)
 {
@@ -299,7 +302,7 @@ int SlSampleIlluminace(const struct TraceContext *cxt, const struct LightSample 
 
 	VEC3_SET(out->Cl, 0, 0, 0);
 
-	VEC3_SUB(out->Ln, sample->position, Ps);
+	VEC3_SUB(out->Ln, sample->P, Ps);
 	out->distance = VEC3_LEN(out->Ln);
 	if (out->distance > 0) {
 		VEC3_DIV_ASGN(out->Ln, out->distance);
@@ -312,9 +315,6 @@ int SlSampleIlluminace(const struct TraceContext *cxt, const struct LightSample 
 		return 0;
 	}
 
-	/*
-	LgtIlluminate(sample->light, Ps, light_color);
-	*/
 	LgtIlluminateFromSample(sample, Ps, light_color);
 	if (light_color[0] < .0001 &&
 		light_color[1] < .0001 &&

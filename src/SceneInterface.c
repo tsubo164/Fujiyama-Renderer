@@ -412,8 +412,11 @@ ID SiNewLight(int light_type)
 	case SI_POINT_LIGHT:
 		type = LGT_POINT;
 		break;
-	case SI_GEOMETRY_LIGHT:
-		type = LGT_GEOMETRY;
+	case SI_GRID_LIGHT:
+		type = LGT_GRID;
+		break;
+	case SI_SPHERE_LIGHT:
+		type = LGT_SPHERE;
 		break;
 	default:
 		type = LGT_POINT;
@@ -1015,10 +1018,58 @@ static int set_Light_sample_count(void *self, const struct PropertyValue *value)
 	return 0;
 }
 
+static int set_Light_double_sided(void *self, const struct PropertyValue *value)
+{
+	struct Light *light = (struct Light *) self;
+	LgtSetDoubleSided(light, (int) value->vector[0]);
+	return 0;
+}
+
 static int set_Light_position(void *self, const struct PropertyValue *value)
 {
 	struct Light *light = (struct Light *) self;
 	LgtSetPosition(light, value->vector[0], value->vector[1], value->vector[2]);
+	return 0;
+}
+
+static int set_Light_transform_order(void *self, const struct PropertyValue *value)
+{
+	/* TODO error handling */
+	if (!XfmIsTransformOrder((int) value->vector[0]))
+		return -1;
+
+	LgtSetTransformOrder((struct Light *) self, (int) value->vector[0]);
+	return 0;
+}
+
+static int set_Light_rotate_order(void *self, const struct PropertyValue *value)
+{
+	/* TODO error handling */
+	if (!XfmIsRotateOrder((int) value->vector[0]))
+		return -1;
+
+	LgtSetRotateOrder((struct Light *) self, (int) value->vector[0]);
+	return 0;
+}
+
+static int set_Light_translate(void *self, const struct PropertyValue *value)
+{
+	LgtSetTranslate((struct Light *) self,
+			value->vector[0], value->vector[1], value->vector[2], value->time);
+	return 0;
+}
+
+static int set_Light_rotate(void *self, const struct PropertyValue *value)
+{
+	LgtSetRotate((struct Light *) self,
+			value->vector[0], value->vector[1], value->vector[2], value->time);
+	return 0;
+}
+
+static int set_Light_scale(void *self, const struct PropertyValue *value)
+{
+	LgtSetScale((struct Light *) self,
+			value->vector[0], value->vector[1], value->vector[2], value->time);
 	return 0;
 }
 
@@ -1078,9 +1129,15 @@ static const struct Property Camera_properties[] = {
 };
 
 static const struct Property Light_properties[] = {
-	{PROP_SCALAR,  "intensity",    set_Light_intensity},
-	{PROP_SCALAR,  "sample_count", set_Light_sample_count},
-	{PROP_VECTOR3, "position",     set_Light_position},
+	{PROP_SCALAR,  "intensity",       set_Light_intensity},
+	{PROP_SCALAR,  "sample_count",    set_Light_sample_count},
+	{PROP_SCALAR,  "double_sided",    set_Light_double_sided},
+	{PROP_VECTOR3, "position",        set_Light_position},
+	{PROP_SCALAR,  "transform_order", set_Light_transform_order},
+	{PROP_SCALAR,  "rotate_order",    set_Light_rotate_order},
+	{PROP_VECTOR3, "translate",       set_Light_translate},
+	{PROP_VECTOR3, "rotate",          set_Light_rotate},
+	{PROP_VECTOR3, "scale",           set_Light_scale},
 	{PROP_NONE, NULL, NULL}
 };
 

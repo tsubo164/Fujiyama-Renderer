@@ -9,6 +9,7 @@ See LICENSE and README
 #include "Property.h"
 #include "Texture.h"
 #include "Plugin.h"
+#include "Light.h"
 #include "SL.h"
 #include <stddef.h>
 

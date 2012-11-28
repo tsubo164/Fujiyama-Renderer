@@ -57,7 +57,8 @@ enum SiTransformOrder {
 
 enum SiLightType {
 	SI_POINT_LIGHT = 0,
-	SI_GEOMETRY_LIGHT
+	SI_GRID_LIGHT,
+	SI_SPHERE_LIGHT
 };
 
 /* Error interfaces */

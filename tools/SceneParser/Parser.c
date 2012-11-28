@@ -175,8 +175,10 @@ static int build_arguments(struct Parser *parser,
 		case ARG_LIGHT_TYPE:
 			if (strcmp(arg->str, "PointLight") == 0) {
 				arg->num = SI_POINT_LIGHT;
-			} else if (strcmp(arg->str, "GeometryLight") == 0) {
-				arg->num = SI_GEOMETRY_LIGHT;
+			} else if (strcmp(arg->str, "GridLight") == 0) {
+				arg->num = SI_GRID_LIGHT;
+			} else if (strcmp(arg->str, "SphereLight") == 0) {
+				arg->num = SI_SPHERE_LIGHT;
 			} else {
 				parse_error(parser, PSR_ERR_BAD_ENUM);
 				return -1;

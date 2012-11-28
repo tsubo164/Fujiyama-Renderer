@@ -76,15 +76,33 @@ static void MyFree(void *self)
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
-	const struct VolumeShader *volume = NULL;
-	int nlights = 0;
+	const struct VolumeShader *volume = (struct VolumeShader *) self;
+#if 0
+	int nlights = SlGetLightCount(in);
+#endif
 	int i = 0;
 
 	float diff[3] = {0};
 
-	volume = (struct VolumeShader *) self;
-	nlights = SlGetLightCount(in);
+	struct LightSample *samples = NULL;
+	const int nsamples = SlGetLightSampleCount(in);
 
+	samples = SlNewLightSamples(in);
+
+	for (i = 0; i < nsamples; i++) {
+		struct LightOutput Lout;
+
+		SlSampleIlluminance(cxt, &samples[i], in->P, in->N, N_PI, in, &Lout);
+		/*
+		SlSampleIlluminance(cxt, &samples[i], in->P, in->N, N_PI_2, in, &Lout);
+		*/
+
+		/* diff */
+		diff[0] += Lout.Cl[0];
+		diff[1] += Lout.Cl[1];
+		diff[2] += Lout.Cl[2];
+	}
+#if 0
 	for (i = 0; i < nlights; i++) {
 		struct LightOutput Lout;
 
@@ -95,6 +113,8 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		diff[1] += Lout.Cl[1];
 		diff[2] += Lout.Cl[2];
 	}
+#endif
+	SlFreeLightSamples(samples);
 
 	/* Cs */
 	out->Cs[0] = diff[0] * volume->diffuse[0];
