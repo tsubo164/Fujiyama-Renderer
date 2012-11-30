@@ -140,6 +140,12 @@ SetProperty3       dome1   rotate 0 180 0
 AssignShader       dome1   dome_shader
 AssignTexture      dome_shader texture tex1
 
+#ObjectGroup
+NewObjectGroup     group1
+AddObjectToGroup   group1   xyzrgb_dragon_instance0
+AssignObjectGroup  xyzrgb_dragon_instance0  shadow_target  group1
+AssignObjectGroup  floor1                   shadow_target  group1
+
 #FrameBuffer
 NewFrameBuffer fb1 rgba
 

@@ -90,8 +90,8 @@ class SceneInterface:
 		cmd = 'RunProcedure %s' % (procedure)
 		self.commands.append(cmd)
 
-	def NewTurbulence(self, name):
-		cmd = 'NewTurbulence %s' % (name)
+	def AddObjectToGroup(self, group, object):
+		cmd = 'AddObjectToGroup %s %s' % (group, object)
 		self.commands.append(cmd)
 
 	def NewObjectInstance(self, name, accelerator):
@@ -100,6 +100,14 @@ class SceneInterface:
 
 	def NewFrameBuffer(self, name, arg):
 		cmd = 'NewFrameBuffer %s %s' % (name, arg)
+		self.commands.append(cmd)
+
+	def NewObjectGroup(self, name):
+		cmd = 'NewObjectGroup %s' % (name)
+		self.commands.append(cmd)
+
+	def NewTurbulence(self, name):
+		cmd = 'NewTurbulence %s' % (name)
 		self.commands.append(cmd)
 
 	def NewProcedure(self, name, arg):
@@ -150,12 +158,16 @@ class SceneInterface:
 		cmd = 'AssignCamera %s %s' % (renderer, camera)
 		self.commands.append(cmd)
 
+	def AssignObjectGroup(self, entry_name, prop_name, object_group):
+		cmd = 'AssignObjectGroup %s %s %s' % (entry_name, prop_name, object_group)
+		self.commands.append(cmd)
+
 	def AssignFrameBuffer(self, renderer, framebuffer):
 		cmd = 'AssignFrameBuffer %s %s' % (renderer, framebuffer)
 		self.commands.append(cmd)
 
-	def AssignTurbulence(self, entry_name, prop_name, volume):
-		cmd = 'AssignTurbulence %s %s %s' % (entry_name, prop_name, volume)
+	def AssignTurbulence(self, entry_name, prop_name, turbulence):
+		cmd = 'AssignTurbulence %s %s %s' % (entry_name, prop_name, turbulence)
 		self.commands.append(cmd)
 
 	def AssignVolume(self, entry_name, prop_name, volume):

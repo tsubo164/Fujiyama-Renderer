@@ -39,6 +39,7 @@ extern int ObjSetVolume(struct ObjectInstance *obj, const struct Volume *volume)
 extern int ObjIsSurface(const struct ObjectInstance *obj);
 extern int ObjIsVolume(const struct ObjectInstance *obj);
 
+/* transformation */
 extern void ObjSetTranslate(struct ObjectInstance *obj,
 		double tx, double ty, double tz, double time);
 extern void ObjSetRotate(struct ObjectInstance *obj,
@@ -47,13 +48,17 @@ extern void ObjSetScale(struct ObjectInstance *obj,
 		double sx, double sy, double sz, double time);
 extern void ObjSetTransformOrder(struct ObjectInstance *obj, int order);
 extern void ObjSetRotateOrder(struct ObjectInstance *obj, int order);
+
+/* non-geometric properties */
 extern void ObjSetShader(struct ObjectInstance *obj, const struct Shader *shader);
 extern void ObjSetLightList(struct ObjectInstance *obj, const struct Light **lights, int count);
 extern void ObjSetReflectTarget(struct ObjectInstance *obj, const struct ObjectGroup *grp);
 extern void ObjSetRefractTarget(struct ObjectInstance *obj, const struct ObjectGroup *grp);
+extern void ObjSetShadowTarget(struct ObjectInstance *obj, const struct ObjectGroup *grp);
 
 extern const struct ObjectGroup *ObjGetReflectTarget(const struct ObjectInstance *obj);
 extern const struct ObjectGroup *ObjGetRefractTarget(const struct ObjectInstance *obj);
+extern const struct ObjectGroup *ObjGetShadowTarget(const struct ObjectInstance *obj);
 extern const struct Shader *ObjGetShader(const struct ObjectInstance *obj);
 extern const struct Light **ObjGetLightList(const struct ObjectInstance *obj);
 extern int ObjGetLightCount(const struct ObjectInstance *obj);

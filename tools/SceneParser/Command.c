@@ -55,6 +55,18 @@ static struct CommandResult SaveFrameBuffer_run(const struct CommandArgument *ar
 	return result;
 }
 
+/* AddObjectToGroup */
+static const int AddObjectToGroup_args[] = {
+	ARG_COMMAND_NAME,
+	ARG_ENTRY_ID,
+	ARG_ENTRY_ID};
+static struct CommandResult AddObjectToGroup_run(const struct CommandArgument *args)
+{
+	struct CommandResult result = INIT_COMMAND_RESULT;
+	result.status = SiAddObjectToGroup(args[1].id, args[2].id);
+	return result;
+}
+
 /* NewObjectInstance */
 static const int NewObjectInstance_args[] = {
 	ARG_COMMAND_NAME,
@@ -77,6 +89,18 @@ static struct CommandResult NewFrameBuffer_run(const struct CommandArgument *arg
 {
 	struct CommandResult result = INIT_COMMAND_RESULT;
 	result.new_entry_id = SiNewFrameBuffer(args[2].str);
+	result.new_entry_name = args[1].str;
+	return result;
+}
+
+/* NewObjectGroup */
+static const int NewObjectGroup_args[] = {
+	ARG_COMMAND_NAME,
+	ARG_NEW_ENTRY_ID};
+static struct CommandResult NewObjectGroup_run(const struct CommandArgument *args)
+{
+	struct CommandResult result = INIT_COMMAND_RESULT;
+	result.new_entry_id = SiNewObjectGroup();
 	result.new_entry_name = args[1].str;
 	return result;
 }
@@ -217,6 +241,19 @@ static struct CommandResult AssignFrameBuffer_run(const struct CommandArgument *
 {
 	struct CommandResult result = INIT_COMMAND_RESULT;
 	result.status = SiAssignFrameBuffer(args[1].id, args[2].id);
+	return result;
+}
+
+/* AssignObjectGroup */
+static const int AssignObjectGroup_args[] = {
+	ARG_COMMAND_NAME,
+	ARG_ENTRY_ID,
+	ARG_PROPERTY_NAME,
+	ARG_ENTRY_ID};
+static struct CommandResult AssignObjectGroup_run(const struct CommandArgument *args)
+{
+	struct CommandResult result = INIT_COMMAND_RESULT;
+	result.status = SiAssignObjectGroup(args[1].id, args[2].str, args[3].id);
 	return result;
 }
 
@@ -381,8 +418,10 @@ static const struct Command command_list[] = {
 	REGISTER_COMMAND(RenderScene),
 	REGISTER_COMMAND(RunProcedure),
 	REGISTER_COMMAND(SaveFrameBuffer),
+	REGISTER_COMMAND(AddObjectToGroup),
 	REGISTER_COMMAND(NewObjectInstance),
 	REGISTER_COMMAND(NewFrameBuffer),
+	REGISTER_COMMAND(NewObjectGroup),
 	REGISTER_COMMAND(NewTurbulence),
 	REGISTER_COMMAND(NewProcedure),
 	REGISTER_COMMAND(NewRenderer),
@@ -394,6 +433,7 @@ static const struct Command command_list[] = {
 	REGISTER_COMMAND(NewLight),
 	REGISTER_COMMAND(NewMesh),
 	REGISTER_COMMAND(AssignFrameBuffer),
+	REGISTER_COMMAND(AssignObjectGroup),
 	REGISTER_COMMAND(AssignTurbulence),
 	REGISTER_COMMAND(AssignTexture),
 	REGISTER_COMMAND(AssignCamera),

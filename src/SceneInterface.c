@@ -24,6 +24,7 @@ enum EntryType {
 	Type_ObjectInstance = 1,
 	Type_Accelerator,
 	Type_FrameBuffer,
+	Type_ObjectGroup,
 	Type_Turbulence,
 	Type_Procedure,
 	Type_Renderer,
@@ -195,6 +196,36 @@ Status SiRunProcedure(ID procedure)
 	return SI_SUCCESS;
 }
 
+Status SiAddObjectToGroup(ID group, ID object)
+{
+	struct ObjectGroup *group_ptr = NULL;
+	struct ObjectInstance *object_ptr = NULL;
+
+	{
+		const struct Entry entry = decode_id(group);
+		if (entry.type != Type_ObjectGroup)
+			return SI_FAIL;
+
+		group_ptr = ScnGetObjectGroup(scene, entry.index);
+		if (group_ptr == NULL)
+			return SI_FAIL;
+	}
+	{
+		const struct Entry entry = decode_id(object);
+		if (entry.type != Type_ObjectInstance)
+			return SI_FAIL;
+
+		object_ptr = ScnGetObjectInstance(scene, entry.index);
+		if (object_ptr == NULL)
+			return SI_FAIL;
+	}
+
+	ObjGroupAdd(group_ptr, object_ptr);
+
+	set_errno(SI_ERR_NONE);
+	return SI_SUCCESS;
+}
+
 /* TODO change argument name accelerator */
 ID SiNewObjectInstance(ID accelerator)
 {
@@ -259,6 +290,17 @@ ID SiNewFrameBuffer(const char *arg)
 
 	set_errno(SI_ERR_NONE);
 	return encode_id(Type_FrameBuffer, GET_LAST_ADDED_ID(FrameBuffer));
+}
+
+ID SiNewObjectGroup(void)
+{
+	if (ScnNewObjectGroup(scene) == NULL) {
+		set_errno(SI_ERR_NO_MEMORY);
+		return SI_BADID;
+	}
+
+	set_errno(SI_ERR_NONE);
+	return encode_id(Type_ObjectGroup, GET_LAST_ADDED_ID(ObjectGroup));
 }
 
 ID SiNewTurbulence(void)
@@ -488,6 +530,27 @@ Status SiAssignShader(ID object, ID shader)
 
 	ObjSetShader(object_ptr, shader_ptr);
 	return SI_SUCCESS;
+}
+
+Status SiAssignObjectGroup(ID id, const char *name, ID group)
+{
+	const struct Entry entry = decode_id(id);
+	const struct Entry group_ent = decode_id(group);
+	struct PropertyValue value = InitPropValue();
+	struct ObjectGroup *group_ptr = NULL;
+	int err = 0;
+
+	if (group_ent.type != Type_ObjectGroup)
+		return SI_FAIL;
+
+	group_ptr = ScnGetObjectGroup(scene, group_ent.index);
+	if (group_ptr == NULL)
+		return SI_FAIL;
+
+	value = PropObjectGroup(group_ptr);
+	err = set_property(&entry, name, &value);
+
+	return status_of_error(err);
 }
 
 Status SiAssignTexture(ID shader, const char *prop_name, ID texture)
@@ -730,6 +793,9 @@ static int create_implicit_groups(void)
 
 		if (ObjGetRefractTarget(obj) == NULL)
 			ObjSetRefractTarget(obj, all_objects);
+
+		if (ObjGetShadowTarget(obj) == NULL)
+			ObjSetShadowTarget(obj, all_objects);
 	}
 
 	renderer = ScnGetRenderer(scene, 0);
@@ -790,6 +856,12 @@ static int set_ObjectInstance_scale(void *self, const struct PropertyValue *valu
 {
 	ObjSetScale((struct ObjectInstance *) self,
 			value->vector[0], value->vector[1], value->vector[2], value->time);
+	return 0;
+}
+
+static int set_ObjectInstance_shadow_target(void *self, const struct PropertyValue *value)
+{
+	ObjSetShadowTarget((struct ObjectInstance *) self, value->object_group);
 	return 0;
 }
 
@@ -1074,11 +1146,12 @@ static int set_Light_scale(void *self, const struct PropertyValue *value)
 }
 
 static const struct Property ObjectInstance_properties[] = {
-	{PROP_SCALAR,  "transform_order", set_ObjectInstance_transform_order},
-	{PROP_SCALAR,  "rotate_order",    set_ObjectInstance_rotate_order},
-	{PROP_VECTOR3, "translate",       set_ObjectInstance_translate},
-	{PROP_VECTOR3, "rotate",          set_ObjectInstance_rotate},
-	{PROP_VECTOR3, "scale",           set_ObjectInstance_scale},
+	{PROP_SCALAR,      "transform_order", set_ObjectInstance_transform_order},
+	{PROP_SCALAR,      "rotate_order",    set_ObjectInstance_rotate_order},
+	{PROP_VECTOR3,     "translate",       set_ObjectInstance_translate},
+	{PROP_VECTOR3,     "rotate",          set_ObjectInstance_rotate},
+	{PROP_VECTOR3,     "scale",           set_ObjectInstance_scale},
+	{PROP_OBJECTGROUP, "shadow_target",   set_ObjectInstance_shadow_target},
 	{PROP_NONE, NULL, NULL}
 };
 

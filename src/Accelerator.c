@@ -263,6 +263,7 @@ static int intersect_grid_accel(const struct Accelerator *acc, double time,
 		tend = boxhit_tmax;
 		POINT_ON_RAY(start, ray->orig, ray->dir, tstart);
 	}
+	tend = MIN(tend, ray->tmax);
 
 	VEC3_COPY(NCELLS, grid->ncells);
 

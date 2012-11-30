@@ -61,6 +61,16 @@ struct PropertyValue PropVector4(double v0, double v1, double v2, double v3)
 	return value;
 }
 
+struct PropertyValue PropObjectGroup(struct ObjectGroup *group)
+{
+	struct PropertyValue value = INIT_PROPERTYVALUE;
+
+	value.type = PROP_OBJECTGROUP;
+	value.object_group = group;
+
+	return value;
+}
+
 struct PropertyValue PropTurbulence(struct Turbulence *turbulence)
 {
 	struct PropertyValue value = INIT_PROPERTYVALUE;

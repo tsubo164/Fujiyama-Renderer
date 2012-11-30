@@ -109,6 +109,9 @@ static int tokenize_line(const char *line,
 		while (*src != '\0' && isspace(*src)) {
 			src++;
 		}
+		if (*src == '\0') {
+			break;
+		}
 		while (*src != '\0' && !isspace(*src)) {
 			*dst++ = *src++;
 		}

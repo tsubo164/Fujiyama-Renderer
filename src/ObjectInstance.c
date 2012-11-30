@@ -36,6 +36,7 @@ struct ObjectInstance {
 	int n_target_lights;
 	const struct ObjectGroup *reflection_target;
 	const struct ObjectGroup *refraction_target;
+	const struct ObjectGroup *shadow_target;
 };
 
 static void update_object_bounds(struct ObjectInstance *obj);
@@ -65,6 +66,7 @@ struct ObjectInstance *ObjNew(const struct Accelerator *acc)
 
 	obj->reflection_target = NULL;
 	obj->refraction_target = NULL;
+	obj->shadow_target = NULL;
 
 	return obj;
 }
@@ -165,6 +167,12 @@ void ObjSetRefractTarget(struct ObjectInstance *obj, const struct ObjectGroup *g
 	obj->refraction_target = grp;
 }
 
+void ObjSetShadowTarget(struct ObjectInstance *obj, const struct ObjectGroup *grp)
+{
+	assert(grp != NULL);
+	obj->shadow_target = grp;
+}
+
 const struct ObjectGroup *ObjGetReflectTarget(const struct ObjectInstance *obj)
 {
 	return obj->reflection_target;
@@ -173,6 +181,11 @@ const struct ObjectGroup *ObjGetReflectTarget(const struct ObjectInstance *obj)
 const struct ObjectGroup *ObjGetRefractTarget(const struct ObjectInstance *obj)
 {
 	return obj->refraction_target;
+}
+
+const struct ObjectGroup *ObjGetShadowTarget(const struct ObjectInstance *obj)
+{
+	return obj->shadow_target;
 }
 
 const struct Shader *ObjGetShader(const struct ObjectInstance *obj)

@@ -74,8 +74,11 @@ extern Status SiRenderScene(ID renderer);
 extern Status SiSaveFrameBuffer(ID framebuffer, const char *filename);
 extern Status SiRunProcedure(ID procedure);
 
+extern Status SiAddObjectToGroup(ID group, ID object);
+
 extern ID SiNewObjectInstance(ID accelerator);
 extern ID SiNewFrameBuffer(const char *arg);
+extern ID SiNewObjectGroup(void);
 extern ID SiNewTurbulence(void);
 extern ID SiNewProcedure(const char *plugin_name);
 extern ID SiNewRenderer(void);
@@ -87,7 +90,10 @@ extern ID SiNewCurve(const char *filename);
 extern ID SiNewLight(int light_type);
 extern ID SiNewMesh(const char *filename);
 
+extern Status SiAssignObjectGroup(ID id, const char *name, ID group);
 extern Status SiAssignFrameBuffer(ID renderer, ID framebuffer);
+extern Status SiAssignTurbulence(ID id, const char *name, ID turbulence);
+extern Status SiAssignVolume(ID id, const char *name, ID volume);
 extern Status SiAssignTexture(ID shader, const char *prop_name, ID texture);
 extern Status SiAssignCamera(ID renderer, ID camera);
 extern Status SiAssignShader(ID object, ID shader);
@@ -101,9 +107,6 @@ extern Status SiSetProperty4(ID id, const char *name, double v0, double v1, doub
 /* time variable property */
 extern Status SiSetSampleProperty3(ID id, const char *name,
 		double v0, double v1, double v2, double time);
-
-extern Status SiAssignTurbulence(ID id, const char *name, ID turbulence);
-extern Status SiAssignVolume(ID id, const char *name, ID volume);
 
 extern Status SiGetPropertyList(const char *type_name,
 		const char ***property_types,

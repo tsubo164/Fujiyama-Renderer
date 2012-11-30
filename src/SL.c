@@ -215,8 +215,7 @@ struct TraceContext SlShadowContext(const struct TraceContext *cxt,
 	/* turn off the secondary trance on occluding objects */
 	shad_cxt.max_reflect_depth = 0;
 	shad_cxt.max_refract_depth = 0;
-	/* TODO add shadow target */
-	shad_cxt.trace_target = ObjGetRefractTarget(obj);
+	shad_cxt.trace_target = ObjGetShadowTarget(obj);
 
 	return shad_cxt;
 }
