@@ -15,7 +15,6 @@ come with Fujiyama.
   * OpenGL/GLUT for fbview (FrameBuffer viewer)
   * OpenEXR for fb2exr (Converter from native image format to exr) 
 
-
   Compile
 -----------------
 If you are sure that you have OpenGL/GLUT and OpenEXR installed in your system,
@@ -26,7 +25,6 @@ you can run make like this,
 The core library libscene.so will be output in lib directory, and other tools
 such as scene, fbview, ply2mesh, etc .. will be in bin direcotry.
 
-
   Installation
 -----------------
 In order to install Fujiyama library and tools, run make with/without prefix.
@@ -36,7 +34,6 @@ In order to install Fujiyama library and tools, run make with/without prefix.
   $ make install prefix=$HOME/local
 
 See also Fujiyama Documentation at http://fujiyama-renderer.com/docs/index.html
-
 
 http://fujiyama-renderer.com/
 Copyright (c) 2011-2012 Hiroshi Tsubokawa

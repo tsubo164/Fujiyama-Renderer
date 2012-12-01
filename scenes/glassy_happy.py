@@ -18,7 +18,7 @@ si.SetProperty3('cam1', 'translate', 0, 1.5, 7)
 
 #Light
 si.NewLight('light1', 'PointLight')
-si.SetProperty3('light1', 'position', 5, 12, -5)
+si.SetProperty3('light1', 'translate', 5, 12, -5)
 
 #Shader
 si.NewShader('armadillo_shader', 'GlassShader')

@@ -108,6 +108,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	struct LightSample *samples = NULL;
 	const int nsamples = SlGetLightSampleCount(in);
 
+	/* allocate samples */
 	samples = SlNewLightSamples(in);
 
 	VEC3_SET(out->Cs, 0, 0, 0);
@@ -118,7 +119,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		float diff = 0;
 		float spec = 0;
 
-		SlSampleIlluminance(cxt, &samples[i], in->P, in->N, N_PI, in, &Lout);
+		SlIlluminance(cxt, &samples[i], in->P, in->N, N_PI, in, &Lout);
 
 		VEC3_COPY(tangent, in->dPdt);
 		VEC3_NORMALIZE(tangent);
@@ -131,6 +132,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		out->Cs[2] += (in->Cd[2] * diff + spec) * Lout.Cl[2];
 	}
 
+	/* free samples */
 	SlFreeLightSamples(samples);
 
 	out->Cs[0] += .0;

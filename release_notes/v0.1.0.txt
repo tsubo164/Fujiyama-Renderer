@@ -1,0 +1,27 @@
+Fujiyama Renderer v0.1.0(Alpha) Release Notes
+=============================================
+
+New features since v0.0.9
+-------------------------
+ * Grid light and sphere light have been implemented. Gird light has a option that
+   switches single/doulbe-sided illumination.
+
+ * Area light features needed some small changes in shading process. Shaders used to
+   loop over lights in scene before but now they need to loop over light samples.
+
+ * 'shadow_target' property is added to ObjectInstance. This enables to select
+   target object group in scene for shadow rays. If 'shadow_target' is carefully
+   selected and set to proper instances, rendering with area light will get faster.
+
+ * SiNewObjectGroup and SiAddObjectToGroup are added to scene interface. Users are now
+   able to create object groups through the interfaces.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Deep shadow
+ * Displacement shader
+ * Subdivision surface
+ * Alembic support
+ * IBL

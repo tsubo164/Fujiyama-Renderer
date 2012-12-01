@@ -322,7 +322,7 @@ static void update_object_bounds(struct ObjectInstance *obj)
 		VolGetBounds(obj->volume, obj->bounds);
 	}
 	else {
-		/* TODO TEST allowing state where neither surface nor volume */
+		/* TODO allowing state where neither surface nor volume */
 		/*
 		printf("fatal error: object is neither surface nor volume\n");
 		abort();

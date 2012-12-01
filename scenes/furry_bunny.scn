@@ -16,110 +16,110 @@ SetProperty3 cam1 rotate -8.0494669755283983 45 0
 
 #Light
 NewLight light0 PointLight
-SetProperty3 light0 position 0.900771 12 4.09137
+SetProperty3 light0 translate 0.900771 12 4.09137
 SetProperty1 light0 intensity 0.03125
 NewLight light1 PointLight
-SetProperty3 light1 position 2.02315 12 5.28021
+SetProperty3 light1 translate 2.02315 12 5.28021
 SetProperty1 light1 intensity 0.03125
 NewLight light2 PointLight
-SetProperty3 light2 position 10.69 12 13.918
+SetProperty3 light2 translate 10.69 12 13.918
 SetProperty1 light2 intensity 0.03125
 NewLight light3 PointLight
-SetProperty3 light3 position 4.28027 12 7.58462
+SetProperty3 light3 translate 4.28027 12 7.58462
 SetProperty1 light3 intensity 0.03125
 NewLight light4 PointLight
-SetProperty3 light4 position 12.9548 12 1.19914
+SetProperty3 light4 translate 12.9548 12 1.19914
 SetProperty1 light4 intensity 0.03125
 NewLight light5 PointLight
-SetProperty3 light5 position 6.55808 12 2.31772
+SetProperty3 light5 translate 6.55808 12 2.31772
 SetProperty1 light5 intensity 0.03125
 NewLight light6 PointLight
-SetProperty3 light6 position 0.169064 12 10.9623
+SetProperty3 light6 translate 0.169064 12 10.9623
 SetProperty1 light6 intensity 0.03125
 NewLight light7 PointLight
-SetProperty3 light7 position 1.25002 12 4.51314
+SetProperty3 light7 translate 1.25002 12 4.51314
 SetProperty1 light7 intensity 0.03125
 NewLight light8 PointLight
-SetProperty3 light8 position 2.46758 12 5.73382
+SetProperty3 light8 translate 2.46758 12 5.73382
 SetProperty1 light8 intensity 0.03125
 NewLight light9 PointLight
-SetProperty3 light9 position 3.55644 12 6.84334
+SetProperty3 light9 translate 3.55644 12 6.84334
 SetProperty1 light9 intensity 0.03125
 NewLight light10 PointLight
-SetProperty3 light10 position 4.76112 12 8.00264
+SetProperty3 light10 translate 4.76112 12 8.00264
 SetProperty1 light10 intensity 0.03125
 NewLight light11 PointLight
-SetProperty3 light11 position 13.3267 12 9.10333
+SetProperty3 light11 translate 13.3267 12 9.10333
 SetProperty1 light11 intensity 0.03125
 NewLight light12 PointLight
-SetProperty3 light12 position 14.4155 12 2.68084
+SetProperty3 light12 translate 14.4155 12 2.68084
 SetProperty1 light12 intensity 0.03125
 NewLight light13 PointLight
-SetProperty3 light13 position 8.10755 12 3.79629
+SetProperty3 light13 translate 8.10755 12 3.79629
 SetProperty1 light13 intensity 0.03125
 NewLight light14 PointLight
-SetProperty3 light14 position 9.21103 12 4.9484
+SetProperty3 light14 translate 9.21103 12 4.9484
 SetProperty1 light14 intensity 0.03125
 NewLight light15 PointLight
-SetProperty3 light15 position 2.83469 12 6.09221
+SetProperty3 light15 translate 2.83469 12 6.09221
 SetProperty1 light15 intensity 0.03125
 NewLight light16 PointLight
-SetProperty3 light16 position 4.00945 12 7.18302
+SetProperty3 light16 translate 4.00945 12 7.18302
 SetProperty1 light16 intensity 0.03125
 NewLight light17 PointLight
-SetProperty3 light17 position 12.6072 12 0.832089
+SetProperty3 light17 translate 12.6072 12 0.832089
 SetProperty1 light17 intensity 0.03125
 NewLight light18 PointLight
-SetProperty3 light18 position 6.21169 12 1.98055
+SetProperty3 light18 translate 6.21169 12 1.98055
 SetProperty1 light18 intensity 0.03125
 NewLight light19 PointLight
-SetProperty3 light19 position 7.39599 12 10.5563
+SetProperty3 light19 translate 7.39599 12 10.5563
 SetProperty1 light19 intensity 0.03125
 NewLight light20 PointLight
-SetProperty3 light20 position 8.52421 12 4.15086
+SetProperty3 light20 translate 8.52421 12 4.15086
 SetProperty1 light20 intensity 0.03125
 NewLight light21 PointLight
-SetProperty3 light21 position 9.5891 12 5.39715
+SetProperty3 light21 translate 9.5891 12 5.39715
 SetProperty1 light21 intensity 0.03125
 NewLight light22 PointLight
-SetProperty3 light22 position 3.18967 12 13.9542
+SetProperty3 light22 translate 3.18967 12 13.9542
 SetProperty1 light22 intensity 0.03125
 NewLight light23 PointLight
-SetProperty3 light23 position 4.41432 12 0.082813
+SetProperty3 light23 translate 4.41432 12 0.082813
 SetProperty1 light23 intensity 0.03125
 NewLight light24 PointLight
-SetProperty3 light24 position 5.48803 12 1.21856
+SetProperty3 light24 translate 5.48803 12 1.21856
 SetProperty1 light24 intensity 0.03125
 NewLight light25 PointLight
-SetProperty3 light25 position 6.57647 12 2.31432
+SetProperty3 light25 translate 6.57647 12 2.31432
 SetProperty1 light25 intensity 0.03125
 NewLight light26 PointLight
-SetProperty3 light26 position 0.265098 12 10.9453
+SetProperty3 light26 translate 0.265098 12 10.9453
 SetProperty1 light26 intensity 0.03125
 NewLight light27 PointLight
-SetProperty3 light27 position 8.84422 12 12.1117
+SetProperty3 light27 translate 8.84422 12 12.1117
 SetProperty1 light27 intensity 0.03125
 NewLight light28 PointLight
-SetProperty3 light28 position 10.0154 12 5.67625
+SetProperty3 light28 translate 10.0154 12 5.67625
 SetProperty1 light28 intensity 0.03125
 NewLight light29 PointLight
-SetProperty3 light29 position 11.0907 12 14.4043
+SetProperty3 light29 translate 11.0907 12 14.4043
 SetProperty1 light29 intensity 0.03125
 NewLight light30 PointLight
-SetProperty3 light30 position 4.71726 12 7.98851
+SetProperty3 light30 translate 4.71726 12 7.98851
 SetProperty1 light30 intensity 0.03125
 NewLight light31 PointLight
-SetProperty3 light31 position 13.3907 12 9.08986
+SetProperty3 light31 translate 13.3907 12 9.08986
 SetProperty1 light31 intensity 0.03125
 
 #Texture
 NewTexture tex1 ../../mip/glacier.mip
 
 #Shader
-NewShader    obj_shader1 HairShader
-NewShader    obj_shader2 PlasticShader
-SetProperty3 obj_shader2 diffuse .8 .5 .3
-SetProperty3 obj_shader2 reflect 0 0 0
+NewShader    curve_shader HairShader
+NewShader    bunny_shader PlasticShader
+SetProperty3 bunny_shader diffuse .8 .5 .3
+SetProperty3 bunny_shader reflect 0 0 0
 
 NewShader    floor_shader PlasticShader
 SetProperty3 floor_shader diffuse .3 .35 .4
@@ -131,13 +131,13 @@ NewShader dome_shader ConstantShader
 NewCurve curve_data   ../../crv/bunny.crv
 
 #Mesh
-NewMesh obj_mesh   ../../mesh/bunny.mesh
+NewMesh bunny_mesh ../../mesh/bunny.mesh
 NewMesh floor_mesh ../../mesh/floor.mesh
 NewMesh dome_mesh  ../../mesh/dome.mesh
 
 #ObjectInstance
-NewObjectInstance  obj1 obj_mesh
-AssignShader       obj1 obj_shader2
+NewObjectInstance  bunny1 bunny_mesh
+AssignShader       bunny1 bunny_shader
 
 NewObjectInstance  floor1 floor_mesh
 SetProperty3       floor1 translate 3 0 3
@@ -149,7 +149,15 @@ AssignShader       dome1       dome_shader
 AssignTexture      dome_shader texture tex1
 
 NewObjectInstance  curve1 curve_data
-AssignShader       curve1 obj_shader1
+AssignShader       curve1 curve_shader
+
+#ObjectGroup
+NewObjectGroup     group1
+AddObjectToGroup   group1  bunny1
+AddObjectToGroup   group1  curve1
+AssignObjectGroup  bunny1  shadow_target  group1
+AssignObjectGroup  curve1  shadow_target  group1
+AssignObjectGroup  floor1  shadow_target  group1
 
 #FrameBuffer
 NewFrameBuffer fb1 rgba

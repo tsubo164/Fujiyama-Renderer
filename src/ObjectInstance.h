@@ -33,7 +33,7 @@ struct ObjectContent {
 extern struct ObjectInstance *ObjNew(const struct Accelerator *acc);
 extern void ObjFree(struct ObjectInstance *obj);
 
-/* TODO TEST remove ObjSet*** if possible */
+/* TODO remove ObjSet*** if possible */
 extern void ObjSetSurface(struct ObjectInstance *obj, const struct Accelerator *acc);
 extern int ObjSetVolume(struct ObjectInstance *obj, const struct Volume *volume);
 extern int ObjIsSurface(const struct ObjectInstance *obj);

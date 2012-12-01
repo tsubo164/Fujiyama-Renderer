@@ -16,15 +16,12 @@ si.OpenPlugin('VolumeShader.so')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
-# NOTE Obsoleted properties from v0.0.8
-#si.SetProperty3('cam1', 'position', 5, .2, 5)
-#si.SetProperty3('cam1', 'direction', -1, -.1, -1)
 si.SetProperty3('cam1', 'translate', 5, .2, 5)
 si.SetProperty3('cam1', 'rotate', -4.0446912353862681, 45, 0)
 
 #Light
 si.NewLight('light1', 'PointLight')
-si.SetProperty3('light1', 'position', 5, 12, -5)
+si.SetProperty3('light1', 'translate', 5, 12, -5)
 
 #Shader
 si.NewShader('bunny_shader', 'PlasticShader')

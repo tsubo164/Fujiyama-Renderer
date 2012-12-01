@@ -110,12 +110,6 @@ void LgtFree(struct Light *light)
 	free(light);
 }
 
-void LgtSetPosition(struct Light *light, double xpos, double ypos, double zpos)
-{
-	/* TODO TEST temp no sample time */
-	LgtSetTranslate(light, xpos, ypos, zpos, 0);
-}
-
 void LgtSetColor(struct Light *light, float r, float g, float b)
 {
 	light->color[0] = r;
@@ -141,14 +135,6 @@ void LgtSetDoubleSided(struct Light *light, int on_or_off)
 {
 	light->double_sided = (on_or_off != 0);
 }
-
-/* TODO obsolete */
-#if 0
-const double *LgtGetPosition(const struct Light *light)
-{
-	return light->position;
-}
-#endif
 
 void LgtSetTranslate(struct Light *light,
 		double tx, double ty, double tz, double time)
@@ -194,22 +180,12 @@ int LgtGetSampleCount(const struct Light *light)
 }
 
 /* TODO should have struct Light *light parameter? */
-void LgtIlluminateFromSample(const struct LightSample *sample,
+void LgtIlluminate(const struct LightSample *sample,
 		const double *Ps, float *Cl)
 {
 	const struct Light *light = sample->light;
 	light->IlluminateFromSample(light, sample, Ps, Cl);
 }
-
-/* TODO obsolete */
-#if 0
-void LgtIlluminate(const struct Light *light, const double *Ps, float *Cl)
-{
-	Cl[0] = light->intensity * light->color[0];
-	Cl[1] = light->intensity * light->color[1];
-	Cl[2] = light->intensity * light->color[2];
-}
-#endif
 
 /* point light */
 static int point_light_get_sample_count(const struct Light *light)

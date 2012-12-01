@@ -17,7 +17,7 @@ si.SetSampleProperty3('cam1', 'translate', 0, 2, 10, 0)
 
 #Light
 si.NewLight('light1', 'PointLight')
-si.SetProperty3('light1', 'position', -10, 12, 10)
+si.SetProperty3('light1', 'translate', -10, 12, 10)
 
 #Texture
 si.NewTexture('tex1', '../../mip/doge2.mip')
@@ -53,6 +53,12 @@ si.NewObjectInstance('dome1', 'dome_mesh')
 si.AssignShader('dome1', 'dome_shader')
 si.SetProperty3('dome1', 'translate', 0, -10, 0)
 si.SetProperty3('dome1', 'rotate', 0, -90, 0)
+
+#ObjectGroup
+si.NewObjectGroup('group1')
+si.AddObjectToGroup('group1', 'armadillo1')
+si.AssignObjectGroup('armadillo1', 'shadow_target', 'group1')
+si.AssignObjectGroup('floor1', 'shadow_target', 'group1')
 
 #FrameBuffer
 si.NewFrameBuffer('fb1', 'rgba')

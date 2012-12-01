@@ -29,16 +29,10 @@ struct LightSample {
 extern struct Light *LgtNew(int light_type);
 extern void LgtFree(struct Light *light);
 
-extern void LgtSetPosition(struct Light *light, double xpos, double ypos, double zpos);
 extern void LgtSetColor(struct Light *light, float r, float g, float b);
 extern void LgtSetIntensity(struct Light *light, double intensity);
 extern void LgtSetSampleCount(struct Light *light, int sample_count);
 extern void LgtSetDoubleSided(struct Light *light, int on_or_off);
-
-/* TODO obsolete */
-#if 0
-extern const double *LgtGetPosition(const struct Light *light);
-#endif
 
 /* transformation */
 extern void LgtSetTranslate(struct Light *light,
@@ -54,14 +48,8 @@ extern void LgtSetRotateOrder(struct Light *light, int order);
 extern void LgtGetSamples(const struct Light *light,
 		struct LightSample *samples, int max_samples);
 extern int LgtGetSampleCount(const struct Light *light);
-extern void LgtIlluminateFromSample(const struct LightSample *sample,
+extern void LgtIlluminate(const struct LightSample *sample,
 		const double *Ps, float *Cl);
-
-/* TODO obsolete */
-#if 0
-/* illumation */
-extern void LgtIlluminate(const struct Light *light, const double *Ps, float *Cl);
-#endif
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -117,12 +117,13 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	struct LightSample *samples = NULL;
 	const int nsamples = SlGetLightSampleCount(in);
 
+	/* allocate samples */
 	samples = SlNewLightSamples(in);
 
 	for (i = 0; i < nsamples; i++) {
 		struct LightOutput Lout;
 		float Kd = 0;
-		SlSampleIlluminance(cxt, &samples[i], in->P, in->N, N_PI_2, in, &Lout);
+		SlIlluminance(cxt, &samples[i], in->P, in->N, N_PI_2, in, &Lout);
 		/* spec */
 		/*
 		Ks = SlPhong(in->I, in->N, Ln, .05);
@@ -136,6 +137,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		diff[2] += Kd * Lout.Cl[2];
 	}
 
+	/* free samples */
 	SlFreeLightSamples(samples);
 
 	/* Cs */

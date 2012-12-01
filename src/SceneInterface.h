@@ -90,8 +90,8 @@ extern ID SiNewCurve(const char *filename);
 extern ID SiNewLight(int light_type);
 extern ID SiNewMesh(const char *filename);
 
-extern Status SiAssignObjectGroup(ID id, const char *name, ID group);
 extern Status SiAssignFrameBuffer(ID renderer, ID framebuffer);
+extern Status SiAssignObjectGroup(ID id, const char *name, ID group);
 extern Status SiAssignTurbulence(ID id, const char *name, ID turbulence);
 extern Status SiAssignVolume(ID id, const char *name, ID volume);
 extern Status SiAssignTexture(ID shader, const char *prop_name, ID texture);

@@ -34,6 +34,11 @@ designed to handle production image rendering.
   + Python Binding scene description - can utilize control structures and libraries
   + FrameBuffer Viewer - displays *.fb and *.mip 
 
+* Lighting
+  + Point light - traditional point light
+  + Grid light - typical area light with single/double-sided option
+  + Sphere light - another area light
+
 * Animation
   + Camera motion blur - sampling non-linear camera motion
   + Transform motion blur - sampling non-linear object transformation

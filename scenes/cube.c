@@ -34,7 +34,10 @@ int main(int argc, const char **argv)
 
 	/* Plugin */
 	if (SiOpenPlugin("PlasticShader.so")) {
+		/* TODO error handling */
+		/*
 		fprintf(stderr, "Could not open shader: %s\n", SiGetErrorMessage(SiGetErrorNo()));
+		*/
 	}
 
 	/* Camera */
@@ -43,16 +46,16 @@ int main(int argc, const char **argv)
 		fprintf(stderr, "Could not allocate camera\n");
 		return -1;
 	}
-	SiSetProperty3(camera, "position", 3, 3, 3);
-	SiSetProperty3(camera, "direction", -1, -1, -1);
+	SiSetProperty3(camera, "translate", 3, 3, 3);
+	SiSetProperty3(camera, "rotate", -35.264389682754654, 45, 0);
 
 	/* Light */
-	light = SiNewLight("PointLight");
+	light = SiNewLight(SI_POINT_LIGHT);
 	if (light  == SI_BADID) {
 		fprintf(stderr, "Could not allocate light\n");
 		return -1;
 	}
-	SiSetProperty3(light, "position", 1, 12, 3);
+	SiSetProperty3(light, "translate", 1, 12, 3);
 
 	/* Shader */
 	shader = SiNewShader("PlasticShader");
@@ -64,7 +67,10 @@ int main(int argc, const char **argv)
 	/* Mesh and Accelerator */
 	mesh = SiNewMesh("scenes/cube.mesh");
 	if (mesh == SI_BADID) {
+		/* TODO error handling */
+		/*
 		fprintf(stderr, "Could not create mesh: %s\n", SiGetErrorMessage(SiGetErrorNo()));
+		*/
 		return -1;
 	}
 

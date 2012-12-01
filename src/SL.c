@@ -220,78 +220,12 @@ struct TraceContext SlShadowContext(const struct TraceContext *cxt,
 	return shad_cxt;
 }
 
-/* TODO obsolete */
-#if 0
-int SlIlluminace(const struct TraceContext *cxt, int light_id,
-		const double *Ps, const double *axis, float angle,
-		const struct SurfaceInput *in, struct LightOutput *out)
-{
-	const struct Light **lights = NULL;
-	const double *light_pos = NULL;
-	double cosangle = 0.;
-	double nml_axis[3] = {0};
-	float light_color[3] = {0};
-
-	VEC3_SET(out->Cl, 0, 0, 0);
-	if (light_id >= SlGetLightCount(in)) {
-		return 0;
-	}
-
-	lights = ObjGetLightList(in->shaded_object);
-	light_pos = LgtGetPosition(lights[light_id]);
-
-	VEC3_SUB(out->Ln, light_pos, Ps);
-	out->distance = VEC3_LEN(out->Ln);
-	if (out->distance > 0) {
-		VEC3_DIV_ASGN(out->Ln, out->distance);
-	}
-
-	VEC3_COPY(nml_axis, axis);
-	VEC3_NORMALIZE(nml_axis);
-	cosangle = VEC3_DOT(nml_axis, out->Ln);
-	if (cosangle < cos(angle)) {
-		return 0;
-	}
-
-	LgtIlluminate(lights[light_id], Ps, light_color);
-	if (light_color[0] < .0001 &&
-		light_color[1] < .0001 &&
-		light_color[2] < .0001) {
-		return 0;
-	}
-
-	if (cxt->ray_context == CXT_SHADOW_RAY) {
-		return 0;
-	}
-
-	if (cxt->cast_shadow) {
-		struct TraceContext shad_cxt;
-		double t_hit = FLT_MAX;
-		float C_occl[4] = {0};
-		int hit = 0;
-
-		shad_cxt = SlShadowContext(cxt, in->shaded_object);
-		hit = SlTrace(&shad_cxt, Ps, out->Ln, .0001, out->distance, C_occl, &t_hit);
-
-		if (hit) {
-			/* return 0; */
-			/* TODO handle light_color for shadow ray */
-			VEC3_MUL_ASGN(light_color, 1-C_occl[3]);
-		}
-	}
-
-	VEC3_COPY(out->Cl, light_color);
-	return 1;
-}
-#endif
-
 int SlGetLightCount(const struct SurfaceInput *in)
 {
 	return ObjGetLightCount(in->shaded_object);
 }
 
-/* TODO TEST */
-int SlSampleIlluminance(const struct TraceContext *cxt, const struct LightSample *sample,
+int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *sample,
 		const double *Ps, const double *axis, float angle,
 		const struct SurfaceInput *in, struct LightOutput *out)
 {
@@ -314,7 +248,7 @@ int SlSampleIlluminance(const struct TraceContext *cxt, const struct LightSample
 		return 0;
 	}
 
-	LgtIlluminateFromSample(sample, Ps, light_color);
+	LgtIlluminate(sample, Ps, light_color);
 	if (light_color[0] < .0001 &&
 		light_color[1] < .0001 &&
 		light_color[2] < .0001) {
