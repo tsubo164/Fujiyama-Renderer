@@ -9,6 +9,8 @@ New features since v0.0.9
  * Area light features needed some small changes in shading process. Shaders used to
    loop over lights in scene before but now they need to loop over light samples.
 
+ * Light property 'position' has been deleted. Use 'translate' instead.
+
  * 'shadow_target' property is added to ObjectInstance. This enables to select
    target object group in scene for shadow rays. If 'shadow_target' is carefully
    selected and set to proper instances, rendering with area light will get faster.
