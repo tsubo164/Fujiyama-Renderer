@@ -54,9 +54,8 @@ static int render_scene(struct Renderer *renderer);
 
 struct Renderer *RdrNew(void)
 {
-	struct Renderer *renderer;
+	struct Renderer *renderer = (struct Renderer *) malloc(sizeof(struct Renderer));
 
-	renderer = (struct Renderer *) malloc(sizeof(struct Renderer));
 	if (renderer == NULL)
 		return NULL;
 
@@ -213,7 +212,7 @@ void RdrSetTargetObjects(struct Renderer *renderer, struct ObjectGroup *grp)
 
 int RdrRender(struct Renderer *renderer)
 {
-	int err;
+	int err = 0;
 
 	err = prepare_render(renderer);
 	if (err) {
@@ -233,11 +232,8 @@ int RdrRender(struct Renderer *renderer)
 static int prepare_render(struct Renderer *renderer)
 {
 	int xres, yres;
-	struct Camera *cam;
-	struct FrameBuffer *fb;
-
-	cam = renderer->camera;
-	fb  = renderer->framebuffers;
+	struct Camera *cam = renderer->camera;
+	struct FrameBuffer *fb = renderer->framebuffers;
 
 	if (cam == NULL) {
 		/* TODO error handling */

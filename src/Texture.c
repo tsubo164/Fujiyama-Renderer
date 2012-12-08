@@ -26,9 +26,8 @@ struct Texture {
 
 struct Texture *TexNew(void)
 {
-	struct Texture *tex;
+	struct Texture *tex = (struct Texture *) malloc(sizeof(struct Texture));
 
-	tex = (struct Texture *) malloc(sizeof(struct Texture));
 	if (tex == NULL)
 		return NULL;
 
@@ -45,12 +44,13 @@ void TexFree(struct Texture *tex)
 		return;
 
 	FbFree(tex->fb);
+	MipCloseInputFile(tex->mip);
 	free(tex);
 }
 
 void TexLookup(struct Texture *tex, float u, float v, float *color)
 {
-	const float *pixel;
+	const float *pixel = NULL;
 	float uv[2] = {0};
 
 	int XNTILES, YNTILES;

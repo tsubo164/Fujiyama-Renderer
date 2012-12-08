@@ -14,52 +14,52 @@ See LICENSE and README
 
 int main(int argc, const char **argv)
 {
+	struct Parser *parser = NULL;
 	char buf[1024] = {'\0'};
-	int read_from_file = 0;
-	struct Parser *parser;
-	FILE *file;
+	FILE *file = NULL;
+	int status = 0;
 
 	if (argc == 2) {
 		file = fopen(argv[1], "r");
 		if (file == NULL) {
 			fprintf(stderr, "error: %s: %s\n", argv[1], strerror(errno));
-			return -1;
+			status = -1;
+			goto cleanup_and_exit;
 		}
-		read_from_file = 1;
 	}
 	else if (argc == 1) {
 		file = stdin;
 	}
 	else {
 		fprintf(stderr, "error: invalid number of arguments\n");
-		return -1;
+		status = -1;
+		goto cleanup_and_exit;
 	}
 
 	parser = PsrNew();
 	if (parser == NULL) {
 		fprintf(stderr, "error: could not allocate a parser\n");
-		if (read_from_file) {
-			fclose(file);
-		}
-		return -1;
+		status = -1;
+		goto cleanup_and_exit;
 	}
 
 	while (fgets(buf, 1000, file) != NULL) {
-		int err;
+		const int err = PsrParseLine(parser, buf);
 
-		err = PsrParseLine(parser, buf);
 		if (err) {
 			fprintf(stderr, "error: %s: %d: %s",
 					PsrGetErrorMessage(parser), PsrGetLineNo(parser), buf);
-			return -1;
+			status = -1;
+			goto cleanup_and_exit;
 		}
 	}
 
-	if (read_from_file) {
+cleanup_and_exit:
+	if (file != stdin && file != NULL) {
 		fclose(file);
 	}
 	PsrFree(parser);
 
-	return 0;
+	return status;
 }
 

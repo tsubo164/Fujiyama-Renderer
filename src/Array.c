@@ -44,7 +44,7 @@ char *ArrPush(struct Array *a, const void *data)
 
 	if (a->nelems == a->nallocs) {
 		const size_t new_alloc = a->nallocs == 0 ? 1 : 2 * a->nallocs;
-		ArrGrow(a, new_alloc);
+		ArrReserve(a, new_alloc);
 	}
 
 	dst = a->data + a->elemsize * a->nelems;
@@ -61,7 +61,7 @@ char *ArrPushPointer(struct Array *a, const void *pointer)
 	return ArrPush(a, &p);
 }
 
-char *ArrGrow(struct Array *a, size_t new_alloc)
+char *ArrReserve(struct Array *a, size_t new_alloc)
 {
 	if (a->nallocs < new_alloc) {
 		const size_t new_size = a->elemsize * new_alloc;
@@ -69,6 +69,13 @@ char *ArrGrow(struct Array *a, size_t new_alloc)
 		a->nallocs = new_alloc;
 	}
 	return a->data;
+}
+
+char *ArrResize(struct Array *a, size_t new_size)
+{
+	char *head = ArrReserve(a, new_size);
+	a->nelems = new_size;
+	return head;
 }
 
 char *ArrGet(const struct Array *a, int index)

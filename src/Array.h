@@ -28,8 +28,11 @@ extern char *ArrPush(struct Array *a, const void *data);
 /* returns the pointer of the head of array */
 extern char *ArrPushPointer(struct Array *a, const void *pointer);
 
-/* grows array if needed, then returns the head of data. */
-extern char *ArrGrow(struct Array *a, size_t new_alloc);
+/* request change in capacity, then returns the head of data. */
+extern char *ArrReserve(struct Array *a, size_t new_alloc);
+
+/* request change in number of elements, then returns the head of data. */
+extern char *ArrResize(struct Array *a, size_t new_size);
 
 extern char *ArrGet(const struct Array *a, int index);
 

@@ -221,6 +221,7 @@ static void free_all_node_list(struct Scene *scene)
 	FREE_LIST(scene, ObjectGroup, ObjGroupFree);
 	FREE_LIST(scene, Turbulence, TrbFree);
 	FREE_LIST(scene, Procedure, PrcFree);
+	FREE_LIST(scene, Renderer, RdrFree);
 	FREE_LIST(scene, Texture, TexFree);
 	FREE_LIST(scene, Camera, CamFree);
 	FREE_LIST(scene, Shader, ShdFree);

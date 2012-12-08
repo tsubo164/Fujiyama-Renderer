@@ -61,9 +61,8 @@ const char *MipGetErrorMessage(int err)
 
 struct MipInput *MipOpenInputFile(const char *filename)
 {
-	struct MipInput *in;
+	struct MipInput *in = (struct MipInput *) malloc(sizeof(struct MipInput));
 
-	in = (struct MipInput *) malloc(sizeof(struct MipInput));
 	if (in == NULL) {
 		set_error(ERR_MIP_NOMEM);
 		return NULL;
@@ -161,9 +160,8 @@ int MipReadTile(struct MipInput *in, int xtile, int ytile)
 
 struct MipOutput *MipOpenOutputFile(const char *filename)
 {
-	struct MipOutput *out;
+	struct MipOutput *out = (struct MipOutput *) malloc(sizeof(struct MipOutput));
 
-	out = (struct MipOutput *) malloc(sizeof(struct MipOutput));
 	if (out == NULL) {
 		set_error(ERR_MIP_NOMEM);
 		return NULL;

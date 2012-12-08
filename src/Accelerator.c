@@ -182,7 +182,7 @@ void AccGetBounds(const struct Accelerator *acc, double *bounds)
 
 int AccBuild(struct Accelerator *acc)
 {
-	int err;
+	int err = 0;
 
 	if (acc->has_built)
 		return -1;
@@ -469,9 +469,9 @@ static int build_grid_accel(struct Accelerator *acc)
 
 static struct GridAccelerator *new_grid_accel(void)
 {
-	struct GridAccelerator *grid;
+	struct GridAccelerator *grid =
+			(struct GridAccelerator *) malloc(sizeof(struct GridAccelerator));
 
-	grid = (struct GridAccelerator *) malloc(sizeof(struct GridAccelerator));
 	if (grid == NULL)
 		return NULL;
 
@@ -506,6 +506,7 @@ static void free_grid_accel(struct Accelerator *acc)
 			}
 		}
 	}
+	free(grid->cells);
 	free(grid);
 }
 
@@ -548,9 +549,9 @@ static void compute_grid_cellsizes(int nprimitives,
 /* -------------------------------------------------------------------------- */
 static struct BVHAccelerator *new_bvh_accel(void)
 {
-	struct BVHAccelerator *bvh;
+	struct BVHAccelerator *bvh =
+			(struct BVHAccelerator *) malloc(sizeof(struct BVHAccelerator));
 
-	bvh = (struct BVHAccelerator *) malloc(sizeof(struct BVHAccelerator));
 	if (bvh == NULL)
 		return NULL;
 
@@ -628,11 +629,11 @@ static int intersect_bvh_recursive(const struct Accelerator *acc, const struct B
 	double boxhit_tmin;
 	double boxhit_tmax;
 	int hit_left, hit_right;
-	int hit;
 
-	hit = BoxRayIntersect(node->bounds,
+	const int hit = BoxRayIntersect(node->bounds,
 			ray->orig, ray->dir, ray->tmin, ray->tmax,
 			&boxhit_tmin, &boxhit_tmax);
+
 	if (!hit) {
 		return 0;
 	}
@@ -795,9 +796,8 @@ static struct BVHNode *build_bvh(struct Primitive **primptrs, int begin, int end
 
 static struct BVHNode *new_bvhnode(void)
 {
-	struct BVHNode *node;
+	struct BVHNode *node = (struct BVHNode *) malloc(sizeof(struct BVHNode));
 
-	node = (struct BVHNode *) malloc(sizeof(struct BVHNode));
 	if (node == NULL)
 		return NULL;
 
@@ -896,9 +896,8 @@ static int primitive_compare_z(const void *a, const void *b)
 static int prim_ray_intersect(const struct Accelerator *acc, int prim_id, double time,
 		const struct Ray *ray, struct Intersection *isect)
 {
-	int hit;
+	const int hit = PrmRayIntersect(&acc->primset, prim_id, time, ray, isect);
 
-	hit = PrmRayIntersect(&acc->primset, prim_id, time, ray, isect);
 	if (!hit) {
 		isect->t_hit = FLT_MAX;
 		return 0;
