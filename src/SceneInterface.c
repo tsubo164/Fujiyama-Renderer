@@ -460,6 +460,9 @@ ID SiNewLight(int light_type)
 	case SI_SPHERE_LIGHT:
 		type = LGT_SPHERE;
 		break;
+	case SI_DOME_LIGHT:
+		type = LGT_DOME;
+		break;
 	default:
 		type = LGT_POINT;
 		break;
@@ -553,34 +556,25 @@ Status SiAssignObjectGroup(ID id, const char *name, ID group)
 	return status_of_error(err);
 }
 
-Status SiAssignTexture(ID shader, const char *prop_name, ID texture)
+Status SiAssignTexture(ID id, const char *name, ID texture)
 {
+	const struct Entry entry = decode_id(id);
+	const struct Entry texture_ent = decode_id(texture);
 	struct PropertyValue value = InitPropValue();
-	struct Shader *shader_ptr = NULL;
 	struct Texture *texture_ptr = NULL;
-	{
-		const struct Entry entry = decode_id(shader);
+	int err = 0;
 
-		if (entry.type != Type_Shader)
-			return SI_FAIL;
+	if (texture_ent.type != Type_Texture)
+		return SI_FAIL;
 
-		shader_ptr = ScnGetShader(scene, entry.index);
-		if (shader_ptr == NULL)
-			return SI_FAIL;
-	}
-	{
-		const struct Entry entry = decode_id(texture);
-
-		if (entry.type != Type_Texture)
-			return SI_FAIL;
-
-		texture_ptr = ScnGetTexture(scene, entry.index);
-		if (texture_ptr == NULL)
-			return SI_FAIL;
-	}
+	texture_ptr = ScnGetTexture(scene, texture_ent.index);
+	if (texture_ptr == NULL)
+		return SI_FAIL;
 
 	value = PropTexture(texture_ptr);
-	return ShdSetProperty(shader_ptr, prop_name, &value);
+	err = set_property(&entry, name, &value);
+
+	return status_of_error(err);
 }
 
 Status SiAssignCamera(ID renderer, ID camera)
@@ -1097,6 +1091,13 @@ static int set_Light_double_sided(void *self, const struct PropertyValue *value)
 	return 0;
 }
 
+static int set_Light_texture(void *self, const struct PropertyValue *value)
+{
+	struct Light *light = (struct Light *) self;
+	LgtSetTexture(light, value->texture);
+	return 0;
+}
+
 static int set_Light_transform_order(void *self, const struct PropertyValue *value)
 {
 	/* TODO error handling */
@@ -1198,6 +1199,7 @@ static const struct Property Light_properties[] = {
 	{PROP_SCALAR,  "intensity",       set_Light_intensity},
 	{PROP_SCALAR,  "sample_count",    set_Light_sample_count},
 	{PROP_SCALAR,  "double_sided",    set_Light_double_sided},
+	{PROP_TEXTURE, "texture",         set_Light_texture},
 	{PROP_SCALAR,  "transform_order", set_Light_transform_order},
 	{PROP_SCALAR,  "rotate_order",    set_Light_rotate_order},
 	{PROP_VECTOR3, "translate",       set_Light_translate},

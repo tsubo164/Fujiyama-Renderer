@@ -15,15 +15,18 @@ extern "C" {
 enum LightType {
 	LGT_POINT = 0,
 	LGT_GRID,
-	LGT_SPHERE
+	LGT_SPHERE,
+	LGT_DOME
 };
 
 struct Light;
+struct Texture;
 
 struct LightSample {
 	const struct Light *light;
 	double P[3];
 	double N[3];
+	float color[3];
 };
 
 extern struct Light *LgtNew(int light_type);
@@ -33,6 +36,8 @@ extern void LgtSetColor(struct Light *light, float r, float g, float b);
 extern void LgtSetIntensity(struct Light *light, double intensity);
 extern void LgtSetSampleCount(struct Light *light, int sample_count);
 extern void LgtSetDoubleSided(struct Light *light, int on_or_off);
+
+extern void LgtSetTexture(struct Light *light, struct Texture *texture);
 
 /* transformation */
 extern void LgtSetTranslate(struct Light *light,

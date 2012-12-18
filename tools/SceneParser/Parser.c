@@ -182,6 +182,8 @@ static int build_arguments(struct Parser *parser,
 				arg->num = SI_GRID_LIGHT;
 			} else if (strcmp(arg->str, "SphereLight") == 0) {
 				arg->num = SI_SPHERE_LIGHT;
+			} else if (strcmp(arg->str, "DomeLight") == 0) {
+				arg->num = SI_DOME_LIGHT;
 			} else {
 				parse_error(parser, PSR_ERR_BAD_ENUM);
 				return -1;

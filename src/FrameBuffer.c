@@ -113,7 +113,7 @@ int FbComputeBounds(struct FrameBuffer *fb, int *bounds)
 
 	for (y = 0; y < fb->height; y++) {
 		for (x = 0; x < fb->width; x++) {
-			int i = y * fb->width * fb->nchannels + x * fb->nchannels;
+			const int i = y * fb->width * fb->nchannels + x * fb->nchannels;
 			if (tmp[i + 0] > 0 ||
 				tmp[i + 1] > 0 ||
 				tmp[i + 2] > 0 ||
@@ -158,5 +158,15 @@ static void free_buffer(struct FrameBuffer *fb)
 {
 	free(fb->buf);
 	fb->buf = NULL;
+}
+
+/* TODO TEST */
+void FbSetColor4(struct FrameBuffer *fb, int x, int y, int z, const struct Color4 *rgba)
+{
+	float *pixel = fb->buf + y * fb->width * fb->nchannels + x * fb->nchannels + z;
+	pixel[0] = rgba->r;
+	pixel[1] = rgba->g;
+	pixel[2] = rgba->b;
+	pixel[3] = rgba->a;
 }
 

@@ -109,3 +109,14 @@ int TexLoadFile(struct Texture *tex, const char *filename)
 	return 0;
 }
 
+void TexGetResolution(const struct Texture *tex, int *xres, int *yres)
+{
+	if (tex->mip == NULL) {
+		*xres = 0;
+		*yres = 0;
+	}
+
+	*xres = tex->mip->width;
+	*yres = tex->mip->height;
+}
+

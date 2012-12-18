@@ -4,10 +4,18 @@ See LICENSE and README
 */
 
 #include "Light.h"
+#include "ImportanceSampling.h"
+#include "FrameBufferIO.h"
+#include "FrameBuffer.h"
 #include "Numeric.h"
+#include "Texture.h"
 #include "Random.h"
 #include "Vector.h"
 #include <stdlib.h>
+#include <float.h>
+
+/* TODO TEST */
+#include "Timer.h"
 
 struct Light {
 	double position[3];
@@ -25,11 +33,15 @@ struct Light {
 	int sample_count;
 	float sample_intensity;
 
+	struct Texture *texture;
+	/* TODO tmp solution for dome light data */
+	struct DomeSample *dome_samples;
+
 	/* functions */
 	int (*GetSampleCount)(const struct Light *light);
 	void (*GetSamples)(const struct Light *light,
 			struct LightSample *samples, int max_samples);
-	void (*IlluminateFromSample)(const struct Light *light,
+	void (*Illuminate)(const struct Light *light,
 			const struct LightSample *sample,
 			const double *Ps, float *Cl);
 };
@@ -37,29 +49,38 @@ struct Light {
 static int point_light_get_sample_count(const struct Light *light);
 static void point_light_get_samples(const struct Light *light,
 		struct LightSample *samples, int max_samples);
-static void point_light_illuminate_from_sample(const struct Light *light,
+static void point_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
 		const double *Ps, float *Cl);
 
 static int grid_light_get_sample_count(const struct Light *light);
 static void grid_light_get_samples(const struct Light *light,
 		struct LightSample *samples, int max_samples);
-static void grid_light_illuminate_from_sample(const struct Light *light,
+static void grid_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
 		const double *Ps, float *Cl);
 
 static int sphere_light_get_sample_count(const struct Light *light);
 static void sphere_light_get_samples(const struct Light *light,
 		struct LightSample *samples, int max_samples);
-static void sphere_light_illuminate_from_sample(const struct Light *light,
+static void sphere_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
 		const double *Ps, float *Cl);
 
+static int dome_light_get_sample_count(const struct Light *light);
+static void dome_light_get_samples(const struct Light *light,
+		struct LightSample *samples, int max_samples);
+static void dome_light_illuminate(const struct Light *light,
+		const struct LightSample *sample,
+		const double *Ps, float *Cl);
+
+/* TODO TEST */
+static int save_sample_points2(struct Light *light);
+
 struct Light *LgtNew(int light_type)
 {
-	struct Light *light;
+	struct Light *light = (struct Light *) malloc(sizeof(struct Light));
 
-	light = (struct Light *) malloc(sizeof(struct Light));
 	if (light == NULL)
 		return NULL;
 
@@ -74,32 +95,40 @@ struct Light *LgtNew(int light_type)
 	light->sample_count = 16;
 	light->sample_intensity = light->intensity / light->sample_count;
 
+	light->texture = NULL;
+	light->dome_samples = NULL;
+	XorInit(&light->xr);
+
 	switch (light->type) {
 	case LGT_POINT:
-		light->GetSampleCount       = point_light_get_sample_count;
-		light->GetSamples           = point_light_get_samples;
-		light->IlluminateFromSample = point_light_illuminate_from_sample;
+		light->GetSampleCount = point_light_get_sample_count;
+		light->GetSamples     = point_light_get_samples;
+		light->Illuminate     = point_light_illuminate;
 		break;
 	case LGT_GRID:
-		light->GetSampleCount       = grid_light_get_sample_count;
-		light->GetSamples           = grid_light_get_samples;
-		light->IlluminateFromSample = grid_light_illuminate_from_sample;
+		light->GetSampleCount = grid_light_get_sample_count;
+		light->GetSamples     = grid_light_get_samples;
+		light->Illuminate     = grid_light_illuminate;
 		break;
 	case LGT_SPHERE:
-		light->GetSampleCount       = sphere_light_get_sample_count;
-		light->GetSamples           = sphere_light_get_samples;
-		light->IlluminateFromSample = sphere_light_illuminate_from_sample;
+		light->GetSampleCount = sphere_light_get_sample_count;
+		light->GetSamples     = sphere_light_get_samples;
+		light->Illuminate     = sphere_light_illuminate;
+		break;
+	case LGT_DOME:
+		light->GetSampleCount = dome_light_get_sample_count;
+		light->GetSamples     = dome_light_get_samples;
+		light->Illuminate     = dome_light_illuminate;
 		break;
 	default:
 		/* TODO should abort()? */
 		light->type = LGT_POINT;
-		light->GetSampleCount       = point_light_get_sample_count;
-		light->GetSamples           = point_light_get_samples;
-		light->IlluminateFromSample = point_light_illuminate_from_sample;
+		light->GetSampleCount = point_light_get_sample_count;
+		light->GetSamples     = point_light_get_samples;
+		light->Illuminate     = point_light_illuminate;
 		break;
 	}
 
-	XorInit(&light->xr);
 	return light;
 }
 
@@ -107,6 +136,10 @@ void LgtFree(struct Light *light)
 {
 	if (light == NULL)
 		return;
+
+	if (light->dome_samples != NULL)
+		free(light->dome_samples);
+
 	free(light);
 }
 
@@ -134,6 +167,14 @@ void LgtSetSampleCount(struct Light *light, int sample_count)
 void LgtSetDoubleSided(struct Light *light, int on_or_off)
 {
 	light->double_sided = (on_or_off != 0);
+}
+
+void LgtSetTexture(struct Light *light, struct Texture *texture)
+{
+	light->texture = texture;
+
+	/* TODO TEST */
+	save_sample_points2(light);
 }
 
 void LgtSetTranslate(struct Light *light,
@@ -184,7 +225,7 @@ void LgtIlluminate(const struct LightSample *sample,
 		const double *Ps, float *Cl)
 {
 	const struct Light *light = sample->light;
-	light->IlluminateFromSample(light, sample, Ps, Cl);
+	light->Illuminate(light, sample, Ps, Cl);
 }
 
 /* point light */
@@ -209,7 +250,7 @@ static void point_light_get_samples(const struct Light *light,
 	samples[0].light = light;
 }
 
-static void point_light_illuminate_from_sample(const struct Light *light,
+static void point_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
 		const double *Ps, float *Cl)
 {
@@ -229,8 +270,8 @@ static void grid_light_get_samples(const struct Light *light,
 {
 	struct Transform transform_interp;
 	int nsamples = LgtGetSampleCount(light);
-	int i;
 	double N_sample[] = {0, 1, 0};
+	int i;
 
 	/* TODO time sampling */
 	XfmLerpTransformSample2(&light->transform_samples, 0, &transform_interp);
@@ -255,7 +296,7 @@ static void grid_light_get_samples(const struct Light *light,
 	}
 }
 
-static void grid_light_illuminate_from_sample(const struct Light *light,
+static void grid_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
 		const double *Ps, float *Cl)
 {
@@ -321,7 +362,7 @@ static void sphere_light_get_samples(const struct Light *light,
 	}
 }
 
-static void sphere_light_illuminate_from_sample(const struct Light *light,
+static void sphere_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
 		const double *Ps, float *Cl)
 {
@@ -345,5 +386,147 @@ static void sphere_light_illuminate_from_sample(const struct Light *light,
 		Cl[1] = 0;
 		Cl[2] = 0;
 	}
+}
+
+/* TODO TEST */
+static int save_sample_points2(struct Light *light)
+{
+	const char *filename = "../sample_points.fb";
+	struct FrameBuffer *fb = NULL;
+	const int NSAMPLES = LgtGetSampleCount(light);
+	int XRES = 1000 / 4;
+	int YRES = 500 / 4;
+	int err = 0;
+	int i;
+
+	/* TODO TEST */
+	struct Timer timer;
+	struct Elapse elapse;
+
+	if (light->texture == NULL)
+		return -1;
+
+	TexGetResolution(light->texture, &XRES, &YRES);
+	printf("%d, %d\n", XRES, YRES);
+	/*
+	XRES /= 8;
+	YRES /= 8;
+	*/
+	XRES = 1000 / 4;
+	YRES = 500 / 4;
+
+	fb = FbNew();
+	if (fb == NULL)
+		return -1;
+
+	FbResize(fb, XRES, YRES, 4);
+
+	light->dome_samples =
+			(struct DomeSample *) malloc(sizeof(struct DomeSample) * NSAMPLES);
+
+	TimerStart(&timer);
+
+	ImportanceSampling(light->texture, 0,
+			XRES, YRES,
+			light->dome_samples, NSAMPLES);
+
+	elapse = TimerElapsed(&timer);
+	printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
+
+	{
+		float delta[2] = {0};
+		float uv_base[2] = {0};
+		int x, y;
+
+		delta[0] = 1. / XRES;
+		delta[1] = 1. / YRES;
+		uv_base[0] = .5 * delta[0];
+		uv_base[1] = 1 - .5 * delta[1];
+
+		for (y = 0; y < YRES; y++) {
+			for (x = 0; x < XRES; x++) {
+				struct Color4 C_fb = {0};
+				float C_tex[3] = {0};
+
+				TexLookup(light->texture,
+						uv_base[0] + x * delta[0],
+						uv_base[1] - y * delta[1],
+						C_tex);
+
+				C_fb.r = C_tex[0];
+				C_fb.g = C_tex[1];
+				C_fb.b = C_tex[2];
+				C_fb.a = 0;
+
+				FbSetColor4(fb, x, y, 0, &C_fb);
+			}
+		}
+	}
+
+	for (i = 0; i < NSAMPLES; i++) {
+		const float *uv = light->dome_samples[i].uv;
+		const struct Color4 C_sample = {0, 1, 0, 1};
+		const int x = (int) (uv[0] * XRES);
+		const int y = (int) ((1 - uv[1]) * YRES);
+		FbSetColor4(fb, x, y, 0, &C_sample);
+	}
+
+	err = FbSaveCroppedData(fb, filename);
+	if (err) {
+		FbFree(fb);
+		return -1;
+	}
+	FbFree(fb);
+
+	return 0;
+}
+
+/* dome light */
+static int dome_light_get_sample_count(const struct Light *light)
+{
+	return light->sample_count;
+}
+
+static void dome_light_get_samples(const struct Light *light,
+		struct LightSample *samples, int max_samples)
+{
+	struct Transform transform_interp;
+	int nsamples = LgtGetSampleCount(light);
+	int i;
+
+	/* TODO time sampling */
+	XfmLerpTransformSample2(&light->transform_samples, 0, &transform_interp);
+
+	nsamples = MIN(nsamples, max_samples);
+	for (i = 0; i < nsamples; i++) {
+		const struct DomeSample *dome_sample = &light->dome_samples[i];
+		double P_sample[] = {0, 0, 0};
+		double N_sample[] = {0, 0, 0};
+
+		P_sample[0] = dome_sample->dir[0] * DBL_MAX;
+		P_sample[1] = dome_sample->dir[1] * DBL_MAX;
+		P_sample[2] = dome_sample->dir[2] * DBL_MAX;
+		N_sample[0] = -1 * dome_sample->dir[0];
+		N_sample[1] = -1 * dome_sample->dir[1];
+		N_sample[2] = -1 * dome_sample->dir[2];
+
+		/* TODO cancel translate and scale */
+		XfmTransformPoint(&transform_interp, P_sample);
+		XfmTransformVector(&transform_interp, N_sample);
+
+		VEC3_COPY(samples[i].P, P_sample);
+		VEC3_COPY(samples[i].N, N_sample);
+		VEC3_COPY(samples[i].color, dome_sample->color);
+		samples[i].light = light;
+	}
+}
+
+static void dome_light_illuminate(const struct Light *light,
+		const struct LightSample *sample,
+		const double *Ps, float *Cl)
+{
+	Cl[0] = light->sample_intensity * sample->color[0];
+	Cl[1] = light->sample_intensity * sample->color[1];
+	Cl[2] = light->sample_intensity * sample->color[2];
 }
 
