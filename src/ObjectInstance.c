@@ -41,8 +41,10 @@ struct ObjectInstance {
 
 static void update_object_bounds(struct ObjectInstance *obj);
 static void merge_sampled_bounds(struct ObjectInstance *obj);
+/*
 static const struct Transform *get_interpolated_transform(const struct ObjectInstance *obj,
 		double time);
+*/
 
 /* TODO remove acc argument */
 /* ObjectInstance interfaces */
@@ -211,32 +213,32 @@ void ObjGetBounds(const struct ObjectInstance *obj, double *bounds)
 int ObjIntersect(const struct ObjectInstance *obj, double time,
 		const struct Ray *ray, struct Intersection *isect)
 {
-	const struct Transform *transform_interp = NULL;
+	struct Transform transform_interp;
 	struct Ray ray_object_space;
 	int hit = 0;
 
 	if (!ObjIsSurface(obj))
 		return 0;
 
-	transform_interp = get_interpolated_transform(obj, time);
+	XfmLerpTransformSample(&obj->transform_samples, time, &transform_interp);
 
 	/* transform ray to object space */
 	ray_object_space = *ray;
-	XfmTransformPointInverse(transform_interp, ray_object_space.orig);
-	XfmTransformVectorInverse(transform_interp, ray_object_space.dir);
+	XfmTransformPointInverse(&transform_interp, ray_object_space.orig);
+	XfmTransformVectorInverse(&transform_interp, ray_object_space.dir);
 
 	hit = AccIntersect(obj->acc, time, &ray_object_space, isect);
 	if (!hit)
 		return 0;
 
 	/* transform intersection back to world space */
-	XfmTransformPoint(transform_interp, isect->P);
-	XfmTransformVector(transform_interp, isect->N);
+	XfmTransformPoint(&transform_interp, isect->P);
+	XfmTransformVector(&transform_interp, isect->N);
 	VEC3_NORMALIZE(isect->N);
 
 	/* TODO should make TransformLocalGeometry? */
-	XfmTransformVector(transform_interp, isect->dPds);
-	XfmTransformVector(transform_interp, isect->dPdt);
+	XfmTransformVector(&transform_interp, isect->dPds);
+	XfmTransformVector(&transform_interp, isect->dPdt);
 
 	isect->object = obj;
 
@@ -246,7 +248,7 @@ int ObjIntersect(const struct ObjectInstance *obj, double time,
 int ObjVolumeIntersect(const struct ObjectInstance *obj, double time,
 			const struct Ray *ray, struct Interval *interval)
 {
-	const struct Transform *transform_interp = NULL;
+	struct Transform transform_interp;
 	struct Ray ray_object_space;
 	double volume_bounds[6] = {0};
 	double boxhit_tmin = 0;
@@ -258,12 +260,12 @@ int ObjVolumeIntersect(const struct ObjectInstance *obj, double time,
 
 	VolGetBounds(obj->volume, volume_bounds);
 
-	transform_interp = get_interpolated_transform(obj, time);
+	XfmLerpTransformSample(&obj->transform_samples, time, &transform_interp);
 
 	/* transform ray to object space */
 	ray_object_space = *ray;
-	XfmTransformPointInverse(transform_interp, ray_object_space.orig);
-	XfmTransformVectorInverse(transform_interp, ray_object_space.dir);
+	XfmTransformPointInverse(&transform_interp, ray_object_space.orig);
+	XfmTransformVectorInverse(&transform_interp, ray_object_space.dir);
 
 	hit = BoxRayIntersect(volume_bounds,
 			ray_object_space.orig,
@@ -286,31 +288,21 @@ int ObjVolumeIntersect(const struct ObjectInstance *obj, double time,
 int ObjGetVolumeSample(const struct ObjectInstance *obj, double time,
 			const double *point, struct VolumeSample *sample)
 {
-	const struct Transform *transform_interp = NULL;
+	struct Transform transform_interp;
 	double point_in_objspace[3] = {0};
 	int hit = 0;
 
 	if (!ObjIsVolume(obj))
 		return 0;
 
-	transform_interp = get_interpolated_transform(obj, time);
+	XfmLerpTransformSample(&obj->transform_samples, time, &transform_interp);
 
 	VEC3_COPY(point_in_objspace, point);
-	XfmTransformPointInverse(transform_interp, point_in_objspace);
+	XfmTransformPointInverse(&transform_interp, point_in_objspace);
 
 	hit = VolGetSample(obj->volume, point_in_objspace, sample);
 
 	return hit;
-}
-
-static const struct Transform *get_interpolated_transform(const struct ObjectInstance *obj,
-		double time)
-{
-	struct TransformSampleList *mutable_transform_list =
-			(struct TransformSampleList *) &obj->transform_samples;
-
-	XfmLerpTransformSample(mutable_transform_list, time);
-	return &obj->transform_samples.transform_sample;
 }
 
 static void update_object_bounds(struct ObjectInstance *obj)

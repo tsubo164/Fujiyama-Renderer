@@ -25,8 +25,6 @@ struct Camera {
 
 static void compute_uv_size(struct Camera *cam);
 static void compute_ray_target(const struct Camera *cam, const double *uv, double *target);
-static const struct Transform *get_interpolated_transform(const struct Camera *cam,
-		double time);
 
 struct Camera *CamNew(const char *type)
 {
@@ -105,13 +103,15 @@ void CamSetRotateOrder(struct Camera *cam, int order)
 void CamGetRay(const struct Camera *cam, const double *screen_uv,
 		double time, struct Ray *ray)
 {
-	const struct Transform *transform_interp = get_interpolated_transform(cam, time);
+	struct Transform transform_interp;
 	double target[3] = {0, 0, 0};
 	double eye[3] = {0, 0, 0};
 
+	XfmLerpTransformSample(&cam->transform_samples, time, &transform_interp);
+
 	compute_ray_target(cam, screen_uv, target);
-	XfmTransformPoint(transform_interp, target);
-	XfmTransformPoint(transform_interp, eye);
+	XfmTransformPoint(&transform_interp, target);
+	XfmTransformPoint(&transform_interp, eye);
 
 	VEC3_SUB(ray->dir, target, eye);
 	VEC3_NORMALIZE(ray->dir);
@@ -132,15 +132,5 @@ static void compute_ray_target(const struct Camera *cam, const double *uv, doubl
 	target[0] = (uv[0] - .5) * cam->uv_size[0];
 	target[1] = (uv[1] - .5) * cam->uv_size[1];
 	target[2] = -1;
-}
-
-static const struct Transform *get_interpolated_transform(const struct Camera *cam,
-		double time)
-{
-	struct TransformSampleList *mutable_transform_list =
-			(struct TransformSampleList *) &cam->transform_samples;
-
-	XfmLerpTransformSample(mutable_transform_list, time);
-	return &cam->transform_samples.transform_sample;
 }
 

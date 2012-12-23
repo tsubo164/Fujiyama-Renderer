@@ -183,41 +183,20 @@ void XfmSetSampleRotateOrder(struct TransformSampleList *list, int order)
 	list->rotate_order = order;
 }
 
-void XfmLerpTransformSample(struct TransformSampleList *list, double time)
-{
-	struct PropertySample T = INIT_PROPERTYSAMPLE;
-	struct PropertySample R = INIT_PROPERTYSAMPLE;
-	struct PropertySample S = INIT_PROPERTYSAMPLE;
-
-	if (list->last_sample_time != time) {
-		PropLerpSamples(&list->translate, time, &T);
-		PropLerpSamples(&list->rotate, time, &R);
-		PropLerpSamples(&list->scale, time, &S);
-
-		XfmSetTransform(&list->transform_sample,
-			list->transform_order, list->rotate_order,
-			T.vector[0], T.vector[1], T.vector[2],
-			R.vector[0], R.vector[1], R.vector[2],
-			S.vector[0], S.vector[1], S.vector[2]);
-
-		list->last_sample_time = time;
-	}
-}
-
-void XfmLerpTransformSample2(const struct TransformSampleList *list, double time,
+void XfmLerpTransformSample(const struct TransformSampleList *list, double time,
 		struct Transform *transform_interp)
 {
-	struct PropertySample T = INIT_PROPERTYSAMPLE;
-	struct PropertySample R = INIT_PROPERTYSAMPLE;
-	struct PropertySample S = INIT_PROPERTYSAMPLE;
-
 	if (list->last_sample_time != time) {
 		struct TransformSampleList *mutable_list = (struct TransformSampleList *) list;
+		struct PropertySample T = INIT_PROPERTYSAMPLE;
+		struct PropertySample R = INIT_PROPERTYSAMPLE;
+		struct PropertySample S = INIT_PROPERTYSAMPLE;
+
 		PropLerpSamples(&list->translate, time, &T);
 		PropLerpSamples(&list->rotate, time, &R);
 		PropLerpSamples(&list->scale, time, &S);
 
-		XfmSetTransform(&mutable_list->transform_sample,
+		XfmSetTransform(&mutable_list->last_sample_transform,
 			list->transform_order, list->rotate_order,
 			T.vector[0], T.vector[1], T.vector[2],
 			R.vector[0], R.vector[1], R.vector[2],
@@ -226,7 +205,7 @@ void XfmLerpTransformSample2(const struct TransformSampleList *list, double time
 		mutable_list->last_sample_time = time;
 	}
 
-	*transform_interp = list->transform_sample;
+	*transform_interp = list->last_sample_transform;
 }
 
 static void update_matrix(struct Transform *transform)

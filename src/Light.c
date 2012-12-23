@@ -243,7 +243,7 @@ static void point_light_get_samples(const struct Light *light,
 		return;
 
 	/* TODO time sampling */
-	XfmLerpTransformSample2(&light->transform_samples, 0, &transform_interp);
+	XfmLerpTransformSample(&light->transform_samples, 0, &transform_interp);
 
 	VEC3_COPY(samples[0].P, transform_interp.translate);
 	VEC3_SET(samples[0].N, 0, 0, 0);
@@ -274,7 +274,7 @@ static void grid_light_get_samples(const struct Light *light,
 	int i;
 
 	/* TODO time sampling */
-	XfmLerpTransformSample2(&light->transform_samples, 0, &transform_interp);
+	XfmLerpTransformSample(&light->transform_samples, 0, &transform_interp);
 
 	XfmTransformVector(&transform_interp, N_sample);
 	VEC3_NORMALIZE(N_sample);
@@ -339,7 +339,7 @@ static void sphere_light_get_samples(const struct Light *light,
 	int i;
 
 	/* TODO time sampling */
-	XfmLerpTransformSample2(&light->transform_samples, 0, &transform_interp);
+	XfmLerpTransformSample(&light->transform_samples, 0, &transform_interp);
 
 	nsamples = MIN(nsamples, max_samples);
 	for (i = 0; i < nsamples; i++) {
@@ -407,13 +407,13 @@ static int save_sample_points2(struct Light *light)
 		return -1;
 
 	TexGetResolution(light->texture, &XRES, &YRES);
-	printf("%d, %d\n", XRES, YRES);
-	/*
 	XRES /= 8;
 	YRES /= 8;
-	*/
+	/*
 	XRES = 1000 / 4;
 	YRES = 500 / 4;
+	printf("%d, %d\n", XRES, YRES);
+	*/
 
 	fb = FbNew();
 	if (fb == NULL)
@@ -426,9 +426,15 @@ static int save_sample_points2(struct Light *light)
 
 	TimerStart(&timer);
 
-	ImportanceSampling(light->texture, 0,
-			XRES, YRES,
-			light->dome_samples, NSAMPLES);
+	if (0) {
+		ImportanceSampling(light->texture, 0,
+				XRES, YRES,
+				light->dome_samples, NSAMPLES);
+	} else {
+		StratifiedImportanceSampling(light->texture, 0 * 1111111,
+				XRES, YRES,
+				light->dome_samples, NSAMPLES);
+	}
 
 	elapse = TimerElapsed(&timer);
 	printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
@@ -495,7 +501,7 @@ static void dome_light_get_samples(const struct Light *light,
 	int i;
 
 	/* TODO time sampling */
-	XfmLerpTransformSample2(&light->transform_samples, 0, &transform_interp);
+	XfmLerpTransformSample(&light->transform_samples, 0, &transform_interp);
 
 	nsamples = MIN(nsamples, max_samples);
 	for (i = 0; i < nsamples; i++) {

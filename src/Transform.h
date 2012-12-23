@@ -71,13 +71,12 @@ struct TransformSampleList {
 	int transform_order;
 	int rotate_order;
 
-	struct Transform transform_sample;
+	struct Transform last_sample_transform;
 	double last_sample_time;
 };
 
 extern void XfmInitTransformSampleList(struct TransformSampleList *list);
-extern void XfmLerpTransformSample(struct TransformSampleList *list, double time);
-extern void XfmLerpTransformSample2(const struct TransformSampleList *list, double time,
+extern void XfmLerpTransformSample(const struct TransformSampleList *list, double time,
 		struct Transform *transform_interp);
 
 extern void XfmPushTranslateSample(struct TransformSampleList *list,
