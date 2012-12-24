@@ -346,10 +346,8 @@ static void sphere_light_get_samples(const struct Light *light,
 		struct XorShift *mutable_xr = (struct XorShift *) &light->xr;
 		double P_sample[] = {0, 0, 0};
 		double N_sample[] = {0, 0, 0};
-		P_sample[0] = (XorNextFloat01(mutable_xr) - .5);
-		P_sample[1] = (XorNextFloat01(mutable_xr) - .5);
-		P_sample[2] = (XorNextFloat01(mutable_xr) - .5);
-		VEC3_NORMALIZE(P_sample);
+
+		XorHollowSphereRand(mutable_xr, P_sample);
 		VEC3_COPY(N_sample, P_sample);
 
 		XfmTransformPoint(&transform_interp, P_sample);
