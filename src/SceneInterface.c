@@ -853,6 +853,18 @@ static int set_ObjectInstance_scale(void *self, const struct PropertyValue *valu
 	return 0;
 }
 
+static int set_ObjectInstance_reflect_target(void *self, const struct PropertyValue *value)
+{
+	ObjSetReflectTarget((struct ObjectInstance *) self, value->object_group);
+	return 0;
+}
+
+static int set_ObjectInstance_refract_target(void *self, const struct PropertyValue *value)
+{
+	ObjSetRefractTarget((struct ObjectInstance *) self, value->object_group);
+	return 0;
+}
+
 static int set_ObjectInstance_shadow_target(void *self, const struct PropertyValue *value)
 {
 	ObjSetShadowTarget((struct ObjectInstance *) self, value->object_group);
@@ -1145,6 +1157,8 @@ static const struct Property ObjectInstance_properties[] = {
 	{PROP_VECTOR3,     "translate",       set_ObjectInstance_translate},
 	{PROP_VECTOR3,     "rotate",          set_ObjectInstance_rotate},
 	{PROP_VECTOR3,     "scale",           set_ObjectInstance_scale},
+	{PROP_OBJECTGROUP, "reflect_target",  set_ObjectInstance_reflect_target},
+	{PROP_OBJECTGROUP, "refract_target",  set_ObjectInstance_refract_target},
 	{PROP_OBJECTGROUP, "shadow_target",   set_ObjectInstance_shadow_target},
 	{PROP_NONE, NULL, NULL}
 };

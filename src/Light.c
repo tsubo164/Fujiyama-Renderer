@@ -407,11 +407,6 @@ static int save_sample_points2(struct Light *light)
 	TexGetResolution(light->texture, &XRES, &YRES);
 	XRES /= 8;
 	YRES /= 8;
-	/*
-	XRES = 1000 / 4;
-	YRES = 500 / 4;
-	printf("%d, %d\n", XRES, YRES);
-	*/
 
 	fb = FbNew();
 	if (fb == NULL)
@@ -438,14 +433,7 @@ static int save_sample_points2(struct Light *light)
 	printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
 
 	{
-		float delta[2] = {0};
-		float uv_base[2] = {0};
 		int x, y;
-
-		delta[0] = 1. / XRES;
-		delta[1] = 1. / YRES;
-		uv_base[0] = .5 * delta[0];
-		uv_base[1] = 1 - .5 * delta[1];
 
 		for (y = 0; y < YRES; y++) {
 			for (x = 0; x < XRES; x++) {
@@ -453,8 +441,8 @@ static int save_sample_points2(struct Light *light)
 				float C_tex[3] = {0};
 
 				TexLookup(light->texture,
-						uv_base[0] + x * delta[0],
-						uv_base[1] - y * delta[1],
+						(.5 + x) / XRES,
+						1 - (.5 + y) / YRES,
 						C_tex);
 
 				C_fb.r = C_tex[0];
