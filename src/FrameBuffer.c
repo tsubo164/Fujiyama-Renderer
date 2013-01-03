@@ -170,3 +170,12 @@ void FbSetColor4(struct FrameBuffer *fb, int x, int y, int z, const struct Color
 	pixel[3] = rgba->a;
 }
 
+void FbGetColor4(const struct FrameBuffer *fb, int x, int y, int z, struct Color4 *rgba)
+{
+	const float *pixel = fb->buf + y * fb->width * fb->nchannels + x * fb->nchannels + z;
+	rgba->r = pixel[0];
+	rgba->g = pixel[1];
+	rgba->b = pixel[2];
+	rgba->a = pixel[3];
+}
+

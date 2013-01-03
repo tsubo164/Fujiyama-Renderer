@@ -26,6 +26,10 @@ extern int StratifiedImportanceSampling(struct Texture *texture, int seed,
 		int sample_xres, int sample_yres,
 		struct DomeSample *dome_samples, int sample_count);
 
+extern int StructuredImportanceSampling(struct Texture *texture, int seed,
+		int sample_xres, int sample_yres,
+		struct DomeSample *dome_samples, int sample_count);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

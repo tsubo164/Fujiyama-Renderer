@@ -407,6 +407,10 @@ static int save_sample_points2(struct Light *light)
 	TexGetResolution(light->texture, &XRES, &YRES);
 	XRES /= 8;
 	YRES /= 8;
+	/*
+	XRES /= 32;
+	YRES /= 32;
+	*/
 
 	fb = FbNew();
 	if (fb == NULL)
@@ -423,8 +427,12 @@ static int save_sample_points2(struct Light *light)
 		ImportanceSampling(light->texture, 0,
 				XRES, YRES,
 				light->dome_samples, NSAMPLES);
+	} else if (1) {
+		StratifiedImportanceSampling(light->texture, 0,
+				XRES, YRES,
+				light->dome_samples, NSAMPLES);
 	} else {
-		StratifiedImportanceSampling(light->texture, 0 * 1111111,
+		StructuredImportanceSampling(light->texture, 0,
 				XRES, YRES,
 				light->dome_samples, NSAMPLES);
 	}
@@ -495,9 +503,9 @@ static void dome_light_get_samples(const struct Light *light,
 		double P_sample[] = {0, 0, 0};
 		double N_sample[] = {0, 0, 0};
 
-		P_sample[0] = dome_sample->dir[0] * DBL_MAX;
-		P_sample[1] = dome_sample->dir[1] * DBL_MAX;
-		P_sample[2] = dome_sample->dir[2] * DBL_MAX;
+		P_sample[0] = dome_sample->dir[0] * FLT_MAX;
+		P_sample[1] = dome_sample->dir[1] * FLT_MAX;
+		P_sample[2] = dome_sample->dir[2] * FLT_MAX;
 		N_sample[0] = -1 * dome_sample->dir[0];
 		N_sample[1] = -1 * dome_sample->dir[1];
 		N_sample[2] = -1 * dome_sample->dir[2];
