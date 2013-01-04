@@ -389,6 +389,9 @@ int FbvLoadImage(struct FrameBufferViewer *v, const char *filename)
 	else {
 		return -1;
 	}
+	if (err) {
+		return -1;
+	}
 
 	{
 		/* TODO define gamma function */

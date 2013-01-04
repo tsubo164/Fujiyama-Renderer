@@ -134,17 +134,13 @@ int MipReadHeader(struct MipInput *in)
 
 int MipReadTile(struct MipInput *in, int xtile, int ytile)
 {
-	size_t nread;
-	int tile_index;
+	const int TILESIZE = in->tilesize;
+	const int XNTILES = in->width / TILESIZE;
+	const int YNTILES = in->height / TILESIZE;
+	const int TILE_PXLS = TILESIZE * TILESIZE * in->nchannels;
+	size_t nread = 0;
+	int tile_index = 0;
 	int x, y;
-	int TILE_PXLS;
-	int TILESIZE;
-	int XNTILES, YNTILES;
-
-	TILESIZE = in->tilesize;
-	XNTILES = in->width / TILESIZE;
-	YNTILES = in->height / TILESIZE;
-	TILE_PXLS = TILESIZE * TILESIZE * in->nchannels;
 
 	/* TODO TEMP out of border handling */
 	x = CLAMP(xtile, 0, XNTILES-1);
@@ -154,6 +150,10 @@ int MipReadTile(struct MipInput *in, int xtile, int ytile)
 	fseek(in->file, in->offset_of_header + sizeof(float) * tile_index * TILE_PXLS , SEEK_SET);
 
 	nread = fread(in->data, sizeof(float), TILE_PXLS, in->file);
+	if (nread == 0) {
+		/* TODO error handling */
+		return -1;
+	}
 
 	return 0;
 }

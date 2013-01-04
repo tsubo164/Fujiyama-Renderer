@@ -32,7 +32,7 @@ $$(objects): %.o: %.c
 	@$$(CC) $$(CFLAGS) $(cflags_) -c -o $$@ $$<
 $$(target): $$(objects) $(addobj_)
 	@echo '  link $$^'
-	@$$(CC) $$(LDFLAGS) $(ldflags_) -o $$@ $$^
+	@$$(CC) -o $$@ $$^ $$(LDFLAGS) $(ldflags_)
 $$(depends): %.d: %.c
 	@echo '  dependency $$<'
 	@$$(CC) $$(CFLAGS) $(cflags_) -c -MM $$< | \
@@ -55,7 +55,7 @@ $$(objects): %.o: %.cpp
 	@$$(CXX) $$(CPPFLAGS) $(cflags_) -c -o $$@ $$<
 $$(target): $$(objects) $(addobj_)
 	@echo '  link $$^'
-	@$$(CXX) $$(LDFLAGS) $(ldflags_) -o $$@ $$^
+	@$$(CXX) -o $$@ $$^ $$(LDFLAGS) $(ldflags_)
 $$(depends): %.d: %.cpp
 	@echo '  dependency $$<'
 	@$$(CXX) $$(CPPFLAGS) $(cflags_) -c -MM $$< | \

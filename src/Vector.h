@@ -29,6 +29,11 @@ extern "C" {
 	(dst)[1] = (y); \
 	} while(0)
 
+#define VEC2_COPY(dst,a) do { \
+	(dst)[0] = (a)[0]; \
+	(dst)[1] = (a)[1]; \
+	} while(0)
+
 #define VEC2_DOT(a,b) ((a)[0] * (b)[0] + (a)[1] * (b)[1])
 
 /* VEC3 */

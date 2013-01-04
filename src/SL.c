@@ -380,7 +380,7 @@ static void setup_surface_input(
 	VEC3_COPY(in->P, isect->P);
 	VEC3_COPY(in->N, isect->N);
 	VEC3_COPY(in->Cd, isect->Cd);
-	VEC3_COPY(in->uv, isect->uv);
+	VEC2_COPY(in->uv, isect->uv);
 	VEC3_COPY(in->I, ray->dir);
 
 	VEC3_COPY(in->dPds, isect->dPds);

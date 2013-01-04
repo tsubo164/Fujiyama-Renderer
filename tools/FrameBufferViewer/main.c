@@ -109,6 +109,8 @@ int main(int argc, char **argv)
 	glutMotionFunc(motion);
 	glutKeyboardFunc(keyboard);
 
+	glutPostRedisplay();
+
 	glutMainLoop();
 
 	return 0;

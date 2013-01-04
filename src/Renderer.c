@@ -386,7 +386,11 @@ static int render_scene(struct Renderer *renderer)
 			cxt.time = smp->time;
 
 			hit = SlTrace(&cxt, ray.orig, ray.dir, ray.tmin, ray.tmax, C_trace, &t_hit);
-			VEC4_COPY(smp->data, C_trace);
+			if (hit) {
+				VEC4_COPY(smp->data, C_trace);
+			} else {
+				VEC4_SET(smp->data, 0, 0, 0, 0);
+			}
 
 			PrgIncrement(progress);
 		}

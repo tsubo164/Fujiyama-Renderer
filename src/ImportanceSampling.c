@@ -39,7 +39,7 @@ static void divide_into_layers(const double *illum_values, int nvalues,
 static void solve_connected_components(
 		int sample_xres, int sample_yres, const char *strata_id,
 		int *connected_label);
-static void sortout_connected_label(int npixels,
+static void remap_connected_label(int npixels,
 		int *connected_label, int *sorted_max_label);
 static void compute_connected_sample_count(const double *illum_values, int nvalues,
 		const int *connected_label, int label_count,
@@ -197,7 +197,7 @@ int StructuredImportanceSampling(struct Texture *texture, int seed,
 			connected_label);
 
 	/* re-map labels like 0, 1, ... */
-	sortout_connected_label(NPIXELS, connected_label, &sorted_label_count);
+	remap_connected_label(NPIXELS, connected_label, &sorted_label_count);
 
 	/* sample count for each connection */
 	connected_sample_count = (int *) malloc(sizeof(int) * sorted_label_count);
@@ -281,7 +281,6 @@ static void uv_to_dir(float u, float v, double *dir)
 	dir[2] = r * cos(phi);
 }
 
-/* TODO TEST */
 static void setup_structured_importance_sampling(struct Texture *texture,
 		int sample_xres, int sample_yres,
 		double *illum_values, double *whole_illum, double *mean_illum)
@@ -387,14 +386,14 @@ static void solve_connected_components(
 	}
 }
 
-static void sortout_connected_label(int npixels,
+static void remap_connected_label(int npixels,
 		int *connected_label, int *sorted_max_label)
 {
 	const int NPIXELS = npixels;
-	int *idmap = NULL;
+	int *label_map = NULL;
 	int max_label = 0;
 	int label_count = 0;
-	int new_id = 0;
+	int new_label = 0;
 	int i;
 
 	/* find max label */
@@ -404,24 +403,24 @@ static void sortout_connected_label(int npixels,
 		}
 	}
 	label_count = max_label + 1; /* for 0 */
-	idmap = (int *) malloc(sizeof(int) * label_count);
+	label_map = (int *) malloc(sizeof(int) * label_count);
 
 	/* initialize */
 	for (i = 0; i < label_count; i++) {
-		idmap[i] = -1;
+		label_map[i] = -1;
 	}
 
 	/* re-map id from 0 */
 	for (i = 0; i < NPIXELS; i++) {
-		const int old_id = connected_label[i];
-		if (idmap[old_id] == -1) {
-			idmap[old_id] = new_id;
-			new_id++;
+		const int old_label = connected_label[i];
+		if (label_map[old_label] == -1) {
+			label_map[old_label] = new_label;
+			new_label++;
 		}
-		connected_label[i] = idmap[old_id];
+		connected_label[i] = label_map[old_label];
 	}
-	free(idmap);
-	*sorted_max_label = new_id;
+	free(label_map);
+	*sorted_max_label = new_label;
 }
 
 static void compute_connected_sample_count(const double *illum_values, int nvalues,
@@ -487,6 +486,7 @@ static void compute_connected_sample_count(const double *illum_values, int nvalu
 	free(connected_area);
 }
 
+/* Hochbaum-Shmoys algorithm */
 static void generate_dome_samples(int sample_xres, int sample_yres,
 		const int *connected_sample_count,
 		const int *connected_label, int label_count,
