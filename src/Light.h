@@ -56,6 +56,8 @@ extern int LgtGetSampleCount(const struct Light *light);
 extern void LgtIlluminate(const struct LightSample *sample,
 		const double *Ps, float *Cl);
 
+extern int LgtPreprocess(struct Light *light);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

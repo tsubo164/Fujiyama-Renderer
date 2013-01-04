@@ -794,6 +794,11 @@ static int create_implicit_groups(void)
 
 	renderer = ScnGetRenderer(scene, 0);
 	RdrSetTargetObjects(renderer, all_objects);
+	{
+		const int nlights = ScnGetLightCount(scene);
+		struct Light **lightlist = ScnGetLightList(scene);
+		RdrSetTargetLights(renderer, lightlist, nlights);
+	}
 
 	return SI_SUCCESS;
 }

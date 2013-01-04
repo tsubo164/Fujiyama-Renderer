@@ -14,11 +14,7 @@ See LICENSE and README
 #include <stdlib.h>
 #include <float.h>
 
-/* TODO TEST */
-#include "Timer.h"
-
 struct Light {
-	double position[3];
 	float color[3];
 	float intensity;
 
@@ -44,6 +40,7 @@ struct Light {
 	void (*Illuminate)(const struct Light *light,
 			const struct LightSample *sample,
 			const double *Ps, float *Cl);
+	int (*Preprocess)(struct Light *light);
 };
 
 static int point_light_get_sample_count(const struct Light *light);
@@ -73,9 +70,14 @@ static void dome_light_get_samples(const struct Light *light,
 static void dome_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
 		const double *Ps, float *Cl);
+static int dome_light_preprocess(struct Light *light);
+
+static int no_preprocess(struct Light *light);
 
 /* TODO TEST */
+#if 0
 static int save_sample_points2(struct Light *light);
+#endif
 
 struct Light *LgtNew(int light_type)
 {
@@ -86,7 +88,6 @@ struct Light *LgtNew(int light_type)
 
 	XfmInitTransformSampleList(&light->transform_samples);
 
-	VEC3_SET(light->position, 0, 0, 0);
 	VEC3_SET(light->color, 1, 1, 1);
 	light->intensity = 1;
 
@@ -104,6 +105,7 @@ struct Light *LgtNew(int light_type)
 		light->GetSampleCount = point_light_get_sample_count;
 		light->GetSamples     = point_light_get_samples;
 		light->Illuminate     = point_light_illuminate;
+		light->Preprocess     = no_preprocess;
 		break;
 	case LGT_GRID:
 		light->GetSampleCount = grid_light_get_sample_count;
@@ -114,11 +116,13 @@ struct Light *LgtNew(int light_type)
 		light->GetSampleCount = sphere_light_get_sample_count;
 		light->GetSamples     = sphere_light_get_samples;
 		light->Illuminate     = sphere_light_illuminate;
+		light->Preprocess     = no_preprocess;
 		break;
 	case LGT_DOME:
 		light->GetSampleCount = dome_light_get_sample_count;
 		light->GetSamples     = dome_light_get_samples;
 		light->Illuminate     = dome_light_illuminate;
+		light->Preprocess     = dome_light_preprocess;
 		break;
 	default:
 		/* TODO should abort()? */
@@ -126,6 +130,7 @@ struct Light *LgtNew(int light_type)
 		light->GetSampleCount = point_light_get_sample_count;
 		light->GetSamples     = point_light_get_samples;
 		light->Illuminate     = point_light_illuminate;
+		light->Preprocess     = no_preprocess;
 		break;
 	}
 
@@ -172,19 +177,12 @@ void LgtSetDoubleSided(struct Light *light, int on_or_off)
 void LgtSetTexture(struct Light *light, struct Texture *texture)
 {
 	light->texture = texture;
-
-	/* TODO TEST */
-	save_sample_points2(light);
 }
 
 void LgtSetTranslate(struct Light *light,
 		double tx, double ty, double tz, double time)
 {
 	XfmPushTranslateSample(&light->transform_samples, tx, ty, tz, time);
-
-	light->position[0] = tx;
-	light->position[1] = ty;
-	light->position[2] = tz;
 }
 
 void LgtSetRotate(struct Light *light,
@@ -226,6 +224,11 @@ void LgtIlluminate(const struct LightSample *sample,
 {
 	const struct Light *light = sample->light;
 	light->Illuminate(light, sample, Ps, Cl);
+}
+
+int LgtPreprocess(struct Light *light)
+{
+	return light->Preprocess(light);
 }
 
 /* point light */
@@ -386,7 +389,111 @@ static void sphere_light_illuminate(const struct Light *light,
 	}
 }
 
+/* dome light */
+static int dome_light_get_sample_count(const struct Light *light)
+{
+	return light->sample_count;
+}
+
+static void dome_light_get_samples(const struct Light *light,
+		struct LightSample *samples, int max_samples)
+{
+	struct Transform transform_interp;
+	int nsamples = LgtGetSampleCount(light);
+	int i;
+
+	/* TODO time sampling */
+	XfmLerpTransformSample(&light->transform_samples, 0, &transform_interp);
+
+	nsamples = MIN(nsamples, max_samples);
+	for (i = 0; i < nsamples; i++) {
+		const struct DomeSample *dome_sample = &light->dome_samples[i];
+		double P_sample[] = {0, 0, 0};
+		double N_sample[] = {0, 0, 0};
+
+		P_sample[0] = dome_sample->dir[0] * FLT_MAX;
+		P_sample[1] = dome_sample->dir[1] * FLT_MAX;
+		P_sample[2] = dome_sample->dir[2] * FLT_MAX;
+		N_sample[0] = -1 * dome_sample->dir[0];
+		N_sample[1] = -1 * dome_sample->dir[1];
+		N_sample[2] = -1 * dome_sample->dir[2];
+
+		/* TODO cancel translate and scale */
+		XfmTransformPoint(&transform_interp, P_sample);
+		XfmTransformVector(&transform_interp, N_sample);
+
+		VEC3_COPY(samples[i].P, P_sample);
+		VEC3_COPY(samples[i].N, N_sample);
+		VEC3_COPY(samples[i].color, dome_sample->color);
+		samples[i].light = light;
+	}
+}
+
+static void dome_light_illuminate(const struct Light *light,
+		const struct LightSample *sample,
+		const double *Ps, float *Cl)
+{
+	Cl[0] = light->sample_intensity * sample->color[0];
+	Cl[1] = light->sample_intensity * sample->color[1];
+	Cl[2] = light->sample_intensity * sample->color[2];
+}
+
+static int dome_light_preprocess(struct Light *light)
+{
+	const int NSAMPLES = LgtGetSampleCount(light);
+	int XRES = 200;
+	int YRES = 100;
+	int i;
+
+	if (light->dome_samples != NULL) {
+		free(light->dome_samples);
+	}
+
+	light->dome_samples =
+			(struct DomeSample *) malloc(sizeof(struct DomeSample) * NSAMPLES);
+	for (i = 0; i < NSAMPLES; i++) {
+		struct DomeSample *sample = &light->dome_samples[i];
+		VEC2_SET(sample->uv, 1./NSAMPLES, 1./NSAMPLES);
+		VEC3_SET(sample->color, 1, .63, .63);
+		VEC3_SET(sample->dir, 1./NSAMPLES, 1, 1./NSAMPLES);
+		VEC3_NORMALIZE(sample->dir);
+	}
+
+	if (light->texture == NULL) {
+		/* TODO should be an error? */
+		return 0;
+	}
+
+	TexGetResolution(light->texture, &XRES, &YRES);
+	/* TODO parameteraize */
+	XRES /= 8;
+	YRES /= 8;
+
+	if (0) {
+		ImportanceSampling(light->texture, 0,
+				XRES, YRES,
+				light->dome_samples, NSAMPLES);
+	} else if (1) {
+		StratifiedImportanceSampling(light->texture, 0,
+				XRES, YRES,
+				light->dome_samples, NSAMPLES);
+	} else {
+		StructuredImportanceSampling(light->texture, 0,
+				XRES, YRES,
+				light->dome_samples, NSAMPLES);
+	}
+
+	return 0;
+}
+
+static int no_preprocess(struct Light *light)
+{
+	/* do nothing */
+	return 0;
+}
+
 /* TODO TEST */
+#if 0
 static int save_sample_points2(struct Light *light)
 {
 	const char *filename = "../sample_points.fb";
@@ -480,53 +587,5 @@ static int save_sample_points2(struct Light *light)
 
 	return 0;
 }
-
-/* dome light */
-static int dome_light_get_sample_count(const struct Light *light)
-{
-	return light->sample_count;
-}
-
-static void dome_light_get_samples(const struct Light *light,
-		struct LightSample *samples, int max_samples)
-{
-	struct Transform transform_interp;
-	int nsamples = LgtGetSampleCount(light);
-	int i;
-
-	/* TODO time sampling */
-	XfmLerpTransformSample(&light->transform_samples, 0, &transform_interp);
-
-	nsamples = MIN(nsamples, max_samples);
-	for (i = 0; i < nsamples; i++) {
-		const struct DomeSample *dome_sample = &light->dome_samples[i];
-		double P_sample[] = {0, 0, 0};
-		double N_sample[] = {0, 0, 0};
-
-		P_sample[0] = dome_sample->dir[0] * FLT_MAX;
-		P_sample[1] = dome_sample->dir[1] * FLT_MAX;
-		P_sample[2] = dome_sample->dir[2] * FLT_MAX;
-		N_sample[0] = -1 * dome_sample->dir[0];
-		N_sample[1] = -1 * dome_sample->dir[1];
-		N_sample[2] = -1 * dome_sample->dir[2];
-
-		/* TODO cancel translate and scale */
-		XfmTransformPoint(&transform_interp, P_sample);
-		XfmTransformVector(&transform_interp, N_sample);
-
-		VEC3_COPY(samples[i].P, P_sample);
-		VEC3_COPY(samples[i].N, N_sample);
-		VEC3_COPY(samples[i].color, dome_sample->color);
-		samples[i].light = light;
-	}
-}
-
-static void dome_light_illuminate(const struct Light *light,
-		const struct LightSample *sample,
-		const double *Ps, float *Cl)
-{
-	Cl[0] = light->sample_intensity * sample->color[0];
-	Cl[1] = light->sample_intensity * sample->color[1];
-	Cl[2] = light->sample_intensity * sample->color[2];
-}
+#endif
 

@@ -15,7 +15,6 @@ See LICENSE and README
 #include "FrameBuffer.h"
 #include "FrameBufferIO.h"
 
-#include "Array.h"
 struct SamplePoint {
 	int x, y;
 	int label;
@@ -27,6 +26,7 @@ static void make_histgram(struct Texture *texture,
 static int lookup_histgram(const double *histgram, int pixel_count, double key_value);
 static void index_to_uv(int xres, int yres, int index, float *uv);
 static void uv_to_dir(float u, float v, double *dir);
+static void xy_to_uv(int xres, int yres, int x, int y, float *uv);
 
 /* functions for structured importance sampling */
 static void setup_structured_importance_sampling(struct Texture *texture,
@@ -39,9 +39,6 @@ static void divide_into_layers(const double *illum_values, int nvalues,
 static void solve_connected_components(
 		int sample_xres, int sample_yres, const char *strata_id,
 		int *connected_label);
-static void save_fb(const char *filename, int max_depth,
-		int sample_xres, int sample_yres,
-		const char *strata_id, const int *connected_label);
 static void sortout_connected_label(int npixels,
 		int *connected_label, int *sorted_max_label);
 static void compute_connected_sample_count(const double *illum_values, int nvalues,
@@ -217,14 +214,7 @@ int StructuredImportanceSampling(struct Texture *texture, int seed,
 	for (i = 0; i < sample_count; i++) {
 		struct DomeSample *sample = &dome_samples[i];
 		TexLookup(texture, sample->uv[0], sample->uv[1], sample->color);
-		/*
-		printf("%d: (%g, %g)\n", i, sample->uv[0], sample->uv[1]);
-		*/
 	}
-
-	save_fb("../sis.fb", depth,
-			sample_xres, sample_yres,
-			strata_id, connected_label);
 
 	free(connected_sample_count);
 	free(connected_label);
@@ -237,22 +227,19 @@ int StructuredImportanceSampling(struct Texture *texture, int seed,
 static void make_histgram(struct Texture *texture,
 		int sample_xres, int sample_yres, double *histgram)
 {
+	const int NPIXELS = sample_xres * sample_yres;
 	double sum = 0;
-	int index = 0;
-	int x, y;
+	int i;
 
-	for (y = 0; y < sample_yres; y++) {
-		for (x = 0; x < sample_xres; x++) {
-			float color[3] = {0};
-			float uv[2] = {0};
+	for (i = 0; i < NPIXELS; i++) {
+		float color[3] = {0};
+		float uv[2] = {0};
 
-			index_to_uv(sample_xres, sample_yres, index, uv);
-			TexLookup(texture, uv[0], uv[1], color);
+		index_to_uv(sample_xres, sample_yres, i, uv);
+		TexLookup(texture, uv[0], uv[1], color);
 
-			sum += .2989 * color[0] + .5866 * color[1] + .1145 * color[2];
-			histgram[index] = sum;
-			index++;
-		}
+		sum += .2989 * color[0] + .5866 * color[1] + .1145 * color[2];
+		histgram[i] = sum;
 	}
 }
 
@@ -273,6 +260,12 @@ static void index_to_uv(int xres, int yres, int index, float *uv)
 	const int x = (int) (index % xres);
 	const int y = (int) (index / xres);
 
+	uv[0] = (.5 + x) / xres;
+	uv[1] = 1. - ((.5 + y) / yres);
+}
+
+static void xy_to_uv(int xres, int yres, int x, int y, float *uv)
+{
 	uv[0] = (.5 + x) / xres;
 	uv[1] = 1. - ((.5 + y) / yres);
 }
@@ -491,6 +484,7 @@ static void compute_connected_sample_count(const double *illum_values, int nvalu
 
 	free(connected_domega);
 	free(connected_illumi);
+	free(connected_area);
 }
 
 static void generate_dome_samples(int sample_xres, int sample_yres,
@@ -547,14 +541,9 @@ static void generate_dome_samples(int sample_xres, int sample_yres,
 			if (ngen == 0) {
 				continue;
 			}
-			/*
-			connected_label[Y[x0].y * sample_xres + Y[x0].x] = -1;
-			dome_samples[next_dome_sample].uv
-			*/
 			{
 				struct DomeSample sample = {{0}};
-				const int index = Y[x0].y * sample_xres + Y[x0].x;
-				index_to_uv(sample_xres, sample_yres, index, sample.uv);
+				xy_to_uv(sample_xres, sample_yres, Y[x0].x, Y[x0].y, sample.uv);
 				uv_to_dir(sample.uv[0], sample.uv[1], sample.dir);
 				dome_samples[next_dome_sample] = sample;
 				next_dome_sample++;
@@ -585,59 +574,21 @@ static void generate_dome_samples(int sample_xres, int sample_yres,
 				X[nX] = Y[p_max];
 				nX++;
 
-				/*
-				connected_label[Y[p_max].y * sample_xres + Y[p_max].x] = -1;
-				*/
 				{
 					struct DomeSample sample = {{0}};
-					const int index = Y[p_max].y * sample_xres + Y[p_max].x;
-					index_to_uv(sample_xres, sample_yres, index, sample.uv);
+					xy_to_uv(sample_xres, sample_yres, Y[p_max].x, Y[p_max].y, sample.uv);
 					uv_to_dir(sample.uv[0], sample.uv[1], sample.dir);
 					dome_samples[next_dome_sample] = sample;
 					next_dome_sample++;
 				}
 			}
 		}
+		free(X);
 	}
 
 	free(samples);
 	free(offsets);
 	free(nsamples);
-}
-
-static void save_fb(const char *filename, int max_depth,
-		int sample_xres, int sample_yres,
-		const char *strata_id, const int *connected_label)
-{
-	struct FrameBuffer *fb = FbNew();
-	int x, y;
-
-	FbResize(fb, sample_xres, sample_yres, 4);
-
-	for (y = 0; y < sample_yres; y++) {
-		for (x = 0; x < sample_xres; x++) {
-			const double id = (double) connected_label[y * sample_xres + x];
-			const double sid = (double) strata_id[y * sample_xres + x];
-			struct Color4 val;
-
-			srand(id+9);
-			val.r = (double) rand()/RAND_MAX;
-			val.g = (double) rand()/RAND_MAX;
-			val.b = (double) rand()/RAND_MAX;
-			val.a = (sid / (max_depth - 1.));
-			val.a = 0;
-			if (id < 0) {
-				val.r = 0;
-				val.g = 0;
-				val.b = 0;
-				val.a = 1;
-			}
-			FbSetColor4(fb, x, y, 0, &val);
-		}
-	}
-
-	FbSaveCroppedData(fb, filename);
-	FbFree(fb);
 }
 
 static int compare_sample_point(const void *ptr0, const void *ptr1)

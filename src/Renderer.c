@@ -12,6 +12,7 @@ See LICENSE and README
 #include "Camera.h"
 #include "Filter.h"
 #include "Vector.h"
+#include "Light.h"
 #include "Tiler.h"
 #include "Timer.h"
 #include "Ray.h"
@@ -27,8 +28,9 @@ See LICENSE and README
 struct Renderer {
 	struct Camera *camera;
 	struct FrameBuffer *framebuffers;
-	struct ObjectInstance *object;
 	struct ObjectGroup *target_objects;
+	struct Light **target_lights;
+	int nlights;
 
 	int resolution[2];
 	int render_region[4];
@@ -51,6 +53,7 @@ struct Renderer {
 
 static int prepare_render(struct Renderer *renderer);
 static int render_scene(struct Renderer *renderer);
+static int preprocess_lights(struct Renderer *renderer);
 
 struct Renderer *RdrNew(void)
 {
@@ -61,8 +64,9 @@ struct Renderer *RdrNew(void)
 
 	renderer->camera = NULL;
 	renderer->framebuffers = NULL;
-	renderer->object = NULL;
 	renderer->target_objects = NULL;
+	renderer->target_lights = NULL;
+	renderer->nlights = 0;
 
 	RdrSetResolution(renderer, 320, 240);
 	RdrSetPixelSamples(renderer, 3, 3);
@@ -210,6 +214,14 @@ void RdrSetTargetObjects(struct Renderer *renderer, struct ObjectGroup *grp)
 	renderer->target_objects = grp;
 }
 
+void RdrSetTargetLights(struct Renderer *renderer, struct Light **lights, int nlights)
+{
+	assert(lights != NULL);
+	assert(nlights > 0);
+	renderer->target_lights = lights;
+	renderer->nlights = nlights;
+}
+
 int RdrRender(struct Renderer *renderer)
 {
 	int err = 0;
@@ -266,11 +278,11 @@ static int render_scene(struct Renderer *renderer)
 
 	int x, y;
 	struct Sample *pixelsmps = NULL;
-	struct Sample *smp;
+	struct Sample *smp = NULL;
 	struct Ray ray;
 	struct Timer timer;
 	struct Elapse elapse;
-	struct Progress *progress;
+	struct Progress *progress = NULL;
 
 	/* aux */
 	struct Sampler *sampler = NULL;
@@ -280,6 +292,7 @@ static int render_scene(struct Renderer *renderer)
 
 	int region[4] = {0};
 	int render_state = 0;
+	int err = 0;
 
 	const int xres = renderer->resolution[0];
 	const int yres = renderer->resolution[1];
@@ -336,6 +349,17 @@ static int render_scene(struct Renderer *renderer)
 
 	/* samples for a pixel */
 	pixelsmps = SmpAllocatePixelSamples(sampler);
+
+	/* preprocessing lights */
+	printf("Preprocessing lights ...\n");
+	TimerStart(&timer);
+	err = preprocess_lights(renderer);
+	if (err) {
+		render_state = -1;
+		goto cleanup_and_exit;
+	}
+	elapse = TimerElapsed(&timer);
+	printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
 
 	/* Run sampling */
 	TimerStart(&timer);
@@ -414,5 +438,24 @@ cleanup_and_exit:
 	TlrFree(tiler);
 
 	return render_state;
+}
+
+static int preprocess_lights(struct Renderer *renderer)
+{
+	int N = 0;
+	int i;
+
+	N = renderer->nlights;
+	for (i = 0; i < N; i++) {
+		struct Light *light = renderer->target_lights[i];
+		const int err = LgtPreprocess(light);
+
+		if (err) {
+			/* TODO error handling */
+			return -1;
+		}
+	}
+
+	return 0;
 }
 

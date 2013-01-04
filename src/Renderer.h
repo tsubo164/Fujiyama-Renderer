@@ -14,6 +14,7 @@ struct Renderer;
 struct FrameBuffer;
 struct ObjectGroup;
 struct Camera;
+struct Light;
 
 extern struct Renderer *RdrNew(void);
 extern void RdrFree(struct Renderer *renderer);
@@ -38,6 +39,7 @@ extern void RdrSetRaymarchRefractStep(struct Renderer *renderer, double step);
 extern void RdrSetCamera(struct Renderer *renderer, struct Camera *cam);
 extern void RdrSetFrameBuffers(struct Renderer *renderer, struct FrameBuffer *fb);
 extern void RdrSetTargetObjects(struct Renderer *renderer, struct ObjectGroup *grp);
+extern void RdrSetTargetLights(struct Renderer *renderer, struct Light **lights, int nlights);
 
 extern int RdrRender(struct Renderer *renderer);
 

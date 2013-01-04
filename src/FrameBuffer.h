@@ -26,13 +26,6 @@ extern int FbIsEmpty(const struct FrameBuffer *fb);
 extern float *FbGetWritable(struct FrameBuffer *fb, int x, int y, int z);
 extern const float *FbGetReadOnly(const struct FrameBuffer *fb, int x, int y, int z);
 
-/* TODO TEST */
-struct Color4 {
-	float r, g, b, a;
-};
-extern void FbSetColor4(struct FrameBuffer *fb, int x, int y, int z, const struct Color4 *rgba);
-extern void FbGetColor4(const struct FrameBuffer *fb, int x, int y, int z, struct Color4 *rgba);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
