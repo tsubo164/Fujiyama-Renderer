@@ -4,7 +4,7 @@
 # NOTE this scene renders volumes on ONLY v.0.0.3
 # On v.0.0.4 or higher, it renders floor and bunny
 # though there is still a empty volume primitive.
-# Copyright (c) 2011-2012 Hiroshi Tsubokawa
+# Copyright (c) 2011-2013 Hiroshi Tsubokawa
 
 import fujiyama
 

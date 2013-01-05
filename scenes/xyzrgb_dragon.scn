@@ -1,5 +1,5 @@
 # 1 xyzrgb_dragon with 32 point lights
-# Copyright (c) 2011-2012 Hiroshi Tsubokawa
+# Copyright (c) 2011-2013 Hiroshi Tsubokawa
 
 #plugins
 OpenPlugin PlasticShader.so

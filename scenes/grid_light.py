@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # 1 armadillo with 1 grid light
-# Copyright (c) 2011-2012 Hiroshi Tsubokawa
+# Copyright (c) 2011-2013 Hiroshi Tsubokawa
 
 import fujiyama
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # 1 wisps line with 1 point light
-# Copyright (c) 2011-2012 Hiroshi Tsubokawa
+# Copyright (c) 2011-2013 Hiroshi Tsubokawa
 
 import fujiyama
 

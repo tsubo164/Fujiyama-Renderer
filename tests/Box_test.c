@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2011-2012 Hiroshi Tsubokawa
+Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
  */
 
