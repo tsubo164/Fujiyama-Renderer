@@ -303,10 +303,10 @@ sample: scenes/cube.fb bin/fbview
 scenes/cube.fb: scenes/cube scenes/cube.mesh
 	env LD_LIBRARY_PATH=lib scenes/cube
 scenes/cube: scenes/cube.c lib/libscene.so lib/PlasticShader.so
-	$(CC) $(CFLAGS) -Llib -lscene -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) -lscene
 scenes/cube.mesh: scenes/cube.ply bin/ply2mesh
 	env LD_LIBRARY_PATH=lib bin/ply2mesh $< $@
-samples := scenes/cube.fb scenes/cube.mesh scenes/cube
+sample_outputs := scenes/cube.fb scenes/cube.mesh scenes/cube
 
 #------------------------------------------------------------------------------
 all_: $(all_depends) $(main_programs)
@@ -345,7 +345,7 @@ clean:
 	-$(RM) $(check_programs)
 	-$(RM) $(check_objects)
 	-$(RM) $(all_depends)
-	-$(RM) $(samples)
+	-$(RM) $(sample_outputs)
 	-$(RM) $(pyc_files)
 
 ifneq "$(MAKECMDGOALS)" "clean"

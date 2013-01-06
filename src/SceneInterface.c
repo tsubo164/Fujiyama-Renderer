@@ -1365,19 +1365,10 @@ static int get_property_list(const char *type_name,
 	{
 		int i = 0;
 		for (prop = help_props; prop->name != NULL; prop++, i++) {
-			switch (prop->type) {
-			case PROP_SCALAR:      prop_types[i] = "scalar"; break;
-			case PROP_VECTOR2:     prop_types[i] = "vector2"; break;
-			case PROP_VECTOR3:     prop_types[i] = "vector3"; break;
-			case PROP_VECTOR4:     prop_types[i] = "vector4"; break;
-			case PROP_TURBULENCE:  prop_types[i] = "Turbulence"; break;
-			case PROP_TEXTURE:     prop_types[i] = "Texture"; break;
-			case PROP_SHADER:      prop_types[i] = "Shader"; break;
-			case PROP_VOLUME:      prop_types[i] = "Volume"; break;
-			default:               prop_types[i] = NULL; break;
-			}
+			prop_types[i] = PropTypeString(prop->type);
 			prop_names[i] = prop->name;
 		}
+		/* sentinels */
 		prop_types[i] = NULL;
 		prop_names[i] = NULL;
 

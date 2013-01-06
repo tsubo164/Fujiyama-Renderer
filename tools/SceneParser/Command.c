@@ -490,6 +490,7 @@ static int print_property_list(const char *type_name)
 	}
 
 	printf("#   %s Properties\n", type_name);
+	printf("#   %15.15s   %-20.20s\n", "(Type)", "(Name)");
 	for (i = 0; i < nprops; i++) {
 		printf("#   %15.15s : %-20.20s\n", prop_types[i], prop_names[i]);
 	}

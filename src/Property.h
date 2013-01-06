@@ -57,6 +57,8 @@ struct Property {
 	int (*SetProperty)(void *self, const struct PropertyValue *value);
 };
 
+extern const char *PropTypeString(int property_type);
+
 extern struct PropertyValue PropScalar(double v0);
 extern struct PropertyValue PropVector2(double v0, double v1);
 extern struct PropertyValue PropVector3(double v0, double v1, double v2);

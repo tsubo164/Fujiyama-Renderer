@@ -25,6 +25,8 @@ struct PlasticShader {
 	float opacity;
 
 	int do_reflect;
+
+	struct Texture *diffuse_map;
 };
 
 static void *MyNew(void);
@@ -44,15 +46,17 @@ static int set_roughness(void *self, const struct PropertyValue *value);
 static int set_reflect(void *self, const struct PropertyValue *value);
 static int set_ior(void *self, const struct PropertyValue *value);
 static int set_opacity(void *self, const struct PropertyValue *value);
+static int set_diffuse_map(void *self, const struct PropertyValue *value);
 
 static const struct Property MyProperties[] = {
-	{PROP_VECTOR3, "diffuse",   set_diffuse},
-	{PROP_VECTOR3, "specular",  set_specular},
-	{PROP_VECTOR3, "ambient",   set_ambient},
-	{PROP_SCALAR,  "roughness", set_roughness},
-	{PROP_VECTOR3, "reflect",   set_reflect},
-	{PROP_SCALAR,  "ior",       set_ior},
-	{PROP_SCALAR,  "opacity",   set_opacity},
+	{PROP_VECTOR3, "diffuse",     set_diffuse},
+	{PROP_VECTOR3, "specular",    set_specular},
+	{PROP_VECTOR3, "ambient",     set_ambient},
+	{PROP_SCALAR,  "roughness",   set_roughness},
+	{PROP_VECTOR3, "reflect",     set_reflect},
+	{PROP_SCALAR,  "ior",         set_ior},
+	{PROP_SCALAR,  "opacity",     set_opacity},
+	{PROP_TEXTURE, "diffuse_map", set_diffuse_map},
 	{PROP_NONE, NULL, NULL}
 };
 
@@ -95,6 +99,8 @@ static void *MyNew(void)
 
 	plastic->do_reflect = 1;
 
+	plastic->diffuse_map = NULL;
+
 	return plastic;
 }
 
@@ -112,6 +118,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	const struct PlasticShader *plastic = (struct PlasticShader *) self;
 	float diff[3] = {0};
 	float spec[3] = {0};
+	float diff_map[3] = {1, 1, 1};
 	int i = 0;
 
 	struct LightSample *samples = NULL;
@@ -140,10 +147,15 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	/* free samples */
 	SlFreeLightSamples(samples);
 
+	/* diffuse map */
+	if (plastic->diffuse_map != NULL) {
+		TexLookup(plastic->diffuse_map, in->uv[0], in->uv[1], diff_map);
+	}
+
 	/* Cs */
-	out->Cs[0] = diff[0] * plastic->diffuse[0] + spec[0];
-	out->Cs[1] = diff[1] * plastic->diffuse[1] + spec[1];
-	out->Cs[2] = diff[2] * plastic->diffuse[2] + spec[2];
+	out->Cs[0] = diff[0] * plastic->diffuse[0] * diff_map[0] + spec[0];
+	out->Cs[1] = diff[1] * plastic->diffuse[1] * diff_map[1] + spec[1];
+	out->Cs[2] = diff[2] * plastic->diffuse[2] * diff_map[2] + spec[2];
 
 	/* reflect */
 	if (plastic->do_reflect) {
@@ -257,6 +269,15 @@ static int set_opacity(void *self, const struct PropertyValue *value)
 
 	opacity = CLAMP(opacity, 0, 1);
 	plastic->opacity = opacity;
+
+	return 0;
+}
+
+static int set_diffuse_map(void *self, const struct PropertyValue *value)
+{
+	struct PlasticShader *plastic = (struct PlasticShader *) self;
+
+	plastic->diffuse_map = value->texture;
 
 	return 0;
 }

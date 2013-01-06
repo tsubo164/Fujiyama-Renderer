@@ -15,6 +15,22 @@ static int compare_property_sample(const void *ptr0, const void *ptr1);
 static void push_sample(struct PropertySampleList *list, const struct PropertySample *sample);
 static void sort_by_sample_time(struct PropertySampleList *list);
 
+const char *PropTypeString(int property_type)
+{
+	switch (property_type) {
+	case PROP_SCALAR:      return "Scalar";
+	case PROP_VECTOR2:     return "Vector2";
+	case PROP_VECTOR3:     return "Vector3";
+	case PROP_VECTOR4:     return "Vector4";
+	case PROP_OBJECTGROUP: return "ObjectGroup";
+	case PROP_TURBULENCE:  return "Turbulence";
+	case PROP_TEXTURE:     return "Texture";
+	case PROP_SHADER:      return "Shader";
+	case PROP_VOLUME:      return "Volume";
+	default:               return NULL;
+	}
+}
+
 struct PropertyValue PropScalar(double v0)
 {
 	struct PropertyValue value = INIT_PROPERTYVALUE;
