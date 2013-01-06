@@ -1108,10 +1108,10 @@ static int set_Light_double_sided(void *self, const struct PropertyValue *value)
 	return 0;
 }
 
-static int set_Light_texture(void *self, const struct PropertyValue *value)
+static int set_Light_environment_map(void *self, const struct PropertyValue *value)
 {
 	struct Light *light = (struct Light *) self;
-	LgtSetTexture(light, value->texture);
+	LgtSetEnvironmentMap(light, value->texture);
 	return 0;
 }
 
@@ -1218,7 +1218,7 @@ static const struct Property Light_properties[] = {
 	{PROP_SCALAR,  "intensity",       set_Light_intensity},
 	{PROP_SCALAR,  "sample_count",    set_Light_sample_count},
 	{PROP_SCALAR,  "double_sided",    set_Light_double_sided},
-	{PROP_TEXTURE, "texture",         set_Light_texture},
+	{PROP_TEXTURE, "environment_map", set_Light_environment_map},
 	{PROP_SCALAR,  "transform_order", set_Light_transform_order},
 	{PROP_SCALAR,  "rotate_order",    set_Light_rotate_order},
 	{PROP_VECTOR3, "translate",       set_Light_translate},

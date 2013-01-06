@@ -37,7 +37,7 @@ extern void LgtSetIntensity(struct Light *light, double intensity);
 extern void LgtSetSampleCount(struct Light *light, int sample_count);
 extern void LgtSetDoubleSided(struct Light *light, int on_or_off);
 
-extern void LgtSetTexture(struct Light *light, struct Texture *texture);
+extern void LgtSetEnvironmentMap(struct Light *light, struct Texture *texture);
 
 /* transformation */
 extern void LgtSetTranslate(struct Light *light,

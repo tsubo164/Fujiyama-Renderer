@@ -1,0 +1,19 @@
+Fujiyama Renderer v0.1.1(Alpha) Release Notes
+=============================================
+
+New features since v0.1.0
+-------------------------
+ * Dome light has been implemented. This take an HDRI as 'environment_map' property
+   and generates light sources from sampled points.
+
+ * 'diffuse_map' property has been added to PlasticShader to give a diffuse color map.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Sub surface scattering
+ * Deep shadow
+ * Displacement shader
+ * Subdivision surface
+ * Alembic support

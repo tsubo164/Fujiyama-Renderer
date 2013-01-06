@@ -14,6 +14,11 @@ See LICENSE and README
 
 static const char USAGE[] =
 "Usage: ply2mesh [options] inputfile(*.ply) outputfile(*.mesh)\n"
+"Property names in ply file should be the below\n"
+"  x, y, z    : position\n"
+"  nx, ny, nz : normals\n"
+"  uv1, uv2   : uv\n"
+"\n"
 "Options:\n"
 "  --help         Display this information\n"
 "\n";

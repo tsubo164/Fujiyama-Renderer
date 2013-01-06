@@ -268,8 +268,10 @@ static int scan_number(struct CommandArgument *arg)
 	char *end = NULL;
 	const int is_enum = enum_to_num(arg);
 
-	if (is_enum)
+	if (is_enum) {
+		/* arg->num is already set from enum string */
 		return 0;
+	}
 
 	arg->num = strtod(arg->str, &end);
 	if (*end != '\0') {

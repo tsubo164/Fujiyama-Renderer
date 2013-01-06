@@ -29,7 +29,7 @@ struct Light {
 	int sample_count;
 	float sample_intensity;
 
-	struct Texture *texture;
+	struct Texture *environment_map;
 	/* TODO tmp solution for dome light data */
 	struct DomeSample *dome_samples;
 
@@ -96,7 +96,7 @@ struct Light *LgtNew(int light_type)
 	light->sample_count = 16;
 	light->sample_intensity = light->intensity / light->sample_count;
 
-	light->texture = NULL;
+	light->environment_map = NULL;
 	light->dome_samples = NULL;
 	XorInit(&light->xr);
 
@@ -174,9 +174,9 @@ void LgtSetDoubleSided(struct Light *light, int on_or_off)
 	light->double_sided = (on_or_off != 0);
 }
 
-void LgtSetTexture(struct Light *light, struct Texture *texture)
+void LgtSetEnvironmentMap(struct Light *light, struct Texture *texture)
 {
-	light->texture = texture;
+	light->environment_map = texture;
 }
 
 void LgtSetTranslate(struct Light *light,
@@ -459,26 +459,26 @@ static int dome_light_preprocess(struct Light *light)
 		VEC3_NORMALIZE(sample->dir);
 	}
 
-	if (light->texture == NULL) {
+	if (light->environment_map == NULL) {
 		/* TODO should be an error? */
 		return 0;
 	}
 
-	TexGetResolution(light->texture, &XRES, &YRES);
+	TexGetResolution(light->environment_map, &XRES, &YRES);
 	/* TODO parameteraize */
 	XRES /= 8;
 	YRES /= 8;
 
 	if (0) {
-		ImportanceSampling(light->texture, 0,
+		ImportanceSampling(light->environment_map, 0,
 				XRES, YRES,
 				light->dome_samples, NSAMPLES);
 	} else if (1) {
-		StratifiedImportanceSampling(light->texture, 0,
+		StratifiedImportanceSampling(light->environment_map, 0,
 				XRES, YRES,
 				light->dome_samples, NSAMPLES);
 	} else {
-		StructuredImportanceSampling(light->texture, 0,
+		StructuredImportanceSampling(light->environment_map, 0,
 				XRES, YRES,
 				light->dome_samples, NSAMPLES);
 	}
@@ -508,10 +508,10 @@ static int save_sample_points2(struct Light *light)
 	struct Timer timer;
 	struct Elapse elapse;
 
-	if (light->texture == NULL)
+	if (light->environment_map == NULL)
 		return -1;
 
-	TexGetResolution(light->texture, &XRES, &YRES);
+	TexGetResolution(light->environment_map, &XRES, &YRES);
 	XRES /= 8;
 	YRES /= 8;
 	/*
@@ -531,15 +531,15 @@ static int save_sample_points2(struct Light *light)
 	TimerStart(&timer);
 
 	if (0) {
-		ImportanceSampling(light->texture, 0,
+		ImportanceSampling(light->environment_map, 0,
 				XRES, YRES,
 				light->dome_samples, NSAMPLES);
 	} else if (1) {
-		StratifiedImportanceSampling(light->texture, 0,
+		StratifiedImportanceSampling(light->environment_map, 0,
 				XRES, YRES,
 				light->dome_samples, NSAMPLES);
 	} else {
-		StructuredImportanceSampling(light->texture, 0,
+		StructuredImportanceSampling(light->environment_map, 0,
 				XRES, YRES,
 				light->dome_samples, NSAMPLES);
 	}
@@ -555,7 +555,7 @@ static int save_sample_points2(struct Light *light)
 				struct Color4 C_fb = {0};
 				float C_tex[3] = {0};
 
-				TexLookup(light->texture,
+				TexLookup(light->environment_map,
 						(.5 + x) / XRES,
 						1 - (.5 + y) / YRES,
 						C_tex);

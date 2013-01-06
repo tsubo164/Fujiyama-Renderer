@@ -38,6 +38,7 @@ designed to handle production image rendering.
   + Point light - traditional point light
   + Grid light - typical area light with single/double-sided option
   + Sphere light - another area light
+  + Dome light - supports IBL with environment map
 
 * Animation
   + Camera motion blur - sampling non-linear camera motion

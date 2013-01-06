@@ -24,7 +24,7 @@ si.SetProperty1('light1', 'sample_count', 256)
 
 #Texture
 si.NewTexture('tex1', '../../mip/forrest_salzburg02.mip')
-si.AssignTexture('light1', 'texture', 'tex1');
+si.AssignTexture('light1', 'environment_map', 'tex1');
 
 #Shader
 si.NewShader('happy_shader', 'PlasticShader')
