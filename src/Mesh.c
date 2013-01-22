@@ -17,18 +17,31 @@ See LICENSE and README
 static int triangle_ray_intersect(const void *prim_set, int prim_id, double time,
 		const struct Ray *ray, struct Intersection *isect);
 static void triangle_bounds(const void *prim_set, int prim_id, double *bounds);
+static void triangleset_bounds(const void *prim_set, double *bounds);
+static int triangle_count(const void *prim_set);
+
+struct Mesh {
+	int nverts;
+	int nfaces;
+
+	double *P;
+	double *N;
+	float *Cd;
+	float *uv;
+	int *indices;
+
+	double bounds[6];
+};
 
 struct Mesh *MshNew(void)
 {
-	struct Mesh *mesh;
-
-	mesh = (struct Mesh *) malloc(sizeof(struct Mesh));
+	struct Mesh *mesh = (struct Mesh *) malloc(sizeof(struct Mesh));
 	if (mesh == NULL)
 		return NULL;
 
 	mesh->nverts = 0;
 	mesh->nfaces = 0;
-	BOX3_SET(mesh->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+	BOX3_SET(mesh->bounds, 0, 0, 0, 0, 0, 0);
 
 	mesh->P = NULL;
 	mesh->N = NULL;
@@ -51,6 +64,30 @@ void MshFree(struct Mesh *mesh)
 	free(mesh->indices);
 
 	free(mesh);
+}
+
+void MshClear(struct Mesh *mesh)
+{
+	if (mesh->P != NULL)
+		free(mesh->P);
+	if (mesh->N != NULL)
+		free(mesh->N);
+	if (mesh->Cd != NULL)
+		free(mesh->Cd);
+	if (mesh->uv != NULL)
+		free(mesh->uv);
+	if (mesh->indices != NULL)
+		free(mesh->indices);
+
+	mesh->nverts = 0;
+	mesh->nfaces = 0;
+	BOX3_SET(mesh->bounds, 0, 0, 0, 0, 0, 0);
+
+	mesh->P = NULL;
+	mesh->N = NULL;
+	mesh->Cd = NULL;
+	mesh->uv = NULL;
+	mesh->indices = NULL;
 }
 
 void MshComputeBounds(struct Mesh *mesh)
@@ -97,17 +134,97 @@ void *MshAllocateFace(struct Mesh *mesh, const char *attr_name, int nfaces)
 	return ret;
 }
 
-void MshGetFaceVertex(const struct Mesh *mesh, int face_index,
-		const double **v0, const double **v1, const double **v2)
+void MshGetFaceVertexPosition(const struct Mesh *mesh, int face_index,
+		double *P0, double *P1, double *P2)
 {
 	int i0, i1, i2;
+	double *p0, *p1, *p2;
 
 	i0 = VEC3_NTH(mesh->indices, face_index)[0];
 	i1 = VEC3_NTH(mesh->indices, face_index)[1];
 	i2 = VEC3_NTH(mesh->indices, face_index)[2];
-	*v0 = VEC3_NTH(mesh->P, i0);
-	*v1 = VEC3_NTH(mesh->P, i1);
-	*v2 = VEC3_NTH(mesh->P, i2);
+	p0 = VEC3_NTH(mesh->P, i0);
+	p1 = VEC3_NTH(mesh->P, i1);
+	p2 = VEC3_NTH(mesh->P, i2);
+
+	VEC3_COPY(P0, p0);
+	VEC3_COPY(P1, p1);
+	VEC3_COPY(P2, p2);
+}
+
+void MshGetFaceVertexNormal(const struct Mesh *mesh, int face_index,
+		double *N0, double *N1, double *N2)
+{
+	int i0, i1, i2;
+	double *n0, *n1, *n2;
+
+	i0 = VEC3_NTH(mesh->indices, face_index)[0];
+	i1 = VEC3_NTH(mesh->indices, face_index)[1];
+	i2 = VEC3_NTH(mesh->indices, face_index)[2];
+	n0 = VEC3_NTH(mesh->N, i0);
+	n1 = VEC3_NTH(mesh->N, i1);
+	n2 = VEC3_NTH(mesh->N, i2);
+
+	VEC3_COPY(N0, n0);
+	VEC3_COPY(N1, n1);
+	VEC3_COPY(N2, n2);
+}
+
+void MshSetVertexPosition(struct Mesh *mesh, int index, const double *P)
+{
+	if (mesh->P == NULL)
+		return;
+	if (index < 0 || index >= mesh->nverts)
+		return;
+
+	mesh->P[3*index + 0] = P[0];
+	mesh->P[3*index + 1] = P[1];
+	mesh->P[3*index + 2] = P[2];
+}
+
+void MshSetVertexNormal(struct Mesh *mesh, int index, const double *N)
+{
+	if (mesh->N == NULL)
+		return;
+	if (index < 0 || index >= mesh->nverts)
+		return;
+
+	mesh->N[3*index + 0] = N[0];
+	mesh->N[3*index + 1] = N[1];
+	mesh->N[3*index + 2] = N[2];
+}
+
+void MshSetVertexTexture(struct Mesh *mesh, int index, const float *uv)
+{
+	if (mesh->uv == NULL)
+		return;
+	if (index < 0 || index >= mesh->nverts)
+		return;
+
+	mesh->uv[2*index + 0] = uv[0];
+	mesh->uv[2*index + 1] = uv[1];
+}
+
+void MshSetFaceVertexIndices(struct Mesh *mesh, int index, const int *indices)
+{
+	if (mesh->indices == NULL)
+		return;
+	if (index < 0 || index >= mesh->nfaces)
+		return;
+
+	mesh->indices[3*index + 0] = indices[0];
+	mesh->indices[3*index + 1] = indices[1];
+	mesh->indices[3*index + 2] = indices[2];
+}
+
+int MshGetVertexCount(const struct Mesh *mesh)
+{
+	return mesh->nverts;
+}
+
+int MshGetFaceCount(const struct Mesh *mesh)
+{
+	return mesh->nfaces;
 }
 
 void MshGetPrimitiveSet(const struct Mesh *mesh, struct PrimitiveSet *primset)
@@ -115,17 +232,17 @@ void MshGetPrimitiveSet(const struct Mesh *mesh, struct PrimitiveSet *primset)
 	MakePrimitiveSet(primset,
 			"Mesh",
 			mesh,
-			mesh->nfaces,
-			mesh->bounds,
 			triangle_ray_intersect,
-			triangle_bounds);
+			triangle_bounds,
+			triangleset_bounds,
+			triangle_count);
 }
 
 static int triangle_ray_intersect(const void *prim_set, int prim_id, double time,
 		const struct Ray *ray, struct Intersection *isect)
 {
 	const struct Mesh *mesh = (const struct Mesh *) prim_set;
-	const double *v0, *v1, *v2;
+	const double *P0, *P1, *P2;
 	const double *N0, *N1, *N2;
 	int i0, i1, i2;
 	double u, v;
@@ -136,12 +253,12 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
 	i0 = VEC3_NTH(mesh->indices, prim_id)[0];
 	i1 = VEC3_NTH(mesh->indices, prim_id)[1];
 	i2 = VEC3_NTH(mesh->indices, prim_id)[2];
-	v0 = VEC3_NTH(mesh->P, i0);
-	v1 = VEC3_NTH(mesh->P, i1);
-	v2 = VEC3_NTH(mesh->P, i2);
+	P0 = VEC3_NTH(mesh->P, i0);
+	P1 = VEC3_NTH(mesh->P, i1);
+	P2 = VEC3_NTH(mesh->P, i2);
 
 	hit = TriRayIntersect(
-			v0, v1, v2,
+			P0, P1, P2,
 			ray->orig, ray->dir, DO_NOT_CULL_BACKFACES,
 			&t_hit, &u, &v);
 
@@ -161,7 +278,7 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
 	/* UV = (1-u-v) * UV0 + u * UV1 + v * UV2 */
 	if (mesh->uv != NULL) {
 		const float *uv0, *uv1, *uv2;
-		const double t = 1-u-v;
+		const float t = 1-u-v;
 		uv0 = VEC2_NTH(mesh->uv, i0);
 		uv1 = VEC2_NTH(mesh->uv, i1);
 		uv2 = VEC2_NTH(mesh->uv, i2);
@@ -184,9 +301,28 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
 static void triangle_bounds(const void *prim_set, int prim_id, double *bounds)
 {
 	const struct Mesh *mesh = (const struct Mesh *) prim_set;
-	const double *v0, *v1, *v2;
+	const double *p0, *p1, *p2;
+	int i0, i1, i2;
 
-	MshGetFaceVertex(mesh, prim_id, &v0, &v1, &v2);
-	TriComputeBounds(bounds, v0, v1, v2);
+	i0 = VEC3_NTH(mesh->indices, prim_id)[0];
+	i1 = VEC3_NTH(mesh->indices, prim_id)[1];
+	i2 = VEC3_NTH(mesh->indices, prim_id)[2];
+	p0 = VEC3_NTH(mesh->P, i0);
+	p1 = VEC3_NTH(mesh->P, i1);
+	p2 = VEC3_NTH(mesh->P, i2);
+
+	TriComputeBounds(bounds, p0, p1, p2);
+}
+
+static void triangleset_bounds(const void *prim_set, double *bounds)
+{
+	const struct Mesh *mesh = (const struct Mesh *) prim_set;
+	BOX3_COPY(bounds, mesh->bounds);
+}
+
+static int triangle_count(const void *prim_set)
+{
+	const struct Mesh *mesh = (const struct Mesh *) prim_set;
+	return mesh->nfaces;
 }
 

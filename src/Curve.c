@@ -32,6 +32,8 @@ struct Bezier3 {
 static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
 		const struct Ray *ray, struct Intersection *isect);
 static void curve_bounds(const void *prim_set, int prim_id, double *bounds);
+static void curveset_bounds(const void *prim_set, double *bounds);
+static int curve_count(const void *prim_set);
 
 /* bezier curve interfaces */
 static double get_bezier3_max_radius(const struct Bezier3 *bezier);
@@ -180,10 +182,10 @@ void CrvGetPrimitiveSet(const struct Curve *curve, struct PrimitiveSet *primset)
 	MakePrimitiveSet(primset,
 			"Curve",
 			curve,
-			curve->ncurves,
-			curve->bounds,
 			curve_ray_intersect,
-			curve_bounds);
+			curve_bounds,
+			curveset_bounds,
+			curve_count);
 }
 
 static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
@@ -248,6 +250,18 @@ static void curve_bounds(const void *prim_set, int prim_id, double *bounds)
 
 	get_bezier3(curve, prim_id, &bezier);
 	get_bezier3_bounds(&bezier, bounds);
+}
+
+static void curveset_bounds(const void *prim_set, double *bounds)
+{
+	const struct Curve *curve = (const struct Curve *) prim_set;
+	BOX3_COPY(bounds, curve->bounds);
+}
+
+static int curve_count(const void *prim_set)
+{
+	const struct Curve *curve = (const struct Curve *) prim_set;
+	return curve->ncurves;
 }
 
 static void compute_world_to_ray_matrix(const struct Ray *ray, double *dst)

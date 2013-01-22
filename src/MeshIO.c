@@ -17,6 +17,7 @@ See LICENSE and README
 static int error_no = MSH_ERR_NONE;
 static size_t write_attriname(struct MeshOutput *out, const char *name);
 static size_t write_attridata(struct MeshOutput *out, const char *name);
+static size_t read_attridata(struct MeshInput *in);
 static void set_error(int err);
 
 /* mesh input file interfaces */
@@ -42,16 +43,17 @@ struct MeshInput *MshOpenInputFile(const char *filename)
 	in->nvert_attrs = 0;
 	in->nfaces = 0;
 	in->nface_attrs = 0;
-	in->P = NULL;
-	in->N = NULL;
-	in->indices = NULL;
+	in->data_buffer = NULL;
+	in->buffer_size = 0;
+
+	in->attr_names = NULL;
 
 	return in;
 }
 
 void MshCloseInputFile(struct MeshInput *in)
 {
-	char **name;
+	char **name = NULL;
 	if (in == NULL)
 		return;
 
@@ -63,6 +65,11 @@ void MshCloseInputFile(struct MeshInput *in)
 	if (in->file != NULL) {
 		fclose(in->file);
 	}
+
+	if (in->data_buffer != NULL) {
+		free(in->data_buffer);
+	}
+
 	free(in);
 }
 
@@ -106,16 +113,6 @@ int MshReadHeader(struct MeshInput *in)
 		nreads += fread(attrname, sizeof(char), namesize, in->file);
 		in->attr_names[i] = StrDup(attrname);
 	}
-
-	return 0;
-}
-
-int MshReadAttribute(struct MeshInput *in, void *data)
-{
-	size_t nreads = 0;
-	size_t datasize = 0;
-	nreads += fread(&datasize, sizeof(size_t), 1, in->file);
-	nreads += fread(data, sizeof(char), datasize, in->file);
 
 	return 0;
 }
@@ -196,7 +193,7 @@ void MshWriteFile(struct MeshOutput *out)
 
 int MshLoadFile(struct Mesh *mesh, const char *filename)
 {
-	int i;
+	int i, j;
 	int TOTAL_ATTR_COUNT;
 	struct MeshInput *in;
 
@@ -217,19 +214,35 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
 		attrname = in->attr_names[i];
 		if (strcmp(attrname, "P") == 0) {
 			MshAllocateVertex(mesh, "P", in->nverts);
-			MshReadAttribute(in, mesh->P);
+			read_attridata(in);
+			for (j = 0; j < in->nverts; j++) {
+				const double *data = (const double *) in->data_buffer;
+				MshSetVertexPosition(mesh, j, &data[j*3]);
+			}
 		}
 		else if (strcmp(attrname, "N") == 0) {
 			MshAllocateVertex(mesh, "N", in->nverts);
-			MshReadAttribute(in, mesh->N);
+			read_attridata(in);
+			for (j = 0; j < in->nverts; j++) {
+				const double *data = (const double *) in->data_buffer;
+				MshSetVertexNormal(mesh, j, &data[j*3]);
+			}
 		}
 		else if (strcmp(attrname, "uv") == 0) {
 			MshAllocateVertex(mesh, "uv", in->nverts);
-			MshReadAttribute(in, mesh->uv);
+			read_attridata(in);
+			for (j = 0; j < in->nverts; j++) {
+				const float *data = (const float *) in->data_buffer;
+				MshSetVertexTexture(mesh, j, &data[j*2]);
+			}
 		}
 		else if (strcmp(attrname, "indices") == 0) {
 			MshAllocateFace(mesh, "indices", in->nfaces);
-			MshReadAttribute(in, mesh->indices);
+			read_attridata(in);
+			for (j = 0; j < in->nfaces; j++) {
+				const int *data = (const int *) in->data_buffer;
+				MshSetFaceVertexIndices(mesh, j, &data[j*3]);
+			}
 		}
 	}
 
@@ -320,5 +333,21 @@ static size_t write_attridata(struct MeshOutput *out, const char *name)
 		fwrite(out->indices, sizeof(int), 3 * out->nfaces, out->file);
 	}
 	return nwrotes;
+}
+
+static size_t read_attridata(struct MeshInput *in)
+{
+	size_t nreads = 0;
+	size_t datasize = 0;
+	nreads += fread(&datasize, sizeof(size_t), 1, in->file);
+
+	if (in->buffer_size < datasize) {
+		in->data_buffer = (char *) realloc(in->data_buffer, sizeof(char) * datasize);
+		in->buffer_size = datasize;
+	}
+
+	nreads += fread(in->data_buffer, sizeof(char), datasize, in->file);
+
+	return nreads;
 }
 

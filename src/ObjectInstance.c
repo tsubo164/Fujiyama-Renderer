@@ -41,10 +41,6 @@ struct ObjectInstance {
 
 static void update_object_bounds(struct ObjectInstance *obj);
 static void merge_sampled_bounds(struct ObjectInstance *obj);
-/*
-static const struct Transform *get_interpolated_transform(const struct ObjectInstance *obj,
-		double time);
-*/
 
 /* TODO remove acc argument */
 /* ObjectInstance interfaces */
@@ -208,6 +204,11 @@ int ObjGetLightCount(const struct ObjectInstance *obj)
 void ObjGetBounds(const struct ObjectInstance *obj, double *bounds)
 {
 	BOX3_COPY(bounds, obj->bounds);
+}
+
+void ObjComputeBounds(struct ObjectInstance *obj)
+{
+	update_object_bounds(obj);
 }
 
 int ObjIntersect(const struct ObjectInstance *obj, double time,

@@ -31,9 +31,8 @@ struct MeshInput {
 	int nfaces;
 	int nface_attrs;
 
-	double *P;
-	double *N;
-	int *indices;
+	char *data_buffer;
+	size_t buffer_size;
 
 	char **attr_names;
 };
@@ -57,7 +56,6 @@ struct MeshOutput {
 extern struct MeshInput *MshOpenInputFile(const char *filename);
 extern void MshCloseInputFile(struct MeshInput *in);
 extern int MshReadHeader(struct MeshInput *in);
-extern int MshReadAttribute(struct MeshInput *in, void *data);
 
 /* mesh output file interfaces */
 extern struct MeshOutput *MshOpenOutputFile(const char *filename);

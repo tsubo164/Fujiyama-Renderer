@@ -10,15 +10,15 @@ See LICENSE and README
 extern "C" {
 #endif
 
-struct Accelerator;
-struct Intersection;
-struct PrimitiveSet;
-struct Ray;
-
 enum AcceleratorType {
 	ACC_GRID = 0,
 	ACC_BVH
 };
+
+struct Accelerator;
+struct Intersection;
+struct PrimitiveSet;
+struct Ray;
 
 extern struct Accelerator *AccNew(int accelerator_type);
 extern void AccFree(struct Accelerator *acc);
@@ -26,6 +26,7 @@ extern void AccFree(struct Accelerator *acc);
 extern void AccGetBounds(const struct Accelerator *acc, double *bounds);
 extern void AccSetPrimitiveSet(struct Accelerator *acc, const struct PrimitiveSet *primset);
 
+extern void AccComputeBounds(struct Accelerator *acc);
 extern int AccBuild(struct Accelerator *acc);
 extern int AccIntersect(const struct Accelerator *acc, double time,
 		const struct Ray *ray, struct Intersection *isect);

@@ -320,6 +320,19 @@ static struct CommandResult AssignVolume_run(const struct CommandArgument *args)
 	return result;
 }
 
+/* AssignMesh */
+static const int AssignMesh_args[] = {
+	ARG_COMMAND_NAME,
+	ARG_ENTRY_ID,
+	ARG_PROPERTY_NAME,
+	ARG_ENTRY_ID};
+static struct CommandResult AssignMesh_run(const struct CommandArgument *args)
+{
+	struct CommandResult result = INIT_COMMAND_RESULT;
+	result.status = SiAssignMesh(args[1].id, args[2].str, args[3].id);
+	return result;
+}
+
 /* SetProperty1 */
 static const int SetProperty1_args[] = {
 	ARG_COMMAND_NAME,
@@ -439,6 +452,7 @@ static const struct Command command_list[] = {
 	REGISTER_COMMAND(AssignCamera),
 	REGISTER_COMMAND(AssignShader),
 	REGISTER_COMMAND(AssignVolume),
+	REGISTER_COMMAND(AssignMesh),
 	REGISTER_COMMAND(SetProperty1),
 	REGISTER_COMMAND(SetProperty2),
 	REGISTER_COMMAND(SetProperty3),

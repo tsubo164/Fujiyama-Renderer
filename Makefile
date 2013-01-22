@@ -142,15 +142,15 @@ $(eval $(call submodule))
 install_shaders += $(subtgt_)
 
 #procedures
-#srcdir_  := procedures/ReadPlyProcedure
-#tgtdir_  := lib
-#files_   := ReadPlyProcedure
-#subtgt_  := ReadPlyProcedure.so
-#cflags_  := -fPIC
-#ldflags_ := -shared -lscene
-#$(eval $(call submodule))
-#
-#install_procedures += $(subtgt_)
+srcdir_  := procedures/ReadObjProcedure
+tgtdir_  := lib
+files_   := ReadObjProcedure
+subtgt_  := ReadObjProcedure.so
+cflags_  := -fPIC
+ldflags_ := -shared -lscene
+$(eval $(call submodule))
+
+install_procedures += $(subtgt_)
 
 srcdir_  := procedures/PointCloudsProcedure
 tgtdir_  := lib

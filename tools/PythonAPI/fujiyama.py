@@ -160,6 +160,10 @@ class SceneInterface:
 		cmd = 'AssignVolume %s %s %s' % (entry_name, prop_name, volume)
 		self.commands.append(cmd)
 
+	def AssignMesh(self, entry_name, prop_name, mesh):
+		cmd = 'AssignMesh %s %s %s' % (entry_name, prop_name, mesh)
+		self.commands.append(cmd)
+
 	def SetProperty1(self, entry_name, prop_name, v0):
 		cmd = 'SetProperty1 %s %s %s' % (entry_name, prop_name, v0)
 		self.commands.append(cmd)

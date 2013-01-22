@@ -27,12 +27,15 @@ struct ObjectList {
 static struct ObjectList *obj_list_new(void);
 static void obj_list_free(struct ObjectList *list);
 static void obj_list_add(struct ObjectList *list, const struct ObjectInstance *obj);
+static const struct ObjectInstance *get_object(const struct ObjectList *list, int index);
 
 static void object_bounds(const void *prim_set, int prim_id, double *bounds);
 static int object_ray_intersect(const void *prim_set, int prim_id, double time,
 		const struct Ray *ray, struct Intersection *isect);
 static int volume_ray_intersect(const void *prim_set, int prim_id, double time,
 		const struct Ray *ray, struct Interval *interval);
+static void object_list_bounds(const void *prim_set, double *bounds);
+static int object_count(const void *prim_set);
 
 struct ObjectGroup {
 	struct ObjectList *surface_list;
@@ -104,18 +107,18 @@ void ObjGroupAdd(struct ObjectGroup *grp, const struct ObjectInstance *obj)
 
 		MakePrimitiveSet(&primset,
 				"ObjectInstance:Surface",
-				grp->surface_list->objects->data,
-				grp->surface_list->objects->nelems,
-				grp->surface_list->bounds,
+				grp->surface_list,
 				object_ray_intersect,
-				object_bounds);
+				object_bounds,
+				object_list_bounds,
+				object_count);
 		AccSetPrimitiveSet(grp->surface_acc, &primset);
 	}
 	else if (ObjIsVolume(obj)) {
 		obj_list_add(grp->volume_list, obj);
 
 		VolumeAccSetTargetGeometry(grp->volume_acc,
-				grp->volume_list->objects->data,
+				grp->volume_list,
 				grp->volume_list->objects->nelems,
 				grp->volume_list->bounds,
 				volume_ray_intersect,
@@ -137,24 +140,63 @@ const struct VolumeAccelerator *ObjGroupGetVolumeAccelerator(const struct Object
 	return grp->volume_acc;
 }
 
+void ObjGroupComputeBounds(struct ObjectGroup *grp)
+{
+	int N = 0;
+	int i;
+
+	N = grp->surface_list->objects->nelems;
+	for (i = 0; i < N; i++) {
+		const struct ObjectInstance *obj = get_object(grp->surface_list, i);
+		double bounds[6] = {0};
+
+		ObjGetBounds(obj, bounds);
+		BoxAddBox(grp->surface_list->bounds, bounds);
+	}
+
+	N = grp->volume_list->objects->nelems;
+	for (i = 0; i < N; i++) {
+		const struct ObjectInstance *obj = get_object(grp->volume_list, i);
+		double bounds[6] = {0};
+
+		ObjGetBounds(obj, bounds);
+		BoxAddBox(grp->volume_list->bounds, bounds);
+	}
+}
+
 static void object_bounds(const void *prim_set, int prim_id, double *bounds)
 {
-	const struct ObjectInstance **objects = (const struct ObjectInstance **) prim_set;
-	ObjGetBounds(objects[prim_id], bounds);
+	const struct ObjectList *list = (const struct ObjectList *) prim_set;
+	const struct ObjectInstance *obj = get_object(list, prim_id);
+	ObjGetBounds(obj, bounds);
 }
 
 static int object_ray_intersect(const void *prim_set, int prim_id, double time,
 		const struct Ray *ray, struct Intersection *isect)
 {
-	const struct ObjectInstance **objects = (const struct ObjectInstance **) prim_set;
-	return ObjIntersect(objects[prim_id], time, ray, isect);
+	const struct ObjectList *list = (const struct ObjectList *) prim_set;
+	const struct ObjectInstance *obj = get_object(list, prim_id);
+	return ObjIntersect(obj, time, ray, isect);
 }
 
 static int volume_ray_intersect(const void *prim_set, int prim_id, double time,
 		const struct Ray *ray, struct Interval *interval)
 {
-	const struct ObjectInstance **objects = (const struct ObjectInstance **) prim_set;
-	return ObjVolumeIntersect(objects[prim_id], time, ray, interval);
+	const struct ObjectList *list = (const struct ObjectList *) prim_set;
+	const struct ObjectInstance *obj = get_object(list, prim_id);
+	return ObjVolumeIntersect(obj, time, ray, interval);
+}
+
+static void object_list_bounds(const void *prim_set, double *bounds)
+{
+	const struct ObjectList *list = (const struct ObjectList *) prim_set;
+	BOX3_COPY(bounds, list->bounds);
+}
+
+static int object_count(const void *prim_set)
+{
+	const struct ObjectList *list = (const struct ObjectList *) prim_set;
+	return list->objects->nelems;
 }
 
 static struct ObjectList *obj_list_new(void)
@@ -195,5 +237,12 @@ static void obj_list_add(struct ObjectList *list, const struct ObjectInstance *o
 
 	ArrPushPointer(list->objects, obj);
 	BoxAddBox(list->bounds, bounds);
+}
+
+static const struct ObjectInstance *get_object(const struct ObjectList *list, int index)
+{
+	const struct ObjectInstance **objects =
+			(const struct ObjectInstance **) list->objects->data;
+	return objects[index];
 }
 

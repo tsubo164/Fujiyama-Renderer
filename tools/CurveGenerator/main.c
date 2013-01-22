@@ -19,7 +19,7 @@ See LICENSE and README
 #include <assert.h>
 
 static const char USAGE[] =
-"Usage: gencurve [options] inputfile(*.mesh) outputfile(*.crv)\n"
+"Usage: curvegen [options] inputfile(*.mesh) outputfile(*.crv)\n"
 "Options:\n"
 "  --help         Display this information\n"
 "\n";
@@ -38,6 +38,7 @@ int main(int argc, const char **argv)
 	float *Cd = NULL;
 	int *indices = NULL;
 	int *ncurves_on_face = NULL;
+	int nfaces = 0;
 
 	double *sourceP = NULL;
 	double *sourceN = NULL;
@@ -104,17 +105,18 @@ int main(int argc, const char **argv)
 		return -1;
 	}
 
-	printf("mesh->nfaces: %d\n", mesh->nfaces);
+	nfaces = MshGetFaceCount(mesh);
+	printf("nfaces: %d\n", nfaces);
 
 	/* count total_ncurves */
-	ncurves_on_face = (int *) malloc(sizeof(int) * mesh->nfaces);
+	ncurves_on_face = (int *) malloc(sizeof(int) * nfaces);
 	total_ncurves = 0;
-	for (i = 0; i < mesh->nfaces; i++) {
-		const double *v0, *v1, *v2;
+	for (i = 0; i < nfaces; i++) {
+		double P0[3], P1[3], P2[3];
 		double area;
 
-		MshGetFaceVertex(mesh, i, &v0, &v1, &v2);
-		area = TriComputeArea(v0, v1, v2);
+		MshGetFaceVertexPosition(mesh, i, P0, P1, P2);
+		area = TriComputeArea(P0, P1, P2);
 
 		ncurves_on_face[i] = 100000 * area;
 		total_ncurves += ncurves_on_face[i];
@@ -134,23 +136,13 @@ int main(int argc, const char **argv)
 	PrgStart(progress, total_ncurves);
 
 	curve_id = 0;
-	for (i = 0; i < mesh->nfaces; i++) {
+	for (i = 0; i < nfaces; i++) {
 		int j;
-		int i0, i1, i2;
-		const double *P0, *P1, *P2;
-		const double *N0, *N1, *N2;
+		double P0[3], P1[3], P2[3];
+		double N0[3], N1[3], N2[3];
 
-		i0 = mesh->indices[3*i+0];
-		i1 = mesh->indices[3*i+1];
-		i2 = mesh->indices[3*i+2];
-
-		N0 = &mesh->N[3*i0];
-		N1 = &mesh->N[3*i1];
-		N2 = &mesh->N[3*i2];
-
-		P0 = &mesh->P[3*i0];
-		P1 = &mesh->P[3*i1];
-		P2 = &mesh->P[3*i2];
+		MshGetFaceVertexPosition(mesh, i, P0, P1, P2);
+		MshGetFaceVertexNormal(mesh, i, N0, N1, N2);
 
 		for (j = 0; j < ncurves_on_face[i]; j++) {
 			double gravity;

@@ -70,7 +70,7 @@ extern Status SiRunProcedure(ID procedure);
 
 extern Status SiAddObjectToGroup(ID group, ID object);
 
-extern ID SiNewObjectInstance(ID accelerator);
+extern ID SiNewObjectInstance(ID primset_id);
 extern ID SiNewFrameBuffer(const char *arg);
 extern ID SiNewObjectGroup(void);
 extern ID SiNewTurbulence(void);
@@ -91,6 +91,7 @@ extern Status SiAssignTexture(ID id, const char *name, ID texture);
 extern Status SiAssignVolume(ID id, const char *name, ID volume);
 extern Status SiAssignCamera(ID renderer, ID camera);
 extern Status SiAssignShader(ID object, ID shader);
+extern Status SiAssignMesh(ID id, const char *name, ID mesh);
 
 /* Property interfaces */
 extern Status SiSetProperty1(ID id, const char *name, double v0);

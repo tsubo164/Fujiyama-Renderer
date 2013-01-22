@@ -12,12 +12,12 @@ See LICENSE and README
 extern "C" {
 #endif
 
+struct ObjectGroup;
+struct ObjectInstance;
+
 struct Intersection;
 struct Accelerator;
 struct Ray;
-
-struct ObjectGroup;
-struct ObjectInstance;
 
 extern struct ObjectGroup *ObjGroupNew(void);
 extern void ObjGroupFree(struct ObjectGroup *grp);
@@ -25,6 +25,8 @@ extern void ObjGroupFree(struct ObjectGroup *grp);
 extern void ObjGroupAdd(struct ObjectGroup *grp, const struct ObjectInstance *obj);
 extern const struct Accelerator *ObjGroupGetSurfaceAccelerator(const struct ObjectGroup *grp);
 extern const struct VolumeAccelerator *ObjGroupGetVolumeAccelerator(const struct ObjectGroup *grp);
+
+extern void ObjGroupComputeBounds(struct ObjectGroup *grp);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -90,6 +90,22 @@ int main()
 		TEST(TestDoubleEq(hit_tmin, -FLT_MAX));
 		TEST(TestDoubleEq(hit_tmax, FLT_MAX));
 	}
+	{
+		double box[6] = {FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX};
+		double orig[3] = {0, 0, 0};
+		double dir[3] = {0, 0, 1};
+		double ray_tmin = 0;
+		double ray_tmax = 1;
+		double hit_tmin = -FLT_MAX;
+		double hit_tmax = FLT_MAX;
+		int hit;
+
+		hit = BoxRayIntersect(box, orig, dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
+
+		TEST(hit == 0);
+		TEST(TestDoubleEq(hit_tmin, -FLT_MAX));
+		TEST(TestDoubleEq(hit_tmax, FLT_MAX));
+	}
 	printf("%s: %d/%d/%d: (FAIL/PASS/TOTAL)\n", __FILE__,
 			TestGetFailCount(), TestGetPassCount(), TestGetTotalCount());
 

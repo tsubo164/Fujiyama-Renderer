@@ -180,6 +180,12 @@ void AccGetBounds(const struct Accelerator *acc, double *bounds)
 	BOX3_COPY(bounds, acc->bounds);
 }
 
+void AccComputeBounds(struct Accelerator *acc)
+{
+	PrmGetBounds(&acc->primset, acc->bounds);
+	BOX3_EXPAND(acc->bounds, EXPAND);
+}
+
 int AccBuild(struct Accelerator *acc)
 {
 	int err = 0;

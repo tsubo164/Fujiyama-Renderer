@@ -27,6 +27,7 @@ const char *PropTypeString(int property_type)
 	case PROP_TEXTURE:     return "Texture";
 	case PROP_SHADER:      return "Shader";
 	case PROP_VOLUME:      return "Volume";
+	case PROP_MESH:        return "Mesh";
 	default:               return NULL;
 	}
 }
@@ -113,6 +114,16 @@ struct PropertyValue PropVolume(struct Volume *volume)
 
 	value.type = PROP_VOLUME;
 	value.volume = volume;
+
+	return value;
+}
+
+struct PropertyValue PropMesh(struct Mesh *mesh)
+{
+	struct PropertyValue value = INIT_PROPERTYVALUE;
+
+	value.type = PROP_MESH;
+	value.mesh = mesh;
 
 	return value;
 }

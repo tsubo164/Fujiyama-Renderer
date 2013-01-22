@@ -64,6 +64,8 @@ extern const struct Light **ObjGetLightList(const struct ObjectInstance *obj);
 extern int ObjGetLightCount(const struct ObjectInstance *obj);
 extern void ObjGetBounds(const struct ObjectInstance *obj, double *bounds);
 
+extern void ObjComputeBounds(struct ObjectInstance *obj);
+
 extern int ObjIntersect(const struct ObjectInstance *obj, double time,
 			const struct Ray *ray, struct Intersection *isect);
 extern int ObjVolumeIntersect(const struct ObjectInstance *obj, double time,
