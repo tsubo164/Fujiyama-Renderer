@@ -22,6 +22,7 @@ const char *PropTypeString(int property_type)
 	case PROP_VECTOR2:     return "Vector2";
 	case PROP_VECTOR3:     return "Vector3";
 	case PROP_VECTOR4:     return "Vector4";
+	case PROP_STRING:      return "String";
 	case PROP_OBJECTGROUP: return "ObjectGroup";
 	case PROP_TURBULENCE:  return "Turbulence";
 	case PROP_TEXTURE:     return "Texture";
@@ -74,6 +75,16 @@ struct PropertyValue PropVector4(double v0, double v1, double v2, double v3)
 	value.vector[1] = v1;
 	value.vector[2] = v2;
 	value.vector[3] = v3;
+
+	return value;
+}
+
+struct PropertyValue PropString(const char *string)
+{
+	struct PropertyValue value = INIT_PROPERTYVALUE;
+
+	value.type = PROP_STRING;
+	value.string = string;
 
 	return value;
 }

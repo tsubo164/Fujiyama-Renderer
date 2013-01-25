@@ -750,6 +750,15 @@ Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, 
 	return status_of_error(err);
 }
 
+Status SiSetStringProperty(ID id, const char *name, const char *string)
+{
+	const struct Entry entry = decode_id(id);
+	const struct PropertyValue value = PropString(string);
+	const int err = set_property(&entry, name, &value);
+
+	return status_of_error(err);
+}
+
 /* time variable property */
 Status SiSetSampleProperty3(ID id, const char *name, double v0, double v1, double v2, double time)
 {

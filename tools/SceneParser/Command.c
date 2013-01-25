@@ -395,6 +395,19 @@ static struct CommandResult SetProperty4_run(const struct CommandArgument *args)
 	return result;
 }
 
+/* SetStringProperty */
+static const int SetStringProperty_args[] = {
+	ARG_COMMAND_NAME,
+	ARG_ENTRY_ID,
+	ARG_PROPERTY_NAME,
+	ARG_STRING};
+static struct CommandResult SetStringProperty_run(const struct CommandArgument *args)
+{
+	struct CommandResult result = INIT_COMMAND_RESULT;
+	result.status = SiSetStringProperty(args[1].id, args[2].str, args[3].str);
+	return result;
+}
+
 /* SetSampleProperty3 */
 static const int SetSampleProperty3_args[] = {
 	ARG_COMMAND_NAME,
@@ -457,6 +470,7 @@ static const struct Command command_list[] = {
 	REGISTER_COMMAND(SetProperty2),
 	REGISTER_COMMAND(SetProperty3),
 	REGISTER_COMMAND(SetProperty4),
+	REGISTER_COMMAND(SetStringProperty),
 	REGISTER_COMMAND(SetSampleProperty3),
 	REGISTER_COMMAND(ShowPropertyList),
 	{NULL, NULL, 0, NULL}

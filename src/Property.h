@@ -16,6 +16,7 @@ enum PropertyType {
 	PROP_VECTOR2,
 	PROP_VECTOR3,
 	PROP_VECTOR4,
+	PROP_STRING,
 	PROP_OBJECTGROUP,
 	PROP_TURBULENCE,
 	PROP_TEXTURE,
@@ -33,7 +34,10 @@ struct Mesh;
 
 struct PropertyValue {
 	int type;
+
 	double vector[4];
+	const char *string;
+
 	struct ObjectGroup *object_group;
 	struct Turbulence *turbulence;
 	struct Texture *texture;
@@ -47,6 +51,7 @@ struct PropertyValue {
 #define INIT_PROPERTYVALUE { \
 	PROP_NONE, \
 	{0, 0, 0, 0}, \
+	NULL, \
 	NULL, \
 	NULL, \
 	NULL, \
@@ -67,6 +72,7 @@ extern struct PropertyValue PropScalar(double v0);
 extern struct PropertyValue PropVector2(double v0, double v1);
 extern struct PropertyValue PropVector3(double v0, double v1, double v2);
 extern struct PropertyValue PropVector4(double v0, double v1, double v2, double v3);
+extern struct PropertyValue PropString(const char *string);
 
 extern struct PropertyValue PropObjectGroup(struct ObjectGroup *group);
 extern struct PropertyValue PropTurbulence(struct Turbulence *turbulence);

@@ -180,6 +180,14 @@ class SceneInterface:
 		cmd = 'SetProperty4 %s %s %s %s %s %s' % (entry_name, prop_name, v0, v1, v2, v3)
 		self.commands.append(cmd)
 
+	def SetStringProperty(self, entry_name, prop_name, string):
+		cmd = 'SetStringProperty %s %s %s' % (entry_name, prop_name, string)
+		self.commands.append(cmd)
+
+	def SetSampleProperty3(self, entry_name, prop_name, v0, v1, v2, time):
+		cmd = 'SetSampleProperty3 %s %s %s %s %s %s' % (entry_name, prop_name, v0, v1, v2, time)
+		self.commands.append(cmd)
+
 	def ShowPropertyList(self, type_name):
 		"""
 		Show property list of type (ObjectInstance, Volume, ...) or
@@ -187,10 +195,6 @@ class SceneInterface:
 		the plugin must be opened before this command.
 		"""
 		cmd = 'ShowPropertyList %s' % (type_name)
-		self.commands.append(cmd)
-
-	def SetSampleProperty3(self, entry_name, prop_name, v0, v1, v2, time):
-		cmd = 'SetSampleProperty3 %s %s %s %s %s %s' % (entry_name, prop_name, v0, v1, v2, time)
 		self.commands.append(cmd)
 
 if __name__ == '__main__':
