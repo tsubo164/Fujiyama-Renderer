@@ -100,6 +100,58 @@ void MshComputeBounds(struct Mesh *mesh)
 	}
 }
 
+void MshComputeNormals(struct Mesh *mesh)
+{
+	const int nverts = MshGetVertexCount(mesh);
+	const int nfaces = MshGetFaceCount(mesh);
+	double *P = (double *) mesh->P;
+	double *N = (double *) mesh->N;
+	int *indices = (int *) mesh->indices;
+	int i;
+
+	if (P == NULL || indices == NULL)
+		return;
+
+	if (N == NULL) {
+		MshAllocateVertex(mesh, "N", nverts);
+		return;
+	}
+
+	/* initialize N */
+	for (i = 0; i < nverts; i++) {
+		double *nml = &N[3*i];
+		VEC3_SET(nml, 0, 0, 0);
+	}
+
+	/* compute N */
+	for (i = 0; i < nfaces; i++) {
+		double *P0, *P1, *P2;
+		double *N0, *N1, *N2;
+		double Ng[3] = {0, 0, 0};
+		const int i0 = indices[3*i + 0];
+		const int i1 = indices[3*i + 1];
+		const int i2 = indices[3*i + 2];
+
+		P0 = &P[3*i0];
+		P1 = &P[3*i1];
+		P2 = &P[3*i2];
+		N0 = &N[3*i0];
+		N1 = &N[3*i1];
+		N2 = &N[3*i2];
+
+		TriComputeFaceNormal(Ng, P0, P1, P2);
+		VEC3_ADD_ASGN(N0, Ng);
+		VEC3_ADD_ASGN(N1, Ng);
+		VEC3_ADD_ASGN(N2, Ng);
+	}
+
+	/* normalize N */
+	for (i = 0; i < nverts; i++) {
+		double *nml = &N[3*i];
+		VEC3_NORMALIZE(nml);
+	}
+}
+
 void *MshAllocateVertex(struct Mesh *mesh, const char *attr_name, int nverts)
 {
 	void *ret = NULL;

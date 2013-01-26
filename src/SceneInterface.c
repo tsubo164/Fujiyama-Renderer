@@ -186,8 +186,6 @@ Status SiRenderScene(ID renderer)
 	int err = 0;
 
 	compute_objects_bounds();
-	/*
-	*/
 
 	err = create_implicit_groups();
 	if (err) {
@@ -290,6 +288,7 @@ ID SiNewObjectInstance(ID primset_id)
 	if (entry.type == Type_Accelerator) {
 		struct ObjectInstance *object = NULL;
 		struct Accelerator *acc = NULL;
+		int err = 0;
 
 		acc = ScnGetAccelerator(get_scene(), entry.index);
 		if (acc == NULL) {
@@ -297,10 +296,15 @@ ID SiNewObjectInstance(ID primset_id)
 			return SI_BADID;
 		}
 
-		/* TODO come up with another way to pass acc */
-		object = ScnNewObjectInstance(get_scene(), acc);
+		object = ScnNewObjectInstance(get_scene());
 		if (object == NULL) {
 			set_errno(SI_ERR_NO_MEMORY);
+			return SI_BADID;
+		}
+
+		err = ObjSetSurface(object, acc);
+		if (err) {
+			set_errno(SI_ERR_FAILNEW);
 			return SI_BADID;
 		}
 	}
@@ -315,7 +319,7 @@ ID SiNewObjectInstance(ID primset_id)
 			return SI_BADID;
 		}
 
-		object = ScnNewObjectInstance(get_scene(), NULL);
+		object = ScnNewObjectInstance(get_scene());
 		if (object == NULL) {
 			set_errno(SI_ERR_NO_MEMORY);
 			return SI_BADID;
@@ -326,7 +330,6 @@ ID SiNewObjectInstance(ID primset_id)
 			set_errno(SI_ERR_FAILNEW);
 			return SI_BADID;
 		}
-
 	}
 	else {
 		set_errno(SI_ERR_BADTYPE);

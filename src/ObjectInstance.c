@@ -42,17 +42,14 @@ struct ObjectInstance {
 static void update_object_bounds(struct ObjectInstance *obj);
 static void merge_sampled_bounds(struct ObjectInstance *obj);
 
-/* TODO remove acc argument */
 /* ObjectInstance interfaces */
-struct ObjectInstance *ObjNew(const struct Accelerator *acc)
+struct ObjectInstance *ObjNew(void)
 {
-	struct ObjectInstance *obj;
-
-	obj = (struct ObjectInstance *) malloc(sizeof(struct ObjectInstance));
+	struct ObjectInstance *obj = (struct ObjectInstance *) malloc(sizeof(struct ObjectInstance));
 	if (obj == NULL)
 		return NULL;
 
-	obj->acc = acc;
+	obj->acc = NULL;
 	obj->volume = NULL;
 
 	XfmInitTransformSampleList(&obj->transform_samples);
@@ -74,6 +71,21 @@ void ObjFree(struct ObjectInstance *obj)
 	if (obj == NULL)
 		return;
 	free(obj);
+}
+
+int ObjSetSurface(struct ObjectInstance *obj, const struct Accelerator *acc)
+{
+	if (obj->acc != NULL)
+		return -1;
+
+	if (obj->volume != NULL)
+		return -1;
+
+	obj->acc = acc;
+	update_object_bounds(obj);
+
+	assert(obj->acc != NULL && obj->volume == NULL);
+	return 0;
 }
 
 int ObjSetVolume(struct ObjectInstance *obj, const struct Volume *volume)
@@ -237,7 +249,6 @@ int ObjIntersect(const struct ObjectInstance *obj, double time,
 	XfmTransformVector(&transform_interp, isect->N);
 	VEC3_NORMALIZE(isect->N);
 
-	/* TODO should make TransformLocalGeometry? */
 	XfmTransformVector(&transform_interp, isect->dPds);
 	XfmTransformVector(&transform_interp, isect->dPdt);
 
@@ -315,12 +326,7 @@ static void update_object_bounds(struct ObjectInstance *obj)
 		VolGetBounds(obj->volume, obj->bounds);
 	}
 	else {
-		/* TODO allowing state where neither surface nor volume */
-		/*
-		printf("fatal error: object is neither surface nor volume\n");
-		abort();
-		*/
-		BOX3_SET(obj->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+		BOX3_SET(obj->bounds, 0, 0, 0, 0, 0, 0);
 	}
 	merge_sampled_bounds(obj);
 }

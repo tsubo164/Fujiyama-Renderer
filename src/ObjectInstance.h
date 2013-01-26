@@ -6,6 +6,7 @@ See LICENSE and README
 #ifndef OBJECTINSTANCE_H
 #define OBJECTINSTANCE_H
 
+/* to make transform_order visible for ObjectInstance.h's users */
 #include "Transform.h"
 
 #ifdef __cplusplus
@@ -24,17 +25,17 @@ struct Ray;
 struct ObjectInstance;
 struct ObjectGroup;
 
+/* TODO not used anymore? */
 struct ObjectContent {
 	const struct Accelerator *surface;
 	const struct Volume *volume;
 };
 
 /* ObjectInstance interfaces */
-extern struct ObjectInstance *ObjNew(const struct Accelerator *acc);
+extern struct ObjectInstance *ObjNew(void);
 extern void ObjFree(struct ObjectInstance *obj);
 
-/* TODO remove ObjSet*** if possible */
-extern void ObjSetSurface(struct ObjectInstance *obj, const struct Accelerator *acc);
+extern int ObjSetSurface(struct ObjectInstance *obj, const struct Accelerator *acc);
 extern int ObjSetVolume(struct ObjectInstance *obj, const struct Volume *volume);
 extern int ObjIsSurface(const struct ObjectInstance *obj);
 extern int ObjIsVolume(const struct ObjectInstance *obj);
@@ -66,6 +67,7 @@ extern void ObjGetBounds(const struct ObjectInstance *obj, double *bounds);
 
 extern void ObjComputeBounds(struct ObjectInstance *obj);
 
+/* sampling */
 extern int ObjIntersect(const struct ObjectInstance *obj, double time,
 			const struct Ray *ray, struct Intersection *isect);
 extern int ObjVolumeIntersect(const struct ObjectInstance *obj, double time,

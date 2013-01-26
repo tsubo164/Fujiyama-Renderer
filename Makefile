@@ -144,7 +144,7 @@ install_shaders += $(subtgt_)
 #procedures
 srcdir_  := procedures/ReadObjProcedure
 tgtdir_  := lib
-files_   := ReadObjProcedure ObjParser
+files_   := ReadObjProcedure ObjBuffer ObjParser
 subtgt_  := ReadObjProcedure.so
 cflags_  := -fPIC
 ldflags_ := -shared -lscene

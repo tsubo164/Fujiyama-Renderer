@@ -36,7 +36,7 @@ size_t ScnGet##Type##Count(const struct Scene *scene) \
 } \
 struct Type **ScnGet##Type##List(const struct Scene *scene) \
 { \
-	return (struct Type **) (scene)->Type ## List->data; \
+	return (struct Type **) (scene)->Type##List->data; \
 } \
 struct Type *ScnGet##Type(const struct Scene *scene, int index) \
 { \
@@ -89,9 +89,9 @@ void ScnFree(struct Scene *scene)
 }
 
 /* ObjectInstance */
-struct ObjectInstance *ScnNewObjectInstance(struct Scene *scene, const struct Accelerator *acc)
+struct ObjectInstance *ScnNewObjectInstance(struct Scene *scene)
 {
-	return (struct ObjectInstance *) push_entry(scene->ObjectInstanceList, ObjNew(acc));
+	return (struct ObjectInstance *) push_entry(scene->ObjectInstanceList, ObjNew());
 }
 
 /* Accelerator */

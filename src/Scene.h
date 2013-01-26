@@ -33,7 +33,7 @@ extern struct Scene *ScnNew(void);
 extern void ScnFree(struct Scene *scene);
 
 /* ObjectInstance */
-extern struct ObjectInstance *ScnNewObjectInstance(struct Scene *scene, const struct Accelerator *acc);
+extern struct ObjectInstance *ScnNewObjectInstance(struct Scene *scene);
 extern struct ObjectInstance **ScnGetObjectInstanceList(const struct Scene *scene);
 extern struct ObjectInstance *ScnGetObjectInstance(const struct Scene *scene, int index);
 extern size_t ScnGetObjectInstanceCount(const struct Scene *scene);

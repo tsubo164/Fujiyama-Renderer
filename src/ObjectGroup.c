@@ -124,10 +124,6 @@ void ObjGroupAdd(struct ObjectGroup *grp, const struct ObjectInstance *obj)
 				volume_ray_intersect,
 				object_bounds);
 	}
-	else {
-		printf("fatal error: object is neither surface nor volume\n");
-		abort();
-	}
 }
 
 const struct Accelerator *ObjGroupGetSurfaceAccelerator(const struct ObjectGroup *grp)
