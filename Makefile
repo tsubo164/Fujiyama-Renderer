@@ -142,10 +142,10 @@ $(eval $(call submodule))
 install_shaders += $(subtgt_)
 
 #procedures
-srcdir_  := procedures/ReadObjProcedure
+srcdir_  := procedures/LoadObjProcedure
 tgtdir_  := lib
-files_   := ReadObjProcedure ObjBuffer ObjParser
-subtgt_  := ReadObjProcedure.so
+files_   := LoadObjProcedure ObjBuffer ObjParser
+subtgt_  := LoadObjProcedure.so
 cflags_  := -fPIC
 ldflags_ := -shared -lscene
 $(eval $(call submodule))

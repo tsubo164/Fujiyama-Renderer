@@ -219,10 +219,12 @@ int ObjParse(struct ObjParser *parser, const char *filename)
 	}
 
 	free_index_list(list);
+	fclose(file);
 	return 0;
 
 parse_error:
 	free_index_list(list);
+	fclose(file);
 	return -1;
 }
 

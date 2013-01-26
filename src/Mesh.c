@@ -10,6 +10,7 @@ See LICENSE and README
 #include "Vector.h"
 #include "Ray.h"
 #include "Box.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
