@@ -142,6 +142,8 @@ struct MeshOutput *MshOpenOutputFile(const char *filename)
 	out->nface_attrs = 0;
 	out->P = NULL;
 	out->N = NULL;
+	out->Cd = NULL;
+	out->uv = NULL;
 	out->indices = NULL;
 
 	return out;

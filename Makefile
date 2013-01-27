@@ -213,6 +213,16 @@ $(eval $(call submodule))
 
 install_bin += $(subtgt_)
 
+srcdir_  := tools/obj2mesh
+tgtdir_  := bin
+files_   := main ObjParser
+subtgt_  := obj2mesh
+cflags_  :=
+ldflags_ := -lscene
+$(eval $(call submodule))
+
+install_bin += $(subtgt_)
+
 srcdir_  := tools/hdr2mip
 tgtdir_  := bin
 files_   := main rgbe

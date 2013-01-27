@@ -201,6 +201,7 @@ int main(int argc, const char **argv)
 	out->nvert_attrs = 2;
 	out->P = P;
 	out->N = N;
+	out->Cd = NULL;
 	out->uv = uv;
 	out->nfaces = ntris;
 	out->nface_attrs = 1;

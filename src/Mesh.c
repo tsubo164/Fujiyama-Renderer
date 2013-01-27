@@ -115,7 +115,7 @@ void MshComputeNormals(struct Mesh *mesh)
 
 	if (N == NULL) {
 		MshAllocateVertex(mesh, "N", nverts);
-		return;
+		N = (double *) mesh->N;
 	}
 
 	/* initialize N */
