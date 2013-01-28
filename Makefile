@@ -142,16 +142,6 @@ $(eval $(call submodule))
 install_shaders += $(subtgt_)
 
 #procedures
-srcdir_  := procedures/LoadObjProcedure
-tgtdir_  := lib
-files_   := LoadObjProcedure ObjBuffer ObjParser
-subtgt_  := LoadObjProcedure.so
-cflags_  := -fPIC
-ldflags_ := -shared -lscene
-$(eval $(call submodule))
-
-install_procedures += $(subtgt_)
-
 srcdir_  := procedures/PointCloudsProcedure
 tgtdir_  := lib
 files_   := PointCloudsProcedure
