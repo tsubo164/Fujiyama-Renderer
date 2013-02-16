@@ -159,6 +159,29 @@ int SlTrace(const struct TraceContext *cxt,
 	return hit_surface || hit_volume;
 }
 
+int SlTraceForSurface(const struct TraceContext *cxt,
+		const double *ray_orig, const double *ray_dir,
+		double ray_tmin, double ray_tmax,
+		double *P_hit, double *N_hit, double *t_hit)
+{
+	const struct Accelerator *acc = NULL;
+	struct Intersection isect = {{0}};
+	struct Ray ray = {{0}};
+	int hit = 0;
+
+	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
+	acc = ObjGroupGetSurfaceAccelerator(cxt->trace_target),
+	hit = AccIntersect(acc, cxt->time, &ray, &isect);
+
+	if (hit) {
+		VEC3_COPY(P_hit, isect.P);
+		VEC3_COPY(N_hit, isect.N);
+		*t_hit = isect.t_hit;
+	}
+
+	return hit;
+}
+
 struct TraceContext SlCameraContext(const struct ObjectGroup *target)
 {
 	struct TraceContext cxt;

@@ -124,6 +124,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	/* reflect */
 	refl_cxt = SlReflectContext(cxt, in->shaded_object);
 	SlReflect(in->I, in->N, R);
+	VEC3_NORMALIZE(R);
 	SlTrace(&refl_cxt, in->P, R, .0001, 1000, C_refl, &t_hit);
 	out->Cs[0] += Kr * C_refl[0];
 	out->Cs[1] += Kr * C_refl[1];
@@ -132,6 +133,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	/* refract */
 	refr_cxt = SlRefractContext(cxt, in->shaded_object);
 	SlRefract(in->I, in->N, 1/glass->ior, T);
+	VEC3_NORMALIZE(T);
 	SlTrace(&refr_cxt, in->P, T, .0001, 1000, C_refr, &t_hit);
 
 	if (glass->do_color_filter && VEC3_DOT(in->I, in->N) < 0) {

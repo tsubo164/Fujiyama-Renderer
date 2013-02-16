@@ -1343,10 +1343,10 @@ static const struct Property Camera_properties[] = {
 	{PROP_SCALAR,  "fov",             set_Camera_fov},
 	{PROP_SCALAR,  "znear",           set_Camera_znear},
 	{PROP_SCALAR,  "zfar",            set_Camera_zfar},
+	{PROP_SCALAR,  "transform_order", set_Camera_transform_order},
+	{PROP_SCALAR,  "rotate_order",    set_Camera_rotate_order},
 	{PROP_VECTOR3, "translate",       set_Camera_translate},
 	{PROP_VECTOR3, "rotate",          set_Camera_rotate},
-	{PROP_VECTOR3, "transform_order", set_Camera_transform_order},
-	{PROP_VECTOR3, "rotate_order",    set_Camera_rotate_order},
 	{PROP_NONE, NULL, NULL}
 };
 

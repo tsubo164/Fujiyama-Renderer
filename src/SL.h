@@ -76,6 +76,10 @@ extern void SlRefract(const double *I, const double *N, double ior, double *T);
 extern int SlTrace(const struct TraceContext *cxt,
 		const double *ray_orig, const double *ray_dir,
 		double ray_tmin, double ray_tmax, float *out_color, double *t_hit);
+extern int SlTraceForSurface(const struct TraceContext *cxt,
+		const double *ray_orig, const double *ray_dir,
+		double ray_tmin, double ray_tmax,
+		double *P_hit, double *N_hit, double *t_hit);
 
 extern struct TraceContext SlCameraContext(const struct ObjectGroup *target);
 extern struct TraceContext SlReflectContext(const struct TraceContext *cxt,

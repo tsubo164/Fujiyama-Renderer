@@ -160,14 +160,15 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	/* reflect */
 	if (plastic->do_reflect) {
 		float C_refl[4] = {0};
-		double refldir[3] = {0};
+		double R[3] = {0};
 		double t_hit = FLT_MAX;
 		double Kr = 0;
 
-		const struct TraceContext relf_cxt = SlReflectContext(cxt, in->shaded_object);
+		const struct TraceContext refl_cxt = SlReflectContext(cxt, in->shaded_object);
 
-		SlReflect(in->I, in->N, refldir);
-		SlTrace(&relf_cxt, in->P, refldir, .001, 1000, C_refl, &t_hit);
+		SlReflect(in->I, in->N, R);
+		VEC3_NORMALIZE(R);
+		SlTrace(&refl_cxt, in->P, R, .001, 1000, C_refl, &t_hit);
 
 		Kr = SlFresnel(in->I, in->N, 1/plastic->ior);
 		out->Cs[0] += Kr * C_refl[0] * plastic->reflect[0];

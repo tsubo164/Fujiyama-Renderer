@@ -13,6 +13,17 @@ See LICENSE and README
 extern "C" {
 #endif
 
+#define VEC_OP_INLINE 1
+#if VEC_OP_INLINE
+#define VecMulAssign(dst,value) do { \
+	(dst)[0] *= (value); \
+	(dst)[1] *= (value); \
+	(dst)[2] *= (value); \
+	} while(0)
+#else
+void VecMulAssign(struct Vector *dst, double value);
+#endif
+
 /* VEC2 ARRAY */
 #define VEC2_REALLOC(ptr,type,nelems) ((type*)realloc((ptr), sizeof(type)*2*(nelems)))
 #define VEC2_ALLOC(type,nelems) ((type*)malloc(sizeof(type)*2*(nelems)))
