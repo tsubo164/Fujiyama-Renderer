@@ -159,7 +159,7 @@ int SlTrace(const struct TraceContext *cxt,
 	return hit_surface || hit_volume;
 }
 
-int SlTraceForSurface(const struct TraceContext *cxt,
+int SlSurfaceRayIntersect(const struct TraceContext *cxt,
 		const double *ray_orig, const double *ray_dir,
 		double ray_tmin, double ray_tmax,
 		double *P_hit, double *N_hit, double *t_hit)
@@ -241,6 +241,16 @@ struct TraceContext SlShadowContext(const struct TraceContext *cxt,
 	shad_cxt.trace_target = ObjGetShadowTarget(obj);
 
 	return shad_cxt;
+}
+
+struct TraceContext SlSelfHitContext(const struct TraceContext *cxt,
+		const struct ObjectInstance *obj)
+{
+	struct TraceContext self_cxt = *cxt;
+
+	self_cxt.trace_target = ObjGetSelfHitTarget(obj);
+
+	return self_cxt;
 }
 
 int SlGetLightCount(const struct SurfaceInput *in)

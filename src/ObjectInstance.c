@@ -6,6 +6,7 @@ See LICENSE and README
 #include "ObjectInstance.h"
 #include "Intersection.h"
 #include "Accelerator.h"
+#include "ObjectGroup.h"
 #include "Interval.h"
 #include "Property.h"
 #include "Numeric.h"
@@ -37,6 +38,7 @@ struct ObjectInstance {
 	const struct ObjectGroup *reflection_target;
 	const struct ObjectGroup *refraction_target;
 	const struct ObjectGroup *shadow_target;
+	const struct ObjectGroup *self_target;
 };
 
 static void update_object_bounds(struct ObjectInstance *obj);
@@ -45,7 +47,8 @@ static void merge_sampled_bounds(struct ObjectInstance *obj);
 /* ObjectInstance interfaces */
 struct ObjectInstance *ObjNew(void)
 {
-	struct ObjectInstance *obj = (struct ObjectInstance *) malloc(sizeof(struct ObjectInstance));
+	struct ObjectInstance *obj =
+			(struct ObjectInstance *) malloc(sizeof(struct ObjectInstance));
 	if (obj == NULL)
 		return NULL;
 
@@ -62,6 +65,7 @@ struct ObjectInstance *ObjNew(void)
 	obj->reflection_target = NULL;
 	obj->refraction_target = NULL;
 	obj->shadow_target = NULL;
+	obj->self_target = NULL;
 
 	return obj;
 }
@@ -183,6 +187,13 @@ void ObjSetShadowTarget(struct ObjectInstance *obj, const struct ObjectGroup *gr
 	obj->shadow_target = grp;
 }
 
+/* TODO come up with better way to make self target */
+void ObjSetSelfHitTarget(struct ObjectInstance *obj, const struct ObjectGroup *grp)
+{
+	assert(grp != NULL);
+	obj->self_target = grp;
+}
+
 const struct ObjectGroup *ObjGetReflectTarget(const struct ObjectInstance *obj)
 {
 	return obj->reflection_target;
@@ -196,6 +207,11 @@ const struct ObjectGroup *ObjGetRefractTarget(const struct ObjectInstance *obj)
 const struct ObjectGroup *ObjGetShadowTarget(const struct ObjectInstance *obj)
 {
 	return obj->shadow_target;
+}
+
+const struct ObjectGroup *ObjGetSelfHitTarget(const struct ObjectInstance *obj)
+{
+	return obj->self_target;
 }
 
 const struct Shader *ObjGetShader(const struct ObjectInstance *obj)

@@ -902,6 +902,16 @@ static int create_implicit_groups(void)
 
 		if (ObjGetShadowTarget(obj) == NULL)
 			ObjSetShadowTarget(obj, all_objects);
+
+		{
+			/* self hit group */
+			struct ObjectGroup *self_group = ScnNewObjectGroup(get_scene());
+			if (self_group == NULL) {
+				/* TODO error handling */
+			}
+			ObjGroupAdd(self_group, obj);
+			ObjSetSelfHitTarget(obj, self_group);
+		}
 	}
 
 	renderer = ScnGetRenderer(get_scene(), 0);

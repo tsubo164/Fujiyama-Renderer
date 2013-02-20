@@ -47,9 +47,7 @@ struct ObjectGroup {
 
 struct ObjectGroup *ObjGroupNew(void)
 {
-	struct ObjectGroup *grp;
-
-	grp = (struct ObjectGroup *) malloc(sizeof(struct ObjectGroup));
+	struct ObjectGroup *grp = (struct ObjectGroup *) malloc(sizeof(struct ObjectGroup));
 	if (grp == NULL)
 		return NULL;
 

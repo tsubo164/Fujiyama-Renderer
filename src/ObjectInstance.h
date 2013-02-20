@@ -56,15 +56,17 @@ extern void ObjSetLightList(struct ObjectInstance *obj, const struct Light **lig
 extern void ObjSetReflectTarget(struct ObjectInstance *obj, const struct ObjectGroup *grp);
 extern void ObjSetRefractTarget(struct ObjectInstance *obj, const struct ObjectGroup *grp);
 extern void ObjSetShadowTarget(struct ObjectInstance *obj, const struct ObjectGroup *grp);
+extern void ObjSetSelfHitTarget(struct ObjectInstance *obj, const struct ObjectGroup *grp);
 
 extern const struct ObjectGroup *ObjGetReflectTarget(const struct ObjectInstance *obj);
 extern const struct ObjectGroup *ObjGetRefractTarget(const struct ObjectInstance *obj);
 extern const struct ObjectGroup *ObjGetShadowTarget(const struct ObjectInstance *obj);
+extern const struct ObjectGroup *ObjGetSelfHitTarget(const struct ObjectInstance *obj);
+
 extern const struct Shader *ObjGetShader(const struct ObjectInstance *obj);
 extern const struct Light **ObjGetLightList(const struct ObjectInstance *obj);
 extern int ObjGetLightCount(const struct ObjectInstance *obj);
 extern void ObjGetBounds(const struct ObjectInstance *obj, double *bounds);
-
 extern void ObjComputeBounds(struct ObjectInstance *obj);
 
 /* sampling */
@@ -72,7 +74,6 @@ extern int ObjIntersect(const struct ObjectInstance *obj, double time,
 			const struct Ray *ray, struct Intersection *isect);
 extern int ObjVolumeIntersect(const struct ObjectInstance *obj, double time,
 			const struct Ray *ray, struct Interval *interval);
-
 extern int ObjGetVolumeSample(const struct ObjectInstance *obj, double time,
 			const double *point, struct VolumeSample *sample);
 
