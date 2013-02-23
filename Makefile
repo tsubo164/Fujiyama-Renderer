@@ -80,7 +80,7 @@ files_   := Accelerator Array Box Camera Curve CurveIO Filter FrameBuffer FrameB
 	ImportanceSampling Intersection Interval IO Light Matrix Mesh MeshIO Mipmap Noise \
 	Numeric ObjectGroup ObjectInstance OS Plugin PrimitiveSet Procedure Progress Property \
 	Random Renderer Sampler Scene SceneInterface Shader String SL Texture Tiler Timer \
-	Transform Triangle Turbulence Vector Volume VolumeAccelerator VolumeFilling
+	Transform Triangle Turbulence Volume VolumeAccelerator VolumeFilling
 
 subtgt_  := libscene.so
 cflags_  := -fPIC
