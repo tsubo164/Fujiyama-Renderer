@@ -1,0 +1,19 @@
+Fujiyama Renderer v0.1.2(Alpha) Release Notes
+=============================================
+
+New features since v0.1.1
+-------------------------
+ * Subsurface scattering shader has been implemented. The key properties are
+   scattering_coefficient and absorption_coefficient. More intuitive properties
+   for artists will be added in the future.
+
+ * obj2mesh has been added. Now you can render lots of assets of obj formats.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Deep shadow
+ * Displacement shader
+ * Subdivision surface
+ * Alembic support

@@ -26,7 +26,7 @@ designed to handle production image rendering.
   + Volume Filling Procedure - Surface wisps procedure provided
 
 * File format
-  + Original mesh format - ply2mesh is provided
+  + Original mesh format - ply2mesh and obj2mesh are provided
   + Original curve format - curvegen is provided
   + Original mipmap format - hdr2mip is provided
   + Original framebuffer format - fb2exr is provided
@@ -47,6 +47,7 @@ designed to handle production image rendering.
 * Shading and Texture
   + On demand reading of mipmap - unlimited number of texture images
   + Pluggable shader DSO - shaders can be written in C/C++ 
+  + Subsurface scattering - implemented in shader
 
 * Acceleratotion structure
   + On demand construction of accelerator - avoids unnecessary construction

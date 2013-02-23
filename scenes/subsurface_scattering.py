@@ -106,7 +106,6 @@ si.AssignFrameBuffer('ren1', 'fb1')
 si.SetProperty2('ren1', 'resolution', 640, 480)
 #si.SetProperty2('ren1', 'resolution', 160, 120)
 si.SetProperty2('ren1', 'pixelsamples', 12, 12)
-#si.SetProperty2('ren1', 'pixelsamples', 6, 6)
 
 #Rendering
 si.RenderScene('ren1')
