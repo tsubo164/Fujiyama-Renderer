@@ -6,22 +6,23 @@ See LICENSE and README
 #include "Texture.h"
 #include "FrameBufferIO.h"
 #include "FrameBuffer.h"
+#include "TexCoord.h"
 #include "Mipmap.h"
 #include "Vector.h"
+#include "Color.h"
 #include "Box.h"
 #include <stdlib.h>
 
-static const float NO_TEXTURE_COLOR[] = {1, .63, .63};
+static const struct Color4 NO_TEXTURE_COLOR = {1, .63, .63};
 
 struct Texture {
 	struct FrameBuffer *fb;
 	int width;
 	int height;
-	int databox[4];
-	int viewbox[4];
 
 	struct MipInput *mip;
-	int lasttile[2];
+	int last_xtile;
+	int last_ytile;
 };
 
 struct Texture *TexNew(void)
@@ -32,8 +33,8 @@ struct Texture *TexNew(void)
 		return NULL;
 
 	tex->mip = NULL;
-	tex->lasttile[0] = -1;
-	tex->lasttile[1] = -1;
+	tex->last_xtile = -1;
+	tex->last_ytile = -1;
 
 	return tex;
 }
@@ -48,44 +49,43 @@ void TexFree(struct Texture *tex)
 	free(tex);
 }
 
-void TexLookup(struct Texture *tex, float u, float v, float *color)
+void TexLookup(struct Texture *tex, float u, float v, struct Color4 *rgba)
 {
-	const float *pixel = NULL;
-	float uv[2] = {0};
+	struct TexCoord tex_space = {0, 0};
+	struct TexCoord tile_space = {0, 0};
 
 	int XNTILES, YNTILES;
 	int xpxl, ypxl;
 	int xtile, ytile;
-	float tileuv[2] = {0};
 
 	if (tex == NULL || tex->mip == NULL) {
-		VEC3_COPY(color, NO_TEXTURE_COLOR);
+		*rgba = NO_TEXTURE_COLOR;
 		return;
 	}
 
-	uv[0] = u - floor(u);
-	uv[1] = v - floor(v);
+	tex_space.u = u - floor(u);
+	tex_space.v = v - floor(v);
 
 	XNTILES = tex->mip->xntiles;
 	YNTILES = tex->mip->yntiles;
 
-	tileuv[0] = uv[0] * XNTILES;
-	tileuv[1] = (1-uv[1]) * YNTILES;
+	tile_space.u = tex_space.u * XNTILES;
+	tile_space.v = (1-tex_space.v) * YNTILES;
 
-	xtile = (int) floor(tileuv[0]);
-	ytile = (int) floor(tileuv[1]);
+	xtile = (int) floor(tile_space.u);
+	ytile = (int) floor(tile_space.v);
 
-	if (xtile != tex->lasttile[0] || ytile != tex->lasttile[1]) {
+	if (xtile != tex->last_xtile || ytile != tex->last_ytile) {
 		tex->mip->data = FbGetWritable(tex->fb, 0, 0, 0);
 		MipReadTile(tex->mip, xtile, ytile);
-		tex->lasttile[0] = xtile;
-		tex->lasttile[1] = ytile;
+		tex->last_xtile = xtile;
+		tex->last_ytile = ytile;
 	}
 
-	xpxl = (int)( (tileuv[0] - floor(tileuv[0])) * 64);
-	ypxl = (int)( (tileuv[1] - floor(tileuv[1])) * 64);
-	pixel = FbGetReadOnly(tex->fb, xpxl, ypxl, 0);
-	VEC3_SET(color, pixel[0], pixel[1], pixel[2]);
+	xpxl = (int)( (tile_space.u - floor(tile_space.u)) * 64);
+	ypxl = (int)( (tile_space.v - floor(tile_space.v)) * 64);
+
+	FbGetColor(tex->fb, xpxl, ypxl, rgba);
 }
 
 int TexLoadFile(struct Texture *tex, const char *filename)

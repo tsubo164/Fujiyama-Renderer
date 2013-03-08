@@ -7,6 +7,8 @@ See LICENSE and README
 #define TRANSFORM_H
 
 #include "Property.h"
+#include "Matrix.h"
+#include "Vector.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,26 +30,28 @@ enum TransformOrder {
 };
 
 struct Transform {
-	double matrix[16];
-	double inverse[16];
+	struct Matrix matrix;
+	struct Matrix inverse;
 
 	int transform_order;
 	int rotate_order;
 
-	double translate[3];
-	double rotate[3];
-	double scale[3];
+	struct Vector translate;
+	struct Vector rotate;
+	struct Vector scale;
 };
+
+struct Box;
 
 extern void XfmReset(struct Transform *transform);
 
-extern void XfmTransformPoint(const struct Transform *transform, double *point);
-extern void XfmTransformVector(const struct Transform *transform, double *vector);
-extern void XfmTransformBounds(const struct Transform *transform, double *bounds);
+extern void XfmTransformPoint(const struct Transform *transform, struct Vector *point);
+extern void XfmTransformVector(const struct Transform *transform, struct Vector *vector);
+extern void XfmTransformBounds(const struct Transform *transform, struct Box *bounds);
 
-extern void XfmTransformPointInverse(const struct Transform *transform, double *point);
-extern void XfmTransformVectorInverse(const struct Transform *transform, double *vector);
-extern void XfmTransformBoundsInverse(const struct Transform *transform, double *bounds);
+extern void XfmTransformPointInverse(const struct Transform *transform, struct Vector *point);
+extern void XfmTransformVectorInverse(const struct Transform *transform, struct Vector *vector);
+extern void XfmTransformBoundsInverse(const struct Transform *transform, struct Box *bounds);
 
 extern void XfmSetTranslate(struct Transform *transform, double tx, double ty, double tz);
 extern void XfmSetRotate(struct Transform *transform, double rx, double ry, double rz);

@@ -11,6 +11,7 @@ extern "C" {
 #endif
 
 struct FrameBuffer;
+struct Color4;
 
 extern struct FrameBuffer *FbNew(void);
 extern void FbFree(struct FrameBuffer *fb);
@@ -25,6 +26,8 @@ extern int FbIsEmpty(const struct FrameBuffer *fb);
 
 extern float *FbGetWritable(struct FrameBuffer *fb, int x, int y, int z);
 extern const float *FbGetReadOnly(const struct FrameBuffer *fb, int x, int y, int z);
+
+extern void FbGetColor(struct FrameBuffer *fb, int x, int y, struct Color4 *rgba);
 
 #ifdef __cplusplus
 } /* extern "C" */

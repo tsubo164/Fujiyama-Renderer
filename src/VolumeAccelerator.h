@@ -13,6 +13,7 @@ extern "C" {
 struct VolumeAccelerator;
 struct IntervalList;
 struct Interval;
+struct Box;
 struct Ray;
 
 enum VolumeAcceleratorType {
@@ -22,14 +23,14 @@ enum VolumeAcceleratorType {
 
 typedef int (*VolumeIntersectFunction)(const void *volume_set, int volume_id, double time,
 			const struct Ray *ray, struct Interval *interval);
-typedef void (*VolumeBoundsFunction)(const void *volume_set, int volume_id, double *bounds);
+typedef void (*VolumeBoundsFunction)(const void *volume_set, int volume_id, struct Box *bounds);
 
 extern struct VolumeAccelerator *VolumeAccNew(int accelerator_type);
 extern void VolumeAccFree(struct VolumeAccelerator *acc);
 
-extern void VolumeAccGetBounds(const struct VolumeAccelerator *acc, double *bounds);
+extern void VolumeAccGetBounds(const struct VolumeAccelerator *acc, struct Box *bounds);
 extern void VolumeAccSetTargetGeometry(struct VolumeAccelerator *acc,
-	const void *primset, int nprims, const double *primset_bounds,
+	const void *primset, int nprims, const struct Box *primset_bounds,
 	VolumeIntersectFunction prim_intersect_function,
 	VolumeBoundsFunction prim_bounds_function);
 

@@ -7,6 +7,8 @@ See LICENSE and README
 #define LIGHT_H
 
 #include "Transform.h"
+#include "Vector.h"
+#include "Color.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,9 +26,9 @@ struct Texture;
 
 struct LightSample {
 	const struct Light *light;
-	double P[3];
-	double N[3];
-	float color[3];
+	struct Vector P;
+	struct Vector N;
+	struct Color color;
 };
 
 extern struct Light *LgtNew(int light_type);
@@ -54,7 +56,7 @@ extern void LgtGetSamples(const struct Light *light,
 		struct LightSample *samples, int max_samples);
 extern int LgtGetSampleCount(const struct Light *light);
 extern void LgtIlluminate(const struct LightSample *sample,
-		const double *Ps, float *Cl);
+		const struct Vector *Ps, struct Color *Cl);
 
 extern int LgtPreprocess(struct Light *light);
 

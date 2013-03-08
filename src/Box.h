@@ -6,9 +6,16 @@ See LICENSE and README
 #ifndef BOX_H
 #define BOX_H
 
+#include "Vector.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+struct Box {
+	struct Vector min;
+	struct Vector max;
+};
 
 /* TODO delete BOX2 */
 /* BOX2 */
@@ -32,17 +39,17 @@ extern "C" {
 
 /* BOX3 */
 /* double box3[6] {min{0, 0, 0}, max{0, 0, 0}} */
-#define BOX3_XSIZE(box) ((box)[3]-(box)[0])
-#define BOX3_YSIZE(box) ((box)[4]-(box)[1])
-#define BOX3_ZSIZE(box) ((box)[5]-(box)[2])
+#define BOX3_XSIZE(box) ((box)->max.x - (box)->min.x)
+#define BOX3_YSIZE(box) ((box)->max.y - (box)->min.y)
+#define BOX3_ZSIZE(box) ((box)->max.z - (box)->min.z)
 
 #define BOX3_SET(dst,xmin,ymin,zmin,xmax,ymax,zmax) do { \
-	(dst)[0] = (xmin); \
-	(dst)[1] = (ymin); \
-	(dst)[2] = (zmin); \
-	(dst)[3] = (xmax); \
-	(dst)[4] = (ymax); \
-	(dst)[5] = (zmax); \
+	(dst)->min.x = (xmin); \
+	(dst)->min.y = (ymin); \
+	(dst)->min.z = (zmin); \
+	(dst)->max.x = (xmax); \
+	(dst)->max.y = (ymax); \
+	(dst)->max.z = (zmax); \
 	} while(0)
 
 #define BOX3_COPY(dst,a) do { \
@@ -55,27 +62,27 @@ extern "C" {
 	} while(0)
 
 #define BOX3_EXPAND(dst,a) do { \
-	(dst)[0] -= (a); \
-	(dst)[1] -= (a); \
-	(dst)[2] -= (a); \
-	(dst)[3] += (a); \
-	(dst)[4] += (a); \
-	(dst)[5] += (a); \
+	(dst)->min.x -= (a); \
+	(dst)->min.y -= (a); \
+	(dst)->min.z -= (a); \
+	(dst)->max.x += (a); \
+	(dst)->max.y += (a); \
+	(dst)->max.z += (a); \
 	} while(0)
 
-extern int BoxContainsPoint(const double *box, const double *point);
-extern void BoxAddPoint(double *box, const double *point);
-extern void BoxAddBox(double *box, const double *otherbox);
+extern int BoxContainsPoint(const struct Box *box, const struct Vector *point);
+extern void BoxAddPoint(struct Box *box, const struct Vector *point);
+extern void BoxAddBox(struct Box *box, const struct Box *otherbox);
 
-extern int BoxRayIntersect(const double *box,
-		const double *rayorig, const double *raydir,
+extern int BoxRayIntersect(const struct Box *box,
+		const struct Vector *rayorig, const struct Vector *raydir,
 		double ray_tmin, double ray_tmax,
 		double *hit_tmin, double *hit_tmax);
 
-extern void BoxCentroid(const double *box, double *centroid);
-extern double BoxDiagonal(const double *box);
+extern void BoxCentroid(const struct Box *box, struct Vector *centroid);
+extern double BoxDiagonal(const struct Box *box);
 
-extern void BoxPrint(const double *box);
+extern void BoxPrint(const struct Box *box);
 
 #ifdef __cplusplus
 } /* extern "C" */

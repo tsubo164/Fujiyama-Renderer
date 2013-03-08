@@ -95,11 +95,11 @@ static int MyRun(void *self)
 		return -1;
 	}
 
-	VEC3_SET(cp00.orig, 0, 0, 0);
-	VEC3_SET(cp00.udir, 1, 0, 0);
-	VEC3_SET(cp00.vdir, 0, 1, 0);
-	VEC3_SET(cp00.wdir, 0, 0, 1);
-	VEC3_SET(cp00.noise_space, 0, 0, 0);
+	VEC3_SET(&cp00.orig, 0, 0, 0);
+	VEC3_SET(&cp00.udir, 1, 0, 0);
+	VEC3_SET(&cp00.vdir, 0, 1, 0);
+	VEC3_SET(&cp00.wdir, 0, 0, 1);
+	VEC3_SET(&cp00.noise_space, 0, 0, 0);
 	cp00.density = 1;
 	cp00.radius = .5;
 	cp00.noise_amplitude = 1;
@@ -110,15 +110,15 @@ static int MyRun(void *self)
 	cp01 = cp00;
 	cp11 = cp00;
 
-	VEC3_SET(cp00.orig, -.75, -.75, 0);
-	VEC3_SET(cp10.orig,  .75, -.75, 0);
-	VEC3_SET(cp01.orig, -.75,  .75, 0);
-	VEC3_SET(cp11.orig,  .75,  .75, 0);
+	VEC3_SET(&cp00.orig, -.75, -.75, 0);
+	VEC3_SET(&cp10.orig,  .75, -.75, 0);
+	VEC3_SET(&cp01.orig, -.75,  .75, 0);
+	VEC3_SET(&cp11.orig,  .75,  .75, 0);
 
-	VEC3_SET(cp00.noise_space, 0, 0, 0);
-	VEC3_SET(cp10.noise_space, 1, 0, 0);
-	VEC3_SET(cp01.noise_space, 0, 1, 0);
-	VEC3_SET(cp11.noise_space, 1, 1, 0);
+	VEC3_SET(&cp00.noise_space, 0, 0, 0);
+	VEC3_SET(&cp10.noise_space, 1, 0, 0);
+	VEC3_SET(&cp01.noise_space, 0, 1, 0);
+	VEC3_SET(&cp11.noise_space, 1, 1, 0);
 
 	cp11.radius = 1;
 
@@ -177,39 +177,39 @@ static int FillWithSpecksOnSurface(struct Volume *volume,
 
 	for (i = 0; i < NSPECKS; i++) {
 		struct WispsControlPoint cp_t;
-		double cube[3] = {0};
-		double P_speck[3] = {0};
-		double P_noise_space[3] = {0};
-		double noise[3] = {0};
+		struct Vector cube = {0, 0, 0};
+		struct Vector P_speck = {0, 0, 0};
+		struct Vector P_noise_space = {0, 0, 0};
+		struct Vector noise = {0, 0, 0};
 		double s = 0;
 		double t = 0;
 
-		XorSolidCubeRand(&xr, cube);
+		XorSolidCubeRand(&xr, &cube);
 
-		s = cube[0];
-		t = cube[1];
+		s = cube.x;
+		t = cube.y;
 
 		BilerpWispConstrolPoint(&cp_t, cp00, cp10, cp01, cp11, s, t);
 
-		VEC3_COPY(P_speck, cp_t.orig);
-		P_speck[0] += cp_t.radius * cube[2] * cp_t.wdir[0];
-		P_speck[1] += cp_t.radius * cube[2] * cp_t.wdir[1];
-		P_speck[2] += cp_t.radius * cube[2] * cp_t.wdir[2];
+		P_speck = cp_t.orig;
+		P_speck.x += cp_t.radius * cube.z * cp_t.wdir.x;
+		P_speck.y += cp_t.radius * cube.z * cp_t.wdir.y;
+		P_speck.z += cp_t.radius * cube.z * cp_t.wdir.z;
 
-		P_noise_space[0] = cp_t.noise_space[0];
-		P_noise_space[1] = cp_t.noise_space[1];
-		P_noise_space[2] = cp_t.noise_space[2] + cube[2];
-		TrbEvaluate3d(turbulence, P_noise_space, noise);
+		P_noise_space.x = cp_t.noise_space.x;
+		P_noise_space.y = cp_t.noise_space.y;
+		P_noise_space.z = cp_t.noise_space.z + cube.z;
+		TrbEvaluate3d(turbulence, &P_noise_space, &noise);
 
-		noise[0] *= cp_t.noise_amplitude;
-		noise[1] *= cp_t.noise_amplitude;
-		noise[2] *= cp_t.radius * cp_t.noise_amplitude;
+		noise.x *= cp_t.noise_amplitude;
+		noise.y *= cp_t.noise_amplitude;
+		noise.z *= cp_t.radius * cp_t.noise_amplitude;
 
-		P_speck[0] += noise[0] * cp_t.udir[0] + noise[1] * cp_t.vdir[0] + noise[2] * cp_t.wdir[0];
-		P_speck[1] += noise[0] * cp_t.udir[1] + noise[1] * cp_t.vdir[1] + noise[2] * cp_t.wdir[1];
-		P_speck[2] += noise[0] * cp_t.udir[2] + noise[1] * cp_t.vdir[2] + noise[2] * cp_t.wdir[2];
+		P_speck.x += noise.x * cp_t.udir.x + noise.y * cp_t.vdir.x + noise.z * cp_t.wdir.x;
+		P_speck.y += noise.x * cp_t.udir.y + noise.y * cp_t.vdir.y + noise.z * cp_t.wdir.y;
+		P_speck.z += noise.x * cp_t.udir.z + noise.y * cp_t.vdir.z + noise.z * cp_t.wdir.z;
 
-		FillWithSphere(volume, P_speck, cp_t.speck_radius, cp_t.density);
+		FillWithSphere(volume, &P_speck, cp_t.speck_radius, cp_t.density);
 		PrgIncrement(progress);
 	}
 	PrgDone(progress);

@@ -22,9 +22,9 @@ static void set_error(int err);
 
 struct Procedure *PrcNew(const struct Plugin *plugin)
 {
-	struct Procedure *procedure;
-	const void *tmpvtbl;
-	void *tmpobj;
+	struct Procedure *procedure = NULL;
+	const void *tmpvtbl = NULL;
+	void *tmpobj = NULL;
 
 	if (!PlgTypeMatch(plugin, PROCEDURE_PLUGIN_TYPE)) {
 		set_error(PRC_ERR_TYPE_NOT_MATCH);

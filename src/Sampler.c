@@ -140,15 +140,15 @@ int SmpGenerateSamples(struct Sampler *sampler, const int *pixel_bounds)
 	sample = SAMPLE_ARRAY(sampler);
 	for (y = 0; y < sampler->ynsamples; y++) {
 		for (x = 0; x < sampler->xnsamples; x++) {
-			sample->uv[0] =     (.5 + x + xoffset) * udelta;
-			sample->uv[1] = 1 - (.5 + y + yoffset) * vdelta;
+			sample->uv.x =     (.5 + x + xoffset) * udelta;
+			sample->uv.y = 1 - (.5 + y + yoffset) * vdelta;
 
 			if (sampler->need_jitter) {
 				const double u_jitter = XorNextFloat01(&xr) * sampler->jitter;
 				const double v_jitter = XorNextFloat01(&xr) * sampler->jitter;
 
-				sample->uv[0] += udelta * (u_jitter - .5);
-				sample->uv[1] += vdelta * (v_jitter - .5);
+				sample->uv.x += udelta * (u_jitter - .5);
+				sample->uv.y += vdelta * (v_jitter - .5);
 			}
 
 			if (sampler->need_time_sampling) {

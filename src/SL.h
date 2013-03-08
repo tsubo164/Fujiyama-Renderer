@@ -6,6 +6,10 @@ See LICENSE and README
 #ifndef SL_H
 #define SL_H
 
+#include "TexCoord.h"
+#include "Vector.h"
+#include "Color.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -40,46 +44,48 @@ struct TraceContext {
 };
 
 struct SurfaceInput {
-	double P[3];
-	double N[3];
-	float Cd[3];
-	float uv[2];
+	struct Vector P;
+	struct Vector N;
+	struct Color Cd;
+	struct TexCoord uv;
 	float Alpha;
 
-	double Ng[3];
-	double I[3];
+	struct Vector Ng;
+	struct Vector I;
 
-	double dPds[3];
-	double dPdt[3];
+	struct Vector dPds;
+	struct Vector dPdt;
 
 	const struct ObjectInstance *shaded_object;
 };
 
 struct SurfaceOutput {
-	float Cs[3];
+	struct Color Cs;
 	float Os;
 };
 
 struct LightOutput {
-	float Cl[3];
-	float Ol[3];
-	double Ln[3];
+	struct Color Cl;
+	struct Color Ol;
+	struct Vector Ln;
 	double distance;
 };
 
-extern double SlFresnel(const double *I, const double *N, double ior);
-extern double SlPhong(const double *I, const double *N, const double *L, double roughness);
+extern double SlFresnel(const struct Vector *I, const struct Vector *N, double ior);
+extern double SlPhong(const struct Vector *I, const struct Vector *N, const struct Vector *L,
+		double roughness);
 
-extern void SlReflect(const double *I, const double *N, double *R);
-extern void SlRefract(const double *I, const double *N, double ior, double *T);
+extern void SlReflect(const struct Vector *I, const struct Vector *N, struct Vector *R);
+extern void SlRefract(const struct Vector *I, const struct Vector *N, double ior,
+		struct Vector *T);
 
 extern int SlTrace(const struct TraceContext *cxt,
-		const double *ray_orig, const double *ray_dir,
-		double ray_tmin, double ray_tmax, float *out_color, double *t_hit);
+		const struct Vector *ray_orig, const struct Vector *ray_dir,
+		double ray_tmin, double ray_tmax, struct Color4 *out_color, double *t_hit);
 extern int SlSurfaceRayIntersect(const struct TraceContext *cxt,
-		const double *ray_orig, const double *ray_dir,
+		const struct Vector *ray_orig, const struct Vector *ray_dir,
 		double ray_tmin, double ray_tmax,
-		double *P_hit, double *N_hit, double *t_hit);
+		struct Vector *P_hit, struct Vector *N_hit, double *t_hit);
 
 extern struct TraceContext SlCameraContext(const struct ObjectGroup *target);
 extern struct TraceContext SlReflectContext(const struct TraceContext *cxt,
@@ -94,7 +100,7 @@ extern struct TraceContext SlSelfHitContext(const struct TraceContext *cxt,
 struct LightSample;
 
 extern int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *sample,
-		const double *Ps, const double *axis, float angle,
+		const struct Vector *Ps, const struct Vector *axis, double angle,
 		const struct SurfaceInput *in, struct LightOutput *out);
 
 extern int SlGetLightCount(const struct SurfaceInput *in);

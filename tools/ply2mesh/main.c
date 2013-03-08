@@ -4,10 +4,13 @@ See LICENSE and README
 */
 
 #include "ply.h"
-#include "Array.h"
-#include "Vector.h"
+#include "TexCoord.h"
 #include "Triangle.h"
 #include "MeshIO.h"
+#include "Vector.h"
+#include "Array.h"
+#include "Color.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -69,9 +72,9 @@ int main(int argc, const char **argv)
 
 	int nverts = 0;
 	int ntris = 0;
-	double *P = NULL;
-	double *N = NULL;
-	float *uv = NULL;
+	struct Vector *P = NULL;
+	struct Vector *N = NULL;
+	struct TexCoord *uv = NULL;
 	int has_uv = 0;
 	struct Array *index_array;
 	struct MeshOutput *out;
@@ -102,7 +105,7 @@ int main(int argc, const char **argv)
 
 		if (strcmp(elem->name, "vertex") == 0) {
 			nverts = elem->num;
-			P = (double *) malloc(3 * sizeof(double) * nverts);
+			P = VecAlloc(nverts);
 
 			/* setup vertex P properties */
 			ply_get_property(in_ply, elem->name, &vert_props[0]);
@@ -123,21 +126,21 @@ int main(int argc, const char **argv)
 			}
 			/* allocate attributes */
 			if (has_uv) {
-				uv = (float *) malloc(2 * sizeof(float) * nverts);
+				uv = TexCoordAlloc(nverts);
 			}
 
 			/* get all vertex P properties */
 			for (j = 0; j < nverts; j++) {
-				double *pt;
+				struct Vector *pt;
 				struct PlyVertex vert;
 				ply_get_element(in_ply, &vert);
 
-				pt = &P[3*j];
+				pt = &P[j];
 				VEC3_SET(pt, vert.x, vert.y, vert.z);
 
 				if (has_uv) {
-					uv[2*j+0] = vert.uv1;
-					uv[2*j+1] = vert.uv2;
+					uv[j].u = vert.uv1;
+					uv[j].v = vert.uv2;
 				}
 			}
 		}
@@ -161,16 +164,16 @@ int main(int argc, const char **argv)
 	}
 
 	/* initialize N */
-	N = (double *) malloc(3 * sizeof(double) * nverts);
+	N = VecAlloc(nverts);
 	for (i = 0; i < nverts; i++) {
-		double *nml = &N[3*i];
+		struct Vector *nml = &N[i];
 		VEC3_SET(nml, 0, 0, 0);
 	}
 	/* compute N */
 	for (i = 0; i < ntris; i++) {
-		double *v0, *v1, *v2;
-		double *N0, *N1, *N2;
-		double Ng[3];
+		struct Vector *P0, *P1, *P2;
+		struct Vector *N0, *N1, *N2;
+		struct Vector Ng;
 		int i0, i1, i2;
 		int *indices = (int *) index_array->data;
 
@@ -178,21 +181,30 @@ int main(int argc, const char **argv)
 		i1 = indices[3*i + 1];
 		i2 = indices[3*i + 2];
 
-		v0 = &P[3*i0];
-		v1 = &P[3*i1];
-		v2 = &P[3*i2];
-		N0 = &N[3*i0];
-		N1 = &N[3*i1];
-		N2 = &N[3*i2];
+		P0 = &P[i0];
+		P1 = &P[i1];
+		P2 = &P[i2];
+		N0 = &N[i0];
+		N1 = &N[i1];
+		N2 = &N[i2];
 
-		TriComputeFaceNormal(Ng, v0, v1, v2);
-		VEC3_ADD_ASGN(N0, Ng);
-		VEC3_ADD_ASGN(N1, Ng);
-		VEC3_ADD_ASGN(N2, Ng);
+		TriComputeFaceNormal(&Ng, P0, P1, P2);
+
+		N0->x += Ng.x;
+		N0->y += Ng.y;
+		N0->z += Ng.z;
+
+		N1->x += Ng.x;
+		N1->y += Ng.y;
+		N1->z += Ng.z;
+
+		N2->x += Ng.x;
+		N2->y += Ng.y;
+		N2->z += Ng.z;
 	}
 	/* normalize N */
 	for (i = 0; i < nverts; i++) {
-		double *nml = &N[3*i];
+		struct Vector *nml = &N[i];
 		VEC3_NORMALIZE(nml);
 	}
 
@@ -213,9 +225,9 @@ int main(int argc, const char **argv)
 	ply_close(in_ply);
 	MshCloseOutputFile(out);
 	ArrFree(index_array);
-	free(P);
-	free(N);
-	free(uv);
+	VecFree(P);
+	VecFree(N);
+	TexCoordFree(uv);
 
 	return 0;
 }

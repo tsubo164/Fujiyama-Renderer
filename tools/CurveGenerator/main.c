@@ -3,15 +3,16 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "CurveIO.h"
-#include "MeshIO.h"
-#include "Mesh.h"
-#include "Array.h"
-#include "Noise.h"
-#include "Vector.h"
-#include "Numeric.h"
-#include "Triangle.h"
 #include "Progress.h"
+#include "Triangle.h"
+#include "CurveIO.h"
+#include "Numeric.h"
+#include "MeshIO.h"
+#include "Vector.h"
+#include "Color.h"
+#include "Noise.h"
+#include "Array.h"
+#include "Mesh.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,15 +34,15 @@ int main(int argc, const char **argv)
 	const char *meshfile;
 	const char *curvefile;
 
-	double *P = NULL;
+	struct Vector *P = NULL;
 	double *width = NULL;
-	float *Cd = NULL;
+	struct Color *Cd = NULL;
 	int *indices = NULL;
 	int *ncurves_on_face = NULL;
 	int nfaces = 0;
 
-	double *sourceP = NULL;
-	double *sourceN = NULL;
+	struct Vector *sourceP = NULL;
+	struct Vector *sourceN = NULL;
 
 	int total_ncurves;
 	int total_ncps;
@@ -112,11 +113,13 @@ int main(int argc, const char **argv)
 	ncurves_on_face = (int *) malloc(sizeof(int) * nfaces);
 	total_ncurves = 0;
 	for (i = 0; i < nfaces; i++) {
-		double P0[3], P1[3], P2[3];
-		double area;
+		struct Vector P0 = {0, 0, 0};
+		struct Vector P1 = {0, 0, 0};
+		struct Vector P2 = {0, 0, 0};
+		double area = 0;
 
-		MshGetFaceVertexPosition(mesh, i, P0, P1, P2);
-		area = TriComputeArea(P0, P1, P2);
+		MshGetFaceVertexPosition(mesh, i, &P0, &P1, &P2);
+		area = TriComputeArea(&P0, &P1, &P2);
 
 		ncurves_on_face[i] = 100000 * area;
 		total_ncurves += ncurves_on_face[i];
@@ -124,13 +127,13 @@ int main(int argc, const char **argv)
 	printf("total_ncurves: %d\n", total_ncurves);
 
 	total_ncps = 4 * total_ncurves;
-	P = VEC3_ALLOC(double, total_ncps);
+	P = VecAlloc(total_ncps);
 	width = (double *) malloc(sizeof(double) * total_ncps);
-	Cd = VEC3_ALLOC(float, total_ncps);
+	Cd = ColAlloc(total_ncps);
 	indices = (int *) malloc(sizeof(int) * total_ncurves);
 
-	sourceP = VEC3_ALLOC(double, total_ncurves);
-	sourceN = VEC3_ALLOC(double, total_ncurves);
+	sourceP = VecAlloc(total_ncurves);
+	sourceN = VecAlloc(total_ncurves);
 
 	printf("Computing curves' posittion ...\n");
 	PrgStart(progress, total_ncurves);
@@ -138,40 +141,44 @@ int main(int argc, const char **argv)
 	curve_id = 0;
 	for (i = 0; i < nfaces; i++) {
 		int j;
-		double P0[3], P1[3], P2[3];
-		double N0[3], N1[3], N2[3];
+		struct Vector P0 = {0, 0, 0};
+		struct Vector P1 = {0, 0, 0};
+		struct Vector P2 = {0, 0, 0};
+		struct Vector N0 = {0, 0, 0};
+		struct Vector N1 = {0, 0, 0};
+		struct Vector N2 = {0, 0, 0};
 
-		MshGetFaceVertexPosition(mesh, i, P0, P1, P2);
-		MshGetFaceVertexNormal(mesh, i, N0, N1, N2);
+		MshGetFaceVertexPosition(mesh, i, &P0, &P1, &P2);
+		MshGetFaceVertexNormal(mesh, i, &N0, &N1, &N2);
 
 		for (j = 0; j < ncurves_on_face[i]; j++) {
 			double gravity;
 			double u, v, t;
-			double *src_P;
-			double *src_N;
+			struct Vector *src_P;
+			struct Vector *src_N;
 
 			srand(12.34*i + 1232*j);
 			u = (((double) rand()) / RAND_MAX);
 			srand(21.43*i + 213*j);
 			v = (1-u) * (((double) rand()) / RAND_MAX);
 
-			src_P = VEC3_NTH(sourceP, curve_id);
-			src_N = VEC3_NTH(sourceN, curve_id);
+			src_P = &sourceP[curve_id];
+			src_N = &sourceN[curve_id];
 
 			t = 1-u-v;
-			src_P[0] = t * P0[0] + u * P1[0] + v * P2[0];
-			src_P[1] = t * P0[1] + u * P1[1] + v * P2[1];
-			src_P[2] = t * P0[2] + u * P1[2] + v * P2[2];
+			src_P->x = t * P0.x + u * P1.x + v * P2.x;
+			src_P->y = t * P0.y + u * P1.y + v * P2.y;
+			src_P->z = t * P0.z + u * P1.z + v * P2.z;
 
-			src_N[0] = t * N0[0] + u * N1[0] + v * N2[0];
-			src_N[1] = t * N0[1] + u * N1[1] + v * N2[1];
-			src_N[2] = t * N0[2] + u * N1[2] + v * N2[2];
+			src_N->x = t * N0.x + u * N1.x + v * N2.x;
+			src_N->y = t * N0.y + u * N1.y + v * N2.y;
+			src_N->z = t * N0.z + u * N1.z + v * N2.z;
 
 			VEC3_NORMALIZE(src_N);
 
 			srand(i+j);
 			gravity = .5 + .5 * (((double) rand()) / RAND_MAX);
-			src_N[1] -= gravity;
+			src_N->y -= gravity;
 			VEC3_NORMALIZE(src_N);
 
 			curve_id++;
@@ -192,28 +199,28 @@ int main(int argc, const char **argv)
 
 		for (vtx = 0; vtx < 4; vtx++) {
 			const double LENGTH = .02;
-			double *dst_P;
-			double *src_P;
-			double *src_N;
-			double noisevec[3] = {0};
+			struct Vector *dst_P;
+			struct Vector *src_P;
+			struct Vector *src_N;
+			struct Vector noisevec = {0, 0, 0};
 			double noiseamp;
-			float *dst_Cd;
+			struct Color *dst_Cd;
 
 			srand(12*i + 49*vtx);
 			if (vtx > 0) {
-				noisevec[0] = (((double) rand()) / RAND_MAX);
-				noisevec[1] = (((double) rand()) / RAND_MAX);
-				noisevec[2] = (((double) rand()) / RAND_MAX);
+				noisevec.x = (((double) rand()) / RAND_MAX);
+				noisevec.y = (((double) rand()) / RAND_MAX);
+				noisevec.z = (((double) rand()) / RAND_MAX);
 			}
 			noiseamp = .75 * LENGTH;
 
-			dst_P = VEC3_NTH(P, cp_id);
-			src_P = VEC3_NTH(sourceP, curve_id);
-			src_N = VEC3_NTH(sourceN, curve_id);
+			dst_P = &P[cp_id];
+			src_P = &sourceP[curve_id];
+			src_N = &sourceN[curve_id];
 
-			dst_P[0] = src_P[0] + noiseamp * noisevec[0] + vtx * LENGTH/3. * src_N[0];
-			dst_P[1] = src_P[1] + noiseamp * noisevec[1] + vtx * LENGTH/3. * src_N[1];
-			dst_P[2] = src_P[2] + noiseamp * noisevec[2] + vtx * LENGTH/3. * src_N[2];
+			dst_P->x = src_P->x + noiseamp * noisevec.x + vtx * LENGTH/3. * src_N->x;
+			dst_P->y = src_P->y + noiseamp * noisevec.y + vtx * LENGTH/3. * src_N->y;
+			dst_P->z = src_P->z + noiseamp * noisevec.z + vtx * LENGTH/3. * src_N->z;
 
 			if (vtx == 0) {
 				double *w = &width[cp_id];
@@ -223,23 +230,23 @@ int main(int argc, const char **argv)
 				w[3] = .0001;
 			}
 
-			dst_Cd = VEC3_NTH(Cd, cp_id);
+			dst_Cd = &Cd[cp_id];
 			{
 				double amp = 1;
 				double C_noise = 0;
-				double C_dark[3] = {.8, .5, .3};
-				double C_light[3] = {.9, .88, .85};
-				double freq[3] = {3, 3, 3};
-				double offset[3] = {0, 1, 0};
-				double src_Q[3] = {0};
+				struct Color C_dark = {.8, .5, .3};
+				struct Color C_light = {.9, .88, .85};
+				struct Vector freq = {3, 3, 3};
+				struct Vector offset = {0, 1, 0};
+				struct Vector src_Q = {0, 0, 0};
 
-				src_Q[0] = src_P[0] * freq[0] + offset[0];
-				src_Q[1] = src_P[1] * freq[1] + offset[1];
-				src_Q[2] = src_P[2] * freq[2] + offset[2];
+				src_Q.x = src_P->x * freq.x + offset.x;
+				src_Q.y = src_P->y * freq.y + offset.y;
+				src_Q.z = src_P->z * freq.z + offset.z;
 
-				C_noise = amp * PerlinNoise(src_Q, 2, .5, 2);
+				C_noise = amp * PerlinNoise(&src_Q, 2, .5, 2);
 				C_noise = SmoothStep(C_noise, .55, .75);
-				VEC3_LERP(dst_Cd, C_dark, C_light, C_noise);
+				COL_LERP(dst_Cd, &C_dark, &C_light, C_noise);
 			}
 
 			cp_id++;
@@ -275,13 +282,13 @@ int main(int argc, const char **argv)
 	/* clean up */
 	CrvCloseOutputFile(out);
 	MshFree(mesh);
-	free(P);
+	VecFree(P);
 	free(width);
-	free(Cd);
+	ColFree(Cd);
 	free(indices);
 	free(ncurves_on_face);
-	free(sourceP);
-	free(sourceN);
+	VecFree(sourceP);
+	VecFree(sourceN);
 
 	return 0;
 }

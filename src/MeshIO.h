@@ -12,6 +12,9 @@ See LICENSE and README
 extern "C" {
 #endif
 
+struct TexCoord;
+struct Vector;
+struct Color;
 struct Mesh;
 
 enum MshErrorNo {
@@ -45,10 +48,10 @@ struct MeshOutput {
 	int nfaces;
 	int nface_attrs;
 
-	double *P;
-	double *N;
-	float *Cd;
-	float *uv;
+	struct Vector *P;
+	struct Vector *N;
+	struct Color *Cd;
+	struct TexCoord *uv;
 	int *indices;
 };
 

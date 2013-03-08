@@ -4,8 +4,8 @@ See LICENSE and README
 */
 
 #include "Tiler.h"
-#include "Vector.h"
 #include "Numeric.h"
+#include <math.h>
 #include <stdlib.h>
 #include <assert.h>
 
@@ -21,9 +21,8 @@ struct Tiler {
 
 struct Tiler *TlrNew(int xres, int yres, int xtile_size, int ytile_size)
 {
-	struct Tiler *tiler;
+	struct Tiler *tiler = (struct Tiler *) malloc(sizeof(struct Tiler));
 
-	tiler = (struct Tiler *) malloc(sizeof(struct Tiler));
 	if (tiler == NULL)
 		return NULL;
 
@@ -64,15 +63,15 @@ int TlrGetTileCount(const struct Tiler *tiler)
 
 struct Tile *TlrGetNextTile(struct Tiler *tiler)
 {
-	struct Tile *t;
+	struct Tile *tile = NULL;
 
 	if (tiler->i >= TlrGetTileCount(tiler))
 		return NULL;
 
-	t = tiler->tiles + tiler->i;
+	tile = tiler->tiles + tiler->i;
 	tiler->i++;
 
-	return t;
+	return tile;
 }
 
 int TlrGenerateTiles(struct Tiler *tiler, int xmin, int ymin, int xmax, int ymax)

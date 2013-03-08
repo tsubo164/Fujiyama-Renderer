@@ -4,6 +4,7 @@ See LICENSE and README
 */
 
 #include "ObjParser.h"
+#include "TexCoord.h"
 #include "Triangle.h"
 #include "MeshIO.h"
 #include "Vector.h"
@@ -95,9 +96,9 @@ struct ObjBuffer *ObjBufferNew(void)
 	if (buffer == NULL)
 		return NULL;
 
-	buffer->P = ArrNew(sizeof(double));
-	buffer->N = ArrNew(sizeof(double));
-	buffer->uv = ArrNew(sizeof(float));
+	buffer->P = ArrNew(sizeof(struct Vector));
+	buffer->N = ArrNew(sizeof(struct Vector));
+	buffer->uv = ArrNew(sizeof(struct TexCoord));
 	buffer->vertex_indices = ArrNew(sizeof(int));
 	buffer->texture_indices = ArrNew(sizeof(int));
 	buffer->normal_indices = ArrNew(sizeof(int));
@@ -132,10 +133,12 @@ static int read_vertx(
 		double w)
 {
 	struct ObjBuffer *buffer = (struct ObjBuffer *) interpreter;
+	struct Vector P = {0, 0, 0};
 
-	ArrPush(buffer->P, &x);
-	ArrPush(buffer->P, &y);
-	ArrPush(buffer->P, &z);
+	P.x = x;
+	P.y = y;
+	P.z = z;
+	ArrPush(buffer->P, &P);
 
 	buffer->nverts++;
 	return 0;
@@ -150,12 +153,11 @@ static int read_texture(
 		double w)
 {
 	struct ObjBuffer *buffer = (struct ObjBuffer *) interpreter;
+	struct TexCoord uv = {0, 0};
 
-	float uv[2] = {0, 0};
-	uv[0] = x;
-	uv[1] = y;
-	ArrPush(buffer->uv, &uv[0]);
-	ArrPush(buffer->uv, &uv[1]);
+	uv.u = x;
+	uv.v = y;
+	ArrPush(buffer->uv, &uv);
 
 	return 0;
 }
@@ -169,10 +171,12 @@ static int read_normal(
 		double w)
 {
 	struct ObjBuffer *buffer = (struct ObjBuffer *) interpreter;
+	struct Vector N = {0, 0, 0};
 
-	ArrPush(buffer->N, &x);
-	ArrPush(buffer->N, &y);
-	ArrPush(buffer->N, &z);
+	N.x = x;
+	N.y = y;
+	N.z = z;
+	ArrPush(buffer->N, &N);
 
 	return 0;
 }
@@ -260,9 +264,9 @@ int ObjBufferToMeshFile(const struct ObjBuffer *buffer, const char *filename)
 	}
 
 	out->nverts = buffer->nverts;
-	out->P = (double *) buffer->P->data;
-	out->N = (double *) buffer->N->data;
-	out->uv = (float *) buffer->uv->data;
+	out->P = (struct Vector *) buffer->P->data;
+	out->N = (struct Vector *) buffer->N->data;
+	out->uv = (struct TexCoord *) buffer->uv->data;
 	out->nfaces = buffer->nfaces;
 	out->nface_attrs = 1;
 	out->indices = (int *) buffer->vertex_indices->data;
@@ -276,8 +280,8 @@ int ObjBufferComputeNormals(struct ObjBuffer *buffer)
 {
 	const int nverts = buffer->nverts;
 	const int nfaces = buffer->nfaces;
-	double *P = (double *) buffer->P->data;
-	double *N = (double *) buffer->N->data;
+	struct Vector *P = (struct Vector *) buffer->P->data;
+	struct Vector *N = (struct Vector *) buffer->N->data;
 	int *indices = (int *) buffer->vertex_indices->data;
 	int i;
 
@@ -286,40 +290,49 @@ int ObjBufferComputeNormals(struct ObjBuffer *buffer)
 
 	if (N == NULL) {
 		ArrResize(buffer->N, 3 * nverts);
-		N = (double *) buffer->N->data;
+		N = (struct Vector *) buffer->N->data;
 	}
 
 	/* initialize N */
 	for (i = 0; i < nverts; i++) {
-		double *nml = &N[3*i];
+		struct Vector *nml = &N[i];
 		VEC3_SET(nml, 0, 0, 0);
 	}
 
 	/* compute N */
 	for (i = 0; i < nfaces; i++) {
-		double *P0, *P1, *P2;
-		double *N0, *N1, *N2;
-		double Ng[3] = {0, 0, 0};
+		struct Vector *P0, *P1, *P2;
+		struct Vector *N0, *N1, *N2;
+		struct Vector Ng = {0, 0, 0};
 		const int i0 = indices[3*i + 0];
 		const int i1 = indices[3*i + 1];
 		const int i2 = indices[3*i + 2];
 
-		P0 = &P[3*i0];
-		P1 = &P[3*i1];
-		P2 = &P[3*i2];
-		N0 = &N[3*i0];
-		N1 = &N[3*i1];
-		N2 = &N[3*i2];
+		P0 = &P[i0];
+		P1 = &P[i1];
+		P2 = &P[i2];
+		N0 = &N[i0];
+		N1 = &N[i1];
+		N2 = &N[i2];
 
-		TriComputeFaceNormal(Ng, P0, P1, P2);
-		VEC3_ADD_ASGN(N0, Ng);
-		VEC3_ADD_ASGN(N1, Ng);
-		VEC3_ADD_ASGN(N2, Ng);
+		TriComputeFaceNormal(&Ng, P0, P1, P2);
+
+		N0->x += Ng.x;
+		N0->y += Ng.y;
+		N0->z += Ng.z;
+
+		N1->x += Ng.x;
+		N1->y += Ng.y;
+		N1->z += Ng.z;
+
+		N2->x += Ng.x;
+		N2->y += Ng.y;
+		N2->z += Ng.z;
 	}
 
 	/* normalize N */
 	for (i = 0; i < nverts; i++) {
-		double *nml = &N[3*i];
+		struct Vector *nml = &N[i];
 		VEC3_NORMALIZE(nml);
 	}
 

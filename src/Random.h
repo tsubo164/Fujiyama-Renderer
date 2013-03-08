@@ -10,6 +10,9 @@ See LICENSE and README
 extern "C" {
 #endif
 
+struct Vector2;
+struct Vector;
+
 struct XorShift {
 	unsigned long state[4];
 };
@@ -18,12 +21,14 @@ extern void XorInit(struct XorShift *xr);
 
 extern unsigned long XorNextInteger(struct XorShift *xr);
 extern double XorNextFloat01(struct XorShift *xr);
-extern void XorSolidSphereRand(struct XorShift *xr, double *out_position);
-extern void XorHollowSphereRand(struct XorShift *xr, double *out_position);
-extern void XorSolidDiskRand(struct XorShift *xr, double *out_position);
-extern void XorHollowDiskRand(struct XorShift *xr, double *out_position);
-extern void XorSolidCubeRand(struct XorShift *xr, double *out_position);
-extern void XorGaussianDiskRand(struct XorShift *xr, double *out_position);
+
+extern void XorSolidSphereRand(struct XorShift *xr, struct Vector *out_position);
+extern void XorHollowSphereRand(struct XorShift *xr, struct Vector *out_position);
+extern void XorSolidCubeRand(struct XorShift *xr, struct Vector *out_position);
+
+extern void XorSolidDiskRand(struct XorShift *xr, struct Vector2 *out_position);
+extern void XorHollowDiskRand(struct XorShift *xr, struct Vector2 *out_position);
+extern void XorGaussianDiskRand(struct XorShift *xr, struct Vector2 *out_position);
 
 extern double XorGaussianRand(struct XorShift *xr);
 

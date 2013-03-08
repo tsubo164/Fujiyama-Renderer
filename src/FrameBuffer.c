@@ -6,6 +6,7 @@ See LICENSE and README
 #include "FrameBuffer.h"
 #include "Numeric.h"
 #include "Vector.h"
+#include "Color.h"
 #include "Box.h"
 #include <stdlib.h>
 #include <limits.h>
@@ -152,6 +153,30 @@ float *FbGetWritable(struct FrameBuffer *fb, int x, int y, int z)
 const float *FbGetReadOnly(const struct FrameBuffer *fb, int x, int y, int z)
 {
 	return fb->buf + y * fb->width * fb->nchannels + x * fb->nchannels + z;
+}
+
+void FbGetColor(struct FrameBuffer *fb, int x, int y, struct Color4 *rgba)
+{
+	const float *pixel = fb->buf + y * fb->width * fb->nchannels + x * fb->nchannels;
+	
+	if (fb->nchannels == 1) {
+		rgba->r = pixel[0];
+		rgba->g = pixel[0];
+		rgba->b = pixel[0];
+		rgba->a = 1;
+	}
+	else if (fb->nchannels == 3) {
+		rgba->r = pixel[0];
+		rgba->g = pixel[1];
+		rgba->b = pixel[2];
+		rgba->a = 1;
+	}
+	else if (fb->nchannels == 4) {
+		rgba->r = pixel[0];
+		rgba->g = pixel[1];
+		rgba->b = pixel[2];
+		rgba->a = pixel[3];
+	}
 }
 
 static void free_buffer(struct FrameBuffer *fb)

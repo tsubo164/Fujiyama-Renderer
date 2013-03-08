@@ -11,6 +11,7 @@ extern "C" {
 #endif
 
 struct Turbulence;
+struct Vector;
 
 extern struct Turbulence *TrbNew(void);
 extern void TrbFree(struct Turbulence *turbulence);
@@ -22,8 +23,9 @@ extern void TrbSetLacunarity(struct Turbulence *turbulence, double lacunarity);
 extern void TrbSetGain(struct Turbulence *turbulence, double gain);
 extern void TrbSetOctaves(struct Turbulence *turbulence, int octaves);
 
-extern double TrbEvaluate(const struct Turbulence *turbulence, double *position);
-extern void TrbEvaluate3d(const struct Turbulence *turbulence, double *position, double *out_noise);
+extern double TrbEvaluate(const struct Turbulence *turbulence, const struct Vector *position);
+extern void TrbEvaluate3d(const struct Turbulence *turbulence, const struct Vector *position,
+		struct Vector *out_noise);
 
 #ifdef __cplusplus
 } /* extern "C" */

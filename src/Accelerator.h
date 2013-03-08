@@ -18,12 +18,13 @@ enum AcceleratorType {
 struct Accelerator;
 struct Intersection;
 struct PrimitiveSet;
+struct Box;
 struct Ray;
 
 extern struct Accelerator *AccNew(int accelerator_type);
 extern void AccFree(struct Accelerator *acc);
 
-extern void AccGetBounds(const struct Accelerator *acc, double *bounds);
+extern void AccGetBounds(const struct Accelerator *acc, struct Box *bounds);
 extern void AccSetPrimitiveSet(struct Accelerator *acc, const struct PrimitiveSet *primset);
 
 extern void AccComputeBounds(struct Accelerator *acc);

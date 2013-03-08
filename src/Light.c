@@ -15,7 +15,7 @@ See LICENSE and README
 #include <float.h>
 
 struct Light {
-	float color[3];
+	struct Color color;
 	float intensity;
 
 	/* transformation properties */
@@ -39,7 +39,7 @@ struct Light {
 			struct LightSample *samples, int max_samples);
 	void (*Illuminate)(const struct Light *light,
 			const struct LightSample *sample,
-			const double *Ps, float *Cl);
+			const struct Vector *Ps, struct Color *Cl);
 	int (*Preprocess)(struct Light *light);
 };
 
@@ -48,28 +48,28 @@ static void point_light_get_samples(const struct Light *light,
 		struct LightSample *samples, int max_samples);
 static void point_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
-		const double *Ps, float *Cl);
+		const struct Vector *Ps, struct Color *Cl);
 
 static int grid_light_get_sample_count(const struct Light *light);
 static void grid_light_get_samples(const struct Light *light,
 		struct LightSample *samples, int max_samples);
 static void grid_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
-		const double *Ps, float *Cl);
+		const struct Vector *Ps, struct Color *Cl);
 
 static int sphere_light_get_sample_count(const struct Light *light);
 static void sphere_light_get_samples(const struct Light *light,
 		struct LightSample *samples, int max_samples);
 static void sphere_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
-		const double *Ps, float *Cl);
+		const struct Vector *Ps, struct Color *Cl);
 
 static int dome_light_get_sample_count(const struct Light *light);
 static void dome_light_get_samples(const struct Light *light,
 		struct LightSample *samples, int max_samples);
 static void dome_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
-		const double *Ps, float *Cl);
+		const struct Vector *Ps, struct Color *Cl);
 static int dome_light_preprocess(struct Light *light);
 
 static int no_preprocess(struct Light *light);
@@ -88,7 +88,9 @@ struct Light *LgtNew(int light_type)
 
 	XfmInitTransformSampleList(&light->transform_samples);
 
-	VEC3_SET(light->color, 1, 1, 1);
+	light->color.r = 1;
+	light->color.g = 1;
+	light->color.b = 1;
 	light->intensity = 1;
 
 	light->type = light_type;
@@ -150,9 +152,9 @@ void LgtFree(struct Light *light)
 
 void LgtSetColor(struct Light *light, float r, float g, float b)
 {
-	light->color[0] = r;
-	light->color[1] = g;
-	light->color[2] = b;
+	light->color.r = r;
+	light->color.g = g;
+	light->color.b = b;
 }
 
 void LgtSetIntensity(struct Light *light, double intensity)
@@ -220,7 +222,7 @@ int LgtGetSampleCount(const struct Light *light)
 
 /* TODO should have struct Light *light parameter? */
 void LgtIlluminate(const struct LightSample *sample,
-		const double *Ps, float *Cl)
+		const struct Vector *Ps, struct Color *Cl)
 {
 	const struct Light *light = sample->light;
 	light->Illuminate(light, sample, Ps, Cl);
@@ -248,18 +250,18 @@ static void point_light_get_samples(const struct Light *light,
 	/* TODO time sampling */
 	XfmLerpTransformSample(&light->transform_samples, 0, &transform_interp);
 
-	VEC3_COPY(samples[0].P, transform_interp.translate);
-	VEC3_SET(samples[0].N, 0, 0, 0);
+	samples[0].P = transform_interp.translate;
+	VEC3_SET(&samples[0].N, 0, 0, 0);
 	samples[0].light = light;
 }
 
 static void point_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
-		const double *Ps, float *Cl)
+		const struct Vector *Ps, struct Color *Cl)
 {
-	Cl[0] = light->intensity * light->color[0];
-	Cl[1] = light->intensity * light->color[1];
-	Cl[2] = light->intensity * light->color[2];
+	Cl->r = light->intensity * light->color.r;
+	Cl->g = light->intensity * light->color.g;
+	Cl->b = light->intensity * light->color.b;
 }
 
 /* grid light */
@@ -273,59 +275,59 @@ static void grid_light_get_samples(const struct Light *light,
 {
 	struct Transform transform_interp;
 	int nsamples = LgtGetSampleCount(light);
-	double N_sample[] = {0, 1, 0};
+	struct Vector N_sample = {0, 1, 0};
 	int i;
 
 	/* TODO time sampling */
 	XfmLerpTransformSample(&light->transform_samples, 0, &transform_interp);
 
-	XfmTransformVector(&transform_interp, N_sample);
-	VEC3_NORMALIZE(N_sample);
+	XfmTransformVector(&transform_interp, &N_sample);
+	VEC3_NORMALIZE(&N_sample);
 
 	nsamples = MIN(nsamples, max_samples);
 	for (i = 0; i < nsamples; i++) {
 		struct XorShift *mutable_xr = (struct XorShift *) &light->xr;
 		const double x = (XorNextFloat01(mutable_xr) - .5);
 		const double z = (XorNextFloat01(mutable_xr) - .5);
-		double P_sample[] = {0, 0, 0};
-		P_sample[0] = x;
-		P_sample[2] = z;
+		struct Vector P_sample = {0, 0, 0};
+		P_sample.x = x;
+		P_sample.z = z;
 
-		XfmTransformPoint(&transform_interp, P_sample);
+		XfmTransformPoint(&transform_interp, &P_sample);
 
-		VEC3_COPY(samples[i].P, P_sample);
-		VEC3_COPY(samples[i].N, N_sample);
+		samples[i].P = P_sample;
+		samples[i].N = N_sample;
 		samples[i].light = light;
 	}
 }
 
 static void grid_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
-		const double *Ps, float *Cl)
+		const struct Vector *Ps, struct Color *Cl)
 {
-	double Ln[3] = {0, 0, 0};
+	struct Vector Ln = {0, 0, 0};
 	double dot = 0;
 
-	Ln[0] = Ps[0] - sample->P[0];
-	Ln[1] = Ps[1] - sample->P[1];
-	Ln[2] = Ps[2] - sample->P[2];
+	Ln.x = Ps->x - sample->P.x;
+	Ln.y = Ps->y - sample->P.y;
+	Ln.z = Ps->z - sample->P.z;
 
-	VEC3_NORMALIZE(Ln);
+	VEC3_NORMALIZE(&Ln);
 
-	dot = VEC3_DOT(Ln, sample->N);
+	dot = VEC3_DOT(&Ln, &sample->N);
 	if (light->double_sided) {
 		dot = ABS(dot);
 	} else {
 		dot = MAX(dot, 0);
 	}
 
-	Cl[0] = light->sample_intensity * light->color[0];
-	Cl[1] = light->sample_intensity * light->color[1];
-	Cl[2] = light->sample_intensity * light->color[2];
+	Cl->r = light->sample_intensity * light->color.r;
+	Cl->g = light->sample_intensity * light->color.g;
+	Cl->b = light->sample_intensity * light->color.b;
 
-	Cl[0] *= dot;
-	Cl[1] *= dot;
-	Cl[2] *= dot;
+	Cl->r *= dot;
+	Cl->g *= dot;
+	Cl->b *= dot;
 }
 
 /* sphere light */
@@ -347,45 +349,45 @@ static void sphere_light_get_samples(const struct Light *light,
 	nsamples = MIN(nsamples, max_samples);
 	for (i = 0; i < nsamples; i++) {
 		struct XorShift *mutable_xr = (struct XorShift *) &light->xr;
-		double P_sample[] = {0, 0, 0};
-		double N_sample[] = {0, 0, 0};
+		struct Vector P_sample = {0, 0, 0};
+		struct Vector N_sample = {0, 0, 0};
 
-		XorHollowSphereRand(mutable_xr, P_sample);
-		VEC3_COPY(N_sample, P_sample);
+		XorHollowSphereRand(mutable_xr, &P_sample);
+		N_sample = P_sample;
 
-		XfmTransformPoint(&transform_interp, P_sample);
-		XfmTransformVector(&transform_interp, N_sample);
-		VEC3_NORMALIZE(N_sample);
+		XfmTransformPoint(&transform_interp, &P_sample);
+		XfmTransformVector(&transform_interp, &N_sample);
+		VEC3_NORMALIZE(&N_sample);
 
-		VEC3_COPY(samples[i].P, P_sample);
-		VEC3_COPY(samples[i].N, N_sample);
+		samples[i].P = P_sample;
+		samples[i].N = N_sample;
 		samples[i].light = light;
 	}
 }
 
 static void sphere_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
-		const double *Ps, float *Cl)
+		const struct Vector *Ps, struct Color *Cl)
 {
-	double Ln[3] = {0, 0, 0};
+	struct Vector Ln = {0, 0, 0};
 	double dot = 0;
 
-	Ln[0] = Ps[0] - sample->P[0];
-	Ln[1] = Ps[1] - sample->P[1];
-	Ln[2] = Ps[2] - sample->P[2];
+	Ln.x = Ps->x - sample->P.x;
+	Ln.y = Ps->y - sample->P.y;
+	Ln.z = Ps->z - sample->P.z;
 
-	VEC3_NORMALIZE(Ln);
+	VEC3_NORMALIZE(&Ln);
 
-	dot = VEC3_DOT(Ln, sample->N);
+	dot = VEC3_DOT(&Ln, &sample->N);
 
 	if (dot > 0) {
-		Cl[0] = light->sample_intensity * light->color[0];
-		Cl[1] = light->sample_intensity * light->color[1];
-		Cl[2] = light->sample_intensity * light->color[2];
+		Cl->r = light->sample_intensity * light->color.r;
+		Cl->g = light->sample_intensity * light->color.g;
+		Cl->b = light->sample_intensity * light->color.b;
 	} else {
-		Cl[0] = 0;
-		Cl[1] = 0;
-		Cl[2] = 0;
+		Cl->r = 0;
+		Cl->g = 0;
+		Cl->b = 0;
 	}
 }
 
@@ -408,34 +410,34 @@ static void dome_light_get_samples(const struct Light *light,
 	nsamples = MIN(nsamples, max_samples);
 	for (i = 0; i < nsamples; i++) {
 		const struct DomeSample *dome_sample = &light->dome_samples[i];
-		double P_sample[] = {0, 0, 0};
-		double N_sample[] = {0, 0, 0};
+		struct Vector P_sample = {0, 0, 0};
+		struct Vector N_sample = {0, 0, 0};
 
-		P_sample[0] = dome_sample->dir[0] * FLT_MAX;
-		P_sample[1] = dome_sample->dir[1] * FLT_MAX;
-		P_sample[2] = dome_sample->dir[2] * FLT_MAX;
-		N_sample[0] = -1 * dome_sample->dir[0];
-		N_sample[1] = -1 * dome_sample->dir[1];
-		N_sample[2] = -1 * dome_sample->dir[2];
+		P_sample.x = dome_sample->dir.x * FLT_MAX;
+		P_sample.y = dome_sample->dir.y * FLT_MAX;
+		P_sample.z = dome_sample->dir.z * FLT_MAX;
+		N_sample.x = -1 * dome_sample->dir.x;
+		N_sample.y = -1 * dome_sample->dir.y;
+		N_sample.z = -1 * dome_sample->dir.z;
 
 		/* TODO cancel translate and scale */
-		XfmTransformPoint(&transform_interp, P_sample);
-		XfmTransformVector(&transform_interp, N_sample);
+		XfmTransformPoint(&transform_interp, &P_sample);
+		XfmTransformVector(&transform_interp, &N_sample);
 
-		VEC3_COPY(samples[i].P, P_sample);
-		VEC3_COPY(samples[i].N, N_sample);
-		VEC3_COPY(samples[i].color, dome_sample->color);
+		samples[i].P = P_sample;
+		samples[i].N = N_sample;
+		samples[i].color = dome_sample->color;
 		samples[i].light = light;
 	}
 }
 
 static void dome_light_illuminate(const struct Light *light,
 		const struct LightSample *sample,
-		const double *Ps, float *Cl)
+		const struct Vector *Ps, struct Color *Cl)
 {
-	Cl[0] = light->sample_intensity * sample->color[0];
-	Cl[1] = light->sample_intensity * sample->color[1];
-	Cl[2] = light->sample_intensity * sample->color[2];
+	Cl->r = light->sample_intensity * sample->color.r;
+	Cl->g = light->sample_intensity * sample->color.g;
+	Cl->b = light->sample_intensity * sample->color.b;
 }
 
 static int dome_light_preprocess(struct Light *light)
@@ -453,10 +455,13 @@ static int dome_light_preprocess(struct Light *light)
 			(struct DomeSample *) malloc(sizeof(struct DomeSample) * NSAMPLES);
 	for (i = 0; i < NSAMPLES; i++) {
 		struct DomeSample *sample = &light->dome_samples[i];
-		VEC2_SET(sample->uv, 1./NSAMPLES, 1./NSAMPLES);
-		VEC3_SET(sample->color, 1, .63, .63);
-		VEC3_SET(sample->dir, 1./NSAMPLES, 1, 1./NSAMPLES);
-		VEC3_NORMALIZE(sample->dir);
+		sample->uv.u = 1./NSAMPLES;
+		sample->uv.v = 1./NSAMPLES;
+		sample->color.r = 1;
+		sample->color.g = .63;
+		sample->color.b = .63;
+		VEC3_SET(&sample->dir, 1./NSAMPLES, 1, 1./NSAMPLES);
+		VEC3_NORMALIZE(&sample->dir);
 	}
 
 	if (light->environment_map == NULL) {
@@ -491,101 +496,4 @@ static int no_preprocess(struct Light *light)
 	/* do nothing */
 	return 0;
 }
-
-/* TODO TEST */
-#if 0
-static int save_sample_points2(struct Light *light)
-{
-	const char *filename = "../sample_points.fb";
-	struct FrameBuffer *fb = NULL;
-	const int NSAMPLES = LgtGetSampleCount(light);
-	int XRES = 1000 / 4;
-	int YRES = 500 / 4;
-	int err = 0;
-	int i;
-
-	/* TODO TEST */
-	struct Timer timer;
-	struct Elapse elapse;
-
-	if (light->environment_map == NULL)
-		return -1;
-
-	TexGetResolution(light->environment_map, &XRES, &YRES);
-	XRES /= 8;
-	YRES /= 8;
-	/*
-	XRES /= 32;
-	YRES /= 32;
-	*/
-
-	fb = FbNew();
-	if (fb == NULL)
-		return -1;
-
-	FbResize(fb, XRES, YRES, 4);
-
-	light->dome_samples =
-			(struct DomeSample *) malloc(sizeof(struct DomeSample) * NSAMPLES);
-
-	TimerStart(&timer);
-
-	if (0) {
-		ImportanceSampling(light->environment_map, 0,
-				XRES, YRES,
-				light->dome_samples, NSAMPLES);
-	} else if (1) {
-		StratifiedImportanceSampling(light->environment_map, 0,
-				XRES, YRES,
-				light->dome_samples, NSAMPLES);
-	} else {
-		StructuredImportanceSampling(light->environment_map, 0,
-				XRES, YRES,
-				light->dome_samples, NSAMPLES);
-	}
-
-	elapse = TimerElapsed(&timer);
-	printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
-
-	{
-		int x, y;
-
-		for (y = 0; y < YRES; y++) {
-			for (x = 0; x < XRES; x++) {
-				struct Color4 C_fb = {0};
-				float C_tex[3] = {0};
-
-				TexLookup(light->environment_map,
-						(.5 + x) / XRES,
-						1 - (.5 + y) / YRES,
-						C_tex);
-
-				C_fb.r = C_tex[0];
-				C_fb.g = C_tex[1];
-				C_fb.b = C_tex[2];
-				C_fb.a = 0;
-
-				FbSetColor4(fb, x, y, 0, &C_fb);
-			}
-		}
-	}
-
-	for (i = 0; i < NSAMPLES; i++) {
-		const float *uv = light->dome_samples[i].uv;
-		const struct Color4 C_sample = {0, 1, 0, 1};
-		const int x = (int) (uv[0] * XRES);
-		const int y = (int) ((1 - uv[1]) * YRES);
-		FbSetColor4(fb, x, y, 0, &C_sample);
-	}
-
-	err = FbSaveCroppedData(fb, filename);
-	if (err) {
-		FbFree(fb);
-		return -1;
-	}
-	FbFree(fb);
-
-	return 0;
-}
-#endif
 

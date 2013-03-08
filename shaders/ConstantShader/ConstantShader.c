@@ -4,8 +4,9 @@ See LICENSE and README
 */
 
 #include "Shader.h"
-#include "Vector.h"
 #include "Numeric.h"
+#include "Vector.h"
+#include "Color.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -17,7 +18,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		const struct SurfaceInput *in, struct SurfaceOutput *out);
 
 struct ConstantShader {
-	float diffuse[3];
+	struct Color diffuse;
 	struct Texture *texture;
 };
 
@@ -63,7 +64,7 @@ static void *MyNew(void)
 	if (constant == NULL)
 		return NULL;
 
-	VEC3_SET(constant->diffuse, 1, 1, 1);
+	ColSet(&constant->diffuse, 1, 1, 1);
 	constant->texture = NULL;
 
 	return constant;
@@ -80,38 +81,38 @@ static void MyFree(void *self)
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
-	const struct ConstantShader *constant = NULL;
-	float C_tex[3] = {0};
-
-	constant = (struct ConstantShader *) self;
+	const struct ConstantShader *constant = (struct ConstantShader *) self;
+	struct Color4 C_tex = {0, 0, 0, 0};
 
 	/* C_tex */
 	if (constant->texture != NULL) {
-		TexLookup(constant->texture, in->uv[0], in->uv[1], C_tex);
-		C_tex[0] *= constant->diffuse[0];
-		C_tex[1] *= constant->diffuse[1];
-		C_tex[2] *= constant->diffuse[2];
+		TexLookup(constant->texture, in->uv.u, in->uv.v, &C_tex);
+		C_tex.r *= constant->diffuse.r;
+		C_tex.g *= constant->diffuse.g;
+		C_tex.b *= constant->diffuse.b;
 	}
 	else {
-		C_tex[0] = constant->diffuse[0];
-		C_tex[1] = constant->diffuse[1];
-		C_tex[2] = constant->diffuse[2];
+		C_tex.r = constant->diffuse.r;
+		C_tex.g = constant->diffuse.g;
+		C_tex.b = constant->diffuse.b;
 	}
 
 	/* Cs */
-	VEC3_COPY(out->Cs, C_tex);
+	out->Cs.r = C_tex.r;
+	out->Cs.g = C_tex.g;
+	out->Cs.b = C_tex.b;
 	out->Os = 1;
 }
 
 static int set_diffuse(void *self, const struct PropertyValue *value)
 {
 	struct ConstantShader *constant = (struct ConstantShader *) self;
-	float diffuse[3] = {0};
+	struct Color diffuse = {0, 0, 0};
 
-	diffuse[0] = MAX(0, value->vector[0]);
-	diffuse[1] = MAX(0, value->vector[1]);
-	diffuse[2] = MAX(0, value->vector[2]);
-	VEC3_COPY(constant->diffuse, diffuse);
+	diffuse.r = MAX(0, value->vector[0]);
+	diffuse.g = MAX(0, value->vector[1]);
+	diffuse.b = MAX(0, value->vector[2]);
+	constant->diffuse = diffuse;
 
 	return 0;
 }

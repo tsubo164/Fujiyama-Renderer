@@ -15,21 +15,25 @@ enum {
 	CULL_BACKFACES = 1
 };
 
-extern double TriComputeArea(const double *vert0, const double *vert1, const double *vert2);
-extern void TriComputeBounds(
-		double *box,
-		const double *vert0, const double *vert1, const double *vert2);
-extern void TriComputeFaceNormal(
-		double *N,
-		const double *vert0, const double *vert1, const double *vert2);
-extern void TriComputeNormal(
-		double *N,
-		const double *N0, const double *N1, const double *N2,
+struct Vector;
+struct Box;
+
+extern double TriComputeArea(
+		const struct Vector *vert0, const struct Vector *vert1, const struct Vector *vert2);
+
+extern void TriComputeBounds(struct Box *box,
+		const struct Vector *vert0, const struct Vector *vert1, const struct Vector *vert2);
+
+extern void TriComputeFaceNormal(struct Vector *N,
+		const struct Vector *vert0, const struct Vector *vert1, const struct Vector *vert2);
+
+extern void TriComputeNormal( struct Vector *N,
+		const struct Vector *N0, const struct Vector *N1, const struct Vector *N2,
 		double u, double v);
 
 extern int TriRayIntersect(
-		const double *vert0, const double *vert1, const double *vert2,
-		const double *orig, const double *dir, int cull_backfaces,
+		const struct Vector *vert0, const struct Vector *vert1, const struct Vector *vert2,
+		const struct Vector *orig, const struct Vector *dir, int cull_backfaces,
 		double *t, double *u, double *v);
 
 #ifdef __cplusplus

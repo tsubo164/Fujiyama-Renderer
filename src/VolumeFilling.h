@@ -6,6 +6,8 @@ See LICENSE and README
 #ifndef VOLUME_FILLING_H
 #define VOLUME_FILLING_H
 
+#include "Vector.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -13,11 +15,11 @@ extern "C" {
 struct Volume;
 
 struct CloudControlPoint {
-	double orig[3];
-	double udir[3];
-	double vdir[3];
-	double wdir[3];
-	double noise_space[3];
+	struct Vector orig;
+	struct Vector udir;
+	struct Vector vdir;
+	struct Vector wdir;
+	struct Vector noise_space;
 
 	double density;
 	double radius;
@@ -25,11 +27,11 @@ struct CloudControlPoint {
 };
 
 struct WispsControlPoint {
-	double orig[3];
-	double udir[3];
-	double vdir[3];
-	double wdir[3];
-	double noise_space[3];
+	struct Vector orig;
+	struct Vector udir;
+	struct Vector vdir;
+	struct Vector wdir;
+	struct Vector noise_space;
 
 	double density;
 	double radius;
@@ -49,7 +51,7 @@ extern void BilerpWispConstrolPoint(struct WispsControlPoint *cp,
 		double s, double t);
 
 extern void FillWithSphere(struct Volume *volume,
-		const double *center, double radius, float density);
+		const struct Vector *center, double radius, float density);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -18,6 +18,12 @@ See LICENSE and README
 #define EXPAND .0001
 #define HALF_EXPAND (.5*EXPAND)
 
+#define COPY3(dst,a) do { \
+	(dst)[0] = (a)[0]; \
+	(dst)[1] = (a)[1]; \
+	(dst)[2] = (a)[2]; \
+	} while(0)
+
 /* -------------------------------------------------------------------------- */
 /* GridAccelerator */
 enum { GRID_MAXCELLS = 512 };
@@ -31,7 +37,7 @@ struct GridAccelerator {
 	struct Cell **cells;
 	int ncells[3];
 	double cellsize[3];
-	double bounds[6];
+	struct Box bounds;
 };
 
 static struct GridAccelerator *new_grid_accel(void);
@@ -54,7 +60,7 @@ enum {
 };
 
 struct Primitive {
-	double bounds[6];
+	struct Box bounds;
 	double centroid[3];
 	int index;
 };
@@ -62,7 +68,7 @@ struct Primitive {
 struct BVHNode {
 	struct BVHNode *left;
 	struct BVHNode *right;
-	double bounds[6];
+	struct Box bounds;
 	int prim_id;
 };
 
@@ -104,12 +110,12 @@ static const struct BVHNode *pop_node(struct BVHNodeStack *stack);
 /* Accelerator */
 static int prim_ray_intersect(const struct Accelerator *acc, int prim_id, double time,
 	const struct Ray *ray, struct Intersection *isect);
-static void get_prim_bounds(const struct Accelerator *acc, int prim_id, double *bounds);
+static void get_prim_bounds(const struct Accelerator *acc, int prim_id, struct Box *bounds);
 static void swap_isect_ptr(struct Intersection **isect0, struct Intersection **isect1);
 
 struct Accelerator {
 	const char *name;
-	double bounds[6];
+	struct Box bounds;
 	int has_built;
 
 	struct PrimitiveSet primset;
@@ -159,7 +165,7 @@ struct Accelerator *AccNew(int accelerator_type)
 	acc->has_built = 0;
 
 	InitPrimitiveSet(&acc->primset);
-	BOX3_SET(acc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+	BOX3_SET(&acc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	return acc;
 }
@@ -175,15 +181,15 @@ void AccFree(struct Accelerator *acc)
 	free(acc);
 }
 
-void AccGetBounds(const struct Accelerator *acc, double *bounds)
+void AccGetBounds(const struct Accelerator *acc, struct Box *bounds)
 {
-	BOX3_COPY(bounds, acc->bounds);
+	*bounds = acc->bounds;
 }
 
 void AccComputeBounds(struct Accelerator *acc)
 {
-	PrmGetBounds(&acc->primset, acc->bounds);
-	BOX3_EXPAND(acc->bounds, EXPAND);
+	PrmGetBounds(&acc->primset, &acc->bounds);
+	BOX3_EXPAND(&acc->bounds, EXPAND);
 }
 
 int AccBuild(struct Accelerator *acc)
@@ -208,7 +214,7 @@ int AccIntersect(const struct Accelerator *acc, double time,
 	double boxhit_tmax;
 
 	/* check intersection with overall bounds */
-	if (!BoxRayIntersect(acc->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
+	if (!BoxRayIntersect(&acc->bounds, &ray->orig, &ray->dir, ray->tmin, ray->tmax,
 				&boxhit_tmin, &boxhit_tmax)) {
 		return 0;
 	}
@@ -228,8 +234,8 @@ void AccSetPrimitiveSet(struct Accelerator *acc, const struct PrimitiveSet *prim
 	acc->primset = *primset;
 
 	/* accelerator's bounds */
-	PrmGetBounds(&acc->primset, acc->bounds);
-	BOX3_EXPAND(acc->bounds, EXPAND);
+	PrmGetBounds(&acc->primset, &acc->bounds);
+	BOX3_EXPAND(&acc->bounds, EXPAND);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -237,6 +243,7 @@ static int intersect_grid_accel(const struct Accelerator *acc, double time,
 		const struct Ray *ray, struct Intersection *isect)
 {
 	const struct GridAccelerator *grid = (const struct GridAccelerator *) acc->derived;
+	double grid_min[3];
 	double start[3];
 	double tstart = FLT_MAX;
 	double tend = FLT_MAX;
@@ -251,46 +258,58 @@ static int intersect_grid_accel(const struct Accelerator *acc, double time,
 	int cellend[3];
 	double tnext[3];
 	double tdelt[3];
+	double dir[3];
 
 	/* check intersection with overall bounds */
 	/* to get boxhit_tmin and boxhit_tmax */
-	if (!BoxRayIntersect(acc->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
+	if (!BoxRayIntersect(&acc->bounds, &ray->orig, &ray->dir, ray->tmin, ray->tmax,
 				&boxhit_tmin, &boxhit_tmax)) {
 		return 0;
 	}
 
 	/* check if the ray shot from inside bounds */
-	if (BoxContainsPoint(grid->bounds, ray->orig)) {
-		VEC3_COPY(start, ray->orig);
+	if (BoxContainsPoint(&grid->bounds, &ray->orig)) {
+		start[0] = ray->orig.x;
+		start[1] = ray->orig.y;
+		start[2] = ray->orig.z;
 		tstart = 0;
 	}
 	else {
 		tstart = boxhit_tmin;
 		tend = boxhit_tmax;
-		POINT_ON_RAY(start, ray->orig, ray->dir, tstart);
+		start[0] = ray->orig.x + ray->dir.x * tstart;
+		start[1] = ray->orig.y + ray->dir.y * tstart;
+		start[2] = ray->orig.z + ray->dir.z * tstart;
 	}
 	tend = MIN(tend, ray->tmax);
 
-	VEC3_COPY(NCELLS, grid->ncells);
+	COPY3(NCELLS, grid->ncells);
 
+	/* TODO grid_min is static? */
+	grid_min[0] = grid->bounds.min.x;
+	grid_min[1] = grid->bounds.min.y;
+	grid_min[2] = grid->bounds.min.z;
+	dir[0] = ray->dir.x;
+	dir[1] = ray->dir.y;
+	dir[2] = ray->dir.z;
 	/* setup 3D DDA */
 	for (i = 0; i < 3; i++) {
-		cellid[i] = (int) floor((start[i] - grid->bounds[i]) / grid->cellsize[i]);
+		cellid[i] = (int) floor((start[i] - grid_min[i]) / grid->cellsize[i]);
 		cellid[i] = CLAMP(cellid[i], 0, NCELLS[i]-1);
 
-		if (ray->dir[i] > 0) {
+		if (dir[i] > 0) {
 			tnext[i] = tstart +
-				(((cellid[i]+1) * grid->cellsize[i] + grid->bounds[i]) - start[i]) / ray->dir[i];
+				(((cellid[i]+1) * grid->cellsize[i] + grid_min[i]) - start[i]) / dir[i];
 
-			tdelt[i] = grid->cellsize[i] / ray->dir[i];
+			tdelt[i] = grid->cellsize[i] / dir[i];
 			cellstep[i] = +1;
 			cellend[i] = NCELLS[i];
 		}
-		else if (ray->dir[i] <0) {
+		else if (dir[i] <0) {
 			tnext[i] = tstart +
-				((cellid[i] * grid->cellsize[i] + grid->bounds[i]) - start[i]) / ray->dir[i];
+				((cellid[i] * grid->cellsize[i] + grid_min[i]) - start[i]) / dir[i];
 
-			tdelt[i] = -1 * grid->cellsize[i] / ray->dir[i];
+			tdelt[i] = -1 * grid->cellsize[i] / dir[i];
 			cellstep[i] = -1;
 			cellend[i] = -1;
 		}
@@ -320,22 +339,22 @@ static int intersect_grid_accel(const struct Accelerator *acc, double time,
 		for (cell = grid->cells[id]; cell != NULL; cell = cell->next) {
 			int hittmp;
 			int inside_cell;
-			double hitpt[3];
-			double cellbox[6];
+			struct Vector P_hit;
+			struct Box cellbox;
 
 			hittmp = prim_ray_intersect(acc, cell->prim_id, time, ray, isect_tmp);
 			if (!hittmp)
 				continue;
 
 			/* check if the hit point is inside the cell */
-			cellbox[0] = grid->bounds[0] + cellid[0] * grid->cellsize[0];
-			cellbox[1] = grid->bounds[1] + cellid[1] * grid->cellsize[1];
-			cellbox[2] = grid->bounds[2] + cellid[2] * grid->cellsize[2];
-			cellbox[3] = cellbox[0] + grid->cellsize[0];
-			cellbox[4] = cellbox[1] + grid->cellsize[1];
-			cellbox[5] = cellbox[2] + grid->cellsize[2];
-			POINT_ON_RAY(hitpt, ray->orig, ray->dir, isect_tmp->t_hit);
-			inside_cell = BoxContainsPoint(cellbox, hitpt);
+			cellbox.min.x = grid->bounds.min.x + cellid[0] * grid->cellsize[0];
+			cellbox.min.y = grid->bounds.min.y + cellid[1] * grid->cellsize[1];
+			cellbox.min.z = grid->bounds.min.z + cellid[2] * grid->cellsize[2];
+			cellbox.max.x = cellbox.min.x + grid->cellsize[0];
+			cellbox.max.y = cellbox.min.y + grid->cellsize[1];
+			cellbox.max.z = cellbox.min.z + grid->cellsize[2];
+			POINT_ON_RAY(&P_hit, &ray->orig, &ray->dir, isect_tmp->t_hit);
+			inside_cell = BoxContainsPoint(&cellbox, &P_hit);
 
 			if (!inside_cell)
 				continue;
@@ -387,7 +406,7 @@ static int build_grid_accel(struct Accelerator *acc)
 	int XNCELLS;
 	int YNCELLS;
 	int ZNCELLS;
-	double bounds[6] = {0};
+	struct Box bounds = {{0}};
 	double cellsize[3] = {0};
 	struct Cell **cells = NULL;
 
@@ -395,9 +414,9 @@ static int build_grid_accel(struct Accelerator *acc)
 
 	NPRIMS = PrmGetPrimitiveCount(&acc->primset);
 	compute_grid_cellsizes(NPRIMS, 
-			acc->bounds[3] - acc->bounds[0],
-			acc->bounds[4] - acc->bounds[1],
-			acc->bounds[5] - acc->bounds[2],
+			acc->bounds.max.x - acc->bounds.min.x,
+			acc->bounds.max.y - acc->bounds.min.y,
+			acc->bounds.max.z - acc->bounds.min.z,
 			&XNCELLS, &YNCELLS, &ZNCELLS);
 
 	cells = (struct Cell **) malloc(sizeof(struct Cell *) * XNCELLS * YNCELLS * ZNCELLS);
@@ -407,27 +426,27 @@ static int build_grid_accel(struct Accelerator *acc)
 	for (i = 0; i < XNCELLS * YNCELLS * ZNCELLS; i++)
 		cells[i] = NULL;
 
-	BOX3_COPY(bounds, acc->bounds);
-	cellsize[0] = (bounds[3] - bounds[0]) / XNCELLS;
-	cellsize[1] = (bounds[4] - bounds[1]) / YNCELLS;
-	cellsize[2] = (bounds[5] - bounds[2]) / ZNCELLS;
+	bounds = acc->bounds;
+	cellsize[0] = (bounds.max.x - bounds.min.x) / XNCELLS;
+	cellsize[1] = (bounds.max.y - bounds.min.y) / YNCELLS;
+	cellsize[2] = (bounds.max.z - bounds.min.z) / ZNCELLS;
 
 	for (i = 0; i < NPRIMS; i++) {
 		int X0, X1, Y0, Y1, Z0, Z1;
 		int x, y, z;
 		int primid = i;
-		double primbbox[6];
+		struct Box primbbox;
 
-		get_prim_bounds(acc, primid, primbbox);
-		BOX3_EXPAND(primbbox, HALF_EXPAND);
+		get_prim_bounds(acc, primid, &primbbox);
+		BOX3_EXPAND(&primbbox, HALF_EXPAND);
 
 		/* compute the ranges of cell indices. e.g. [X0 .. X1) */
-		X0 = (int) floor((primbbox[0] - bounds[0]) / cellsize[0]);
-		X1 = (int) floor((primbbox[3] - bounds[0]) / cellsize[0]) + 1;
-		Y0 = (int) floor((primbbox[1] - bounds[1]) / cellsize[1]);
-		Y1 = (int) floor((primbbox[4] - bounds[1]) / cellsize[1]) + 1;
-		Z0 = (int) floor((primbbox[2] - bounds[2]) / cellsize[2]);
-		Z1 = (int) floor((primbbox[5] - bounds[2]) / cellsize[2]) + 1;
+		X0 = (int) floor((primbbox.min.x - bounds.min.x) / cellsize[0]);
+		X1 = (int) floor((primbbox.max.x - bounds.min.x) / cellsize[0]) + 1;
+		Y0 = (int) floor((primbbox.min.y - bounds.min.y) / cellsize[1]);
+		Y1 = (int) floor((primbbox.max.y - bounds.min.y) / cellsize[1]) + 1;
+		Z0 = (int) floor((primbbox.min.z - bounds.min.z) / cellsize[2]);
+		Z1 = (int) floor((primbbox.max.z - bounds.min.z) / cellsize[2]) + 1;
 		X0 = CLAMP(X0, 0, XNCELLS);
 		X1 = CLAMP(X1, 0, XNCELLS);
 		Y0 = CLAMP(Y0, 0, YNCELLS);
@@ -466,9 +485,13 @@ static int build_grid_accel(struct Accelerator *acc)
 
 	/* commit */
 	grid->cells = cells;
-	VEC3_SET(grid->ncells, XNCELLS, YNCELLS, ZNCELLS);
-	VEC3_COPY(grid->cellsize, cellsize);
-	BOX3_COPY(grid->bounds, bounds);
+	grid->ncells[0] = XNCELLS;
+	grid->ncells[1] = YNCELLS;
+	grid->ncells[2] = ZNCELLS;
+	grid->cellsize[0] = cellsize[0];
+	grid->cellsize[1] = cellsize[1];
+	grid->cellsize[2] = cellsize[2];
+	grid->bounds = bounds;
 
 	return 0;
 }
@@ -482,9 +505,13 @@ static struct GridAccelerator *new_grid_accel(void)
 		return NULL;
 
 	grid->cells = NULL;
-	VEC3_SET(grid->ncells, 0, 0, 0);
-	VEC3_SET(grid->cellsize, 0, 0, 0);
-	BOX3_SET(grid->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+	grid->ncells[0] = 0;
+	grid->ncells[1] = 0;
+	grid->ncells[2] = 0;
+	grid->cellsize[0] = 0;
+	grid->cellsize[1] = 0;
+	grid->cellsize[2] = 0;
+	BOX3_SET(&grid->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	return grid;
 }
@@ -596,10 +623,10 @@ static int build_bvh_accel(struct Accelerator *acc)
 	}
 
 	for (i = 0; i < NPRIMS; i++) {
-		get_prim_bounds(acc, i, prims[i].bounds);
-		prims[i].centroid[0] = (prims[i].bounds[3] + prims[i].bounds[0]) / 2;
-		prims[i].centroid[1] = (prims[i].bounds[4] + prims[i].bounds[1]) / 2;
-		prims[i].centroid[2] = (prims[i].bounds[5] + prims[i].bounds[2]) / 2;
+		get_prim_bounds(acc, i, &prims[i].bounds);
+		prims[i].centroid[0] = (prims[i].bounds.max.x + prims[i].bounds.min.x) / 2;
+		prims[i].centroid[1] = (prims[i].bounds.max.y + prims[i].bounds.min.y) / 2;
+		prims[i].centroid[2] = (prims[i].bounds.max.z + prims[i].bounds.min.z) / 2;
 		prims[i].index = i;
 
 		primptrs[i] = &prims[i];
@@ -636,8 +663,8 @@ static int intersect_bvh_recursive(const struct Accelerator *acc, const struct B
 	double boxhit_tmax;
 	int hit_left, hit_right;
 
-	const int hit = BoxRayIntersect(node->bounds,
-			ray->orig, ray->dir, ray->tmin, ray->tmax,
+	const int hit = BoxRayIntersect(&node->bounds,
+			&ray->orig, &ray->dir, ray->tmin, ray->tmax,
 			&boxhit_tmin, &boxhit_tmax);
 
 	if (!hit) {
@@ -701,12 +728,12 @@ static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNod
 			continue;
 		}
 
-		hit_left = BoxRayIntersect(node->left->bounds,
-				ray->orig, ray->dir, ray->tmin, ray->tmax,
+		hit_left = BoxRayIntersect(&node->left->bounds,
+				&ray->orig, &ray->dir, ray->tmin, ray->tmax,
 				&boxhit_tmin, &boxhit_tmax);
 
-		hit_right = BoxRayIntersect(node->right->bounds,
-				ray->orig, ray->dir, ray->tmin, ray->tmax,
+		hit_right = BoxRayIntersect(&node->right->bounds,
+				&ray->orig, &ray->dir, ray->tmin, ray->tmax,
 				&boxhit_tmin, &boxhit_tmax);
 
 		whichhit = HIT_NONE;
@@ -761,7 +788,7 @@ static struct BVHNode *build_bvh(struct Primitive **primptrs, int begin, int end
 
 	if (NPRIMS == 1) {
 		node->prim_id = primptrs[begin]->index;
-		BOX3_COPY(node->bounds, primptrs[begin]->bounds);
+		node->bounds = primptrs[begin]->bounds;
 		return node;
 	}
 
@@ -794,8 +821,8 @@ static struct BVHNode *build_bvh(struct Primitive **primptrs, int begin, int end
 	if (node->right == NULL)
 		return NULL;
 
-	BOX3_COPY(node->bounds, node->left->bounds);
-	BoxAddBox(node->bounds, node->right->bounds);
+	node->bounds = node->left->bounds;
+	BoxAddBox(&node->bounds, &node->right->bounds);
 
 	return node;
 }
@@ -810,7 +837,7 @@ static struct BVHNode *new_bvhnode(void)
 	node->left = NULL;
 	node->right = NULL;
 	node->prim_id = -1;
-	BOX3_SET(node->bounds, 0, 0, 0, 0, 0, 0);
+	BOX3_SET(&node->bounds, 0, 0, 0, 0, 0, 0);
 
 	return node;
 }
@@ -917,7 +944,7 @@ static int prim_ray_intersect(const struct Accelerator *acc, int prim_id, double
 	return 1;
 }
 
-static void get_prim_bounds(const struct Accelerator *acc, int prim_id, double *bounds)
+static void get_prim_bounds(const struct Accelerator *acc, int prim_id, struct Box *bounds)
 {
 	PrmGetPrimitiveBounds(&acc->primset, prim_id, bounds);
 }

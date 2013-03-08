@@ -10,6 +10,20 @@ See LICENSE and README
 #include <string.h>
 #include <assert.h>
 
+#define VEC4_COPY(dst,a) do { \
+	(dst)[0] = (a)[0]; \
+	(dst)[1] = (a)[1]; \
+	(dst)[2] = (a)[2]; \
+	(dst)[3] = (a)[3]; \
+	} while(0)
+
+#define VEC4_LERP(dst,a,b,t) do { \
+	(dst)[0] = (1-(t)) * (a)[0] + (t) * (b)[0]; \
+	(dst)[1] = (1-(t)) * (a)[1] + (t) * (b)[1]; \
+	(dst)[2] = (1-(t)) * (a)[2] + (t) * (b)[2]; \
+	(dst)[3] = (1-(t)) * (a)[3] + (t) * (b)[3]; \
+	} while(0)
+
 static int prop_is_valid(const struct Property *prop);
 static int compare_property_sample(const void *ptr0, const void *ptr1);
 static void push_sample(struct PropertySampleList *list, const struct PropertySample *sample);

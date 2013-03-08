@@ -10,6 +10,7 @@ See LICENSE and README
 #include "MeshIO.h"
 #include "Shader.h"
 #include "Scene.h"
+#include "Box.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1159,15 +1160,15 @@ static int set_Volume_resolution(void *self, const struct PropertyValue *value)
 static int set_Volume_bounds_min(void *self, const struct PropertyValue *value)
 {
 	struct Volume *volume = (struct Volume *) self;
-	double bounds[6] = {0};
+	struct Box bounds = {{0}};
 
-	VolGetBounds(volume, bounds);
+	VolGetBounds(volume, &bounds);
 
-	bounds[0] = value->vector[0];
-	bounds[1] = value->vector[1];
-	bounds[2] = value->vector[2];
+	bounds.min.x = value->vector[0];
+	bounds.min.y = value->vector[1];
+	bounds.min.z = value->vector[2];
 
-	VolSetBounds(volume, bounds);
+	VolSetBounds(volume, &bounds);
 
 	return 0;
 }
@@ -1175,15 +1176,15 @@ static int set_Volume_bounds_min(void *self, const struct PropertyValue *value)
 static int set_Volume_bounds_max(void *self, const struct PropertyValue *value)
 {
 	struct Volume *volume = (struct Volume *) self;
-	double bounds[6] = {0};
+	struct Box bounds = {{0}};
 
-	VolGetBounds(volume, bounds);
+	VolGetBounds(volume, &bounds);
 
-	bounds[3] = value->vector[0];
-	bounds[4] = value->vector[1];
-	bounds[5] = value->vector[2];
+	bounds.max.x = value->vector[0];
+	bounds.max.y = value->vector[1];
+	bounds.max.z = value->vector[2];
 
-	VolSetBounds(volume, bounds);
+	VolSetBounds(volume, &bounds);
 
 	return 0;
 }

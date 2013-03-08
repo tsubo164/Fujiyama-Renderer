@@ -34,12 +34,12 @@ double XorNextFloat01(struct XorShift *xr)
 	return (double) XorNextInteger(xr) / ULONG_MAX;
 }
 
-void XorSolidSphereRand(struct XorShift *xr, double *out_position)
+void XorSolidSphereRand(struct XorShift *xr, struct Vector *out_position)
 {
 	for (;;) {
-		out_position[0] = 2 * XorNextFloat01(xr) - 1;
-		out_position[1] = 2 * XorNextFloat01(xr) - 1;
-		out_position[2] = 2 * XorNextFloat01(xr) - 1;
+		out_position->x = 2 * XorNextFloat01(xr) - 1;
+		out_position->y = 2 * XorNextFloat01(xr) - 1;
+		out_position->z = 2 * XorNextFloat01(xr) - 1;
 
 		if (VEC3_DOT(out_position, out_position) <= 1) {
 			break;
@@ -47,15 +47,15 @@ void XorSolidSphereRand(struct XorShift *xr, double *out_position)
 	}
 }
 
-void XorHollowSphereRand(struct XorShift *xr, double *out_position)
+void XorHollowSphereRand(struct XorShift *xr, struct Vector *out_position)
 {
 	double dot = 0;
 	double len_inv = 0;
 
 	for (;;) {
-		out_position[0] = 2 * XorNextFloat01(xr) - 1;
-		out_position[1] = 2 * XorNextFloat01(xr) - 1;
-		out_position[2] = 2 * XorNextFloat01(xr) - 1;
+		out_position->x = 2 * XorNextFloat01(xr) - 1;
+		out_position->y = 2 * XorNextFloat01(xr) - 1;
+		out_position->z = 2 * XorNextFloat01(xr) - 1;
 
 		dot = VEC3_DOT(out_position, out_position);
 
@@ -65,16 +65,23 @@ void XorHollowSphereRand(struct XorShift *xr, double *out_position)
 	}
 
 	len_inv = 1. / sqrt(dot);
-	out_position[0] *= len_inv;
-	out_position[1] *= len_inv;
-	out_position[2] *= len_inv;
+	out_position->x *= len_inv;
+	out_position->y *= len_inv;
+	out_position->z *= len_inv;
 }
 
-void XorSolidDiskRand(struct XorShift *xr, double *out_position)
+void XorSolidCubeRand(struct XorShift *xr, struct Vector *out_position)
+{
+	out_position->x = 2 * XorNextFloat01(xr) - 1;
+	out_position->y = 2 * XorNextFloat01(xr) - 1;
+	out_position->z = 2 * XorNextFloat01(xr) - 1;
+}
+
+void XorSolidDiskRand(struct XorShift *xr, struct Vector2 *out_position)
 {
 	for (;;) {
-		out_position[0] = 2 * XorNextFloat01(xr) - 1;
-		out_position[1] = 2 * XorNextFloat01(xr) - 1;
+		out_position->x = 2 * XorNextFloat01(xr) - 1;
+		out_position->y = 2 * XorNextFloat01(xr) - 1;
 
 		if (VEC2_DOT(out_position, out_position) <= 1) {
 			break;
@@ -82,21 +89,14 @@ void XorSolidDiskRand(struct XorShift *xr, double *out_position)
 	}
 }
 
-void XorSolidCubeRand(struct XorShift *xr, double *out_position)
-{
-	out_position[0] = 2 * XorNextFloat01(xr) - 1;
-	out_position[1] = 2 * XorNextFloat01(xr) - 1;
-	out_position[2] = 2 * XorNextFloat01(xr) - 1;
-}
-
-void XorHollowDiskRand(struct XorShift *xr, double *out_position)
+void XorHollowDiskRand(struct XorShift *xr, struct Vector2 *out_position)
 {
 	double dot = 0;
 	double len_inv = 0;
 
 	for (;;) {
-		out_position[0] = 2 * XorNextFloat01(xr) - 1;
-		out_position[1] = 2 * XorNextFloat01(xr) - 1;
+		out_position->x = 2 * XorNextFloat01(xr) - 1;
+		out_position->y = 2 * XorNextFloat01(xr) - 1;
 
 		dot = VEC2_DOT(out_position, out_position);
 
@@ -106,35 +106,35 @@ void XorHollowDiskRand(struct XorShift *xr, double *out_position)
 	}
 
 	len_inv = 1. / sqrt(dot);
-	out_position[0] *= len_inv;
-	out_position[1] *= len_inv;
+	out_position->x *= len_inv;
+	out_position->y *= len_inv;
 }
 
-void XorGaussianDiskRand(struct XorShift *xr, double *out_position)
+void XorGaussianDiskRand(struct XorShift *xr, struct Vector2 *out_position)
 {
 	const double gauss = XorGaussianRand(xr);
 
 	XorHollowDiskRand(xr, out_position);
-	out_position[0] *= gauss;
-	out_position[1] *= gauss;
+	out_position->x *= gauss;
+	out_position->y *= gauss;
 }
 
 double XorGaussianRand(struct XorShift *xr)
 {
+	struct Vector2 P = {0, 0};
 	double dot = 0;
-	double P[2] = {0};
 
 	for (;;) {
-		P[0] = 2 * XorNextFloat01(xr) - 1;
-		P[1] = 2 * XorNextFloat01(xr) - 1;
+		P.x = 2 * XorNextFloat01(xr) - 1;
+		P.y = 2 * XorNextFloat01(xr) - 1;
 
-		dot = VEC2_DOT(P, P);
+		dot = VEC2_DOT(&P, &P);
 
 		if (dot > 0 && dot <= 1) {
 			break;
 		}
 	}
 
-    return P[0] * sqrt(-2 * log(dot) / dot);
+    return P.x * sqrt(-2 * log(dot) / dot);
 }
 

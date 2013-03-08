@@ -92,11 +92,11 @@ static int MyRun(void *self)
 		return -1;
 	}
 
-	VEC3_SET(cp.orig, 0, 0, 0);
-	VEC3_SET(cp.udir, 1, 0, 0);
-	VEC3_SET(cp.vdir, 0, 1, 0);
-	VEC3_SET(cp.wdir, 0, 0, 1);
-	VEC3_SET(cp.noise_space, 0, 0, 0);
+	VEC3_SET(&cp.orig, 0, 0, 0);
+	VEC3_SET(&cp.udir, 1, 0, 0);
+	VEC3_SET(&cp.vdir, 0, 1, 0);
+	VEC3_SET(&cp.wdir, 0, 0, 1);
+	VEC3_SET(&cp.noise_space, 0, 0, 0);
 	cp.density = 5;
 	cp.radius = .75;
 	cp.noise_amplitude = 1;
@@ -150,7 +150,7 @@ static int FillWithPointClouds(struct Volume *volume,
 	VolGetResolution(volume, &xres, &yres, &zres);
 	thresholdwidth = .5 * VolGetFilterSize(volume);
 
-	VolGetIndexRange(volume, cp->orig, cp->radius * 1.5,
+	VolGetIndexRange(volume, &cp->orig, cp->radius * 1.5,
 			&xmin, &ymin, &zmin,
 			&xmax, &ymax, &zmax);
 
@@ -167,15 +167,17 @@ static int FillWithPointClouds(struct Volume *volume,
 				double pyro_func = 0;
 				double distance = 0;
 
-				double cell_center[3] = {0};
-				double P_local_space[3] = {0};
-				double P_noise_space[3] = {0};
+				struct Vector cell_center = {0, 0, 0};
+				struct Vector P_local_space = {0, 0, 0};
+				struct Vector P_noise_space = {0, 0, 0};
 				float pyro_value = 0;
 				float value = 0;
 
-				VolIndexToPoint(volume, i, j, k, cell_center);
-				VEC3_SUB(P_local_space, cell_center, cp->orig);
-				distance = VEC3_LEN(P_local_space);
+				VolIndexToPoint(volume, i, j, k, &cell_center);
+				P_local_space.x =  cell_center.x - cp->orig.x;
+				P_local_space.y =  cell_center.y - cp->orig.y;
+				P_local_space.z =  cell_center.z - cp->orig.z;
+				distance = VEC3_LEN(&P_local_space);
 
 				if (distance < cp->radius - thresholdwidth) {
 					value = VolGetValue(volume, i, j, k);
@@ -184,13 +186,13 @@ static int FillWithPointClouds(struct Volume *volume,
 					continue;
 				}
 
-				VEC3_COPY(P_noise_space, P_local_space);
-				VEC3_NORMALIZE(P_noise_space);
-				P_noise_space[0] += cp->noise_space[0];
-				P_noise_space[1] += cp->noise_space[1];
-				P_noise_space[2] += cp->noise_space[2];
+				P_noise_space = P_local_space;
+				VEC3_NORMALIZE(&P_noise_space);
+				P_noise_space.x += cp->noise_space.x;
+				P_noise_space.y += cp->noise_space.y;
+				P_noise_space.z += cp->noise_space.z;
 
-				noise_func = TrbEvaluate(turbulence, P_noise_space);
+				noise_func = TrbEvaluate(turbulence, &P_noise_space);
 				noise_func = ABS(noise_func);
 				noise_func = Gamma(noise_func, .5);
 				noise_func *= cp->noise_amplitude;

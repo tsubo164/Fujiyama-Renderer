@@ -6,19 +6,21 @@ See LICENSE and README
 #ifndef RAY_H
 #define RAY_H
 
+#include "Vector.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define POINT_ON_RAY(dst,orig,dir,t) do { \
-	(dst)[0] = (orig)[0] + (t) * (dir)[0]; \
-	(dst)[1] = (orig)[1] + (t) * (dir)[1]; \
-	(dst)[2] = (orig)[2] + (t) * (dir)[2]; \
+	(dst)->x = (orig)->x + (t) * (dir)->x; \
+	(dst)->y = (orig)->y + (t) * (dir)->y; \
+	(dst)->z = (orig)->z + (t) * (dir)->z; \
 	} while (0)
 
 struct Ray {
-	double orig[3];
-	double dir[3];
+	struct Vector orig;
+	struct Vector dir;
 
 	double tmin;
 	double tmax;

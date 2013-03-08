@@ -378,18 +378,24 @@ static int render_scene(struct Renderer *renderer)
 		PrgStart(progress, SmpGetSampleCount(sampler));
 
 		while ((smp = SmpGetNextSample(sampler)) != NULL) {
-			float C_trace[4] = {0};
+			struct Color4 C_trace = {0, 0, 0, 0};
 			double t_hit = FLT_MAX;
 			int hit = 0;
 
-			CamGetRay(cam, smp->uv, smp->time, &ray);
+			CamGetRay(cam, &smp->uv, smp->time, &ray);
 			cxt.time = smp->time;
 
-			hit = SlTrace(&cxt, ray.orig, ray.dir, ray.tmin, ray.tmax, C_trace, &t_hit);
+			hit = SlTrace(&cxt, &ray.orig, &ray.dir, ray.tmin, ray.tmax, &C_trace, &t_hit);
 			if (hit) {
-				VEC4_COPY(smp->data, C_trace);
+				smp->data[0] = C_trace.r;
+				smp->data[1] = C_trace.g;
+				smp->data[2] = C_trace.b;
+				smp->data[3] = C_trace.a;
 			} else {
-				VEC4_SET(smp->data, 0, 0, 0, 0);
+				smp->data[0] = 0;
+				smp->data[1] = 0;
+				smp->data[2] = 0;
+				smp->data[3] = 0;
 			}
 
 			PrgIncrement(progress);
@@ -399,7 +405,7 @@ static int render_scene(struct Renderer *renderer)
 			for (x = pixel_bounds[0]; x < pixel_bounds[2]; x++) {
 				const int NSAMPLES = SmpGetSampleCountForPixel(sampler);
 				float *dst = NULL;
-				float pixel[4] = {0};
+				float pixel[4] = {0, 0, 0, 0};
 				float sum = 0;
 				int i;
 
@@ -410,8 +416,8 @@ static int render_scene(struct Renderer *renderer)
 					double filtx, filty;
 					double wgt;
 
-					filtx = xres * sample->uv[0] - (x+.5);
-					filty = yres * (1-sample->uv[1]) - (y+.5);
+					filtx = xres * sample->uv.x - (x + .5);
+					filty = yres * (1-sample->uv.y) - (y + .5);
 					wgt = FltEvaluate(filter, filtx, filty);
 					pixel[0] += wgt * sample->data[0];
 					pixel[1] += wgt * sample->data[1];
@@ -419,10 +425,19 @@ static int render_scene(struct Renderer *renderer)
 					pixel[3] += wgt * sample->data[3];
 					sum += wgt;
 				}
-				VEC4_DIV(pixel, sum);
+				{
+					const float inv_sum = 1. / sum;
+					pixel[0] *= inv_sum;
+					pixel[1] *= inv_sum;
+					pixel[2] *= inv_sum;
+					pixel[3] *= inv_sum;
+				}
 
 				dst = FbGetWritable(fb, x, y, 0);
-				VEC4_COPY(dst, pixel);
+				dst[0] = pixel[0];
+				dst[1] = pixel[1];
+				dst[2] = pixel[2];
+				dst[3] = pixel[3];
 			}
 		}
 		printf(" Tile Done: %d/%d (%d %%)\n",

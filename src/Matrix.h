@@ -10,29 +10,35 @@ See LICENSE and README
 extern "C" {
 #endif
 
-/* double matrix[16] row-matrix */
+struct Matrix {
+	/* row-major */
+	double e[16];
+};
 
-extern void MatIdentity(double *dst);
-extern void MatSet(double *dst,
+struct Vector;
+struct Box;
+
+extern void MatIdentity(struct Matrix *dst);
+extern void MatSet(struct Matrix *dst,
 		double e00, double e01, double e02, double e03,
 		double e10, double e11, double e12, double e13,
 		double e20, double e21, double e22, double e23,
 		double e30, double e31, double e32, double e33);
 
-extern void MatTranslate(double *dst, double tx, double ty, double tz );
-extern void MatScale(double *dst, double sx, double sy, double sz );
-extern void MatRotateX(double *dst, double angle);
-extern void MatRotateY(double *dst, double angle);
-extern void MatRotateZ(double *dst, double angle);
+extern void MatTranslate(struct Matrix *dst, double tx, double ty, double tz );
+extern void MatScale(struct Matrix *dst, double sx, double sy, double sz );
+extern void MatRotateX(struct Matrix *dst, double angle);
+extern void MatRotateY(struct Matrix *dst, double angle);
+extern void MatRotateZ(struct Matrix *dst, double angle);
 
-extern void MatMultiply(double *dst, const double *a, const double *b);
-extern void MatInverse(double *dst, const double *a);
+extern void MatMultiply(struct Matrix *dst, const struct Matrix *a, const struct Matrix *b);
+extern void MatInverse(struct Matrix *dst, const struct Matrix *a);
 
-extern void MatTransformPoint(const double *m, double *point);
-extern void MatTransformVector(const double *m, double *vector);
-extern void MatTransformBounds(const double *m, double *bounds);
+extern void MatTransformPoint(const struct Matrix *m, struct Vector *point);
+extern void MatTransformVector(const struct Matrix *m, struct Vector *vector);
+extern void MatTransformBounds(const struct Matrix *m, struct Box *bounds);
 
-extern void MatPrint(const double *m);
+extern void MatPrint(const struct Matrix *m);
 
 #ifdef __cplusplus
 } /* extern "C" */

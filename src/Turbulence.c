@@ -11,9 +11,9 @@ See LICENSE and README
 #include <assert.h>
 
 struct Turbulence {
-	double amplitude[3];
-	double frequency[3];
-	double offset[3];
+	struct Vector amplitude;
+	struct Vector frequency;
+	struct Vector offset;
 	double lacunarity;
 	double gain;
 	int octaves;
@@ -21,15 +21,13 @@ struct Turbulence {
 
 struct Turbulence *TrbNew(void)
 {
-	struct Turbulence *turbulence;
-
-	turbulence = (struct Turbulence *) malloc(sizeof(struct Turbulence));
+	struct Turbulence *turbulence = (struct Turbulence *) malloc(sizeof(struct Turbulence));
 	if (turbulence == NULL)
 		return NULL;
 
-	VEC3_SET(turbulence->amplitude, 1, 1, 1);
-	VEC3_SET(turbulence->frequency, 1, 1, 1);
-	VEC3_SET(turbulence->offset, 0, 0, 0);
+	VEC3_SET(&turbulence->amplitude, 1, 1, 1);
+	VEC3_SET(&turbulence->frequency, 1, 1, 1);
+	VEC3_SET(&turbulence->offset, 0, 0, 0);
 	turbulence->lacunarity = 2;
 	turbulence->gain = .5;
 	turbulence->octaves = 8;
@@ -46,17 +44,17 @@ void TrbFree(struct Turbulence *turbulence)
 
 void TrbSetAmplitude(struct Turbulence *turbulence, double x, double y, double z)
 {
-	VEC3_SET(turbulence->amplitude, x, y, z);
+	VEC3_SET(&turbulence->amplitude, x, y, z);
 }
 
 void TrbSetFrequency(struct Turbulence *turbulence, double x, double y, double z)
 {
-	VEC3_SET(turbulence->frequency, x, y, z);
+	VEC3_SET(&turbulence->frequency, x, y, z);
 }
 
 void TrbSetOffset(struct Turbulence *turbulence, double x, double y, double z)
 {
-	VEC3_SET(turbulence->offset, x, y, z);
+	VEC3_SET(&turbulence->offset, x, y, z);
 }
 
 void TrbSetLacunarity(struct Turbulence *turbulence, double lacunarity)
@@ -75,39 +73,40 @@ void TrbSetOctaves(struct Turbulence *turbulence, int octaves)
 	turbulence->octaves = octaves;
 }
 
-double TrbEvaluate(const struct Turbulence *turbulence, double *position)
+double TrbEvaluate(const struct Turbulence *turbulence, const struct Vector *position)
 {
-	double P[3] = {0};
+	struct Vector P = {0, 0, 0};
 	double noise_value = 0;
 
-	P[0] = position[0] * turbulence->frequency[0] + turbulence->offset[0];
-	P[1] = position[1] * turbulence->frequency[1] + turbulence->offset[1];
-	P[2] = position[2] * turbulence->frequency[2] + turbulence->offset[2];
+	P.x = position->x * turbulence->frequency.x + turbulence->offset.x;
+	P.y = position->y * turbulence->frequency.y + turbulence->offset.y;
+	P.z = position->z * turbulence->frequency.z + turbulence->offset.z;
 
-	noise_value = PerlinNoise(P,
+	noise_value = PerlinNoise(&P,
 			turbulence->lacunarity,
 			turbulence->gain,
 			turbulence->octaves);
 
-	return noise_value * turbulence->amplitude[0];
+	return noise_value * turbulence->amplitude.x;
 }
 
-void TrbEvaluate3d(const struct Turbulence *turbulence, double *position, double *out_noise)
+void TrbEvaluate3d(const struct Turbulence *turbulence, const struct Vector *position,
+		struct Vector *out_noise)
 {
-	double P[3] = {0};
+	struct Vector P = {0, 0, 0};
 
-	P[0] = position[0] * turbulence->frequency[0] + turbulence->offset[0];
-	P[1] = position[1] * turbulence->frequency[1] + turbulence->offset[1];
-	P[2] = position[2] * turbulence->frequency[2] + turbulence->offset[2];
+	P.x = position->x * turbulence->frequency.x + turbulence->offset.x;
+	P.y = position->y * turbulence->frequency.y + turbulence->offset.y;
+	P.z = position->z * turbulence->frequency.z + turbulence->offset.z;
 
-	PerlinNoise3d(P,
+	PerlinNoise3d(&P,
 			turbulence->lacunarity,
 			turbulence->gain,
 			turbulence->octaves,
 			out_noise);
 
-	out_noise[0] *= turbulence->amplitude[0];
-	out_noise[1] *= turbulence->amplitude[1];
-	out_noise[2] *= turbulence->amplitude[2];
+	out_noise->x *= turbulence->amplitude.x;
+	out_noise->y *= turbulence->amplitude.y;
+	out_noise->z *= turbulence->amplitude.z;
 }
 

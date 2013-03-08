@@ -6,21 +6,26 @@ See LICENSE and README
 #ifndef CURVE_H
 #define CURVE_H
 
+#include "Box.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct Curve;
 struct PrimitiveSet;
+struct TexCoord;
+struct Vector;
+struct Color;
 
 /* TODO temporary visible structure */
 struct Curve {
-	double bounds[6];
+	struct Box bounds;
 
-	double *P;
+	struct Vector *P;
 	double *width;
-	float *Cd;
-	float *uv;
+	struct Color *Cd;
+	struct TexCoord *uv;
 	int *indices;
 
 	int nverts;

@@ -21,7 +21,7 @@ See LICENSE and README
 
 struct ObjectList {
 	struct Array *objects;
-	double bounds[6];
+	struct Box bounds;
 };
 
 static struct ObjectList *obj_list_new(void);
@@ -29,12 +29,12 @@ static void obj_list_free(struct ObjectList *list);
 static void obj_list_add(struct ObjectList *list, const struct ObjectInstance *obj);
 static const struct ObjectInstance *get_object(const struct ObjectList *list, int index);
 
-static void object_bounds(const void *prim_set, int prim_id, double *bounds);
+static void object_bounds(const void *prim_set, int prim_id, struct Box *bounds);
 static int object_ray_intersect(const void *prim_set, int prim_id, double time,
 		const struct Ray *ray, struct Intersection *isect);
 static int volume_ray_intersect(const void *prim_set, int prim_id, double time,
 		const struct Ray *ray, struct Interval *interval);
-static void object_list_bounds(const void *prim_set, double *bounds);
+static void object_list_bounds(const void *prim_set, struct Box *bounds);
 static int object_count(const void *prim_set);
 
 struct ObjectGroup {
@@ -118,7 +118,7 @@ void ObjGroupAdd(struct ObjectGroup *grp, const struct ObjectInstance *obj)
 		VolumeAccSetTargetGeometry(grp->volume_acc,
 				grp->volume_list,
 				grp->volume_list->objects->nelems,
-				grp->volume_list->bounds,
+				&grp->volume_list->bounds,
 				volume_ray_intersect,
 				object_bounds);
 	}
@@ -142,23 +142,23 @@ void ObjGroupComputeBounds(struct ObjectGroup *grp)
 	N = grp->surface_list->objects->nelems;
 	for (i = 0; i < N; i++) {
 		const struct ObjectInstance *obj = get_object(grp->surface_list, i);
-		double bounds[6] = {0};
+		struct Box bounds = {{0}};
 
-		ObjGetBounds(obj, bounds);
-		BoxAddBox(grp->surface_list->bounds, bounds);
+		ObjGetBounds(obj, &bounds);
+		BoxAddBox(&grp->surface_list->bounds, &bounds);
 	}
 
 	N = grp->volume_list->objects->nelems;
 	for (i = 0; i < N; i++) {
 		const struct ObjectInstance *obj = get_object(grp->volume_list, i);
-		double bounds[6] = {0};
+		struct Box bounds = {{0}};
 
-		ObjGetBounds(obj, bounds);
-		BoxAddBox(grp->volume_list->bounds, bounds);
+		ObjGetBounds(obj, &bounds);
+		BoxAddBox(&grp->volume_list->bounds, &bounds);
 	}
 }
 
-static void object_bounds(const void *prim_set, int prim_id, double *bounds)
+static void object_bounds(const void *prim_set, int prim_id, struct Box *bounds)
 {
 	const struct ObjectList *list = (const struct ObjectList *) prim_set;
 	const struct ObjectInstance *obj = get_object(list, prim_id);
@@ -181,10 +181,10 @@ static int volume_ray_intersect(const void *prim_set, int prim_id, double time,
 	return ObjVolumeIntersect(obj, time, ray, interval);
 }
 
-static void object_list_bounds(const void *prim_set, double *bounds)
+static void object_list_bounds(const void *prim_set, struct Box *bounds)
 {
 	const struct ObjectList *list = (const struct ObjectList *) prim_set;
-	BOX3_COPY(bounds, list->bounds);
+	*bounds = list->bounds;
 }
 
 static int object_count(const void *prim_set)
@@ -207,7 +207,7 @@ static struct ObjectList *obj_list_new(void)
 		return NULL;
 	}
 
-	BOX3_SET(list->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+	BOX3_SET(&list->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	return list;
 }
@@ -225,12 +225,12 @@ static void obj_list_free(struct ObjectList *list)
 
 static void obj_list_add(struct ObjectList *list, const struct ObjectInstance *obj)
 {
-	double bounds[6];
+	struct Box bounds = {{0}};
 
-	ObjGetBounds(obj, bounds);
+	ObjGetBounds(obj, &bounds);
 
 	ArrPushPointer(list->objects, obj);
-	BoxAddBox(list->bounds, bounds);
+	BoxAddBox(&list->bounds, &bounds);
 }
 
 static const struct ObjectInstance *get_object(const struct ObjectList *list, int index)

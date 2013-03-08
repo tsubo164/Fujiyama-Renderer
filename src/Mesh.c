@@ -7,7 +7,9 @@ See LICENSE and README
 #include "Intersection.h"
 #include "PrimitiveSet.h"
 #include "Triangle.h"
+#include "TexCoord.h"
 #include "Vector.h"
+#include "Color.h"
 #include "Ray.h"
 #include "Box.h"
 
@@ -17,21 +19,25 @@ See LICENSE and README
 
 static int triangle_ray_intersect(const void *prim_set, int prim_id, double time,
 		const struct Ray *ray, struct Intersection *isect);
-static void triangle_bounds(const void *prim_set, int prim_id, double *bounds);
-static void triangleset_bounds(const void *prim_set, double *bounds);
+static void triangle_bounds(const void *prim_set, int prim_id, struct Box *bounds);
+static void triangleset_bounds(const void *prim_set, struct Box *bounds);
 static int triangle_count(const void *prim_set);
+
+struct TriIndex {
+	int i0, i1, i2;
+};
 
 struct Mesh {
 	int nverts;
 	int nfaces;
 
-	double *P;
-	double *N;
-	float *Cd;
-	float *uv;
-	int *indices;
+	struct Vector *P;
+	struct Vector *N;
+	struct Color *Cd;
+	struct TexCoord *uv;
+	struct TriIndex *indices;
 
-	double bounds[6];
+	struct Box bounds;
 };
 
 struct Mesh *MshNew(void)
@@ -42,7 +48,7 @@ struct Mesh *MshNew(void)
 
 	mesh->nverts = 0;
 	mesh->nfaces = 0;
-	BOX3_SET(mesh->bounds, 0, 0, 0, 0, 0, 0);
+	BOX3_SET(&mesh->bounds, 0, 0, 0, 0, 0, 0);
 
 	mesh->P = NULL;
 	mesh->N = NULL;
@@ -58,10 +64,10 @@ void MshFree(struct Mesh *mesh)
 	if (mesh == NULL)
 		return;
 
-	free(mesh->P);
-	free(mesh->N);
-	free(mesh->Cd);
-	free(mesh->uv);
+	VecFree(mesh->P);
+	VecFree(mesh->N);
+	ColFree(mesh->Cd);
+	TexCoordFree(mesh->uv);
 	free(mesh->indices);
 
 	free(mesh);
@@ -70,19 +76,19 @@ void MshFree(struct Mesh *mesh)
 void MshClear(struct Mesh *mesh)
 {
 	if (mesh->P != NULL)
-		free(mesh->P);
+		VecFree(mesh->P);
 	if (mesh->N != NULL)
-		free(mesh->N);
+		VecFree(mesh->N);
 	if (mesh->Cd != NULL)
-		free(mesh->Cd);
+		ColFree(mesh->Cd);
 	if (mesh->uv != NULL)
-		free(mesh->uv);
+		TexCoordFree(mesh->uv);
 	if (mesh->indices != NULL)
 		free(mesh->indices);
 
 	mesh->nverts = 0;
 	mesh->nfaces = 0;
-	BOX3_SET(mesh->bounds, 0, 0, 0, 0, 0, 0);
+	BOX3_SET(&mesh->bounds, 0, 0, 0, 0, 0, 0);
 
 	mesh->P = NULL;
 	mesh->N = NULL;
@@ -94,10 +100,10 @@ void MshClear(struct Mesh *mesh)
 void MshComputeBounds(struct Mesh *mesh)
 {
 	int i;
-	BOX3_SET(mesh->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+	BOX3_SET(&mesh->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	for (i = 0; i < mesh->nverts; i++) {
-		BoxAddPoint(mesh->bounds, VEC3_NTH(mesh->P,i));
+		BoxAddPoint(&mesh->bounds, &mesh->P[i]);
 	}
 }
 
@@ -105,9 +111,9 @@ void MshComputeNormals(struct Mesh *mesh)
 {
 	const int nverts = MshGetVertexCount(mesh);
 	const int nfaces = MshGetFaceCount(mesh);
-	double *P = (double *) mesh->P;
-	double *N = (double *) mesh->N;
-	int *indices = (int *) mesh->indices;
+	struct Vector *P = mesh->P;
+	struct Vector *N = mesh->N;
+	struct TriIndex *indices = mesh->indices;
 	int i;
 
 	if (P == NULL || indices == NULL)
@@ -115,40 +121,47 @@ void MshComputeNormals(struct Mesh *mesh)
 
 	if (N == NULL) {
 		MshAllocateVertex(mesh, "N", nverts);
-		N = (double *) mesh->N;
+		N = mesh->N;
 	}
 
 	/* initialize N */
 	for (i = 0; i < nverts; i++) {
-		double *nml = &N[3*i];
+		struct Vector *nml = &N[i];
 		VEC3_SET(nml, 0, 0, 0);
 	}
 
 	/* compute N */
 	for (i = 0; i < nfaces; i++) {
-		double *P0, *P1, *P2;
-		double *N0, *N1, *N2;
-		double Ng[3] = {0, 0, 0};
-		const int i0 = indices[3*i + 0];
-		const int i1 = indices[3*i + 1];
-		const int i2 = indices[3*i + 2];
+		struct Vector *P0, *P1, *P2;
+		struct Vector *N0, *N1, *N2;
+		struct Vector Ng = {0, 0, 0};
+		const struct TriIndex *face = &indices[i];
 
-		P0 = &P[3*i0];
-		P1 = &P[3*i1];
-		P2 = &P[3*i2];
-		N0 = &N[3*i0];
-		N1 = &N[3*i1];
-		N2 = &N[3*i2];
+		P0 = &P[face->i0];
+		P1 = &P[face->i1];
+		P2 = &P[face->i2];
+		N0 = &N[face->i0];
+		N1 = &N[face->i1];
+		N2 = &N[face->i2];
 
-		TriComputeFaceNormal(Ng, P0, P1, P2);
-		VEC3_ADD_ASGN(N0, Ng);
-		VEC3_ADD_ASGN(N1, Ng);
-		VEC3_ADD_ASGN(N2, Ng);
+		TriComputeFaceNormal(&Ng, P0, P1, P2);
+
+		N0->x += Ng.x;
+		N0->y += Ng.y;
+		N0->z += Ng.z;
+
+		N1->x += Ng.x;
+		N1->y += Ng.y;
+		N1->z += Ng.z;
+
+		N2->x += Ng.x;
+		N2->y += Ng.y;
+		N2->z += Ng.z;
 	}
 
 	/* normalize N */
 	for (i = 0; i < nverts; i++) {
-		double *nml = &N[3*i];
+		struct Vector *nml = &N[i];
 		VEC3_NORMALIZE(nml);
 	}
 }
@@ -158,15 +171,15 @@ void *MshAllocateVertex(struct Mesh *mesh, const char *attr_name, int nverts)
 	void *ret = NULL;
 
 	if (strcmp(attr_name, "P") == 0) {
-		mesh->P = VEC3_REALLOC(mesh->P, double, nverts);
+		mesh->P = VecRealloc(mesh->P, nverts);
 		ret = mesh->P;
 	}
 	else if (strcmp(attr_name, "N") == 0) {
-		mesh->N = VEC3_REALLOC(mesh->N, double, nverts);
+		mesh->N = VecRealloc(mesh->N, nverts);
 		ret = mesh->N;
 	}
 	else if (strcmp(attr_name, "uv") == 0) {
-		mesh->uv = VEC2_REALLOC(mesh->uv, float, nverts);
+		mesh->uv = TexCoordRealloc(mesh->uv, nverts);
 		ret = mesh->uv;
 	}
 
@@ -179,7 +192,9 @@ void *MshAllocateFace(struct Mesh *mesh, const char *attr_name, int nfaces)
 	void *ret = NULL;
 
 	if (strcmp(attr_name, "indices") == 0) {
-		mesh->indices = VEC3_REALLOC(mesh->indices, int, nfaces);
+		/* TODO define TriIndexRealloc */
+		mesh->indices =
+				(struct TriIndex *) realloc(mesh->indices, sizeof(struct TriIndex) * nfaces);
 		ret = mesh->indices;
 	}
 
@@ -188,86 +203,65 @@ void *MshAllocateFace(struct Mesh *mesh, const char *attr_name, int nfaces)
 }
 
 void MshGetFaceVertexPosition(const struct Mesh *mesh, int face_index,
-		double *P0, double *P1, double *P2)
+		struct Vector *P0, struct Vector *P1, struct Vector *P2)
 {
-	int i0, i1, i2;
-	double *p0, *p1, *p2;
+	const struct TriIndex *face = &mesh->indices[face_index];
 
-	i0 = VEC3_NTH(mesh->indices, face_index)[0];
-	i1 = VEC3_NTH(mesh->indices, face_index)[1];
-	i2 = VEC3_NTH(mesh->indices, face_index)[2];
-	p0 = VEC3_NTH(mesh->P, i0);
-	p1 = VEC3_NTH(mesh->P, i1);
-	p2 = VEC3_NTH(mesh->P, i2);
-
-	VEC3_COPY(P0, p0);
-	VEC3_COPY(P1, p1);
-	VEC3_COPY(P2, p2);
+	*P0 = mesh->P[face->i0];
+	*P1 = mesh->P[face->i1];
+	*P2 = mesh->P[face->i2];
 }
 
 void MshGetFaceVertexNormal(const struct Mesh *mesh, int face_index,
-		double *N0, double *N1, double *N2)
+		struct Vector *N0, struct Vector *N1, struct Vector *N2)
 {
-	int i0, i1, i2;
-	double *n0, *n1, *n2;
+	const struct TriIndex *face = &mesh->indices[face_index];
 
-	i0 = VEC3_NTH(mesh->indices, face_index)[0];
-	i1 = VEC3_NTH(mesh->indices, face_index)[1];
-	i2 = VEC3_NTH(mesh->indices, face_index)[2];
-	n0 = VEC3_NTH(mesh->N, i0);
-	n1 = VEC3_NTH(mesh->N, i1);
-	n2 = VEC3_NTH(mesh->N, i2);
-
-	VEC3_COPY(N0, n0);
-	VEC3_COPY(N1, n1);
-	VEC3_COPY(N2, n2);
+	*N0 = mesh->N[face->i0];
+	*N1 = mesh->N[face->i1];
+	*N2 = mesh->N[face->i2];
 }
 
-void MshSetVertexPosition(struct Mesh *mesh, int index, const double *P)
+void MshSetVertexPosition(struct Mesh *mesh, int index, const struct Vector *P)
 {
 	if (mesh->P == NULL)
 		return;
 	if (index < 0 || index >= mesh->nverts)
 		return;
 
-	mesh->P[3*index + 0] = P[0];
-	mesh->P[3*index + 1] = P[1];
-	mesh->P[3*index + 2] = P[2];
+	mesh->P[index] = *P;
 }
 
-void MshSetVertexNormal(struct Mesh *mesh, int index, const double *N)
+void MshSetVertexNormal(struct Mesh *mesh, int index, const struct Vector *N)
 {
 	if (mesh->N == NULL)
 		return;
 	if (index < 0 || index >= mesh->nverts)
 		return;
 
-	mesh->N[3*index + 0] = N[0];
-	mesh->N[3*index + 1] = N[1];
-	mesh->N[3*index + 2] = N[2];
+	mesh->N[index] = *N;
 }
 
-void MshSetVertexTexture(struct Mesh *mesh, int index, const float *uv)
+void MshSetVertexTexture(struct Mesh *mesh, int index, const struct TexCoord *uv)
 {
 	if (mesh->uv == NULL)
 		return;
 	if (index < 0 || index >= mesh->nverts)
 		return;
 
-	mesh->uv[2*index + 0] = uv[0];
-	mesh->uv[2*index + 1] = uv[1];
+	mesh->uv[index] = *uv;
 }
 
-void MshSetFaceVertexIndices(struct Mesh *mesh, int index, const int *indices)
+void MshSetFaceVertexIndices(struct Mesh *mesh, int face_index, long i0, long i1, long i2)
 {
 	if (mesh->indices == NULL)
 		return;
-	if (index < 0 || index >= mesh->nfaces)
+	if (face_index < 0 || face_index >= mesh->nfaces)
 		return;
 
-	mesh->indices[3*index + 0] = indices[0];
-	mesh->indices[3*index + 1] = indices[1];
-	mesh->indices[3*index + 2] = indices[2];
+	mesh->indices[face_index].i0 = i0;
+	mesh->indices[face_index].i1 = i1;
+	mesh->indices[face_index].i2 = i2;
 }
 
 int MshGetVertexCount(const struct Mesh *mesh)
@@ -295,24 +289,21 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
 		const struct Ray *ray, struct Intersection *isect)
 {
 	const struct Mesh *mesh = (const struct Mesh *) prim_set;
-	const double *P0, *P1, *P2;
-	const double *N0, *N1, *N2;
-	int i0, i1, i2;
+	const struct TriIndex *face = &mesh->indices[prim_id];
+	const struct Vector *P0, *P1, *P2;
+	const struct Vector *N0, *N1, *N2;
 	double u, v;
 	double t_hit;
 	int hit;
 
 	/* TODO make function */
-	i0 = VEC3_NTH(mesh->indices, prim_id)[0];
-	i1 = VEC3_NTH(mesh->indices, prim_id)[1];
-	i2 = VEC3_NTH(mesh->indices, prim_id)[2];
-	P0 = VEC3_NTH(mesh->P, i0);
-	P1 = VEC3_NTH(mesh->P, i1);
-	P2 = VEC3_NTH(mesh->P, i2);
+	P0 = &mesh->P[face->i0];
+	P1 = &mesh->P[face->i1];
+	P2 = &mesh->P[face->i2];
 
 	hit = TriRayIntersect(
 			P0, P1, P2,
-			ray->orig, ray->dir, DO_NOT_CULL_BACKFACES,
+			&ray->orig, &ray->dir, DO_NOT_CULL_BACKFACES,
 			&t_hit, &u, &v);
 
 	if (!hit)
@@ -322,28 +313,28 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
 		return 1;
 
 	/* intersect info */
-	N0 = VEC3_NTH(mesh->N, i0);
-	N1 = VEC3_NTH(mesh->N, i1);
-	N2 = VEC3_NTH(mesh->N, i2);
-	TriComputeNormal(isect->N, N0, N1, N2, u, v);
+	N0 = &mesh->N[face->i0];
+	N1 = &mesh->N[face->i1];
+	N2 = &mesh->N[face->i2];
+	TriComputeNormal(&isect->N, N0, N1, N2, u, v);
 
 	/* TODO TMP uv handling */
 	/* UV = (1-u-v) * UV0 + u * UV1 + v * UV2 */
 	if (mesh->uv != NULL) {
-		const float *uv0, *uv1, *uv2;
+		const struct TexCoord *uv0, *uv1, *uv2;
 		const float t = 1-u-v;
-		uv0 = VEC2_NTH(mesh->uv, i0);
-		uv1 = VEC2_NTH(mesh->uv, i1);
-		uv2 = VEC2_NTH(mesh->uv, i2);
-		isect->uv[0] = t * uv0[0] + u * uv1[0] + v * uv2[0];
-		isect->uv[1] = t * uv0[1] + u * uv1[1] + v * uv2[1];
+		uv0 = &mesh->uv[face->i0];
+		uv1 = &mesh->uv[face->i1];
+		uv2 = &mesh->uv[face->i2];
+		isect->uv.u = t * uv0->u + u * uv1->u + v * uv2->u;
+		isect->uv.v = t * uv0->v + u * uv1->v + v * uv2->v;
 	}
 	else {
-		isect->uv[0] = 0;
-		isect->uv[1] = 0;
+		isect->uv.u = 0;
+		isect->uv.v = 0;
 	}
 
-	POINT_ON_RAY(isect->P, ray->orig, ray->dir, t_hit);
+	POINT_ON_RAY(&isect->P, &ray->orig, &ray->dir, t_hit);
 	isect->object = NULL;
 	isect->prim_id = prim_id;
 	isect->t_hit = t_hit;
@@ -351,26 +342,23 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
 	return 1;
 }
 
-static void triangle_bounds(const void *prim_set, int prim_id, double *bounds)
+static void triangle_bounds(const void *prim_set, int prim_id, struct Box *bounds)
 {
 	const struct Mesh *mesh = (const struct Mesh *) prim_set;
-	const double *p0, *p1, *p2;
-	int i0, i1, i2;
+	const struct TriIndex *face = &mesh->indices[prim_id];
+	const struct Vector *P0, *P1, *P2;
 
-	i0 = VEC3_NTH(mesh->indices, prim_id)[0];
-	i1 = VEC3_NTH(mesh->indices, prim_id)[1];
-	i2 = VEC3_NTH(mesh->indices, prim_id)[2];
-	p0 = VEC3_NTH(mesh->P, i0);
-	p1 = VEC3_NTH(mesh->P, i1);
-	p2 = VEC3_NTH(mesh->P, i2);
+	P0 = &mesh->P[face->i0];
+	P1 = &mesh->P[face->i1];
+	P2 = &mesh->P[face->i2];
 
-	TriComputeBounds(bounds, p0, p1, p2);
+	TriComputeBounds(bounds, P0, P1, P2);
 }
 
-static void triangleset_bounds(const void *prim_set, double *bounds)
+static void triangleset_bounds(const void *prim_set, struct Box *bounds)
 {
 	const struct Mesh *mesh = (const struct Mesh *) prim_set;
-	BOX3_COPY(bounds, mesh->bounds);
+	*bounds = mesh->bounds;
 }
 
 static int triangle_count(const void *prim_set)

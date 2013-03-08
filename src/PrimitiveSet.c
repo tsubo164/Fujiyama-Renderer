@@ -4,7 +4,6 @@ See LICENSE and README
 */
 
 #include "PrimitiveSet.h"
-#include "Box.h"
 #include <stddef.h>
 #include <float.h>
 
@@ -46,7 +45,7 @@ int PrmGetPrimitiveCount(const struct PrimitiveSet *primset)
 	return primset->PrimitiveCount(primset->data);
 }
 
-void PrmGetBounds(const struct PrimitiveSet *primset, double *bounds)
+void PrmGetBounds(const struct PrimitiveSet *primset, struct Box *bounds)
 {
 	primset->PrimitiveSetBounds(primset->data, bounds);
 }
@@ -58,7 +57,7 @@ int PrmRayIntersect(const struct PrimitiveSet *primset, int prim_id, double time
 }
 
 void PrmGetPrimitiveBounds(const struct PrimitiveSet *primset,
-		int prim_id, double *bounds)
+		int prim_id, struct Box *bounds)
 {
 	primset->PrimitiveBounds(primset->data, prim_id, bounds);
 }

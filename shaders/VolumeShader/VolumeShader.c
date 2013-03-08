@@ -4,8 +4,9 @@ See LICENSE and README
 */
 
 #include "Shader.h"
-#include "Vector.h"
 #include "Numeric.h"
+#include "Vector.h"
+#include "Color.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +14,7 @@ See LICENSE and README
 #include <float.h>
 
 struct VolumeShader {
-	float diffuse[3];
+	struct Color diffuse;
 };
 
 static void *MyNew(void);
@@ -60,7 +61,7 @@ static void *MyNew(void)
 	if (volume == NULL)
 		return NULL;
 
-	VEC3_SET(volume->diffuse, 1, 1, 1);
+	ColSet(&volume->diffuse, 1, 1, 1);
 
 	return volume;
 }
@@ -77,12 +78,12 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
 	const struct VolumeShader *volume = (struct VolumeShader *) self;
-	int i = 0;
-
-	float diff[3] = {0};
+	struct Color diff = {0, 0, 0};
 
 	struct LightSample *samples = NULL;
 	const int nsamples = SlGetLightSampleCount(in);
+
+	int i = 0;
 
 	/* allocate samples */
 	samples = SlNewLightSamples(in);
@@ -90,21 +91,21 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 	for (i = 0; i < nsamples; i++) {
 		struct LightOutput Lout;
 
-		SlIlluminance(cxt, &samples[i], in->P, in->N, N_PI, in, &Lout);
+		SlIlluminance(cxt, &samples[i], &in->P, &in->N, N_PI, in, &Lout);
 
 		/* diff */
-		diff[0] += Lout.Cl[0];
-		diff[1] += Lout.Cl[1];
-		diff[2] += Lout.Cl[2];
+		diff.r += Lout.Cl.r;
+		diff.g += Lout.Cl.g;
+		diff.b += Lout.Cl.b;
 	}
 
 	/* free samples */
 	SlFreeLightSamples(samples);
 
 	/* Cs */
-	out->Cs[0] = diff[0] * volume->diffuse[0];
-	out->Cs[1] = diff[1] * volume->diffuse[1];
-	out->Cs[2] = diff[2] * volume->diffuse[2];
+	out->Cs.r = diff.r * volume->diffuse.r;
+	out->Cs.g = diff.g * volume->diffuse.g;
+	out->Cs.b = diff.b * volume->diffuse.b;
 
 	/* Os */
 	out->Os = 1;
@@ -113,12 +114,12 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 static int set_diffuse(void *self, const struct PropertyValue *value)
 {
 	struct VolumeShader *volume = (struct VolumeShader *) self;
-	float diffuse[3] = {0};
+	struct Color diffuse = {0, 0, 0};
 
-	diffuse[0] = MAX(0, value->vector[0]);
-	diffuse[1] = MAX(0, value->vector[1]);
-	diffuse[2] = MAX(0, value->vector[2]);
-	VEC3_COPY(volume->diffuse, diffuse);
+	diffuse.r = MAX(0, value->vector[0]);
+	diffuse.g = MAX(0, value->vector[1]);
+	diffuse.b = MAX(0, value->vector[2]);
+	volume->diffuse = diffuse;
 
 	return 0;
 }

@@ -12,7 +12,6 @@ See LICENSE and README
 #include "Interval.h"
 #include "Numeric.h"
 #include "Shader.h"
-#include "Vector.h"
 #include "Volume.h"
 #include "Light.h"
 #include "Ray.h"
@@ -24,7 +23,7 @@ See LICENSE and README
 
 static int has_reached_bounce_limit(const struct TraceContext *cxt);
 static int shadow_ray_has_reached_opcity_limit(const struct TraceContext *cxt, float opac);
-static void setup_ray(const double *ray_orig, const double *ray_dir,
+static void setup_ray(const struct Vector *ray_orig, const struct Vector *ray_dir,
 		double ray_tmin, double ray_tmax,
 		struct Ray *ray);
 static void setup_surface_input(
@@ -33,11 +32,11 @@ static void setup_surface_input(
 		struct SurfaceInput *in);
 
 static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
-		float *out_rgba, double *t_hit);
+		struct Color4 *out_rgba, double *t_hit);
 static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray,
-		float *out_rgba);
+		struct Color4 *out_rgba);
 
-double SlFresnel(const double *I, const double *N, double ior)
+double SlFresnel(const struct Vector *I, const struct Vector *N, double ior)
 {
 	double k2 = 0;
 	double F0 = 0;
@@ -59,89 +58,95 @@ double SlFresnel(const double *I, const double *N, double ior)
 	return F0 + (1. - F0) * pow(1. - cos, 5.);
 }
 
-double SlPhong(const double *I, const double *N, const double *L, double roughness)
+double SlPhong(const struct Vector *I, const struct Vector *N, const struct Vector *L,
+		double roughness)
 {
 	double spec = 0;
-	double Lrefl[3] = {0};
+	struct Vector Lrefl = {0, 0, 0};
 
-	SlReflect(L, N, Lrefl);
+	SlReflect(L, N, &Lrefl);
 
-	spec = VEC3_DOT(I, Lrefl);
+	spec = VEC3_DOT(I, &Lrefl);
 	spec = MAX(0, spec);
 	spec = pow(spec, 1/MAX(.001, roughness));
 
 	return spec;
 }
 
-void SlReflect(const double *I, const double *N, double *R)
+void SlReflect(const struct Vector *I, const struct Vector *N, struct Vector *R)
 {
 	/* dot(-I, N) */
-	double cos = -1 * VEC3_DOT(I, N);
+	const double cos = -1 * VEC3_DOT(I, N);
 
-	R[0] = I[0] + 2 * cos * N[0];
-	R[1] = I[1] + 2 * cos * N[1];
-	R[2] = I[2] + 2 * cos * N[2];
+	R->x = I->x + 2 * cos * N->x;
+	R->y = I->y + 2 * cos * N->y;
+	R->z = I->z + 2 * cos * N->z;
 }
 
-void SlRefract(const double *I, const double *N, double ior, double *T)
+void SlRefract(const struct Vector *I, const struct Vector *N, double ior,
+		struct Vector *T)
 {
+	struct Vector n = {0, 0, 0};
 	double radicand = 0;
 	double ncoeff = 0;
 	double cos1 = 0;
 	double eta = 0;
-	double n[3] = {0};
 
 	/* dot(-I, N) */
 	cos1 = -1 * VEC3_DOT(I, N);
 	if (cos1 < 0) {
 		cos1 *= -1;
 		eta = 1/ior;
-		VEC3_MUL(n, N, -1);
+		n.x = -N->x;
+		n.y = -N->y;
+		n.z = -N->z;
 	} else {
 		eta = ior;
-		VEC3_COPY(n, N);
+		n = *N;
 	}
 
 	radicand = 1 - eta*eta * (1 - cos1*cos1);
 
 	if (radicand < 0.) {
 		/* total internal reflection */
-		VEC3_MUL(n, N, -1);
+		n.x = -N->x;
+		n.y = -N->y;
+		n.z = -N->z;
 		SlReflect(I, N, T);
 		return;
 	}
 
 	ncoeff = eta * cos1 - sqrt(radicand);
 
-	T[0] = eta * I[0] + ncoeff * n[0];
-	T[1] = eta * I[1] + ncoeff * n[1];
-	T[2] = eta * I[2] + ncoeff * n[2];
+	T->x = eta * I->x + ncoeff * n.x;
+	T->y = eta * I->y + ncoeff * n.y;
+	T->z = eta * I->z + ncoeff * n.z;
 }
 
 int SlTrace(const struct TraceContext *cxt,
-		const double *ray_orig, const double *ray_dir,
-		double ray_tmin, double ray_tmax, float *out_rgba, double *t_hit)
+		const struct Vector *ray_orig, const struct Vector *ray_dir,
+		double ray_tmin, double ray_tmax, struct Color4 *out_rgba, double *t_hit)
 {
 	struct Ray ray = {{0}};
-	float surface_color[4] = {0};
-	float volume_color[4] = {0};
+	struct Color4 surface_color = {0, 0, 0, 0};
+	struct Color4 volume_color = {0, 0, 0, 0};
 	int hit_surface = 0;
 	int hit_volume = 0;
 
-	VEC4_SET(out_rgba, 0, 0, 0, 0);
+	out_rgba->r = 0;
+	out_rgba->g = 0;
+	out_rgba->b = 0;
+	out_rgba->a = 0;
 	if (has_reached_bounce_limit(cxt)) {
 		return 0;
 	}
 
 	setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
 
-	hit_surface = trace_surface(cxt, &ray, surface_color, t_hit);
+	hit_surface = trace_surface(cxt, &ray, &surface_color, t_hit);
 
-	if (shadow_ray_has_reached_opcity_limit(cxt, surface_color[3])) {
-		out_rgba[0] = surface_color[0];
-		out_rgba[1] = surface_color[1];
-		out_rgba[2] = surface_color[2];
-		out_rgba[3] = surface_color[3];
+	if (shadow_ray_has_reached_opcity_limit(cxt, surface_color.a)) {
+		*out_rgba = surface_color;
 		return 1;
 	}
 
@@ -149,20 +154,20 @@ int SlTrace(const struct TraceContext *cxt,
 		ray.tmax = *t_hit;
 	}
 
-	hit_volume = raymarch_volume(cxt, &ray, volume_color);
+	hit_volume = raymarch_volume(cxt, &ray, &volume_color);
 
-	out_rgba[0] = volume_color[0] + surface_color[0] * (1-volume_color[3]);
-	out_rgba[1] = volume_color[1] + surface_color[1] * (1-volume_color[3]);
-	out_rgba[2] = volume_color[2] + surface_color[2] * (1-volume_color[3]);
-	out_rgba[3] = volume_color[3] + surface_color[3] * (1-volume_color[3]);
+	out_rgba->r = volume_color.r + surface_color.r * (1 - volume_color.a);
+	out_rgba->g = volume_color.g + surface_color.g * (1 - volume_color.a);
+	out_rgba->b = volume_color.b + surface_color.b * (1 - volume_color.a);
+	out_rgba->a = volume_color.a + surface_color.a * (1 - volume_color.a);
 
 	return hit_surface || hit_volume;
 }
 
 int SlSurfaceRayIntersect(const struct TraceContext *cxt,
-		const double *ray_orig, const double *ray_dir,
+		const struct Vector *ray_orig, const struct Vector *ray_dir,
 		double ray_tmin, double ray_tmax,
-		double *P_hit, double *N_hit, double *t_hit)
+		struct Vector *P_hit, struct Vector *N_hit, double *t_hit)
 {
 	const struct Accelerator *acc = NULL;
 	struct Intersection isect = {{0}};
@@ -174,8 +179,8 @@ int SlSurfaceRayIntersect(const struct TraceContext *cxt,
 	hit = AccIntersect(acc, cxt->time, &ray, &isect);
 
 	if (hit) {
-		VEC3_COPY(P_hit, isect.P);
-		VEC3_COPY(N_hit, isect.N);
+		*P_hit = isect.P;
+		*N_hit = isect.N;
 		*t_hit = isect.t_hit;
 	}
 
@@ -259,32 +264,40 @@ int SlGetLightCount(const struct SurfaceInput *in)
 }
 
 int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *sample,
-		const double *Ps, const double *axis, float angle,
+		const struct Vector *Ps, const struct Vector *axis, double angle,
 		const struct SurfaceInput *in, struct LightOutput *out)
 {
 	double cosangle = 0.;
-	double nml_axis[3] = {0};
-	float light_color[3] = {0};
+	struct Vector nml_axis = {0, 0, 0};
+	struct Color light_color = {0, 0, 0};
 
-	VEC3_SET(out->Cl, 0, 0, 0);
+	out->Cl.r = 0;
+	out->Cl.g = 0;
+	out->Cl.b = 0;
 
-	VEC3_SUB(out->Ln, sample->P, Ps);
-	out->distance = VEC3_LEN(out->Ln);
+	out->Ln.x = sample->P.x - Ps->x;
+	out->Ln.y = sample->P.y - Ps->y;
+	out->Ln.z = sample->P.z - Ps->z;
+
+	out->distance = VEC3_LEN(&out->Ln);
 	if (out->distance > 0) {
-		VEC3_DIV_ASGN(out->Ln, out->distance);
+		const double inv_dist = 1. / out->distance;
+		out->Ln.x *= inv_dist;
+		out->Ln.y *= inv_dist;
+		out->Ln.z *= inv_dist;
 	}
 
-	VEC3_COPY(nml_axis, axis);
-	VEC3_NORMALIZE(nml_axis);
-	cosangle = VEC3_DOT(nml_axis, out->Ln);
+	nml_axis = *axis;
+	VEC3_NORMALIZE(&nml_axis);
+	cosangle = VEC3_DOT(&nml_axis, &out->Ln);
 	if (cosangle < cos(angle)) {
 		return 0;
 	}
 
-	LgtIlluminate(sample, Ps, light_color);
-	if (light_color[0] < .0001 &&
-		light_color[1] < .0001 &&
-		light_color[2] < .0001) {
+	LgtIlluminate(sample, Ps, &light_color);
+	if (light_color.r < .0001 &&
+		light_color.g < .0001 &&
+		light_color.b < .0001) {
 		return 0;
 	}
 
@@ -294,21 +307,27 @@ int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *samp
 
 	if (cxt->cast_shadow) {
 		struct TraceContext shad_cxt;
+		struct Color4 C_occl = {0, 0, 0, 0};
 		double t_hit = FLT_MAX;
-		float C_occl[4] = {0};
 		int hit = 0;
 
 		shad_cxt = SlShadowContext(cxt, in->shaded_object);
-		hit = SlTrace(&shad_cxt, Ps, out->Ln, .0001, out->distance, C_occl, &t_hit);
+		hit = SlTrace(&shad_cxt, Ps, &out->Ln, .0001, out->distance, &C_occl, &t_hit);
 
 		if (hit) {
 			/* return 0; */
 			/* TODO handle light_color for shadow ray */
-			VEC3_MUL_ASGN(light_color, 1-C_occl[3]);
+			float inv_alpha_complement = 1 - C_occl.a;
+			if (inv_alpha_complement != 0) {
+				inv_alpha_complement = 1 / inv_alpha_complement;
+			}
+			light_color.r *= inv_alpha_complement;
+			light_color.g *= inv_alpha_complement;
+			light_color.b *= inv_alpha_complement;
 		}
 	}
 
-	VEC3_COPY(out->Cl, light_color);
+	out->Cl = light_color;
 	return 1;
 }
 
@@ -394,12 +413,12 @@ static int has_reached_bounce_limit(const struct TraceContext *cxt)
 	return current_depth > max_depth;
 }
 
-static void setup_ray(const double *ray_orig, const double *ray_dir,
+static void setup_ray(const struct Vector *ray_orig, const struct Vector *ray_dir,
 		double ray_tmin, double ray_tmax,
 		struct Ray *ray)
 {
-	VEC3_COPY(ray->orig, ray_orig);
-	VEC3_COPY(ray->dir, ray_dir);
+	ray->orig = *ray_orig;
+	ray->dir = *ray_dir;
 	ray->tmin = ray_tmin;
 	ray->tmax = ray_tmax;
 }
@@ -410,24 +429,27 @@ static void setup_surface_input(
 		struct SurfaceInput *in)
 {
 	in->shaded_object = isect->object;
-	VEC3_COPY(in->P, isect->P);
-	VEC3_COPY(in->N, isect->N);
-	VEC3_COPY(in->Cd, isect->Cd);
-	VEC2_COPY(in->uv, isect->uv);
-	VEC3_COPY(in->I, ray->dir);
+	in->P  = isect->P;
+	in->N  = isect->N;
+	in->Cd = isect->Cd;
+	in->uv = isect->uv;
+	in->I  = ray->dir;
 
-	VEC3_COPY(in->dPds, isect->dPds);
-	VEC3_COPY(in->dPdt, isect->dPdt);
+	in->dPds = isect->dPds;
+	in->dPdt = isect->dPdt;
 }
 
 static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
-		float *out_rgba, double *t_hit)
+		struct Color4 *out_rgba, double *t_hit)
 {
 	const struct Accelerator *acc = NULL;
 	struct Intersection isect = {{0}};
 	int hit = 0;
 
-	VEC4_SET(out_rgba, 0, 0, 0, 0);
+	out_rgba->r = 0;
+	out_rgba->g = 0;
+	out_rgba->b = 0;
+	out_rgba->a = 0;
 	acc = ObjGroupGetSurfaceAccelerator(cxt->trace_target),
 	hit = AccIntersect(acc, cxt->time, ray, &isect);
 
@@ -446,7 +468,10 @@ static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
 		ShdEvaluate(ObjGetShader(isect.object), cxt, &in, &out);
 
 		out.Os = CLAMP(out.Os, 0, 1);
-		VEC4_SET(out_rgba, out.Cs[0], out.Cs[1], out.Cs[2], out.Os);
+		out_rgba->r = out.Cs.r;
+		out_rgba->g = out.Cs.g;
+		out_rgba->b = out.Cs.b;
+		out_rgba->a = out.Os;
 
 		*t_hit = isect.t_hit;
 	}
@@ -455,13 +480,16 @@ static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
 }
 
 static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray,
-		float *out_rgba)
+		struct Color4 *out_rgba)
 {
 	const struct VolumeAccelerator *acc = NULL;
 	struct IntervalList *intervals = NULL;
 	int hit = 0;
 
-	VEC4_SET(out_rgba, 0, 0, 0, 0);
+	out_rgba->r = 0;
+	out_rgba->g = 0;
+	out_rgba->b = 0;
+	out_rgba->a = 0;
 
 	intervals = IntervalListNew();
 	if (intervals == NULL) {
@@ -478,8 +506,8 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 	}
 
 	{
-		double P[3] = {0};
-		double ray_delta[3] = {0};
+		struct Vector P = {0, 0, 0};
+		struct Vector ray_delta = {0, 0, 0};
 		double t = 0, t_start = 0, t_delta = 0, t_limit = 0;
 		const float opacity_threshold = cxt->opacity_threshold;
 
@@ -512,22 +540,22 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 			t_start = t_start - fmod(t_start, t_delta) + t_delta;
 		}
 
-		POINT_ON_RAY(P, ray->orig, ray->dir, t_start);
-		ray_delta[0] = t_delta * ray->dir[0];
-		ray_delta[1] = t_delta * ray->dir[1];
-		ray_delta[2] = t_delta * ray->dir[2];
+		POINT_ON_RAY(&P, &ray->orig, &ray->dir, t_start);
+		ray_delta.x = t_delta * ray->dir.x;
+		ray_delta.y = t_delta * ray->dir.y;
+		ray_delta.z = t_delta * ray->dir.z;
 		t = t_start;
 
 		/* raymarch */
-		while (t <= t_limit && out_rgba[3] < opacity_threshold) {
+		while (t <= t_limit && out_rgba->a < opacity_threshold) {
 			const struct Interval *interval = IntervalListGetHead(intervals);
-			float color[3] = {0};
+			struct Color color = {0, 0, 0};
 			float opacity = 0;
 
 			/* loop over volume candidates at this sample point */
 			for (; interval != NULL; interval = interval->next) {
 				struct VolumeSample sample;
-				ObjGetVolumeSample(interval->object, cxt->time, P, &sample);
+				ObjGetVolumeSample(interval->object, cxt->time, &P, &sample);
 
 				/* merge volume with max density */
 				opacity = MAX(opacity, t_delta * sample.density);
@@ -537,33 +565,33 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 					struct SurfaceOutput out;
 
 					in.shaded_object = interval->object;
-					VEC3_COPY(in.P, P);
-					VEC3_SET(in.N, 0, 0, 0);
+					in.P = P;
+					VEC3_SET(&in.N, 0, 0, 0);
 					ShdEvaluate(ObjGetShader(interval->object), cxt, &in, &out);
 
-					color[0] = out.Cs[0] * opacity;
-					color[1] = out.Cs[1] * opacity;
-					color[2] = out.Cs[2] * opacity;
+					color.r = out.Cs.r * opacity;
+					color.g = out.Cs.g * opacity;
+					color.b = out.Cs.b * opacity;
 				}
 			}
 
 			/* composite color */
-			out_rgba[0] = out_rgba[0] + color[0] * (1-out_rgba[3]);
-			out_rgba[1] = out_rgba[1] + color[1] * (1-out_rgba[3]);
-			out_rgba[2] = out_rgba[2] + color[2] * (1-out_rgba[3]);
-			out_rgba[3] = out_rgba[3] + CLAMP(opacity, 0, 1) * (1-out_rgba[3]);
+			out_rgba->r = out_rgba->r + color.r * (1-out_rgba->a);
+			out_rgba->g = out_rgba->g + color.g * (1-out_rgba->a);
+			out_rgba->b = out_rgba->b + color.b * (1-out_rgba->a);
+			out_rgba->a = out_rgba->a + CLAMP(opacity, 0, 1) * (1-out_rgba->a);
 
 			/* advance sample point */
-			P[0] += ray_delta[0];
-			P[1] += ray_delta[1];
-			P[2] += ray_delta[2];
+			P.x += ray_delta.x;
+			P.y += ray_delta.y;
+			P.z += ray_delta.z;
 			t += t_delta;
 		}
-		if (out_rgba[3] >= opacity_threshold) {
-			out_rgba[3] = 1;
+		if (out_rgba->a >= opacity_threshold) {
+			out_rgba->a = 1;
 		}
 	}
-	out_rgba[3] = CLAMP(out_rgba[3], 0, 1);
+	out_rgba->a = CLAMP(out_rgba->a, 0, 1);
 
 	IntervalListFree(intervals);
 	return hit;

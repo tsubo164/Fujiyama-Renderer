@@ -20,6 +20,7 @@ struct Interval;
 struct Shader;
 struct Volume;
 struct Light;
+struct Box;
 struct Ray;
 
 struct ObjectInstance;
@@ -66,7 +67,7 @@ extern const struct ObjectGroup *ObjGetSelfHitTarget(const struct ObjectInstance
 extern const struct Shader *ObjGetShader(const struct ObjectInstance *obj);
 extern const struct Light **ObjGetLightList(const struct ObjectInstance *obj);
 extern int ObjGetLightCount(const struct ObjectInstance *obj);
-extern void ObjGetBounds(const struct ObjectInstance *obj, double *bounds);
+extern void ObjGetBounds(const struct ObjectInstance *obj, struct Box *bounds);
 extern void ObjComputeBounds(struct ObjectInstance *obj);
 
 /* sampling */
@@ -75,7 +76,7 @@ extern int ObjIntersect(const struct ObjectInstance *obj, double time,
 extern int ObjVolumeIntersect(const struct ObjectInstance *obj, double time,
 			const struct Ray *ray, struct Interval *interval);
 extern int ObjGetVolumeSample(const struct ObjectInstance *obj, double time,
-			const double *point, struct VolumeSample *sample);
+			const struct Vector *point, struct VolumeSample *sample);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -11,6 +11,8 @@ extern "C" {
 #endif
 
 struct PrimitiveSet;
+struct TexCoord;
+struct Vector;
 
 extern struct Mesh *MshNew(void);
 extern void MshFree(struct Mesh *mesh);
@@ -26,15 +28,15 @@ extern int MshGetVertexCount(const struct Mesh *mesh);
 extern int MshGetFaceCount(const struct Mesh *mesh);
 
 extern void MshGetFaceVertexPosition(const struct Mesh *mesh, int face_index,
-		double *P0, double *P1, double *P2);
+		struct Vector *P0, struct Vector *P1, struct Vector *P2);
 extern void MshGetFaceVertexNormal(const struct Mesh *mesh, int face_index,
-		double *N0, double *N1, double *N2);
+		struct Vector *N0, struct Vector *N1, struct Vector *N2);
 
 /* property setting */
-extern void MshSetVertexPosition(struct Mesh *mesh, int index, const double *P);
-extern void MshSetVertexNormal(struct Mesh *mesh, int index, const double *N);
-extern void MshSetVertexTexture(struct Mesh *mesh, int index, const float *uv);
-extern void MshSetFaceVertexIndices(struct Mesh *mesh, int index, const int *indices);
+extern void MshSetVertexPosition(struct Mesh *mesh, int index, const struct Vector *P);
+extern void MshSetVertexNormal(struct Mesh *mesh, int index, const struct Vector *N);
+extern void MshSetVertexTexture(struct Mesh *mesh, int index, const struct TexCoord *uv);
+extern void MshSetFaceVertexIndices(struct Mesh *mesh, int face_index, long i0, long i1, long i2);
 
 /* re-computation */
 extern void MshComputeBounds(struct Mesh *mesh);

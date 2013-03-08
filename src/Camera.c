@@ -20,11 +20,12 @@ struct Camera {
 	double zfar;
 	double fov;
 
-	double uv_size[2];
+	struct Vector2 uv_size;
 };
 
 static void compute_uv_size(struct Camera *cam);
-static void compute_ray_target(const struct Camera *cam, const double *uv, double *target);
+static void compute_ray_target(const struct Camera *cam,
+		const struct Vector2 *uv, struct Vector *target);
 
 struct Camera *CamNew(const char *type)
 {
@@ -100,22 +101,25 @@ void CamSetRotateOrder(struct Camera *cam, int order)
 	XfmSetSampleRotateOrder(&cam->transform_samples, order);
 }
 
-void CamGetRay(const struct Camera *cam, const double *screen_uv,
+void CamGetRay(const struct Camera *cam, const struct Vector2 *screen_uv,
 		double time, struct Ray *ray)
 {
 	struct Transform transform_interp;
-	double target[3] = {0, 0, 0};
-	double eye[3] = {0, 0, 0};
+	struct Vector target = {0, 0, 0};
+	struct Vector eye = {0, 0, 0};
 
 	XfmLerpTransformSample(&cam->transform_samples, time, &transform_interp);
 
-	compute_ray_target(cam, screen_uv, target);
-	XfmTransformPoint(&transform_interp, target);
-	XfmTransformPoint(&transform_interp, eye);
+	compute_ray_target(cam, screen_uv, &target);
+	XfmTransformPoint(&transform_interp, &target);
+	XfmTransformPoint(&transform_interp, &eye);
 
-	VEC3_SUB(ray->dir, target, eye);
-	VEC3_NORMALIZE(ray->dir);
-	VEC3_COPY(ray->orig, eye);
+	ray->dir.x = target.x - eye.x;
+	ray->dir.y = target.y - eye.y;
+	ray->dir.z = target.z - eye.z;
+
+	VEC3_NORMALIZE(&ray->dir);
+	ray->orig = eye;
 
 	ray->tmin = cam->znear;
 	ray->tmax = cam->zfar;
@@ -123,14 +127,15 @@ void CamGetRay(const struct Camera *cam, const double *screen_uv,
 
 static void compute_uv_size(struct Camera *cam)
 {
-	cam->uv_size[1] = 2 * tan(RADIAN(cam->fov/2));
-	cam->uv_size[0] = cam->uv_size[1] * cam->aspect;
+	cam->uv_size.y = 2 * tan(RADIAN(cam->fov/2));
+	cam->uv_size.x = cam->uv_size.y * cam->aspect;
 }
 
-static void compute_ray_target(const struct Camera *cam, const double *uv, double *target)
+static void compute_ray_target(const struct Camera *cam,
+		const struct Vector2 *uv, struct Vector *target)
 {
-	target[0] = (uv[0] - .5) * cam->uv_size[0];
-	target[1] = (uv[1] - .5) * cam->uv_size[1];
-	target[2] = -1;
+	target->x = (uv->x - .5) * cam->uv_size.x;
+	target->y = (uv->y - .5) * cam->uv_size.y;
+	target->z = -1;
 }
 

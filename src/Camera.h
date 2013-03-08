@@ -13,6 +13,7 @@ extern "C" {
 #endif
 
 struct Camera;
+struct Vector2;
 struct Ray;
 
 extern struct Camera *CamNew(const char *type);
@@ -28,7 +29,7 @@ extern void CamSetRotate(struct Camera *cam, double rx, double ry, double rz, do
 extern void CamSetTransformOrder(struct Camera *cam, int order);
 extern void CamSetRotateOrder(struct Camera *cam, int order);
 
-extern void CamGetRay(const struct Camera *cam, const double *screen_uv,
+extern void CamGetRay(const struct Camera *cam, const struct Vector2 *screen_uv,
 		double time, struct Ray *ray);
 
 #ifdef __cplusplus

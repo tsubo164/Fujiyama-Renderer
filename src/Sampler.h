@@ -6,6 +6,8 @@ See LICENSE and README
 #ifndef SAMPLER_H
 #define SAMPLER_H
 
+#include "Vector.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -13,7 +15,7 @@ extern "C" {
 struct Sampler;
 
 struct Sample {
-	double uv[2];
+	struct Vector2 uv;
 	double time;
 
 	double data[4];

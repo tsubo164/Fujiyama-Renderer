@@ -53,9 +53,7 @@ static void set_error(int err)
 /* curve input file interfaces */
 struct CurveInput *CrvOpenInputFile(const char *filename)
 {
-	struct CurveInput *in;
-
-	in = (struct CurveInput *) malloc(sizeof(struct CurveInput));
+	struct CurveInput *in = (struct CurveInput *) malloc(sizeof(struct CurveInput));
 	if (in == NULL) {
 		set_error(ERR_CRV_NOMEM);
 		return NULL;
@@ -156,9 +154,7 @@ int CrvReadAttribute(struct CurveInput *in, void *data)
 /* curve output file interfaces */
 struct CurveOutput *CrvOpenOutputFile(const char *filename)
 {
-	struct CurveOutput *out;
-
-	out = (struct CurveOutput *) malloc(sizeof(struct CurveOutput));
+	struct CurveOutput *out = (struct CurveOutput *) malloc(sizeof(struct CurveOutput));
 	if (out == NULL) {
 		set_error(ERR_CRV_NOMEM);
 		return NULL;

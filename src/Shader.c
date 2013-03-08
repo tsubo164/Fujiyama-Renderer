@@ -10,7 +10,7 @@ See LICENSE and README
 #include <assert.h>
 
 static int error_no = SHD_ERR_NOERR;
-static const float NO_SHADER_COLOR[] = {.5, 1., 0.};
+static const struct Color NO_SHADER_COLOR = {.5, 1., 0.};
 
 struct Shader {
 	void *self;
@@ -73,7 +73,7 @@ void ShdEvaluate(const struct Shader *shader, const struct TraceContext *cxt,
 		const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
 	if (shader == NULL) {
-		VEC3_COPY(out->Cs, NO_SHADER_COLOR);
+		out->Cs = NO_SHADER_COLOR;
 		out->Os = 1;
 		return;
 	}

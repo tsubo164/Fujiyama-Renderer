@@ -6,6 +6,10 @@ See LICENSE and README
 #ifndef IMPORTANCESAMPLING_H
 #define IMPORTANCESAMPLING_H
 
+#include "TexCoord.h"
+#include "Vector.h"
+#include "Color.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -13,9 +17,9 @@ extern "C" {
 struct Texture;
 
 struct DomeSample {
-	float color[3];
-	float uv[3];
-	double dir[3];
+	struct Color color;
+	struct TexCoord uv;
+	struct Vector dir;
 };
 
 extern int ImportanceSampling(struct Texture *texture, int seed,

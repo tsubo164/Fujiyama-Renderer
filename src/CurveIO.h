@@ -13,6 +13,9 @@ extern "C" {
 #endif
 
 struct Curve;
+struct TexCoord;
+struct Vector;
+struct Color;
 
 struct CurveInput {
 	FILE *file;
@@ -22,10 +25,10 @@ struct CurveInput {
 	int ncurves;
 	int ncurve_attrs;
 
-	double *P;
+	struct Vector *P;
 	double *width;
-	float *Cd;
-	float *uv;
+	struct Color *Cd;
+	struct TexCoord *uv;
 	int *indices;
 
 	char **attr_names;
@@ -39,10 +42,10 @@ struct CurveOutput {
 	int ncurves;
 	int ncurve_attrs;
 
-	double *P;
+	struct Vector *P;
 	double *width;
-	float *Cd;
-	float *uv;
+	struct Color *Cd;
+	struct TexCoord *uv;
 	int *indices;
 };
 

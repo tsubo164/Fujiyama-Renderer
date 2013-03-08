@@ -4,8 +4,10 @@ See LICENSE and README
 */
 
 #include "MeshIO.h"
-#include "Mesh.h"
+#include "TexCoord.h"
 #include "String.h"
+#include "Vector.h"
+#include "Mesh.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -219,7 +221,11 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
 			read_attridata(in);
 			for (j = 0; j < in->nverts; j++) {
 				const double *data = (const double *) in->data_buffer;
-				MshSetVertexPosition(mesh, j, &data[j*3]);
+				struct Vector P = {0, 0, 0};
+				P.x = data[j*3 + 0];
+				P.y = data[j*3 + 1];
+				P.z = data[j*3 + 2];
+				MshSetVertexPosition(mesh, j, &P);
 			}
 		}
 		else if (strcmp(attrname, "N") == 0) {
@@ -227,7 +233,11 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
 			read_attridata(in);
 			for (j = 0; j < in->nverts; j++) {
 				const double *data = (const double *) in->data_buffer;
-				MshSetVertexNormal(mesh, j, &data[j*3]);
+				struct Vector N = {0, 0, 0};
+				N.x = data[j*3 + 0];
+				N.y = data[j*3 + 1];
+				N.z = data[j*3 + 2];
+				MshSetVertexNormal(mesh, j, &N);
 			}
 		}
 		else if (strcmp(attrname, "uv") == 0) {
@@ -235,7 +245,10 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
 			read_attridata(in);
 			for (j = 0; j < in->nverts; j++) {
 				const float *data = (const float *) in->data_buffer;
-				MshSetVertexTexture(mesh, j, &data[j*2]);
+				struct TexCoord texcoord = {0, 0};
+				texcoord.u = data[j*2 + 0];
+				texcoord.v = data[j*2 + 1];
+				MshSetVertexTexture(mesh, j, &texcoord);
 			}
 		}
 		else if (strcmp(attrname, "indices") == 0) {
@@ -243,7 +256,10 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
 			read_attridata(in);
 			for (j = 0; j < in->nfaces; j++) {
 				const int *data = (const int *) in->data_buffer;
-				MshSetFaceVertexIndices(mesh, j, &data[j*3]);
+				const long i0 = data[j*3 + 0];
+				const long i1 = data[j*3 + 1];
+				const long i2 = data[j*3 + 2];
+				MshSetFaceVertexIndices(mesh, j, i0, i1, i2);
 			}
 		}
 	}

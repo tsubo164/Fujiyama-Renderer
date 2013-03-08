@@ -197,7 +197,10 @@ int FbSaveCroppedData(struct FrameBuffer *fb, const char *filename)
 		for ( x = xmin; x < xmax; x++) {
 			const float *src = (float *) FbGetReadOnly(fb, x, y, 0);
 			float *dst = FbGetWritable(cropped, x-xmin, y-ymin, 0);
-			VEC4_COPY(dst, src);
+			dst[0] = src[0];
+			dst[1] = src[1];
+			dst[2] = src[2];
+			dst[3] = src[3];
 		}
 	}
 

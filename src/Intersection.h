@@ -6,6 +6,10 @@ See LICENSE and README
 #ifndef INTERSECTION_H
 #define INTERSECTION_H
 
+#include "TexCoord.h"
+#include "Vector.h"
+#include "Color.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -13,13 +17,13 @@ extern "C" {
 struct ObjectInstance;
 
 struct Intersection {
-	double P[3];
-	double N[3];
-	float Cd[3];
-	float uv[2];
+	struct Vector P;
+	struct Vector N;
+	struct Color Cd;
+	struct TexCoord uv;
 
-	double dPds[3];
-	double dPdt[3];
+	struct Vector dPds;
+	struct Vector dPdt;
 
 	const struct ObjectInstance *object;
 	int prim_id;

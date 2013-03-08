@@ -19,13 +19,13 @@ See LICENSE and README
 
 struct VolumeAccelerator {
 	const char *name;
-	double bounds[6];
+	struct Box bounds;
 	int has_built;
 
 	/* TODO should make struct PrimitiveSet? */
 	const void *volume_set;
 	int num_volumes;
-	double volume_set_bounds[6];
+	struct Box volume_set_bounds;
 	VolumeIntersectFunction VolumeIntersect;
 	VolumeBoundsFunction VolumeBounds;
 
@@ -71,15 +71,15 @@ enum {
 #endif
 
 struct VolumePrimitive {
-	double bounds[6];
-	double centroid[3];
+	struct Box bounds;
+	struct Vector centroid;
 	int index;
 };
 
 struct VolumeBVHNode {
 	struct VolumeBVHNode *left;
 	struct VolumeBVHNode *right;
-	double bounds[6];
+	struct Box bounds;
 	int volume_id;
 };
 
@@ -166,8 +166,8 @@ struct VolumeAccelerator *VolumeAccNew(int accelerator_type)
 	acc->VolumeIntersect = NULL;
 	acc->VolumeBounds = NULL;
 
-	BOX3_SET(acc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-	BOX3_SET(acc->volume_set_bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+	BOX3_SET(&acc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+	BOX3_SET(&acc->volume_set_bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	return acc;
 }
@@ -183,9 +183,9 @@ void VolumeAccFree(struct VolumeAccelerator *acc)
 	free(acc);
 }
 
-void VolumeAccGetBounds(const struct VolumeAccelerator *acc, double *bounds)
+void VolumeAccGetBounds(const struct VolumeAccelerator *acc, struct Box *bounds)
 {
-	BOX3_COPY(bounds, acc->bounds);
+	*bounds = acc->bounds;
 }
 
 int VolumeAccBuild(struct VolumeAccelerator *acc)
@@ -210,7 +210,7 @@ int VolumeAccIntersect(const struct VolumeAccelerator *acc, double time,
 	double boxhit_tmax;
 
 	/* check intersection with overall bounds */
-	if (!BoxRayIntersect(acc->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
+	if (!BoxRayIntersect(&acc->bounds, &ray->orig, &ray->dir, ray->tmin, ray->tmax,
 				&boxhit_tmin, &boxhit_tmax)) {
 		return 0;
 	}
@@ -226,7 +226,7 @@ int VolumeAccIntersect(const struct VolumeAccelerator *acc, double time,
 }
 
 void VolumeAccSetTargetGeometry(struct VolumeAccelerator *acc,
-	const void *volume_set, int num_volumes, const double *volume_set_bounds,
+	const void *volume_set, int num_volumes, const struct Box *volume_set_bounds,
 	VolumeIntersectFunction volume_intersect_function,
 	VolumeBoundsFunction volume_bounds_function)
 {
@@ -234,11 +234,11 @@ void VolumeAccSetTargetGeometry(struct VolumeAccelerator *acc,
 	acc->num_volumes = num_volumes;
 	acc->VolumeIntersect = volume_intersect_function;
 	acc->VolumeBounds = volume_bounds_function;
-	BOX3_COPY(acc->volume_set_bounds, volume_set_bounds);
+	acc->volume_set_bounds = *volume_set_bounds;
 
 	/* accelerator's bounds */
-	BOX3_COPY(acc->bounds, volume_set_bounds);
-	BOX3_EXPAND(acc->bounds, EXPAND);
+	acc->bounds = *volume_set_bounds;
+	BOX3_EXPAND(&acc->bounds, EXPAND);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -326,10 +326,16 @@ static int build_bvh_accel(struct VolumeAccelerator *acc)
 	}
 
 	for (i = 0; i < NPRIMS; i++) {
-		acc->VolumeBounds(acc->volume_set, i, volumes[i].bounds);
-		volumes[i].centroid[0] = (volumes[i].bounds[3] + volumes[i].bounds[0]) / 2;
-		volumes[i].centroid[1] = (volumes[i].bounds[4] + volumes[i].bounds[1]) / 2;
-		volumes[i].centroid[2] = (volumes[i].bounds[5] + volumes[i].bounds[2]) / 2;
+		acc->VolumeBounds(&acc->volume_set, i, &volumes[i].bounds);
+		/* TODO use BoxCentroid */
+		volumes[i].centroid.x = (volumes[i].bounds.max.x + volumes[i].bounds.min.x) / 2;
+		volumes[i].centroid.y = (volumes[i].bounds.max.y + volumes[i].bounds.min.y) / 2;
+		volumes[i].centroid.z = (volumes[i].bounds.max.z + volumes[i].bounds.min.z) / 2;
+		/*
+		volumes[i].centroid[0] = (volumes[i].bounds.max.x + volumes[i].bounds.min.x) / 2;
+		volumes[i].centroid[1] = (volumes[i].bounds.max.y + volumes[i].bounds.min.y) / 2;
+		volumes[i].centroid[2] = (volumes[i].bounds.max.z + volumes[i].bounds.min.z) / 2;
+		*/
 		volumes[i].index = i;
 
 		volume_ptr[i] = &volumes[i];
@@ -369,8 +375,8 @@ static int intersect_bvh_recursive(const struct VolumeAccelerator *acc,
 	int hit_left, hit_right;
 	int hit;
 
-	hit = BoxRayIntersect(node->bounds,
-			ray->orig, ray->dir, ray->tmin, ray->tmax,
+	hit = BoxRayIntersect(&node->bounds,
+			&ray->orig, &ray->dir, ray->tmin, ray->tmax,
 			&boxhit_tmin, &boxhit_tmax);
 	if (!hit) {
 		return 0;
@@ -482,7 +488,7 @@ static struct VolumeBVHNode *build_bvh(struct VolumePrimitive **volume_ptr, int 
 
 	if (NPRIMS == 1) {
 		node->volume_id = volume_ptr[begin]->index;
-		BOX3_COPY(node->bounds, volume_ptr[begin]->bounds);
+		node->bounds = volume_ptr[begin]->bounds;
 		return node;
 	}
 
@@ -515,24 +521,23 @@ static struct VolumeBVHNode *build_bvh(struct VolumePrimitive **volume_ptr, int 
 	if (node->right == NULL)
 		return NULL;
 
-	BOX3_COPY(node->bounds, node->left->bounds);
-	BoxAddBox(node->bounds, node->right->bounds);
+	node->bounds = node->left->bounds;
+	BoxAddBox(&node->bounds, &node->right->bounds);
 
 	return node;
 }
 
 static struct VolumeBVHNode *new_bvhnode(void)
 {
-	struct VolumeBVHNode *node;
-
-	node = (struct VolumeBVHNode *) malloc(sizeof(struct VolumeBVHNode));
+	struct VolumeBVHNode *node =
+			(struct VolumeBVHNode *) malloc(sizeof(struct VolumeBVHNode));
 	if (node == NULL)
 		return NULL;
 
 	node->left = NULL;
 	node->right = NULL;
 	node->volume_id = -1;
-	BOX3_SET(node->bounds, 0, 0, 0, 0, 0, 0);
+	BOX3_SET(&node->bounds, 0, 0, 0, 0, 0, 0);
 
 	return node;
 }
@@ -568,20 +573,35 @@ static int is_bvh_leaf(const struct VolumeBVHNode *node)
 static int find_median(struct VolumePrimitive **volumes, int begin, int end, int axis)
 {
 	int low, high, mid;
-	double key;
+	double key = 0;
 
 	assert(axis >= 0 && axis <= 2);
 
 	low = begin;
 	high = end - 1;
 	mid = -1;
-	key = (volumes[low]->centroid[axis] + volumes[high]->centroid[axis]) / 2;
+
+	switch (axis) {
+	case 0: key = (volumes[low]->centroid.x + volumes[high]->centroid.x) / 2; break;
+	case 1: key = (volumes[low]->centroid.y + volumes[high]->centroid.y) / 2; break;
+	case 2: key = (volumes[low]->centroid.z + volumes[high]->centroid.z) / 2; break;
+	default: break;
+	}
 
 	while (low != mid) {
+		double value = 0;
 		mid = (low + high) / 2;
-		if (key < volumes[mid]->centroid[axis])
+
+		switch (axis) {
+		case 0: value = volumes[mid]->centroid.x; break;
+		case 1: value = volumes[mid]->centroid.y; break;
+		case 2: value = volumes[mid]->centroid.z; break;
+		default: break;
+		}
+
+		if (key < value)
 			high = mid;
-		else if (volumes[mid]->centroid[axis] < key)
+		else if (value < key)
 			low = mid;
 		else
 			break;
@@ -604,21 +624,21 @@ static int volume_compare_x(const void *a, const void *b)
 {
 	struct VolumePrimitive **A = (struct VolumePrimitive **) a;
 	struct VolumePrimitive **B = (struct VolumePrimitive **) b;
-	return compare_double((*A)->centroid[0], (*B)->centroid[0]);
+	return compare_double((*A)->centroid.x, (*B)->centroid.x);
 }
 
 static int volume_compare_y(const void *a, const void *b)
 {
 	struct VolumePrimitive **A = (struct VolumePrimitive **) a;
 	struct VolumePrimitive **B = (struct VolumePrimitive **) b;
-	return compare_double((*A)->centroid[1], (*B)->centroid[1]);
+	return compare_double((*A)->centroid.y, (*B)->centroid.y);
 }
 
 static int volume_compare_z(const void *a, const void *b)
 {
 	struct VolumePrimitive **A = (struct VolumePrimitive **) a;
 	struct VolumePrimitive **B = (struct VolumePrimitive **) b;
-	return compare_double((*A)->centroid[2], (*B)->centroid[2]);
+	return compare_double((*A)->centroid.z, (*B)->centroid.z);
 }
 
 static int ray_volume_intersect (const struct VolumeAccelerator *acc, int volume_id,
