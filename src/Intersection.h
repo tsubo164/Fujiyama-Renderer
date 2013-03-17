@@ -31,14 +31,6 @@ struct Intersection {
 	double t_hit;
 };
 
-struct IntersectionList;
-
-extern struct IntersectionList *IsectNew();
-extern void IsectFree(struct IntersectionList *isects);
-
-extern void IsectPush(struct IntersectionList *isects, const struct Intersection *isect);
-extern const struct Intersection *IsectGet(struct IntersectionList *isects, int index);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

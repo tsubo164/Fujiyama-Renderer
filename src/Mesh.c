@@ -23,10 +23,6 @@ static void triangle_bounds(const void *prim_set, int prim_id, struct Box *bound
 static void triangleset_bounds(const void *prim_set, struct Box *bounds);
 static int triangle_count(const void *prim_set);
 
-struct TriIndex {
-	int i0, i1, i2;
-};
-
 struct Mesh {
 	int nverts;
 	int nfaces;
@@ -252,16 +248,15 @@ void MshSetVertexTexture(struct Mesh *mesh, int index, const struct TexCoord *uv
 	mesh->uv[index] = *uv;
 }
 
-void MshSetFaceVertexIndices(struct Mesh *mesh, int face_index, long i0, long i1, long i2)
+void MshSetFaceVertexIndices(struct Mesh *mesh, int face_index,
+		const struct TriIndex *tri_index)
 {
 	if (mesh->indices == NULL)
 		return;
 	if (face_index < 0 || face_index >= mesh->nfaces)
 		return;
 
-	mesh->indices[face_index].i0 = i0;
-	mesh->indices[face_index].i1 = i1;
-	mesh->indices[face_index].i2 = i2;
+	mesh->indices[face_index] = *tri_index;
 }
 
 int MshGetVertexCount(const struct Mesh *mesh)

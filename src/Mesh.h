@@ -10,6 +10,12 @@ See LICENSE and README
 extern "C" {
 #endif
 
+typedef int Index;
+
+struct TriIndex {
+	Index i0, i1, i2;
+};
+
 struct PrimitiveSet;
 struct TexCoord;
 struct Vector;
@@ -36,7 +42,8 @@ extern void MshGetFaceVertexNormal(const struct Mesh *mesh, int face_index,
 extern void MshSetVertexPosition(struct Mesh *mesh, int index, const struct Vector *P);
 extern void MshSetVertexNormal(struct Mesh *mesh, int index, const struct Vector *N);
 extern void MshSetVertexTexture(struct Mesh *mesh, int index, const struct TexCoord *uv);
-extern void MshSetFaceVertexIndices(struct Mesh *mesh, int face_index, long i0, long i1, long i2);
+extern void MshSetFaceVertexIndices(struct Mesh *mesh, int face_index,
+		const struct TriIndex *tri_index);
 
 /* re-computation */
 extern void MshComputeBounds(struct Mesh *mesh);

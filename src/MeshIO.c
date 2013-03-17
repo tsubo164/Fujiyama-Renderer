@@ -7,6 +7,7 @@ See LICENSE and README
 #include "TexCoord.h"
 #include "String.h"
 #include "Vector.h"
+#include "Color.h"
 #include "Mesh.h"
 #include <stdlib.h>
 #include <string.h>
@@ -59,10 +60,14 @@ void MshCloseInputFile(struct MeshInput *in)
 	if (in == NULL)
 		return;
 
-	for (name = in->attr_names; *name != NULL; name++) {
-		*name = StrFree(*name);
+	if (in->attr_names != NULL) {
+		/* make sure in->attr_names is not NULL because
+		need to dereference like *name != NULL */
+		for (name = in->attr_names; *name != NULL; name++) {
+			*name = StrFree(*name);
+		}
+		free(in->attr_names);
 	}
-	free(in->attr_names);
 
 	if (in->file != NULL) {
 		fclose(in->file);
@@ -222,9 +227,9 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
 			for (j = 0; j < in->nverts; j++) {
 				const double *data = (const double *) in->data_buffer;
 				struct Vector P = {0, 0, 0};
-				P.x = data[j*3 + 0];
-				P.y = data[j*3 + 1];
-				P.z = data[j*3 + 2];
+				P.x = data[3*j + 0];
+				P.y = data[3*j + 1];
+				P.z = data[3*j + 2];
 				MshSetVertexPosition(mesh, j, &P);
 			}
 		}
@@ -234,9 +239,9 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
 			for (j = 0; j < in->nverts; j++) {
 				const double *data = (const double *) in->data_buffer;
 				struct Vector N = {0, 0, 0};
-				N.x = data[j*3 + 0];
-				N.y = data[j*3 + 1];
-				N.z = data[j*3 + 2];
+				N.x = data[3*j + 0];
+				N.y = data[3*j + 1];
+				N.z = data[3*j + 2];
 				MshSetVertexNormal(mesh, j, &N);
 			}
 		}
@@ -246,8 +251,8 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
 			for (j = 0; j < in->nverts; j++) {
 				const float *data = (const float *) in->data_buffer;
 				struct TexCoord texcoord = {0, 0};
-				texcoord.u = data[j*2 + 0];
-				texcoord.v = data[j*2 + 1];
+				texcoord.u = data[2*j + 0];
+				texcoord.v = data[2*j + 1];
 				MshSetVertexTexture(mesh, j, &texcoord);
 			}
 		}
@@ -255,11 +260,12 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
 			MshAllocateFace(mesh, "indices", in->nfaces);
 			read_attridata(in);
 			for (j = 0; j < in->nfaces; j++) {
-				const int *data = (const int *) in->data_buffer;
-				const long i0 = data[j*3 + 0];
-				const long i1 = data[j*3 + 1];
-				const long i2 = data[j*3 + 2];
-				MshSetFaceVertexIndices(mesh, j, i0, i1, i2);
+				const Index *data = (const Index *) in->data_buffer;
+				struct TriIndex tri_index = {0, 0, 0};
+				tri_index.i0 = data[3*j + 0];
+				tri_index.i1 = data[3*j + 1];
+				tri_index.i2 = data[3*j + 2];
+				MshSetFaceVertexIndices(mesh, j, &tri_index);
 			}
 		}
 	}
@@ -311,44 +317,73 @@ static size_t write_attriname(struct MeshOutput *out, const char *name)
 
 static size_t write_attridata(struct MeshOutput *out, const char *name)
 {
-	size_t datasize;
-	size_t nwrotes;
+	size_t datasize = 0;
+	size_t nwrotes = 0;
+	int i;
 
-	nwrotes = 0;
 	if (strcmp(name, "P") == 0) {
 		if (out->P == NULL)
 			return 0;
 		datasize = 3 * sizeof(double) * out->nverts;
 		nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
-		nwrotes += fwrite(out->P, sizeof(double), 3 * out->nverts, out->file);
+		for (i = 0; i < out->nverts; i++) {
+			double P[3] = {0, 0, 0};
+			P[0] = out->P[i].x;
+			P[1] = out->P[i].y;
+			P[2] = out->P[i].z;
+			nwrotes += fwrite(P, sizeof(double), 3, out->file);
+		}
 	}
 	else if (strcmp(name, "N") == 0) {
 		if (out->N == NULL)
 			return 0;
 		datasize = 3 * sizeof(double) * out->nverts;
-		fwrite(&datasize, sizeof(size_t), 1, out->file);
-		fwrite(out->N, sizeof(double), 3 * out->nverts, out->file);
+		nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
+		for (i = 0; i < out->nverts; i++) {
+			double N[3] = {0, 0, 0};
+			N[0] = out->N[i].x;
+			N[1] = out->N[i].y;
+			N[2] = out->N[i].z;
+			nwrotes += fwrite(N, sizeof(double), 3, out->file);
+		}
 	}
 	else if (strcmp(name, "Cd") == 0) {
 		if (out->Cd == NULL)
 			return 0;
 		datasize = 3 * sizeof(float) * out->nverts;
-		fwrite(&datasize, sizeof(size_t), 1, out->file);
-		fwrite(out->Cd, sizeof(float), 3 * out->nverts, out->file);
+		nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
+		for (i = 0; i < out->nverts; i++) {
+			float Cd[3] = {0, 0, 0};
+			Cd[0] = out->Cd[i].r;
+			Cd[1] = out->Cd[i].g;
+			Cd[2] = out->Cd[i].b;
+			nwrotes += fwrite(Cd, sizeof(float), 3, out->file);
+		}
 	}
 	else if (strcmp(name, "uv") == 0) {
 		if (out->uv == NULL)
 			return 0;
 		datasize = 2 * sizeof(float) * out->nverts;
-		fwrite(&datasize, sizeof(size_t), 1, out->file);
-		fwrite(out->uv, sizeof(float), 2 * out->nverts, out->file);
+		nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
+		for (i = 0; i < out->nverts; i++) {
+			float uv[2] = {0, 0};
+			uv[0] = out->uv[i].u;
+			uv[1] = out->uv[i].v;
+			nwrotes += fwrite(uv, sizeof(float), 2, out->file);
+		}
 	}
 	else if (strcmp(name, "indices") == 0) {
 		if (out->indices == NULL)
 			return 0;
 		datasize = 3 * sizeof(int) * out->nfaces;
-		fwrite(&datasize, sizeof(size_t), 1, out->file);
-		fwrite(out->indices, sizeof(int), 3 * out->nfaces, out->file);
+		nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
+		for (i = 0; i < out->nfaces; i++) {
+			Index indices[3] = {0, 0, 0};
+			indices[0] = out->indices[i].i0;
+			indices[1] = out->indices[i].i1;
+			indices[2] = out->indices[i].i2;
+			nwrotes += fwrite(indices, sizeof(Index), 3, out->file);
+		}
 	}
 	return nwrotes;
 }

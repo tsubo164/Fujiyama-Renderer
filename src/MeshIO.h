@@ -52,7 +52,7 @@ struct MeshOutput {
 	struct Vector *N;
 	struct Color *Cd;
 	struct TexCoord *uv;
-	int *indices;
+	struct TriIndex *indices;
 };
 
 /* mesh input file interfaces */

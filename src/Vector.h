@@ -21,10 +21,6 @@ struct Vector {
 	double x, y, z;
 };
 
-struct Int3 {
-	int x, y, z;
-};
-
 extern struct Vector *VecAlloc(long count);
 extern struct Vector *VecRealloc(struct Vector *v, long count);
 extern void VecFree(struct Vector *v);

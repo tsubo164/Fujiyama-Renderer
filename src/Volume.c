@@ -11,9 +11,13 @@ See LICENSE and README
 #include <float.h>
 #include <stdio.h>
 
+struct Resolution {
+	int x, y, z;
+};
+
 struct VoxelBuffer {
 	float *data;
-	struct Int3 res;
+	struct Resolution res;
 };
 
 struct Volume {

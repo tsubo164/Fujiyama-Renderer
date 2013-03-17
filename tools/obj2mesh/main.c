@@ -9,6 +9,7 @@ See LICENSE and README
 #include "MeshIO.h"
 #include "Vector.h"
 #include "Array.h"
+#include "Mesh.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,9 +100,9 @@ struct ObjBuffer *ObjBufferNew(void)
 	buffer->P = ArrNew(sizeof(struct Vector));
 	buffer->N = ArrNew(sizeof(struct Vector));
 	buffer->uv = ArrNew(sizeof(struct TexCoord));
-	buffer->vertex_indices = ArrNew(sizeof(int));
-	buffer->texture_indices = ArrNew(sizeof(int));
-	buffer->normal_indices = ArrNew(sizeof(int));
+	buffer->vertex_indices = ArrNew(sizeof(struct TriIndex));
+	buffer->texture_indices = ArrNew(sizeof(struct TriIndex));
+	buffer->normal_indices = ArrNew(sizeof(struct TriIndex));
 
 	buffer->nverts = 0;
 	buffer->nfaces = 0;
@@ -195,33 +196,27 @@ static int read_face(
 
 	for (i = 0; i < ntriangles; i++) {
 		if (vertex_indices != NULL) {
-			int indices[3] = {0, 0, 0};
-			indices[0] = vertex_indices[0] - 1;
-			indices[1] = vertex_indices[i + 1] - 1;
-			indices[2] = vertex_indices[i + 2] - 1;
-			ArrPush(buffer->vertex_indices, &indices[0]);
-			ArrPush(buffer->vertex_indices, &indices[1]);
-			ArrPush(buffer->vertex_indices, &indices[2]);
+			struct TriIndex tri_index = {0, 0, 0};
+			tri_index.i0 = vertex_indices[0] - 1;
+			tri_index.i1 = vertex_indices[i + 1] - 1;
+			tri_index.i2 = vertex_indices[i + 2] - 1;
+			ArrPush(buffer->vertex_indices, &tri_index);
 		}
 
 		if (texture_indices != NULL) {
-			int indices[3] = {0, 0, 0};
-			indices[0] = texture_indices[0] - 1;
-			indices[1] = texture_indices[i + 1] - 1;
-			indices[2] = texture_indices[i + 2] - 1;
-			ArrPush(buffer->texture_indices, &indices[0]);
-			ArrPush(buffer->texture_indices, &indices[1]);
-			ArrPush(buffer->texture_indices, &indices[2]);
+			struct TriIndex tri_index = {0, 0, 0};
+			tri_index.i0 = texture_indices[0] - 1;
+			tri_index.i1 = texture_indices[i + 1] - 1;
+			tri_index.i2 = texture_indices[i + 2] - 1;
+			ArrPush(buffer->texture_indices, &tri_index);
 		}
 
 		if (normal_indices != NULL) {
-			int indices[3] = {0, 0, 0};
-			indices[0] = normal_indices[0] - 1;
-			indices[1] = normal_indices[i + 1] - 1;
-			indices[2] = normal_indices[i + 2] - 1;
-			ArrPush(buffer->normal_indices, &indices[0]);
-			ArrPush(buffer->normal_indices, &indices[1]);
-			ArrPush(buffer->normal_indices, &indices[2]);
+			struct TriIndex tri_index = {0, 0, 0};
+			tri_index.i0 = normal_indices[0] - 1;
+			tri_index.i1 = normal_indices[i + 1] - 1;
+			tri_index.i2 = normal_indices[i + 2] - 1;
+			ArrPush(buffer->normal_indices, &tri_index);
 		}
 	}
 
@@ -269,7 +264,7 @@ int ObjBufferToMeshFile(const struct ObjBuffer *buffer, const char *filename)
 	out->uv = (struct TexCoord *) buffer->uv->data;
 	out->nfaces = buffer->nfaces;
 	out->nface_attrs = 1;
-	out->indices = (int *) buffer->vertex_indices->data;
+	out->indices = (struct TriIndex *) buffer->vertex_indices->data;
 
 	MshWriteFile(out);
 	MshCloseOutputFile(out);
@@ -282,7 +277,7 @@ int ObjBufferComputeNormals(struct ObjBuffer *buffer)
 	const int nfaces = buffer->nfaces;
 	struct Vector *P = (struct Vector *) buffer->P->data;
 	struct Vector *N = (struct Vector *) buffer->N->data;
-	int *indices = (int *) buffer->vertex_indices->data;
+	struct TriIndex *indices = (struct TriIndex *) buffer->vertex_indices->data;
 	int i;
 
 	if (P == NULL || indices == NULL)
@@ -304,9 +299,9 @@ int ObjBufferComputeNormals(struct ObjBuffer *buffer)
 		struct Vector *P0, *P1, *P2;
 		struct Vector *N0, *N1, *N2;
 		struct Vector Ng = {0, 0, 0};
-		const int i0 = indices[3*i + 0];
-		const int i1 = indices[3*i + 1];
-		const int i2 = indices[3*i + 2];
+		const int i0 = indices[i].i0;
+		const int i1 = indices[i].i1;
+		const int i2 = indices[i].i2;
 
 		P0 = &P[i0];
 		P1 = &P[i1];

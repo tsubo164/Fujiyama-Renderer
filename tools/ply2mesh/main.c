@@ -10,6 +10,7 @@ See LICENSE and README
 #include "Vector.h"
 #include "Array.h"
 #include "Color.h"
+#include "Mesh.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -95,7 +96,7 @@ int main(int argc, const char **argv)
 		fprintf(stderr, "Could not open output file: %s\n", argv[2]);
 		return -1;
 	}
-	index_array = ArrNew(sizeof(int));
+	index_array = ArrNew(sizeof(struct TriIndex));
 
 	filename = (char *) argv[1];
 	in_ply = ply_open_for_reading(filename, &nelems, &elem_names, &file_type, &version);
@@ -154,9 +155,11 @@ int main(int argc, const char **argv)
 
 				/* n triangles in a polygon is (n vertices - 2) */
 				for (k = 0; k < face.nverts - 2; k++) {
-					ArrPush(index_array, &face.verts[0]);
-					ArrPush(index_array, &face.verts[k + 1]);
-					ArrPush(index_array, &face.verts[k + 2]);
+					struct TriIndex tri_index = {0, 0, 0};
+					tri_index.i0 = face.verts[0];
+					tri_index.i1 = face.verts[k + 1];
+					tri_index.i2 = face.verts[k + 2];
+					ArrPush(index_array, &tri_index);
 					ntris++;
 				}
 			}
@@ -174,12 +177,10 @@ int main(int argc, const char **argv)
 		struct Vector *P0, *P1, *P2;
 		struct Vector *N0, *N1, *N2;
 		struct Vector Ng;
-		int i0, i1, i2;
-		int *indices = (int *) index_array->data;
-
-		i0 = indices[3*i + 0];
-		i1 = indices[3*i + 1];
-		i2 = indices[3*i + 2];
+		struct TriIndex *indices = (struct TriIndex *) index_array->data;
+		const int i0 = indices[i].i0;
+		const int i1 = indices[i].i1;
+		const int i2 = indices[i].i2;
 
 		P0 = &P[i0];
 		P1 = &P[i1];
@@ -217,7 +218,7 @@ int main(int argc, const char **argv)
 	out->uv = uv;
 	out->nfaces = ntris;
 	out->nface_attrs = 1;
-	out->indices = (int *) index_array->data;
+	out->indices = (struct TriIndex *) index_array->data;
 
 	MshWriteFile(out);
 
