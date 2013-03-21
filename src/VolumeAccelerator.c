@@ -326,16 +326,11 @@ static int build_bvh_accel(struct VolumeAccelerator *acc)
 	}
 
 	for (i = 0; i < NPRIMS; i++) {
-		acc->VolumeBounds(&acc->volume_set, i, &volumes[i].bounds);
+		acc->VolumeBounds(acc->volume_set, i, &volumes[i].bounds);
 		/* TODO use BoxCentroid */
 		volumes[i].centroid.x = (volumes[i].bounds.max.x + volumes[i].bounds.min.x) / 2;
 		volumes[i].centroid.y = (volumes[i].bounds.max.y + volumes[i].bounds.min.y) / 2;
 		volumes[i].centroid.z = (volumes[i].bounds.max.z + volumes[i].bounds.min.z) / 2;
-		/*
-		volumes[i].centroid[0] = (volumes[i].bounds.max.x + volumes[i].bounds.min.x) / 2;
-		volumes[i].centroid[1] = (volumes[i].bounds.max.y + volumes[i].bounds.min.y) / 2;
-		volumes[i].centroid[2] = (volumes[i].bounds.max.z + volumes[i].bounds.min.z) / 2;
-		*/
 		volumes[i].index = i;
 
 		volume_ptr[i] = &volumes[i];

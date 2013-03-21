@@ -317,13 +317,10 @@ int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *samp
 		if (hit) {
 			/* return 0; */
 			/* TODO handle light_color for shadow ray */
-			float inv_alpha_complement = 1 - C_occl.a;
-			if (inv_alpha_complement != 0) {
-				inv_alpha_complement = 1 / inv_alpha_complement;
-			}
-			light_color.r *= inv_alpha_complement;
-			light_color.g *= inv_alpha_complement;
-			light_color.b *= inv_alpha_complement;
+			const float alpha_complement = 1 - C_occl.a;
+			light_color.r *= alpha_complement;
+			light_color.g *= alpha_complement;
+			light_color.b *= alpha_complement;
 		}
 	}
 

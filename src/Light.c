@@ -74,11 +74,6 @@ static int dome_light_preprocess(struct Light *light);
 
 static int no_preprocess(struct Light *light);
 
-/* TODO TEST */
-#if 0
-static int save_sample_points2(struct Light *light);
-#endif
-
 struct Light *LgtNew(int light_type)
 {
 	struct Light *light = (struct Light *) malloc(sizeof(struct Light));
@@ -113,6 +108,7 @@ struct Light *LgtNew(int light_type)
 		light->GetSampleCount = grid_light_get_sample_count;
 		light->GetSamples     = grid_light_get_samples;
 		light->Illuminate     = grid_light_illuminate;
+		light->Preprocess     = no_preprocess;
 		break;
 	case LGT_SPHERE:
 		light->GetSampleCount = sphere_light_get_sample_count;

@@ -19,8 +19,6 @@ struct FrameBuffer {
 	int nchannels;
 };
 
-static void free_buffer(struct FrameBuffer *fb);
-
 struct FrameBuffer *FbNew(void)
 {
 	struct FrameBuffer *fb = (struct FrameBuffer *) malloc(sizeof(struct FrameBuffer));
@@ -41,7 +39,7 @@ void FbFree(struct FrameBuffer *fb)
 	if (fb == NULL)
 		return;
 
-	free_buffer(fb);
+	free(fb->buf);
 	free(fb);
 }
 
@@ -83,7 +81,7 @@ float *FbResize(struct FrameBuffer *fb, int width, int height, int nchannels)
 
 	/* successed to get new buffer then free old buffer if exists*/
 	if (!FbIsEmpty(fb)) {
-		free_buffer(fb);
+		free(fb->buf);
 	}
 
 	/* commit */
@@ -177,11 +175,5 @@ void FbGetColor(struct FrameBuffer *fb, int x, int y, struct Color4 *rgba)
 		rgba->b = pixel[2];
 		rgba->a = pixel[3];
 	}
-}
-
-static void free_buffer(struct FrameBuffer *fb)
-{
-	free(fb->buf);
-	fb->buf = NULL;
 }
 
