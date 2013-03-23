@@ -1,0 +1,16 @@
+Fujiyama Renderer v0.1.4(Alpha) Release Notes
+=============================================
+
+New features since v0.1.3
+-------------------------
+ * Implemented struct Vector, struct Color and struct TexCoord to avoid using
+   raw array for different type of vector data.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Deep shadow
+ * Displacement shader
+ * Subdivision surface
+ * Alembic support
