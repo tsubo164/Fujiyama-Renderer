@@ -5,10 +5,11 @@ See LICENSE and README
 
 #include "FrameBuffer.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Color.h"
 #include "Box.h"
-#include <stdlib.h>
+
 #include <limits.h>
 #include <assert.h>
 
@@ -21,7 +22,7 @@ struct FrameBuffer {
 
 struct FrameBuffer *FbNew(void)
 {
-	struct FrameBuffer *fb = (struct FrameBuffer *) malloc(sizeof(struct FrameBuffer));
+	struct FrameBuffer *fb = MEM_ALLOC(struct FrameBuffer);
 
 	if (fb == NULL)
 		return NULL;
@@ -39,8 +40,8 @@ void FbFree(struct FrameBuffer *fb)
 	if (fb == NULL)
 		return;
 
-	free(fb->buf);
-	free(fb);
+	MEM_FREE(fb->buf);
+	MEM_FREE(fb);
 }
 
 int FbGetWidth(const struct FrameBuffer *fb)
@@ -73,7 +74,7 @@ float *FbResize(struct FrameBuffer *fb, int width, int height, int nchannels)
 		return NULL;
 
 	if (total_alloc > 0) {
-		buftmp = (float *) malloc(sizeof(float) * total_alloc);
+		buftmp = MEM_ALLOC_ARRAY(float, total_alloc);
 		if (buftmp == NULL) {
 			return NULL;
 		}
@@ -81,7 +82,7 @@ float *FbResize(struct FrameBuffer *fb, int width, int height, int nchannels)
 
 	/* successed to get new buffer then free old buffer if exists*/
 	if (!FbIsEmpty(fb)) {
-		free(fb->buf);
+		MEM_FREE(fb->buf);
 	}
 
 	/* commit */

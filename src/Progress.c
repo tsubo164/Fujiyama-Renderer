@@ -4,7 +4,8 @@ See LICENSE and README
 */
 
 #include "Progress.h"
-#include <stdlib.h>
+#include "Memory.h"
+
 #include <stdio.h>
 #include <assert.h>
 
@@ -17,7 +18,7 @@ struct Progress *PrgNew(void)
 {
 	struct Progress *prg;
 
-	prg = (struct Progress *) malloc(sizeof(struct Progress));
+	prg = MEM_ALLOC(struct Progress);
 	if (prg == NULL)
 		return NULL;
 
@@ -31,7 +32,7 @@ void PrgFree(struct Progress *prg)
 {
 	if (prg == NULL)
 		return;
-	free(prg);
+	MEM_FREE(prg);
 }
 
 void PrgStart(struct Progress *prg, int total_iterations)

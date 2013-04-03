@@ -4,8 +4,8 @@ See LICENSE and README
 */
 
 #include "Shader.h"
+#include "Memory.h"
 #include "Vector.h"
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
@@ -44,7 +44,7 @@ struct Shader *ShdNew(const struct Plugin *plugin)
 		return NULL;
 	}
 
-	shader = (struct Shader *) malloc(sizeof(struct Shader));
+	shader = MEM_ALLOC(struct Shader);
 	if (shader == NULL) {
 		set_error(SHD_ERR_NOMEM);
 		PlgDeleteInstance(plugin, tmpobj);
@@ -66,7 +66,7 @@ void ShdFree(struct Shader *shader)
 		return;
 
 	PlgDeleteInstance(shader->plugin, shader->self);
-	free(shader);
+	MEM_FREE(shader);
 }
 
 void ShdEvaluate(const struct Shader *shader, const struct TraceContext *cxt,

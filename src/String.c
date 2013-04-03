@@ -5,7 +5,7 @@ See LICENSE and README
 
 #include "String.h"
 #include "Numeric.h"
-#include <stdlib.h>
+#include "Memory.h"
 #include <string.h>
 
 char *StrDup(const char *src)
@@ -17,7 +17,7 @@ char *StrDup(const char *src)
 		return NULL;
 
 	alloc_size = strlen(src) + 1;
-	dst = (char *) malloc(sizeof(char) * alloc_size);
+	dst = MEM_ALLOC_ARRAY(char, alloc_size);
 	if (dst == NULL)
 		return NULL;
 
@@ -28,7 +28,7 @@ char *StrDup(const char *src)
 char *StrFree(char *s)
 {
 	if (s != NULL)
-		free(s);
+		MEM_FREE(s);
 
 	return NULL;
 }

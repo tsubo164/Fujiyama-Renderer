@@ -5,10 +5,10 @@ See LICENSE and README
 
 #include "Shader.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Color.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
@@ -76,7 +76,7 @@ static void *MyNew(void)
 {
 	struct HairShader *hair = NULL;
 
-	hair = (struct HairShader *) malloc(sizeof(struct HairShader));
+	hair = MEM_ALLOC(struct HairShader);
 	if (hair == NULL)
 		return NULL;
 
@@ -95,7 +95,7 @@ static void MyFree(void *self)
 	struct HairShader *hair = (struct HairShader *) self;
 	if (hair == NULL)
 		return;
-	free(hair);
+	MEM_FREE(hair);
 }
 
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
@@ -134,7 +134,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		out->Cs.b += (in->Cd.b * diff + spec) * Lout.Cl.b;
 	}
 
-	/* free samples */
+	/* MEM_FREE samples */
 	SlFreeLightSamples(samples);
 
 	/* TODO fix hard-coded ambient */

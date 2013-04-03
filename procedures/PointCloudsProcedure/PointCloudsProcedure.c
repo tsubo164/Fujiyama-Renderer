@@ -8,10 +8,10 @@ See LICENSE and README
 #include "Turbulence.h"
 #include "Progress.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Volume.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <float.h>
 
@@ -64,7 +64,7 @@ static void *MyNew(void)
 {
 	struct CloudVolumeProcedure *cloud;
 
-	cloud = (struct CloudVolumeProcedure *) malloc(sizeof(struct CloudVolumeProcedure));
+	cloud = MEM_ALLOC(struct CloudVolumeProcedure);
 	if (cloud == NULL)
 		return NULL;
 
@@ -79,7 +79,7 @@ static void MyFree(void *self)
 	struct CloudVolumeProcedure *cloud = (struct CloudVolumeProcedure *) self;
 	if (cloud == NULL)
 		return;
-	free(cloud);
+	MEM_FREE(cloud);
 }
 
 static int MyRun(void *self)

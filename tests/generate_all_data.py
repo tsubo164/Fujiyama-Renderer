@@ -19,6 +19,8 @@ ply_list = [
 	'teapot',
 	'xyzrgb_dragon']
 
+obj_list = ['head']
+
 mesh_list = ['bunny']
 
 hdr_list = [
@@ -37,6 +39,13 @@ try:
 
 		print 'bin/ply2mesh', src, dst
 		return_code = subprocess.call(['bin/ply2mesh', src, dst])
+
+	for name in obj_list:
+		src = '../../obj/'  + name + '.obj'
+		dst = '../../mesh/' + name + '.mesh'
+
+		print 'bin/obj2mesh', src, dst
+		return_code = subprocess.call(['bin/obj2mesh', src, dst])
 
 	for name in mesh_list:
 		src = '../../mesh/' + name + '.mesh'

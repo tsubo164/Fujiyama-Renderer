@@ -5,10 +5,10 @@ See LICENSE and README
 
 #include "Shader.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Color.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <float.h>
@@ -57,7 +57,7 @@ static void *MyNew(void)
 {
 	struct VolumeShader *volume = NULL;
 
-	volume = (struct VolumeShader *) malloc(sizeof(struct VolumeShader));
+	volume = MEM_ALLOC(struct VolumeShader);
 	if (volume == NULL)
 		return NULL;
 
@@ -71,7 +71,7 @@ static void MyFree(void *self)
 	struct VolumeShader *volume = (struct VolumeShader *) self;
 	if (volume == NULL)
 		return;
-	free(volume);
+	MEM_FREE(volume);
 }
 
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
@@ -99,7 +99,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		diff.b += Lout.Cl.b;
 	}
 
-	/* free samples */
+	/* MEM_FREE samples */
 	SlFreeLightSamples(samples);
 
 	/* Cs */

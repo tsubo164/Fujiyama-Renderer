@@ -5,10 +5,10 @@ See LICENSE and README
 
 #include "Shader.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Color.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <float.h>
@@ -81,8 +81,7 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-	struct PlasticShader *plastic =
-			(struct PlasticShader *) malloc(sizeof(struct PlasticShader));
+	struct PlasticShader *plastic = MEM_ALLOC(struct PlasticShader);
 
 	if (plastic == NULL)
 		return NULL;
@@ -109,7 +108,7 @@ static void MyFree(void *self)
 	struct PlasticShader *plastic = (struct PlasticShader *) self;
 	if (plastic == NULL)
 		return;
-	free(plastic);
+	MEM_FREE(plastic);
 }
 
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,

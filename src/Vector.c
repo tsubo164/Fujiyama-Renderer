@@ -4,6 +4,7 @@ See LICENSE and README
 */
 
 #include "Vector.h"
+#include "Memory.h"
 #include <stdio.h>
 
 void VecPrint(const struct Vector *a)
@@ -13,17 +14,17 @@ void VecPrint(const struct Vector *a)
 
 struct Vector *VecAlloc(long count)
 {
-	return (struct Vector *) malloc(sizeof(struct Vector) * count);
+	return MEM_ALLOC_ARRAY(struct Vector, count);
 }
 
 struct Vector *VecRealloc(struct Vector *v, long count)
 {
-	return (struct Vector *) realloc(v, sizeof(struct Vector) * count);
+	return MEM_REALLOC_ARRAY(v, struct Vector, count);
 }
 
 void VecFree(struct Vector *v)
 {
-	free(v);
+	MEM_FREE(v);
 }
 
 #if 0

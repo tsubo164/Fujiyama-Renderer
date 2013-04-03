@@ -10,6 +10,7 @@ See LICENSE and README
 #include "Interval.h"
 #include "Property.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Volume.h"
 #include "Matrix.h"
@@ -17,7 +18,6 @@ See LICENSE and README
 #include "Box.h"
 #include "Ray.h"
 
-#include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
 #include <float.h>
@@ -47,8 +47,8 @@ static void merge_sampled_bounds(struct ObjectInstance *obj);
 /* ObjectInstance interfaces */
 struct ObjectInstance *ObjNew(void)
 {
-	struct ObjectInstance *obj =
-			(struct ObjectInstance *) malloc(sizeof(struct ObjectInstance));
+	struct ObjectInstance *obj = MEM_ALLOC(struct ObjectInstance);
+
 	if (obj == NULL)
 		return NULL;
 
@@ -74,7 +74,7 @@ void ObjFree(struct ObjectInstance *obj)
 {
 	if (obj == NULL)
 		return;
-	free(obj);
+	MEM_FREE(obj);
 }
 
 int ObjSetSurface(struct ObjectInstance *obj, const struct Accelerator *acc)

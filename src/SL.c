@@ -11,6 +11,7 @@ See LICENSE and README
 #include "ObjectGroup.h"
 #include "Interval.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Shader.h"
 #include "Volume.h"
 #include "Light.h"
@@ -362,7 +363,7 @@ struct LightSample *SlNewLightSamples(const struct SurfaceInput *in)
 		return NULL;
 	}
 
-	samples = (struct LightSample *) malloc(nsamples * sizeof(struct LightSample));
+	samples = MEM_ALLOC_ARRAY(struct LightSample, nsamples);
 	sample = samples;
 	for (i = 0; i < nlights; i++) {
 		const int nsmp = LgtGetSampleCount(lights[i]);
@@ -377,7 +378,7 @@ void SlFreeLightSamples(struct LightSample * samples)
 {
 	if (samples == NULL)
 		return;
-	free(samples);
+	MEM_FREE(samples);
 }
 
 static int has_reached_bounce_limit(const struct TraceContext *cxt)

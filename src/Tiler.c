@@ -5,8 +5,9 @@ See LICENSE and README
 
 #include "Tiler.h"
 #include "Numeric.h"
+#include "Memory.h"
+
 #include <math.h>
-#include <stdlib.h>
 #include <assert.h>
 
 struct Tiler {
@@ -21,7 +22,7 @@ struct Tiler {
 
 struct Tiler *TlrNew(int xres, int yres, int xtile_size, int ytile_size)
 {
-	struct Tiler *tiler = (struct Tiler *) malloc(sizeof(struct Tiler));
+	struct Tiler *tiler = MEM_ALLOC(struct Tiler);
 
 	if (tiler == NULL)
 		return NULL;
@@ -51,9 +52,9 @@ void TlrFree(struct Tiler *tiler)
 		return;
 
 	if (tiler->tiles != NULL)
-		free(tiler->tiles);
+		MEM_FREE(tiler->tiles);
 
-	free(tiler);
+	MEM_FREE(tiler);
 }
 
 int TlrGetTileCount(const struct Tiler *tiler)
@@ -100,11 +101,11 @@ int TlrGenerateTiles(struct Tiler *tiler, int xmin, int ymin, int xmax, int ymax
 	assert(ymin < ymax);
 
 	if (tiler->tiles != NULL) {
-		free(tiler->tiles);
+		MEM_FREE(tiler->tiles);
 	}
 
 	total_ntiles = xntiles * yntiles;
-	tiles = (struct Tile *) malloc(sizeof(struct Tile) * total_ntiles);
+	tiles = MEM_ALLOC_ARRAY(struct Tile, total_ntiles);
 	if (tiles == NULL) {
 		return -1;
 	}

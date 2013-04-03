@@ -5,8 +5,9 @@ See LICENSE and README
 
 #include "Turbulence.h"
 #include "Vector.h"
+#include "Memory.h"
 #include "Noise.h"
-#include <stdlib.h>
+
 #include <stdio.h>
 #include <assert.h>
 
@@ -21,7 +22,7 @@ struct Turbulence {
 
 struct Turbulence *TrbNew(void)
 {
-	struct Turbulence *turbulence = (struct Turbulence *) malloc(sizeof(struct Turbulence));
+	struct Turbulence *turbulence = MEM_ALLOC(struct Turbulence);
 	if (turbulence == NULL)
 		return NULL;
 
@@ -39,7 +40,7 @@ void TrbFree(struct Turbulence *turbulence)
 {
 	if (turbulence == NULL)
 		return;
-	free(turbulence);
+	MEM_FREE(turbulence);
 }
 
 void TrbSetAmplitude(struct Turbulence *turbulence, double x, double y, double z)

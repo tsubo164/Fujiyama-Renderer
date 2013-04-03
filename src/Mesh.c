@@ -8,12 +8,12 @@ See LICENSE and README
 #include "PrimitiveSet.h"
 #include "Triangle.h"
 #include "TexCoord.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Color.h"
 #include "Ray.h"
 #include "Box.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <float.h>
 
@@ -38,7 +38,7 @@ struct Mesh {
 
 struct Mesh *MshNew(void)
 {
-	struct Mesh *mesh = (struct Mesh *) malloc(sizeof(struct Mesh));
+	struct Mesh *mesh = MEM_ALLOC(struct Mesh);
 	if (mesh == NULL)
 		return NULL;
 
@@ -64,9 +64,9 @@ void MshFree(struct Mesh *mesh)
 	VecFree(mesh->N);
 	ColFree(mesh->Cd);
 	TexCoordFree(mesh->uv);
-	free(mesh->indices);
+	MEM_FREE(mesh->indices);
 
-	free(mesh);
+	MEM_FREE(mesh);
 }
 
 void MshClear(struct Mesh *mesh)
@@ -80,7 +80,7 @@ void MshClear(struct Mesh *mesh)
 	if (mesh->uv != NULL)
 		TexCoordFree(mesh->uv);
 	if (mesh->indices != NULL)
-		free(mesh->indices);
+		MEM_FREE(mesh->indices);
 
 	mesh->nverts = 0;
 	mesh->nfaces = 0;
@@ -189,8 +189,7 @@ void *MshAllocateFace(struct Mesh *mesh, const char *attr_name, int nfaces)
 
 	if (strcmp(attr_name, "indices") == 0) {
 		/* TODO define TriIndexRealloc */
-		mesh->indices =
-				(struct TriIndex *) realloc(mesh->indices, sizeof(struct TriIndex) * nfaces);
+		mesh->indices = MEM_REALLOC_ARRAY(mesh->indices, struct TriIndex, nfaces);
 		ret = mesh->indices;
 	}
 

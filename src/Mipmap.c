@@ -6,9 +6,10 @@ See LICENSE and README
 #include "Mipmap.h"
 #include "FrameBuffer.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Box.h"
-#include <stdlib.h>
+
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
@@ -61,7 +62,7 @@ const char *MipGetErrorMessage(int err)
 
 struct MipInput *MipOpenInputFile(const char *filename)
 {
-	struct MipInput *in = (struct MipInput *) malloc(sizeof(struct MipInput));
+	struct MipInput *in = MEM_ALLOC(struct MipInput);
 
 	if (in == NULL) {
 		set_error(ERR_MIP_NOMEM);
@@ -100,7 +101,7 @@ void MipCloseInputFile(struct MipInput *in)
 	if (in->file != NULL) {
 		fclose(in->file);
 	}
-	free(in);
+	MEM_FREE(in);
 }
 
 int MipReadHeader(struct MipInput *in)
@@ -160,7 +161,7 @@ int MipReadTile(struct MipInput *in, int xtile, int ytile)
 
 struct MipOutput *MipOpenOutputFile(const char *filename)
 {
-	struct MipOutput *out = (struct MipOutput *) malloc(sizeof(struct MipOutput));
+	struct MipOutput *out = MEM_ALLOC(struct MipOutput);
 
 	if (out == NULL) {
 		set_error(ERR_MIP_NOMEM);
@@ -195,7 +196,7 @@ void MipCloseOutputFile(struct MipOutput *out)
 	}
 
 	FbFree(out->fb);
-	free(out);
+	MEM_FREE(out);
 }
 
 int MipGenerateFromSourceData(struct MipOutput *out,

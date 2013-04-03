@@ -4,6 +4,7 @@ See LICENSE and README
 */
 
 #include "Scene.h"
+#include "Memory.h"
 #include "Array.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,7 +71,7 @@ static void *push_entry(struct Array *array, void *entry);
 /* Scene */
 struct Scene *ScnNew(void)
 {
-	struct Scene *scene = (struct Scene *) malloc(sizeof(struct Scene));
+	struct Scene *scene = MEM_ALLOC(struct Scene);
 
 	if (scene == NULL)
 		return NULL;
@@ -85,7 +86,7 @@ void ScnFree(struct Scene *scene)
 		return;
 
 	free_all_node_list(scene);
-	free(scene);
+	MEM_FREE(scene);
 }
 
 /* ObjectInstance */
@@ -230,7 +231,7 @@ static void free_all_node_list(struct Scene *scene)
 	FREE_LIST(scene, Light, LgtFree);
 	FREE_LIST(scene, Mesh, MshFree);
 
-	/* plugins should be freed the last since they contain free functions for others */
+	/* plugins should be freed the last since they contain freeing functions for others */
 	FREE_LIST(scene, Plugin, PlgClose);
 }
 

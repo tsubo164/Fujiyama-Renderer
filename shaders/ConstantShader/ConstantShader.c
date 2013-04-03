@@ -5,10 +5,10 @@ See LICENSE and README
 
 #include "Shader.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Color.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -60,7 +60,7 @@ static void *MyNew(void)
 {
 	struct ConstantShader *constant = NULL;
 
-	constant = (struct ConstantShader *) malloc(sizeof(struct ConstantShader));
+	constant = MEM_ALLOC(struct ConstantShader);
 	if (constant == NULL)
 		return NULL;
 
@@ -75,7 +75,7 @@ static void MyFree(void *self)
 	struct ConstantShader *constant = (struct ConstantShader *) self;
 	if (constant == NULL)
 		return;
-	free(constant);
+	MEM_FREE(constant);
 }
 
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,

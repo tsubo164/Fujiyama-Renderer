@@ -4,9 +4,10 @@ See LICENSE and README
 */
 
 #include "Plugin.h"
+#include "Memory.h"
 #include "OS.h"
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 static int error_no = PLG_ERR_NONE;
@@ -55,7 +56,7 @@ struct Plugin *PlgOpen(const char *filename)
 		goto plugin_error;
 	}
 
-	plugin = (struct Plugin *) malloc(sizeof(struct Plugin));
+	plugin = MEM_ALLOC(struct Plugin);
 	if (plugin == NULL) {
 		set_errno(PLG_ERR_NO_MEMORY);
 		goto plugin_error;
@@ -75,7 +76,7 @@ int PlgClose(struct Plugin *plugin)
 {
 	const int err = OsDlclose(plugin->dso);
 
-	free(plugin);
+	MEM_FREE(plugin);
 
 	if (err) {
 		set_errno(PLG_ERR_CLOSE_PLUGIN_FAIL);

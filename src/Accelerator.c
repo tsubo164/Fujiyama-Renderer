@@ -7,11 +7,11 @@ See LICENSE and README
 #include "Intersection.h"
 #include "PrimitiveSet.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Box.h"
 #include "Ray.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <assert.h>
 #include <float.h>
 
@@ -130,7 +130,7 @@ struct Accelerator {
 
 struct Accelerator *AccNew(int accelerator_type)
 {
-	struct Accelerator *acc = (struct Accelerator *) malloc(sizeof(struct Accelerator));
+	struct Accelerator *acc = MEM_ALLOC(struct Accelerator);
 	if (acc == NULL)
 		return NULL;
 
@@ -178,7 +178,7 @@ void AccFree(struct Accelerator *acc)
 		return;
 
 	acc->FreeDerived(acc);
-	free(acc);
+	MEM_FREE(acc);
 }
 
 void AccGetBounds(const struct Accelerator *acc, struct Box *bounds)
@@ -419,7 +419,7 @@ static int build_grid_accel(struct Accelerator *acc)
 			acc->bounds.max.z - acc->bounds.min.z,
 			&XNCELLS, &YNCELLS, &ZNCELLS);
 
-	cells = (struct Cell **) malloc(sizeof(struct Cell *) * XNCELLS * YNCELLS * ZNCELLS);
+	cells = MEM_ALLOC_ARRAY(struct Cell *, XNCELLS * YNCELLS * ZNCELLS);
 	if (cells == NULL)
 		return -1;
 
@@ -459,7 +459,7 @@ static int build_grid_accel(struct Accelerator *acc)
 			for (y = Y0; y < Y1; y++) {
 				for (x = X0; x < X1; x++) {
 					int cellid = z * YNCELLS * XNCELLS + y * XNCELLS + x;
-					struct Cell *newcell = (struct Cell *) malloc(sizeof(struct Cell));
+					struct Cell *newcell = MEM_ALLOC(struct Cell);
 
 					if (newcell == NULL) {
 						/* TODO error handling */
@@ -498,8 +498,7 @@ static int build_grid_accel(struct Accelerator *acc)
 
 static struct GridAccelerator *new_grid_accel(void)
 {
-	struct GridAccelerator *grid =
-			(struct GridAccelerator *) malloc(sizeof(struct GridAccelerator));
+	struct GridAccelerator *grid = MEM_ALLOC(struct GridAccelerator);
 
 	if (grid == NULL)
 		return NULL;
@@ -533,14 +532,14 @@ static void free_grid_accel(struct Accelerator *acc)
 				while (cell != NULL) {
 					struct Cell *kill = cell;
 					struct Cell *next = cell->next;
-					free(kill);
+					MEM_FREE(kill);
 					cell = next;
 				}
 			}
 		}
 	}
-	free(grid->cells);
-	free(grid);
+	MEM_FREE(grid->cells);
+	MEM_FREE(grid);
 }
 
 static void compute_grid_cellsizes(int nprimitives,
@@ -582,8 +581,7 @@ static void compute_grid_cellsizes(int nprimitives,
 /* -------------------------------------------------------------------------- */
 static struct BVHAccelerator *new_bvh_accel(void)
 {
-	struct BVHAccelerator *bvh =
-			(struct BVHAccelerator *) malloc(sizeof(struct BVHAccelerator));
+	struct BVHAccelerator *bvh = MEM_ALLOC(struct BVHAccelerator);
 
 	if (bvh == NULL)
 		return NULL;
@@ -599,7 +597,7 @@ static void free_bvh_accel(struct Accelerator *acc)
 
 	free_bvhnode_recursive(bvh->root);
 
-	free(bvh);
+	MEM_FREE(bvh);
 }
 
 static int build_bvh_accel(struct Accelerator *acc)
@@ -612,13 +610,13 @@ static int build_bvh_accel(struct Accelerator *acc)
 
 	NPRIMS = PrmGetPrimitiveCount(&acc->primset);
 
-	prims = (struct Primitive *) malloc(sizeof(struct Primitive) * NPRIMS);
+	prims = MEM_ALLOC_ARRAY(struct Primitive, NPRIMS);
 	if (prims == NULL)
 		return -1;
 
-	primptrs = (struct Primitive **) malloc(sizeof(struct Primitive *) * NPRIMS);
+	primptrs = MEM_ALLOC_ARRAY(struct Primitive *, NPRIMS);
 	if (primptrs == NULL) {
-		free(prims);
+		MEM_FREE(prims);
 		return -1;
 	}
 
@@ -634,13 +632,13 @@ static int build_bvh_accel(struct Accelerator *acc)
 
 	bvh->root = build_bvh(primptrs, 0, NPRIMS, 0);
 	if (bvh->root == NULL) {
-		free(primptrs);
-		free(prims);
+		MEM_FREE(primptrs);
+		MEM_FREE(prims);
 		return -1;
 	}
 
-	free(primptrs);
-	free(prims);
+	MEM_FREE(primptrs);
+	MEM_FREE(prims);
 	return 0;
 }
 
@@ -829,7 +827,7 @@ static struct BVHNode *build_bvh(struct Primitive **primptrs, int begin, int end
 
 static struct BVHNode *new_bvhnode(void)
 {
-	struct BVHNode *node = (struct BVHNode *) malloc(sizeof(struct BVHNode));
+	struct BVHNode *node = MEM_ALLOC(struct BVHNode);
 
 	if (node == NULL)
 		return NULL;
@@ -848,7 +846,7 @@ static void free_bvhnode_recursive(struct BVHNode *node)
 		return;
 
 	if (is_bvh_leaf(node)) {
-		free(node);
+		MEM_FREE(node);
 		return;
 	}
 
@@ -859,7 +857,7 @@ static void free_bvhnode_recursive(struct BVHNode *node)
 	free_bvhnode_recursive(node->left);
 	free_bvhnode_recursive(node->right);
 
-	free(node);
+	MEM_FREE(node);
 }
 
 static int is_bvh_leaf(const struct BVHNode *node)

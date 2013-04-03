@@ -9,10 +9,10 @@ See LICENSE and README
 #include "Transform.h"
 #include "Numeric.h"
 #include "Matrix.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Ray.h"
 #include "Box.h"
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <float.h>
@@ -64,7 +64,7 @@ struct Curve *CrvNew(void)
 {
 	struct Curve *curve;
 
-	curve = (struct Curve *) malloc(sizeof(struct Curve));
+	curve = MEM_ALLOC(struct Curve);
 	if (curve == NULL)
 		return NULL;
 
@@ -89,13 +89,13 @@ void CrvFree(struct Curve *curve)
 		return;
 
 	VecFree(curve->P);
-	free(curve->width);
+	MEM_FREE(curve->width);
 	ColFree(curve->Cd);
 	TexCoordFree(curve->uv);
-	free(curve->indices);
-	free(curve->split_depth);
+	MEM_FREE(curve->indices);
+	MEM_FREE(curve->split_depth);
 
-	free(curve);
+	MEM_FREE(curve);
 }
 
 void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int nverts)
@@ -114,7 +114,7 @@ void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int nverts)
 		ret = curve->P;
 	}
 	else if (strcmp(attr_name, "width") == 0) {
-		curve->width = (double *) realloc(curve->width, 1 * sizeof(double) * nverts);
+		curve->width = MEM_REALLOC_ARRAY(curve->width, double, nverts);
 		ret = curve->width;
 	}
 	else if (strcmp(attr_name, "Cd") == 0) {
@@ -147,7 +147,7 @@ void *CrvAllocateCurve(struct Curve *curve, const char *attr_name, int ncurves)
 	}
 
 	if (strcmp(attr_name, "indices") == 0) {
-		curve->indices = (int *) realloc(curve->indices, 1 * sizeof(int) * ncurves);
+		curve->indices = MEM_REALLOC_ARRAY(curve->indices, int, ncurves);
 		ret = curve->indices;
 	}
 
@@ -494,7 +494,7 @@ static void cache_split_depth(const struct Curve *curve)
 	assert(mutable_curve->split_depth == NULL);
 
 
-	mutable_curve->split_depth = (int *) malloc(sizeof(int) * mutable_curve->ncurves);
+	mutable_curve->split_depth = MEM_ALLOC_ARRAY(int, mutable_curve->ncurves);
 	for (i = 0; i < mutable_curve->ncurves; i++) {
 		struct Bezier3 bezier;
 		int depth;

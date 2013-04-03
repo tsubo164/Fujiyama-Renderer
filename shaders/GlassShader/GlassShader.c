@@ -4,11 +4,11 @@ See LICENSE and README
 */
 
 #include "Shader.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Color.h"
 #include "Numeric.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <float.h>
@@ -77,7 +77,7 @@ static void *MyNew(void)
 {
 	struct GlassShader *glass = NULL;
 
-	glass = (struct GlassShader *) malloc(sizeof(struct GlassShader));
+	glass = MEM_ALLOC(struct GlassShader);
 	if (glass == NULL)
 		return NULL;
 
@@ -98,7 +98,7 @@ static void MyFree(void *self)
 	struct GlassShader *glass = (struct GlassShader *) self;
 	if (glass == NULL)
 		return;
-	free(glass);
+	MEM_FREE(glass);
 }
 
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,

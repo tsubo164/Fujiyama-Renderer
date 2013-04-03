@@ -5,8 +5,10 @@ See LICENSE and README
 
 #include "FrameBufferIO.h"
 #include "FrameBuffer.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Box.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -44,7 +46,7 @@ const char *FbGetErrorMessage(int err)
 
 struct FbInput *FbOpenInputFile(const char *filename)
 {
-	struct FbInput *in = (struct FbInput *) malloc(sizeof(struct FbInput));
+	struct FbInput *in = MEM_ALLOC(struct FbInput);
 
 	if (in == NULL) {
 		set_error(ERR_FB_NOMEM);
@@ -55,7 +57,7 @@ struct FbInput *FbOpenInputFile(const char *filename)
 	in->file = fopen(filename, "rb");
 	if (in->file == NULL) {
 		set_error(ERR_FB_NOFILE);
-		free(in);
+		MEM_FREE(in);
 		return NULL;
 	}
 
@@ -78,7 +80,7 @@ void FbCloseInputFile(struct FbInput *in)
 	if (in->file != NULL) {
 		fclose(in->file);
 	}
-	free(in);
+	MEM_FREE(in);
 }
 
 int FbReadHeader(struct FbInput *in)
@@ -118,7 +120,7 @@ int FbReadData(struct FbInput *in)
 
 struct FbOutput *FbOpenOutputFile(const char *filename)
 {
-	struct FbOutput *out = (struct FbOutput *) malloc(sizeof(struct FbOutput));
+	struct FbOutput *out = MEM_ALLOC(struct FbOutput);
 
 	if (out == NULL) {
 		set_error(ERR_FB_NOMEM);
@@ -128,7 +130,7 @@ struct FbOutput *FbOpenOutputFile(const char *filename)
 	out->file = fopen(filename, "wb");
 	if (out->file == NULL) {
 		set_error(ERR_FB_NOFILE);
-		free(out);
+		MEM_FREE(out);
 		return NULL;
 	}
 
@@ -151,7 +153,7 @@ void FbCloseOutputFile(struct FbOutput *out)
 	if (out->file != NULL) {
 		fclose(out->file);
 	}
-	free(out);
+	MEM_FREE(out);
 }
 
 void FbWriteFile(struct FbOutput *out)

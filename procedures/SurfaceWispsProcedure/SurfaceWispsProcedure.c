@@ -8,11 +8,11 @@ See LICENSE and README
 #include "Turbulence.h"
 #include "Progress.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Random.h"
 #include "Vector.h"
 #include "Volume.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <float.h>
 
@@ -67,7 +67,7 @@ static void *MyNew(void)
 {
 	struct SurfaceWispsProcedure *surface;
 
-	surface = (struct SurfaceWispsProcedure *) malloc(sizeof(struct SurfaceWispsProcedure));
+	surface = MEM_ALLOC(struct SurfaceWispsProcedure);
 	if (surface == NULL)
 		return NULL;
 
@@ -82,7 +82,7 @@ static void MyFree(void *self)
 	struct SurfaceWispsProcedure *surface = (struct SurfaceWispsProcedure *) self;
 	if (surface == NULL)
 		return;
-	free(surface);
+	MEM_FREE(surface);
 }
 
 static int MyRun(void *self)

@@ -6,13 +6,13 @@ See LICENSE and README
 #include "ObjParser.h"
 #include "TexCoord.h"
 #include "Triangle.h"
+#include "Memory.h"
 #include "MeshIO.h"
 #include "Vector.h"
 #include "Array.h"
 #include "Mesh.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 static const char USAGE[] =
@@ -93,7 +93,8 @@ int main(int argc, const char **argv)
 
 struct ObjBuffer *ObjBufferNew(void)
 {
-	struct ObjBuffer *buffer = (struct ObjBuffer *) malloc(sizeof(struct ObjBuffer));
+	struct ObjBuffer *buffer = MEM_ALLOC(struct ObjBuffer);
+
 	if (buffer == NULL)
 		return NULL;
 
@@ -122,7 +123,7 @@ void ObjBufferFree(struct ObjBuffer *buffer)
 	ArrFree(buffer->texture_indices);
 	ArrFree(buffer->normal_indices);
 
-	free(buffer);
+	MEM_FREE(buffer);
 }
 
 static int read_vertx(

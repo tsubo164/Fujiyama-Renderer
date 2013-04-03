@@ -4,20 +4,20 @@ See LICENSE and README
 */
 
 #include "TexCoord.h"
-#include <stdlib.h>
+#include "Memory.h"
 
 struct TexCoord *TexCoordAlloc(long count)
 {
-	return (struct TexCoord *) malloc(sizeof(struct TexCoord) * count);
+	return MEM_ALLOC_ARRAY(struct TexCoord, count);
 }
 
 struct TexCoord *TexCoordRealloc(struct TexCoord *texcoord, long count)
 {
-	return (struct TexCoord *) realloc(texcoord, sizeof(struct TexCoord) * count);
+	return MEM_REALLOC_ARRAY(texcoord, struct TexCoord, count);
 }
 
 void TexCoordFree(struct TexCoord *texcoord)
 {
-	free(texcoord);
+	MEM_FREE(texcoord);
 }
 

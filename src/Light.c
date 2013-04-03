@@ -9,9 +9,10 @@ See LICENSE and README
 #include "FrameBuffer.h"
 #include "Numeric.h"
 #include "Texture.h"
+#include "Memory.h"
 #include "Random.h"
 #include "Vector.h"
-#include <stdlib.h>
+
 #include <float.h>
 
 struct Light {
@@ -76,8 +77,7 @@ static int no_preprocess(struct Light *light);
 
 struct Light *LgtNew(int light_type)
 {
-	struct Light *light = (struct Light *) malloc(sizeof(struct Light));
-
+	struct Light *light = MEM_ALLOC(struct Light);
 	if (light == NULL)
 		return NULL;
 
@@ -141,9 +141,9 @@ void LgtFree(struct Light *light)
 		return;
 
 	if (light->dome_samples != NULL)
-		free(light->dome_samples);
+		MEM_FREE(light->dome_samples);
 
-	free(light);
+	MEM_FREE(light);
 }
 
 void LgtSetColor(struct Light *light, float r, float g, float b)
@@ -444,11 +444,10 @@ static int dome_light_preprocess(struct Light *light)
 	int i;
 
 	if (light->dome_samples != NULL) {
-		free(light->dome_samples);
+		MEM_FREE(light->dome_samples);
 	}
 
-	light->dome_samples =
-			(struct DomeSample *) malloc(sizeof(struct DomeSample) * NSAMPLES);
+	light->dome_samples = MEM_ALLOC_ARRAY(struct DomeSample, NSAMPLES);
 	for (i = 0; i < NSAMPLES; i++) {
 		struct DomeSample *sample = &light->dome_samples[i];
 		sample->uv.u = 1./NSAMPLES;

@@ -5,10 +5,11 @@ See LICENSE and README
 
 #include "Sampler.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Random.h"
 #include "Array.h"
 #include "Box.h"
-#include <stdlib.h>
+
 #include <assert.h>
 #include <math.h>
 
@@ -41,7 +42,7 @@ static int allocate_samples_for_region(struct Sampler *sampler, const int *regio
 struct Sampler *SmpNew(int xres, int yres,
 		int xsamples, int ysamples, float xfwidth, float yfwidth)
 {
-	struct Sampler *sampler = (struct Sampler *) malloc(sizeof(struct Sampler));
+	struct Sampler *sampler = MEM_ALLOC(struct Sampler);
 
 	if (sampler == NULL)
 		return NULL;
@@ -74,7 +75,7 @@ void SmpFree(struct Sampler *sampler)
 	if (sampler == NULL)
 		return;
 	ArrFree(sampler->samples);
-	free(sampler);
+	MEM_FREE(sampler);
 }
 
 void SmpSetJitter(struct Sampler *sampler, float jitter)
@@ -200,8 +201,8 @@ void SmpGetPixelSamples(struct Sampler *sampler, struct Sample *pixelsamples,
 
 struct Sample *SmpAllocatePixelSamples(struct Sampler *sampler)
 {
-	struct Sample *samples = (struct Sample *) malloc(sizeof(struct Sample) *
-			SmpGetSampleCountForPixel(sampler));
+	const int sample_count = SmpGetSampleCountForPixel(sampler);
+	struct Sample *samples = MEM_ALLOC_ARRAY(struct Sample, sample_count);
 
 	return samples;
 }
@@ -215,7 +216,7 @@ void SmpFreePixelSamples(struct Sample *samples)
 {
 	if (samples == NULL)
 		return;
-	free(samples);
+	MEM_FREE(samples);
 }
 
 static void compute_margins(struct Sampler *sampler)

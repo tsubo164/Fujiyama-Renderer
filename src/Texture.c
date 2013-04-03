@@ -7,6 +7,7 @@ See LICENSE and README
 #include "FrameBufferIO.h"
 #include "FrameBuffer.h"
 #include "TexCoord.h"
+#include "Memory.h"
 #include "Mipmap.h"
 #include "Vector.h"
 #include "Color.h"
@@ -27,7 +28,7 @@ struct Texture {
 
 struct Texture *TexNew(void)
 {
-	struct Texture *tex = (struct Texture *) malloc(sizeof(struct Texture));
+	struct Texture *tex = MEM_ALLOC(struct Texture);
 
 	if (tex == NULL)
 		return NULL;
@@ -46,7 +47,7 @@ void TexFree(struct Texture *tex)
 
 	FbFree(tex->fb);
 	MipCloseInputFile(tex->mip);
-	free(tex);
+	MEM_FREE(tex);
 }
 
 void TexLookup(struct Texture *tex, float u, float v, struct Color4 *rgba)

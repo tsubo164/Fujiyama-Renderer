@@ -6,10 +6,11 @@ See LICENSE and README
 #include "MeshIO.h"
 #include "TexCoord.h"
 #include "String.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Color.h"
 #include "Mesh.h"
-#include <stdlib.h>
+
 #include <string.h>
 
 #define MSH_FILE_VERSION 1
@@ -26,9 +27,8 @@ static void set_error(int err);
 /* mesh input file interfaces */
 struct MeshInput *MshOpenInputFile(const char *filename)
 {
-	struct MeshInput *in;
+	struct MeshInput *in = MEM_ALLOC(struct MeshInput);
 
-	in = (struct MeshInput *) malloc(sizeof(struct MeshInput));
 	if (in == NULL) {
 		set_error(MSH_ERR_NO_MEMORY);
 		return NULL;
@@ -37,7 +37,7 @@ struct MeshInput *MshOpenInputFile(const char *filename)
 	in->file = fopen(filename, "rb");
 	if (in->file == NULL) {
 		set_error(MSH_ERR_FILE_NOT_EXIST);
-		free(in);
+		MEM_FREE(in);
 		return NULL;
 	}
 
@@ -66,7 +66,7 @@ void MshCloseInputFile(struct MeshInput *in)
 		for (name = in->attr_names; *name != NULL; name++) {
 			*name = StrFree(*name);
 		}
-		free(in->attr_names);
+		MEM_FREE(in->attr_names);
 	}
 
 	if (in->file != NULL) {
@@ -74,10 +74,10 @@ void MshCloseInputFile(struct MeshInput *in)
 	}
 
 	if (in->data_buffer != NULL) {
-		free(in->data_buffer);
+		MEM_FREE(in->data_buffer);
 	}
 
-	free(in);
+	MEM_FREE(in);
 }
 
 int MshReadHeader(struct MeshInput *in)
@@ -104,7 +104,7 @@ int MshReadHeader(struct MeshInput *in)
 	nreads += fread(&in->nface_attrs, sizeof(int), 1, in->file);
 
 	nattrs_alloc = in->nvert_attrs + in->nface_attrs + 1; /* for sentinel */
-	in->attr_names = (char **) malloc(sizeof(char *) * nattrs_alloc);
+	in->attr_names = MEM_ALLOC_ARRAY(char *, nattrs_alloc);
 	for (i = 0; i < nattrs_alloc; i++) {
 		in->attr_names[i] = NULL;
 	}
@@ -127,9 +127,8 @@ int MshReadHeader(struct MeshInput *in)
 /* mesh output file interfaces */
 struct MeshOutput *MshOpenOutputFile(const char *filename)
 {
-	struct MeshOutput *out;
+	struct MeshOutput *out = MEM_ALLOC(struct MeshOutput);
 
-	out = (struct MeshOutput *) malloc(sizeof(struct MeshOutput));
 	if (out == NULL) {
 		set_error(MSH_ERR_NO_MEMORY);
 		return NULL;
@@ -138,7 +137,7 @@ struct MeshOutput *MshOpenOutputFile(const char *filename)
 	out->file = fopen(filename, "wb");
 	if (out->file == NULL) {
 		set_error(MSH_ERR_FILE_NOT_EXIST);
-		free(out);
+		MEM_FREE(out);
 		return NULL;
 	}
 
@@ -164,7 +163,7 @@ void MshCloseOutputFile(struct MeshOutput *out)
 	if (out->file != NULL) {
 		fclose(out->file);
 	}
-	free(out);
+	MEM_FREE(out);
 }
 
 void MshWriteFile(struct MeshOutput *out)
@@ -395,7 +394,7 @@ static size_t read_attridata(struct MeshInput *in)
 	nreads += fread(&datasize, sizeof(size_t), 1, in->file);
 
 	if (in->buffer_size < datasize) {
-		in->data_buffer = (char *) realloc(in->data_buffer, sizeof(char) * datasize);
+		in->data_buffer = MEM_REALLOC_ARRAY(in->data_buffer, char, datasize);
 		in->buffer_size = datasize;
 	}
 

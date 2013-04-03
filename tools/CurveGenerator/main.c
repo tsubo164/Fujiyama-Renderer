@@ -7,6 +7,7 @@ See LICENSE and README
 #include "Triangle.h"
 #include "CurveIO.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "MeshIO.h"
 #include "Vector.h"
 #include "Color.h"
@@ -15,7 +16,6 @@ See LICENSE and README
 #include "Mesh.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
@@ -110,7 +110,7 @@ int main(int argc, const char **argv)
 	printf("nfaces: %d\n", nfaces);
 
 	/* count total_ncurves */
-	ncurves_on_face = (int *) malloc(sizeof(int) * nfaces);
+	ncurves_on_face = MEM_ALLOC_ARRAY(int, nfaces);
 	total_ncurves = 0;
 	for (i = 0; i < nfaces; i++) {
 		struct Vector P0 = {0, 0, 0};
@@ -128,9 +128,9 @@ int main(int argc, const char **argv)
 
 	total_ncps = 4 * total_ncurves;
 	P = VecAlloc(total_ncps);
-	width = (double *) malloc(sizeof(double) * total_ncps);
+	width = MEM_ALLOC_ARRAY(double, total_ncps);
 	Cd = ColAlloc(total_ncps);
-	indices = (int *) malloc(sizeof(int) * total_ncurves);
+	indices = MEM_ALLOC_ARRAY(int, total_ncurves);
 
 	sourceP = VecAlloc(total_ncurves);
 	sourceN = VecAlloc(total_ncurves);
@@ -283,10 +283,10 @@ int main(int argc, const char **argv)
 	CrvCloseOutputFile(out);
 	MshFree(mesh);
 	VecFree(P);
-	free(width);
+	MEM_FREE(width);
 	ColFree(Cd);
-	free(indices);
-	free(ncurves_on_face);
+	MEM_FREE(indices);
+	MEM_FREE(ncurves_on_face);
 	VecFree(sourceP);
 	VecFree(sourceN);
 

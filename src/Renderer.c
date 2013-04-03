@@ -11,6 +11,7 @@ See LICENSE and README
 #include "Sampler.h"
 #include "Camera.h"
 #include "Filter.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Light.h"
 #include "Tiler.h"
@@ -20,7 +21,6 @@ See LICENSE and README
 #include "SL.h"
 
 #include <assert.h>
-#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <float.h>
@@ -57,8 +57,7 @@ static int preprocess_lights(struct Renderer *renderer);
 
 struct Renderer *RdrNew(void)
 {
-	struct Renderer *renderer = (struct Renderer *) malloc(sizeof(struct Renderer));
-
+	struct Renderer *renderer = MEM_ALLOC(struct Renderer);
 	if (renderer == NULL)
 		return NULL;
 
@@ -91,7 +90,7 @@ void RdrFree(struct Renderer *renderer)
 {
 	if (renderer == NULL)
 		return;
-	free(renderer);
+	MEM_FREE(renderer);
 }
 
 void RdrSetResolution(struct Renderer *renderer, int xres, int yres)

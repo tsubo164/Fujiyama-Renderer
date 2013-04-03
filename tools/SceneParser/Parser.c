@@ -6,9 +6,9 @@ See LICENSE and README
 #include "Parser.h"
 #include "SceneInterface.h"
 #include "Command.h"
+#include "Memory.h"
 #include "Table.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
@@ -47,9 +47,8 @@ static void parse_error(struct Parser *parser, int error_no);
 
 struct Parser *PsrNew(void)
 {
-	struct Parser *parser;
+	struct Parser *parser = MEM_ALLOC(struct Parser);
 
-	parser = (struct Parser *) malloc(sizeof(struct Parser));
 	if (parser == NULL)
 		return NULL;
 
@@ -74,7 +73,7 @@ void PsrFree(struct Parser *parser)
 	SiCloseScene();
 
 	TblFree(parser->table);
-	free(parser);
+	MEM_FREE(parser);
 }
 
 const char *PsrGetErrorMessage(const struct Parser *parser)

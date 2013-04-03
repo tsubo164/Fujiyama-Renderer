@@ -4,16 +4,16 @@ See LICENSE and README
 */
 
 #include "Array.h"
-#include <stdlib.h>
+#include "Memory.h"
 #include <string.h>
 #include <assert.h>
 
 struct Array *ArrNew(size_t size_of_element)
 {
-	struct Array *a;
+	struct Array *a = NULL;
 	assert(size_of_element > 0);
 
-	a = (struct Array *) malloc(sizeof(struct Array));
+	a = MEM_ALLOC(struct Array);
 	if (a == NULL)
 		return NULL;
 
@@ -27,19 +27,21 @@ struct Array *ArrNew(size_t size_of_element)
 
 void ArrFree(struct Array *a)
 {
-	if (a == NULL)
+	if (a == NULL) {
 		return;
+	}
 
-	if (a->nallocs > 0)
-		free(a->data);
+	if (a->nallocs > 0) {
+		MEM_FREE(a->data);
+	}
 
-	free(a);
+	MEM_FREE(a);
 }
 
 char *ArrPush(struct Array *a, const void *data)
 {
-	char *dst;
-	const char *src;
+	char *dst = NULL;
+	const char *src = NULL;
 	assert(data != NULL);
 
 	if (a->nelems == a->nallocs) {
@@ -65,7 +67,7 @@ char *ArrReserve(struct Array *a, size_t new_alloc)
 {
 	if (a->nallocs < new_alloc) {
 		const size_t new_size = a->elemsize * new_alloc;
-		a->data = (char *) realloc(a->data, new_size);
+		a->data = MEM_REALLOC_ARRAY(a->data, char, new_size);
 		a->nallocs = new_alloc;
 	}
 	return a->data;

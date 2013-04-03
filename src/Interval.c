@@ -5,7 +5,8 @@ See LICENSE and README
 
 #include "Interval.h"
 #include "Numeric.h"
-#include <stdlib.h>
+#include "Memory.h"
+
 #include <float.h>
 
 struct IntervalList {
@@ -22,9 +23,8 @@ static void free_interval(struct Interval *interval);
 
 struct IntervalList *IntervalListNew(void)
 {
-	struct IntervalList *intervals;
+	struct IntervalList *intervals = MEM_ALLOC(struct IntervalList);
 
-	intervals = (struct IntervalList *) malloc(sizeof(struct IntervalList));
 	if (intervals == NULL)
 		return NULL;
 
@@ -46,13 +46,13 @@ void IntervalListFree(struct IntervalList *intervals)
 		return;
 
 	free_interval_nodes(intervals->root.next);
-	free(intervals);
+	MEM_FREE(intervals);
 }
 
 void IntervalListPush(struct IntervalList *intervals, const struct Interval *interval)
 {
-	struct Interval *new_node;
-	struct Interval *current;
+	struct Interval *new_node = NULL;
+	struct Interval *current = NULL;
 
 	new_node = dup_interval(interval);
 	if (new_node == NULL) {
@@ -114,9 +114,8 @@ static int closer_than(const struct Interval *interval, const struct Interval *o
 
 static struct Interval *dup_interval(const struct Interval *src)
 {
-	struct Interval *new_node;
+	struct Interval *new_node = MEM_ALLOC(struct Interval);
 
-	new_node = (struct Interval *) malloc(sizeof(struct Interval));
 	if (new_node == NULL)
 		return NULL;
 
@@ -131,6 +130,6 @@ static void free_interval(struct Interval *interval)
 	if (interval == NULL)
 		return;
 
-	free(interval);
+	MEM_FREE(interval);
 }
 

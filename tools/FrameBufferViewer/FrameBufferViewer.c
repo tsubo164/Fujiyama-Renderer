@@ -7,13 +7,13 @@ See LICENSE and README
 #include "FrameBufferIO.h"
 #include "FrameBuffer.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Mipmap.h"
 #include "String.h"
 #include "Box.h"
 
 #include <math.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <GL/gl.h>
@@ -89,8 +89,7 @@ static void clear_image_viewer(struct FrameBufferViewer *v)
 
 struct FrameBufferViewer *FbvNewViewer(void)
 {
-	struct FrameBufferViewer *v =
-			(struct FrameBufferViewer *) malloc(sizeof(struct FrameBufferViewer));
+	struct FrameBufferViewer *v = MEM_ALLOC(struct FrameBufferViewer);
 
 	if (v == NULL)
 		return NULL;
@@ -107,7 +106,7 @@ void FbvFreeViewer(struct FrameBufferViewer *v)
 	if (v->fb != NULL)
 		FbFree(v->fb);
 
-	free(v);
+	MEM_FREE(v);
 }
 
 void FbvDraw(struct FrameBufferViewer *v)

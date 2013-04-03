@@ -4,6 +4,7 @@ See LICENSE and README
 */
 
 #include "Filter.h"
+#include "Memory.h"
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
@@ -23,7 +24,7 @@ struct Filter *FltNew(int filtertype, double xwidth, double ywidth)
 	assert(xwidth > 0);
 	assert(ywidth > 0);
 
-	filter = (struct Filter *) malloc(sizeof(struct Filter));
+	filter = MEM_ALLOC(struct Filter);
 	if (filter == NULL)
 		return NULL;
 
@@ -49,7 +50,7 @@ void FltFree(struct Filter *filter)
 	if (filter == NULL)
 		return;
 
-	free(filter);
+	MEM_FREE(filter);
 }
 
 double FltEvaluate(const struct Filter *filter, double x, double y)

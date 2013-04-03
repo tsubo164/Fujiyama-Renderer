@@ -6,9 +6,9 @@ See LICENSE and README
 #include "Camera.h"
 #include "Property.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Ray.h"
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
@@ -29,7 +29,7 @@ static void compute_ray_target(const struct Camera *cam,
 
 struct Camera *CamNew(const char *type)
 {
-	struct Camera *cam = (struct Camera *) malloc(sizeof(struct Camera));
+	struct Camera *cam = MEM_ALLOC(struct Camera);
 	if (cam == NULL)
 		return NULL;
 
@@ -49,7 +49,7 @@ void CamFree(struct Camera *cam)
 {
 	if (cam == NULL)
 		return;
-	free(cam);
+	MEM_FREE(cam);
 }
 
 void CamSetAspect(struct Camera *cam, double aspect)

@@ -4,9 +4,10 @@ See LICENSE and README
 */
 
 #include "Procedure.h"
+#include "Memory.h"
 #include "Timer.h"
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
@@ -44,7 +45,7 @@ struct Procedure *PrcNew(const struct Plugin *plugin)
 		return NULL;
 	}
 
-	procedure = (struct Procedure *) malloc(sizeof(struct Procedure));
+	procedure = MEM_ALLOC(struct Procedure);
 	if (procedure == NULL) {
 		set_error(PRC_ERR_NOMEM);
 		PlgDeleteInstance(plugin, tmpobj);
@@ -66,7 +67,7 @@ void PrcFree(struct Procedure *procedure)
 		return;
 
 	PlgDeleteInstance(procedure->plugin, procedure->self);
-	free(procedure);
+	MEM_FREE(procedure);
 }
 
 int PrcRun(struct Procedure *procedure)

@@ -5,9 +5,10 @@ See LICENSE and README
 
 #include "Volume.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Vector.h"
 #include "Box.h"
-#include <stdlib.h>
+
 #include <float.h>
 #include <stdio.h>
 
@@ -42,9 +43,7 @@ static float nearest_buffer_value(const struct VoxelBuffer *buffer, const struct
 
 struct Volume *VolNew(void)
 {
-	struct Volume *volume;
-
-	volume = (struct Volume *) malloc(sizeof(struct Volume));
+	struct Volume *volume = MEM_ALLOC(struct Volume);
 	if (volume == NULL)
 		return NULL;
 
@@ -65,7 +64,7 @@ void VolFree(struct Volume *volume)
 		return;
 
 	free_voxel_buffer(volume->buffer);
-	free(volume);
+	MEM_FREE(volume);
 }
 
 void VolResize(struct Volume *volume, int xres, int yres, int zres)
@@ -198,8 +197,7 @@ int VolGetSample(const struct Volume *volume, const struct Vector *point,
 
 static struct VoxelBuffer *new_voxel_buffer(void)
 {
-	struct VoxelBuffer *buffer =
-			(struct VoxelBuffer *) malloc(sizeof(struct VoxelBuffer));
+	struct VoxelBuffer *buffer = MEM_ALLOC(struct VoxelBuffer);
 	if (buffer == NULL)
 		return NULL;
 
@@ -216,20 +214,19 @@ static void free_voxel_buffer(struct VoxelBuffer *buffer)
 	if (buffer == NULL)
 		return;
 
-	free(buffer->data);
+	MEM_FREE(buffer->data);
 	buffer->data = NULL;
 	buffer->res.x = 0;
 	buffer->res.y = 0;
 	buffer->res.z = 0;
 
-	free(buffer);
+	MEM_FREE(buffer);
 }
 
 static void resize_voxel_buffer(struct VoxelBuffer *buffer, int xres, int yres, int zres)
 {
-	const long int new_size = xres * yres * zres * sizeof(float);
+	buffer->data = MEM_REALLOC_ARRAY(buffer->data, float, xres * yres * zres);
 
-	buffer->data = (float *) realloc(buffer->data, new_size);
 	if (buffer->data == NULL) {
 		buffer->res.x = 0;
 		buffer->res.y = 0;

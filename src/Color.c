@@ -4,20 +4,20 @@ See LICENSE and README
 */
 
 #include "Color.h"
-#include <stdlib.h>
+#include "Memory.h"
 
 struct Color *ColAlloc(long count)
 {
-	return (struct Color *) malloc(sizeof(struct Color) * count);
+	return MEM_ALLOC_ARRAY(struct Color, count);
 }
 
 struct Color *ColRealloc(struct Color *c, long count)
 {
-	return (struct Color *) realloc(c, sizeof(struct Color) * count);
+	return MEM_REALLOC_ARRAY(c, struct Color, count);
 }
 
 void ColFree(struct Color *c)
 {
-	free(c);
+	MEM_FREE(c);
 }
 

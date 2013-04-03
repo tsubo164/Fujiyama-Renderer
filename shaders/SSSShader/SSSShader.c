@@ -5,11 +5,11 @@ See LICENSE and README
 
 #include "Shader.h"
 #include "Numeric.h"
+#include "Memory.h"
 #include "Random.h"
 #include "Vector.h"
 #include "Color.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <float.h>
@@ -142,8 +142,7 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-	struct SSSShader *sss =
-			(struct SSSShader *) malloc(sizeof(struct SSSShader));
+	struct SSSShader *sss = MEM_ALLOC(struct SSSShader);
 
 	if (sss == NULL)
 		return NULL;
@@ -188,7 +187,7 @@ static void MyFree(void *self)
 	struct SSSShader *sss = (struct SSSShader *) self;
 	if (sss == NULL)
 		return;
-	free(sss);
+	MEM_FREE(sss);
 }
 
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
@@ -240,7 +239,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 		}
 	}
 
-	/* free samples */
+	/* MEM_FREE samples */
 	SlFreeLightSamples(samples);
 
 	/* diffuse map */
