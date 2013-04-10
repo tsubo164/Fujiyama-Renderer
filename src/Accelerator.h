@@ -32,6 +32,25 @@ extern int AccBuild(struct Accelerator *acc);
 extern int AccIntersect(const struct Accelerator *acc, double time,
 		const struct Ray *ray, struct Intersection *isect);
 
+/* data structure and functions for derived */
+struct DerivedAccelerator {
+	char *self_ptr;
+};
+
+typedef void *(*NewDerivedFunction)(void);
+typedef void (*FreeDerivedFunction)(void *derived);
+typedef int (*BuildDerivedFunction)(void *derived, const struct PrimitiveSet *primset);
+typedef int (*IntersectDerivedFunction)(void *derived, const struct PrimitiveSet *primset,
+			double time, const struct Ray *ray, struct Intersection *isect);
+typedef const char *(*GetDerivedNameFunction)(void);
+
+extern void AccSetDerivedFunctions(struct Accelerator *acc,
+		NewDerivedFunction       new_derived_function,
+		FreeDerivedFunction      free_derived_function,
+		BuildDerivedFunction     build_derived_function,
+		IntersectDerivedFunction intersect_derived_function,
+		GetDerivedNameFunction   get_derived_name_function);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

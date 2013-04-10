@@ -40,14 +40,15 @@ struct GridAccelerator {
 	struct Box bounds;
 };
 
-static struct GridAccelerator *new_grid_accel(void);
-static void free_grid_accel(struct Accelerator *acc);
-static int build_grid_accel(struct Accelerator *acc);
-static int intersect_grid_accel(const struct Accelerator *acc, double time,
-		const struct Ray *ray, struct Intersection *isect);
+static void *new_grid_accel(void);
+static void free_grid_accel(void *derived);
+static int build_grid_accel(void *derived, const struct PrimitiveSet *primset);
+static int intersect_grid_accel(void *derived, const struct PrimitiveSet *primset,
+		double time, const struct Ray *ray, struct Intersection *isect);
 static void compute_grid_cellsizes(int nprimitives,
 		double xwidth, double ywidth, double zwidth,
 		int *xncells, int *yncells, int *zncells);
+static const char *get_grid_accel_name(void);
 
 /* -------------------------------------------------------------------------- */
 /* BVHAccelerator */
@@ -81,15 +82,18 @@ struct BVHAccelerator {
 	struct BVHNode *root;
 };
 
-static struct BVHAccelerator *new_bvh_accel(void);
-static void free_bvh_accel(struct Accelerator *acc);
-static int build_bvh_accel(struct Accelerator *acc);
-static int intersect_bvh_accel(const struct Accelerator *acc, double time,
-		const struct Ray *ray, struct Intersection *isect);
-static int intersect_bvh_recursive(const struct Accelerator *acc, const struct BVHNode *node,
+static void *new_bvh_accel(void);
+static void free_bvh_accel(void *derived);
+static int build_bvh_accel(void *derived, const struct PrimitiveSet *primset);
+static int intersect_bvh_accel(void *derived, const struct PrimitiveSet *primset,
 		double time, const struct Ray *ray, struct Intersection *isect);
-static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNode *root,
-		double time, const struct Ray *ray, struct Intersection *isect);
+static int intersect_bvh_recursive(const struct PrimitiveSet *primset,
+		const struct BVHNode *node, double time, const struct Ray *ray,
+		struct Intersection *isect);
+static int intersect_bvh_loop(const struct PrimitiveSet *primset,
+		const struct BVHNode *root, double time, const struct Ray *ray,
+		struct Intersection *isect);
+static const char *get_bvh_accel_name(void);
 
 static struct BVHNode *new_bvhnode(void);
 static void free_bvhnode_recursive(struct BVHNode *node);
@@ -108,9 +112,8 @@ static const struct BVHNode *pop_node(struct BVHNodeStack *stack);
 
 /* -------------------------------------------------------------------------- */
 /* Accelerator */
-static int prim_ray_intersect(const struct Accelerator *acc, int prim_id, double time,
-	const struct Ray *ray, struct Intersection *isect);
-static void get_prim_bounds(const struct Accelerator *acc, int prim_id, struct Box *bounds);
+static int prim_ray_intersect(const struct PrimitiveSet *primset, int prim_id,
+		double time, const struct Ray *ray, struct Intersection *isect);
 static void swap_isect_ptr(struct Intersection **isect0, struct Intersection **isect1);
 
 struct Accelerator {
@@ -122,10 +125,12 @@ struct Accelerator {
 
 	/* private */
 	char *derived;
-	void (*FreeDerived)(struct Accelerator *acc);
-	int (*Build)(struct Accelerator *acc);
-	int (*Intersect)(const struct Accelerator *acc, double time,
-			const struct Ray *ray, struct Intersection *isect);
+	void *(*NewDerived)(void);
+	void (*FreeDerived)(void *derived);
+	int (*BuildDerived)(void *derived, const struct PrimitiveSet *primset);
+	int (*IntersectDerived)(void *derived, const struct PrimitiveSet *primset,
+			double time, const struct Ray *ray, struct Intersection *isect);
+	const char *(*GetDerivedName)(void);
 };
 
 struct Accelerator *AccNew(int accelerator_type)
@@ -141,9 +146,11 @@ struct Accelerator *AccNew(int accelerator_type)
 			AccFree(acc);
 			return NULL;
 		}
+		acc->NewDerived = new_grid_accel;
 		acc->FreeDerived = free_grid_accel;
-		acc->Build = build_grid_accel;
-		acc->Intersect = intersect_grid_accel;
+		acc->BuildDerived = build_grid_accel;
+		acc->IntersectDerived = intersect_grid_accel;
+		acc->GetDerivedName = get_grid_accel_name;
 		acc->name = "Uniform-Grid";
 		break;
 	case ACC_BVH:
@@ -152,9 +159,11 @@ struct Accelerator *AccNew(int accelerator_type)
 			AccFree(acc);
 			return NULL;
 		}
+		acc->NewDerived = new_bvh_accel;
 		acc->FreeDerived = free_bvh_accel;
-		acc->Build = build_bvh_accel;
-		acc->Intersect = intersect_bvh_accel;
+		acc->BuildDerived = build_bvh_accel;
+		acc->IntersectDerived = intersect_bvh_accel;
+		acc->GetDerivedName = get_bvh_accel_name;
 		acc->name = "BVH";
 		break;
 	default:
@@ -177,7 +186,7 @@ void AccFree(struct Accelerator *acc)
 	if (acc->derived == NULL)
 		return;
 
-	acc->FreeDerived(acc);
+	acc->FreeDerived(acc->derived);
 	MEM_FREE(acc);
 }
 
@@ -199,7 +208,7 @@ int AccBuild(struct Accelerator *acc)
 	if (acc->has_built)
 		return -1;
 
-	err = acc->Build(acc);
+	err = acc->BuildDerived(acc->derived, &acc->primset);
 	if (err)
 		return -1;
 
@@ -226,7 +235,7 @@ int AccIntersect(const struct Accelerator *acc, double time,
 		fflush(stdout);
 	}
 
-	return acc->Intersect(acc, time, ray, isect);
+	return acc->IntersectDerived(acc->derived, &acc->primset, time, ray, isect);
 }
 
 void AccSetPrimitiveSet(struct Accelerator *acc, const struct PrimitiveSet *primset)
@@ -239,10 +248,10 @@ void AccSetPrimitiveSet(struct Accelerator *acc, const struct PrimitiveSet *prim
 }
 
 /* -------------------------------------------------------------------------- */
-static int intersect_grid_accel(const struct Accelerator *acc, double time,
-		const struct Ray *ray, struct Intersection *isect)
+static int intersect_grid_accel(void *derived, const struct PrimitiveSet *primset,
+		double time, const struct Ray *ray, struct Intersection *isect)
 {
-	const struct GridAccelerator *grid = (const struct GridAccelerator *) acc->derived;
+	const struct GridAccelerator *grid = (const struct GridAccelerator *) derived;
 	double grid_min[3];
 	double start[3];
 	double tstart = FLT_MAX;
@@ -262,7 +271,7 @@ static int intersect_grid_accel(const struct Accelerator *acc, double time,
 
 	/* check intersection with overall bounds */
 	/* to get boxhit_tmin and boxhit_tmax */
-	if (!BoxRayIntersect(&acc->bounds, &ray->orig, &ray->dir, ray->tmin, ray->tmax,
+	if (!BoxRayIntersect(&grid->bounds, &ray->orig, &ray->dir, ray->tmin, ray->tmax,
 				&boxhit_tmin, &boxhit_tmax)) {
 		return 0;
 	}
@@ -342,7 +351,7 @@ static int intersect_grid_accel(const struct Accelerator *acc, double time,
 			struct Vector P_hit;
 			struct Box cellbox;
 
-			hittmp = prim_ray_intersect(acc, cell->prim_id, time, ray, isect_tmp);
+			hittmp = prim_ray_intersect(primset, cell->prim_id, time, ray, isect_tmp);
 			if (!hittmp)
 				continue;
 
@@ -399,7 +408,7 @@ static int intersect_grid_accel(const struct Accelerator *acc, double time,
 	return hit;
 }
 
-static int build_grid_accel(struct Accelerator *acc)
+static int build_grid_accel(void *derived, const struct PrimitiveSet *primset)
 {
 	int i;
 	int NPRIMS;
@@ -410,13 +419,16 @@ static int build_grid_accel(struct Accelerator *acc)
 	double cellsize[3] = {0};
 	struct Cell **cells = NULL;
 
-	struct GridAccelerator *grid = (struct GridAccelerator *) acc->derived;
+	struct GridAccelerator *grid = (struct GridAccelerator *) derived;
 
-	NPRIMS = PrmGetPrimitiveCount(&acc->primset);
+	PrmGetBounds(primset, &bounds);
+	BOX3_EXPAND(&bounds, EXPAND);
+
+	NPRIMS = PrmGetPrimitiveCount(primset);
 	compute_grid_cellsizes(NPRIMS, 
-			acc->bounds.max.x - acc->bounds.min.x,
-			acc->bounds.max.y - acc->bounds.min.y,
-			acc->bounds.max.z - acc->bounds.min.z,
+			bounds.max.x - bounds.min.x,
+			bounds.max.y - bounds.min.y,
+			bounds.max.z - bounds.min.z,
 			&XNCELLS, &YNCELLS, &ZNCELLS);
 
 	cells = MEM_ALLOC_ARRAY(struct Cell *, XNCELLS * YNCELLS * ZNCELLS);
@@ -426,7 +438,6 @@ static int build_grid_accel(struct Accelerator *acc)
 	for (i = 0; i < XNCELLS * YNCELLS * ZNCELLS; i++)
 		cells[i] = NULL;
 
-	bounds = acc->bounds;
 	cellsize[0] = (bounds.max.x - bounds.min.x) / XNCELLS;
 	cellsize[1] = (bounds.max.y - bounds.min.y) / YNCELLS;
 	cellsize[2] = (bounds.max.z - bounds.min.z) / ZNCELLS;
@@ -437,7 +448,7 @@ static int build_grid_accel(struct Accelerator *acc)
 		int primid = i;
 		struct Box primbbox;
 
-		get_prim_bounds(acc, primid, &primbbox);
+		PrmGetPrimitiveBounds(primset, primid, &primbbox);
 		BOX3_EXPAND(&primbbox, HALF_EXPAND);
 
 		/* compute the ranges of cell indices. e.g. [X0 .. X1) */
@@ -496,7 +507,7 @@ static int build_grid_accel(struct Accelerator *acc)
 	return 0;
 }
 
-static struct GridAccelerator *new_grid_accel(void)
+static void *new_grid_accel(void)
 {
 	struct GridAccelerator *grid = MEM_ALLOC(struct GridAccelerator);
 
@@ -515,10 +526,10 @@ static struct GridAccelerator *new_grid_accel(void)
 	return grid;
 }
 
-static void free_grid_accel(struct Accelerator *acc)
+static void free_grid_accel(void *derived)
 {
 	int x, y, z;
-	struct GridAccelerator *grid = (struct GridAccelerator *) acc->derived;
+	struct GridAccelerator *grid = (struct GridAccelerator *) derived;
 	const int XNCELLS = grid->ncells[0];
 	const int YNCELLS = grid->ncells[1];
 	const int ZNCELLS = grid->ncells[2];
@@ -578,8 +589,13 @@ static void compute_grid_cellsizes(int nprimitives,
 	*zncells = ZNCELLS;
 }
 
+static const char *get_grid_accel_name(void)
+{
+	return "Uniform-Grid";
+}
+
 /* -------------------------------------------------------------------------- */
-static struct BVHAccelerator *new_bvh_accel(void)
+static void *new_bvh_accel(void)
 {
 	struct BVHAccelerator *bvh = MEM_ALLOC(struct BVHAccelerator);
 
@@ -591,24 +607,24 @@ static struct BVHAccelerator *new_bvh_accel(void)
 	return bvh;
 }
 
-static void free_bvh_accel(struct Accelerator *acc)
+static void free_bvh_accel(void *derived)
 {
-	struct BVHAccelerator *bvh = (struct BVHAccelerator *) acc->derived;
+	struct BVHAccelerator *bvh = (struct BVHAccelerator *) derived;
 
 	free_bvhnode_recursive(bvh->root);
 
 	MEM_FREE(bvh);
 }
 
-static int build_bvh_accel(struct Accelerator *acc)
+static int build_bvh_accel(void *derived, const struct PrimitiveSet *primset)
 {
-	struct BVHAccelerator *bvh = (struct BVHAccelerator *) acc->derived;
+	struct BVHAccelerator *bvh = (struct BVHAccelerator *) derived;
 	struct Primitive *prims;
 	struct Primitive **primptrs;
 	int NPRIMS;
 	int i;
 
-	NPRIMS = PrmGetPrimitiveCount(&acc->primset);
+	NPRIMS = PrmGetPrimitiveCount(primset);
 
 	prims = MEM_ALLOC_ARRAY(struct Primitive, NPRIMS);
 	if (prims == NULL)
@@ -621,7 +637,7 @@ static int build_bvh_accel(struct Accelerator *acc)
 	}
 
 	for (i = 0; i < NPRIMS; i++) {
-		get_prim_bounds(acc, i, &prims[i].bounds);
+		PrmGetPrimitiveBounds(primset, i, &prims[i].bounds);
 		prims[i].centroid[0] = (prims[i].bounds.max.x + prims[i].bounds.min.x) / 2;
 		prims[i].centroid[1] = (prims[i].bounds.max.y + prims[i].bounds.min.y) / 2;
 		prims[i].centroid[2] = (prims[i].bounds.max.z + prims[i].bounds.min.z) / 2;
@@ -642,19 +658,20 @@ static int build_bvh_accel(struct Accelerator *acc)
 	return 0;
 }
 
-static int intersect_bvh_accel(const struct Accelerator *acc, double time,
-		const struct Ray *ray, struct Intersection *isect)
+static int intersect_bvh_accel(void *derived, const struct PrimitiveSet *primset,
+		double time, const struct Ray *ray, struct Intersection *isect)
 {
-	const struct BVHAccelerator *bvh = (const struct BVHAccelerator *) acc->derived;
+	const struct BVHAccelerator *bvh = (const struct BVHAccelerator *) derived;
 
 	if (1)
-		return intersect_bvh_loop(acc, bvh->root, time, ray, isect);
+		return intersect_bvh_loop(primset, bvh->root, time, ray, isect);
 	else
-		return intersect_bvh_recursive(acc, bvh->root, time, ray, isect);
+		return intersect_bvh_recursive(primset, bvh->root, time, ray, isect);
 }
 
-static int intersect_bvh_recursive(const struct Accelerator *acc, const struct BVHNode *node,
-		double time, const struct Ray *ray, struct Intersection *isect)
+static int intersect_bvh_recursive(const struct PrimitiveSet *primset,
+		const struct BVHNode *node, double time, const struct Ray *ray,
+		struct Intersection *isect)
 {
 	struct Intersection isect_left, isect_right;
 	double boxhit_tmin;
@@ -670,13 +687,13 @@ static int intersect_bvh_recursive(const struct Accelerator *acc, const struct B
 	}
 
 	if (is_bvh_leaf(node)) {
-		return prim_ray_intersect(acc, node->prim_id, time, ray, isect);
+		return prim_ray_intersect(primset, node->prim_id, time, ray, isect);
 	}
 
 	isect_left.t_hit = FLT_MAX;
-	hit_left  = intersect_bvh_recursive(acc, node->left,  time, ray, &isect_left);
+	hit_left  = intersect_bvh_recursive(primset, node->left,  time, ray, &isect_left);
 	isect_right.t_hit = FLT_MAX;
-	hit_right = intersect_bvh_recursive(acc, node->right, time, ray, &isect_right);
+	hit_right = intersect_bvh_recursive(primset, node->right, time, ray, &isect_right);
 
 	if (isect_left.t_hit < ray->tmin)
 		isect_left.t_hit = FLT_MAX;
@@ -692,8 +709,9 @@ static int intersect_bvh_recursive(const struct Accelerator *acc, const struct B
 	return (hit_left || hit_right);
 }
 
-static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNode *root,
-		double time, const struct Ray *ray, struct Intersection *isect)
+static int intersect_bvh_loop(const struct PrimitiveSet *primset,
+		const struct BVHNode *root, double time, const struct Ray *ray,
+		struct Intersection *isect)
 {
 	int hit, hittmp;
 	int whichhit;
@@ -714,7 +732,7 @@ static int intersect_bvh_loop(const struct Accelerator *acc, const struct BVHNod
 
 	for (;;) {
 		if (is_bvh_leaf(node)) {
-			hittmp = prim_ray_intersect(acc, node->prim_id, time, ray, isect_tmp);
+			hittmp = prim_ray_intersect(primset, node->prim_id, time, ray, isect_tmp);
 			if (hittmp && isect_tmp->t_hit < isect_min->t_hit) {
 				swap_isect_ptr(&isect_min, &isect_tmp);
 				hit = hittmp;
@@ -924,10 +942,10 @@ static int primitive_compare_z(const void *a, const void *b)
 	return compare_double((*A)->centroid[2], (*B)->centroid[2]);
 }
 
-static int prim_ray_intersect(const struct Accelerator *acc, int prim_id, double time,
-		const struct Ray *ray, struct Intersection *isect)
+static int prim_ray_intersect(const struct PrimitiveSet *primset, int prim_id,
+		double time, const struct Ray *ray, struct Intersection *isect)
 {
-	const int hit = PrmRayIntersect(&acc->primset, prim_id, time, ray, isect);
+	const int hit = PrmRayIntersect(primset, prim_id, time, ray, isect);
 
 	if (!hit) {
 		isect->t_hit = FLT_MAX;
@@ -940,11 +958,6 @@ static int prim_ray_intersect(const struct Accelerator *acc, int prim_id, double
 	}
 
 	return 1;
-}
-
-static void get_prim_bounds(const struct Accelerator *acc, int prim_id, struct Box *bounds)
-{
-	PrmGetPrimitiveBounds(&acc->primset, prim_id, bounds);
 }
 
 static void swap_isect_ptr(struct Intersection **isect0, struct Intersection **isect1)
@@ -969,5 +982,10 @@ static const struct BVHNode *pop_node(struct BVHNodeStack *stack)
 {
 	assert(!is_empty(stack));
 	return stack->node[--stack->depth];
+}
+
+static const char *get_bvh_accel_name(void)
+{
+	return "BVH";
 }
 
