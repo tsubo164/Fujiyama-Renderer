@@ -40,15 +40,28 @@ struct GridAccelerator {
 	struct Box bounds;
 };
 
-static void *new_grid_accel(void);
-static void free_grid_accel(void *derived);
-static int build_grid_accel(void *derived, const struct PrimitiveSet *primset);
-static int intersect_grid_accel(void *derived, const struct PrimitiveSet *primset,
-		double time, const struct Ray *ray, struct Intersection *isect);
+static DerivedAccelerator new_grid_accel(void);
+static void free_grid_accel(DerivedAccelerator derived);
+static int build_grid_accel(DerivedAccelerator derived,
+		const struct PrimitiveSet *primset);
+static int intersect_grid_accel(DerivedAccelerator derived,
+		const struct PrimitiveSet *primset, double time, const struct Ray *ray,
+		struct Intersection *isect);
 static void compute_grid_cellsizes(int nprimitives,
 		double xwidth, double ywidth, double zwidth,
 		int *xncells, int *yncells, int *zncells);
 static const char *get_grid_accel_name(void);
+
+extern void GetGridAcceleratorFunction(struct Accelerator *acc);
+void GetGridAcceleratorFunction(struct Accelerator *acc)
+{
+	AccSetDerivedFunctions(acc,
+			new_grid_accel,
+			free_grid_accel,
+			build_grid_accel,
+			intersect_grid_accel,
+			get_grid_accel_name);
+}
 
 /* -------------------------------------------------------------------------- */
 /* BVHAccelerator */
@@ -82,11 +95,13 @@ struct BVHAccelerator {
 	struct BVHNode *root;
 };
 
-static void *new_bvh_accel(void);
-static void free_bvh_accel(void *derived);
-static int build_bvh_accel(void *derived, const struct PrimitiveSet *primset);
-static int intersect_bvh_accel(void *derived, const struct PrimitiveSet *primset,
-		double time, const struct Ray *ray, struct Intersection *isect);
+static DerivedAccelerator new_bvh_accel(void);
+static void free_bvh_accel(DerivedAccelerator derived);
+static int build_bvh_accel(DerivedAccelerator derived,
+		const struct PrimitiveSet *primset);
+static int intersect_bvh_accel(DerivedAccelerator derived,
+		const struct PrimitiveSet *primset, double time, const struct Ray *ray,
+		struct Intersection *isect);
 static int intersect_bvh_recursive(const struct PrimitiveSet *primset,
 		const struct BVHNode *node, double time, const struct Ray *ray,
 		struct Intersection *isect);
@@ -110,6 +125,17 @@ static int is_empty(const struct BVHNodeStack *stack);
 static void push_node(struct BVHNodeStack *stack, const struct BVHNode *node);
 static const struct BVHNode *pop_node(struct BVHNodeStack *stack);
 
+extern void GetBVHAcceleratorFunction(struct Accelerator *acc);
+void GetBVHAcceleratorFunction(struct Accelerator *acc)
+{
+	AccSetDerivedFunctions(acc,
+			new_bvh_accel,
+			free_bvh_accel,
+			build_bvh_accel,
+			intersect_bvh_accel,
+			get_bvh_accel_name);
+}
+
 /* -------------------------------------------------------------------------- */
 /* Accelerator */
 static int prim_ray_intersect(const struct PrimitiveSet *primset, int prim_id,
@@ -124,53 +150,42 @@ struct Accelerator {
 	struct PrimitiveSet primset;
 
 	/* private */
-	char *derived;
-	void *(*NewDerived)(void);
-	void (*FreeDerived)(void *derived);
-	int (*BuildDerived)(void *derived, const struct PrimitiveSet *primset);
-	int (*IntersectDerived)(void *derived, const struct PrimitiveSet *primset,
-			double time, const struct Ray *ray, struct Intersection *isect);
+	DerivedAccelerator derived;
+	DerivedAccelerator (*NewDerived)(void);
+	void (*FreeDerived)(DerivedAccelerator derived);
+	int (*BuildDerived)(DerivedAccelerator derived,
+			const struct PrimitiveSet *primset);
+	int (*IntersectDerived)(DerivedAccelerator derived,
+			const struct PrimitiveSet *primset, double time, const struct Ray *ray,
+			struct Intersection *isect);
 	const char *(*GetDerivedName)(void);
 };
 
 struct Accelerator *AccNew(int accelerator_type)
 {
 	struct Accelerator *acc = MEM_ALLOC(struct Accelerator);
+
 	if (acc == NULL)
 		return NULL;
 
 	switch (accelerator_type) {
 	case ACC_GRID:
-		acc->derived = (char *) new_grid_accel();
-		if (acc->derived == NULL) {
-			AccFree(acc);
-			return NULL;
-		}
-		acc->NewDerived = new_grid_accel;
-		acc->FreeDerived = free_grid_accel;
-		acc->BuildDerived = build_grid_accel;
-		acc->IntersectDerived = intersect_grid_accel;
-		acc->GetDerivedName = get_grid_accel_name;
-		acc->name = "Uniform-Grid";
+		GetGridAcceleratorFunction(acc);
 		break;
 	case ACC_BVH:
-		acc->derived = (char *) new_bvh_accel();
-		if (acc->derived == NULL) {
-			AccFree(acc);
-			return NULL;
-		}
-		acc->NewDerived = new_bvh_accel;
-		acc->FreeDerived = free_bvh_accel;
-		acc->BuildDerived = build_bvh_accel;
-		acc->IntersectDerived = intersect_bvh_accel;
-		acc->GetDerivedName = get_bvh_accel_name;
-		acc->name = "BVH";
+		GetBVHAcceleratorFunction(acc);
 		break;
 	default:
 		assert(!"invalid accelerator type");
 		break;
 	}
 
+	acc->derived = acc->NewDerived();
+	if (acc->derived == NULL) {
+		AccFree(acc);
+		return NULL;
+	}
+	acc->name = acc->GetDerivedName();
 	acc->has_built = 0;
 
 	InitPrimitiveSet(&acc->primset);
@@ -247,9 +262,24 @@ void AccSetPrimitiveSet(struct Accelerator *acc, const struct PrimitiveSet *prim
 	BOX3_EXPAND(&acc->bounds, EXPAND);
 }
 
+void AccSetDerivedFunctions(struct Accelerator *acc,
+		NewDerivedFunction       new_derived_function,
+		FreeDerivedFunction      free_derived_function,
+		BuildDerivedFunction     build_derived_function,
+		IntersectDerivedFunction intersect_derived_function,
+		GetDerivedNameFunction   get_derived_name_function)
+{
+	acc->NewDerived = new_derived_function;
+	acc->FreeDerived = free_derived_function;
+	acc->BuildDerived = build_derived_function;
+	acc->IntersectDerived = intersect_derived_function;
+	acc->GetDerivedName = get_derived_name_function;
+}
+
 /* -------------------------------------------------------------------------- */
-static int intersect_grid_accel(void *derived, const struct PrimitiveSet *primset,
-		double time, const struct Ray *ray, struct Intersection *isect)
+static int intersect_grid_accel(DerivedAccelerator derived,
+		const struct PrimitiveSet *primset, double time, const struct Ray *ray,
+		struct Intersection *isect)
 {
 	const struct GridAccelerator *grid = (const struct GridAccelerator *) derived;
 	double grid_min[3];
@@ -408,7 +438,8 @@ static int intersect_grid_accel(void *derived, const struct PrimitiveSet *primse
 	return hit;
 }
 
-static int build_grid_accel(void *derived, const struct PrimitiveSet *primset)
+static int build_grid_accel(DerivedAccelerator derived,
+		const struct PrimitiveSet *primset)
 {
 	int i;
 	int NPRIMS;
@@ -507,7 +538,7 @@ static int build_grid_accel(void *derived, const struct PrimitiveSet *primset)
 	return 0;
 }
 
-static void *new_grid_accel(void)
+static DerivedAccelerator new_grid_accel(void)
 {
 	struct GridAccelerator *grid = MEM_ALLOC(struct GridAccelerator);
 
@@ -523,10 +554,10 @@ static void *new_grid_accel(void)
 	grid->cellsize[2] = 0;
 	BOX3_SET(&grid->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-	return grid;
+	return (DerivedAccelerator) grid;
 }
 
-static void free_grid_accel(void *derived)
+static void free_grid_accel(DerivedAccelerator derived)
 {
 	int x, y, z;
 	struct GridAccelerator *grid = (struct GridAccelerator *) derived;
@@ -595,7 +626,7 @@ static const char *get_grid_accel_name(void)
 }
 
 /* -------------------------------------------------------------------------- */
-static void *new_bvh_accel(void)
+static DerivedAccelerator new_bvh_accel(void)
 {
 	struct BVHAccelerator *bvh = MEM_ALLOC(struct BVHAccelerator);
 
@@ -604,10 +635,10 @@ static void *new_bvh_accel(void)
 
 	bvh->root = NULL;
 
-	return bvh;
+	return (DerivedAccelerator) bvh;
 }
 
-static void free_bvh_accel(void *derived)
+static void free_bvh_accel(DerivedAccelerator derived)
 {
 	struct BVHAccelerator *bvh = (struct BVHAccelerator *) derived;
 
@@ -616,7 +647,8 @@ static void free_bvh_accel(void *derived)
 	MEM_FREE(bvh);
 }
 
-static int build_bvh_accel(void *derived, const struct PrimitiveSet *primset)
+static int build_bvh_accel(DerivedAccelerator derived,
+		const struct PrimitiveSet *primset)
 {
 	struct BVHAccelerator *bvh = (struct BVHAccelerator *) derived;
 	struct Primitive *prims;
@@ -658,8 +690,9 @@ static int build_bvh_accel(void *derived, const struct PrimitiveSet *primset)
 	return 0;
 }
 
-static int intersect_bvh_accel(void *derived, const struct PrimitiveSet *primset,
-		double time, const struct Ray *ray, struct Intersection *isect)
+static int intersect_bvh_accel(DerivedAccelerator derived,
+		const struct PrimitiveSet *primset, double time, const struct Ray *ray,
+		struct Intersection *isect)
 {
 	const struct BVHAccelerator *bvh = (const struct BVHAccelerator *) derived;
 

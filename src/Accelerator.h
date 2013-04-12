@@ -33,15 +33,15 @@ extern int AccIntersect(const struct Accelerator *acc, double time,
 		const struct Ray *ray, struct Intersection *isect);
 
 /* data structure and functions for derived */
-struct DerivedAccelerator {
-	char *self_ptr;
-};
+typedef char * DerivedAccelerator;
 
-typedef void *(*NewDerivedFunction)(void);
-typedef void (*FreeDerivedFunction)(void *derived);
-typedef int (*BuildDerivedFunction)(void *derived, const struct PrimitiveSet *primset);
-typedef int (*IntersectDerivedFunction)(void *derived, const struct PrimitiveSet *primset,
-			double time, const struct Ray *ray, struct Intersection *isect);
+typedef DerivedAccelerator (*NewDerivedFunction)(void);
+typedef void (*FreeDerivedFunction)(DerivedAccelerator derived);
+typedef int (*BuildDerivedFunction)(DerivedAccelerator derived,
+		const struct PrimitiveSet *primset);
+typedef int (*IntersectDerivedFunction)(DerivedAccelerator derived,
+		const struct PrimitiveSet *primset, double time, const struct Ray *ray,
+		struct Intersection *isect);
 typedef const char *(*GetDerivedNameFunction)(void);
 
 extern void AccSetDerivedFunctions(struct Accelerator *acc,
