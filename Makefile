@@ -10,6 +10,7 @@ CPPFLAGS = -Isrc -Wall $(OPT)
 
 RM = rm -f
 INSTALL = install
+MAKE = make --no-print-directory
 
 .PHONY: all all_ clean install install_library install_shaders install_procedures \
 		install_bin install_tools sample scenes/cube.fb
@@ -30,7 +31,7 @@ all_depends += $$(depends)
 $$(objects): %.o: %.c
 	@echo '  compile $$<'
 	@$$(CC) $$(CFLAGS) $(cflags_) -c -o $$@ $$<
-$$(target): $$(objects) $(addobj_)
+$$(target): $$(objects)
 	@echo '  link $$^'
 	@$$(CC) -o $$@ $$^ $$(LDFLAGS) $(ldflags_)
 $$(depends): %.d: %.c
@@ -53,7 +54,7 @@ all_depends += $$(depends)
 $$(objects): %.o: %.cpp
 	@echo '  compile $$<'
 	@$$(CXX) $$(CPPFLAGS) $(cflags_) -c -o $$@ $$<
-$$(target): $$(objects) $(addobj_)
+$$(target): $$(objects)
 	@echo '  link $$^'
 	@$$(CXX) -o $$@ $$^ $$(LDFLAGS) $(ldflags_)
 $$(depends): %.d: %.cpp
@@ -67,7 +68,6 @@ endef
 all_targets :=
 all_objects :=
 all_depends :=
-addobj_ :=
 install_lib :=
 install_bin :=
 install_shaders :=
@@ -263,71 +263,15 @@ all_objects :=
 pyc_files := tools/PythonAPI/fujiyama.pyc
 
 #------------------------------------------------------------------------------
-#TEST PROGRAMS
-tests/Test.o: tests/Test.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-all_objects += tests/Test.o
-addobj_ := tests/Test.o
-
-srcdir_  := tests
-tgtdir_  := $(srcdir_)
-files_   := Array_test
-subtgt_  := $(files_)
-cflags_  :=
-ldflags_ := -lscene
-$(eval $(call submodule))
-
-srcdir_  := tests
-tgtdir_  := $(srcdir_)
-files_   := Numeric_test
-subtgt_  := $(files_)
-cflags_  :=
-ldflags_ := -lscene
-$(eval $(call submodule))
-
-srcdir_  := tests
-tgtdir_  := $(srcdir_)
-files_   := Vector_test
-subtgt_  := $(files_)
-cflags_  :=
-ldflags_ := -lscene
-$(eval $(call submodule))
-
-srcdir_  := tests
-tgtdir_  := $(srcdir_)
-files_   := Box_test
-subtgt_  := $(files_)
-cflags_  :=
-ldflags_ := -lscene
-$(eval $(call submodule))
-
-#save and reset
-check_programs := $(all_targets)
-check_objects := $(all_objects)
-all_targets :=
-all_objects :=
-
-#------------------------------------------------------------------------------
-#Sample Programs
-sample: scenes/cube.fb bin/fbview
-	env LD_LIBRARY_PATH=lib bin/fbview $<
-scenes/cube.fb: scenes/cube scenes/cube.mesh
-	env LD_LIBRARY_PATH=lib scenes/cube
-scenes/cube: scenes/cube.c lib/libscene.so lib/PlasticShader.so
-	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) -lscene
-scenes/cube.mesh: scenes/cube.ply bin/ply2mesh
-	env LD_LIBRARY_PATH=lib bin/ply2mesh $< $@
-sample_outputs := scenes/cube.fb scenes/cube.mesh scenes/cube
-
-#------------------------------------------------------------------------------
 all_: $(all_depends) $(main_programs)
 
 dependencies := $(subst .o,.d, $(main_objects) )
 
-check: all_ $(check_programs)
-	@for t in $(check_programs); \
-	do echo running :$$t; $$t; \
-	done;
+sample: all_
+	@$(MAKE) -C scenes $@
+
+check: all_
+	@$(MAKE) -C tests $@
 
 install: all_ install_library install_shaders install_tools
 
@@ -353,11 +297,10 @@ install_tools:
 clean:
 	-$(RM) $(main_programs)
 	-$(RM) $(main_objects)
-	-$(RM) $(check_programs)
-	-$(RM) $(check_objects)
 	-$(RM) $(all_depends)
-	-$(RM) $(sample_outputs)
 	-$(RM) $(pyc_files)
+	@$(MAKE) -C scenes $@
+	@$(MAKE) -C tests $@
 
 ifneq "$(MAKECMDGOALS)" "clean"
 -include $(dependencies)

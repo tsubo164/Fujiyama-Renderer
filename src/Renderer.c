@@ -357,7 +357,7 @@ static int render_scene(struct Renderer *renderer)
 		render_state = -1;
 		goto cleanup_and_exit;
 	}
-	elapse = TimerElapsed(&timer);
+	elapse = TimerGetElapse(&timer);
 	printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
 
 	/* Run sampling */
@@ -445,7 +445,7 @@ static int render_scene(struct Renderer *renderer)
 				(int ) ((tile->id+1) / (double )TlrGetTileCount(tiler) * 100));
 		PrgDone(progress);
 	}
-	elapse = TimerElapsed(&timer);
+	elapse = TimerGetElapse(&timer);
 	printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
 
 cleanup_and_exit:

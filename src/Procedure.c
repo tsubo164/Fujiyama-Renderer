@@ -82,7 +82,7 @@ int PrcRun(struct Procedure *procedure)
 
 	err = procedure->vptr->MyRun(procedure->self);
 
-	elapse = TimerElapsed(&timer);
+	elapse = TimerGetElapse(&timer);
 
 	if (err) {
 		printf("Error: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);

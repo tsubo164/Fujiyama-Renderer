@@ -24,7 +24,7 @@ struct Elapse {
 };
 
 extern void TimerStart(struct Timer *t);
-extern struct Elapse TimerElapsed(const struct Timer *t);
+extern struct Elapse TimerGetElapse(const struct Timer *t);
 
 #ifdef __cplusplus
 } /* extern "C" */

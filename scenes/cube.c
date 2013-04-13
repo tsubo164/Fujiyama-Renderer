@@ -65,7 +65,7 @@ int main(int argc, const char **argv)
 	}
 
 	/* Mesh and Accelerator */
-	mesh = SiNewMesh("scenes/cube.mesh");
+	mesh = SiNewMesh("cube.mesh");
 	if (mesh == SI_BADID) {
 		/* TODO error handling */
 		/*
@@ -102,7 +102,7 @@ int main(int argc, const char **argv)
 
 	/* Render scene */
 	SiRenderScene(renderer);
-	SiSaveFrameBuffer(framebuffer, "scenes/cube.fb");
+	SiSaveFrameBuffer(framebuffer, "cube.fb");
 	SiCloseScene();
 
 	return 0;

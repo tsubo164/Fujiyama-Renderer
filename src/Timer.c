@@ -11,7 +11,7 @@ void TimerStart(struct Timer *t)
 	time(&t->start_time);
 }
 
-struct Elapse TimerElapsed(const struct Timer *t)
+struct Elapse TimerGetElapse(const struct Timer *t)
 {
 	const clock_t end_clock = clock();
 	struct Elapse elapse;
