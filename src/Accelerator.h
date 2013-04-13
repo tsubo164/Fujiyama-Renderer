@@ -24,6 +24,7 @@ struct Ray;
 extern struct Accelerator *AccNew(int accelerator_type);
 extern void AccFree(struct Accelerator *acc);
 
+extern double AccGetBoundsPadding(void);
 extern void AccGetBounds(const struct Accelerator *acc, struct Box *bounds);
 extern void AccSetPrimitiveSet(struct Accelerator *acc, const struct PrimitiveSet *primset);
 
@@ -32,7 +33,7 @@ extern int AccBuild(struct Accelerator *acc);
 extern int AccIntersect(const struct Accelerator *acc, double time,
 		const struct Ray *ray, struct Intersection *isect);
 
-/* data structure and functions for derived */
+/* data structure and functions for derived accelerators */
 typedef char * DerivedAccelerator;
 
 typedef DerivedAccelerator (*NewDerivedFunction)(void);

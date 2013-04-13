@@ -5,7 +5,7 @@ See LICENSE and README
 
 #include "Filter.h"
 #include "Memory.h"
-#include <stdlib.h>
+
 #include <assert.h>
 #include <math.h>
 
