@@ -1,0 +1,17 @@
+Fujiyama Renderer v0.1.5(Alpha) Release Notes
+=============================================
+
+New features since v0.1.4
+-------------------------
+ * Divided accelerator file into individual accelerator files.
+
+ * Separated Makefiles for unit testing and rendering cube sample scene.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Deep shadow
+ * Displacement shader
+ * Subdivision surface
+ * Alembic support
