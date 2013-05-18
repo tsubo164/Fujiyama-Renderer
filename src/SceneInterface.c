@@ -26,6 +26,7 @@ enum EntryType {
 	Type_Accelerator,
 	Type_FrameBuffer,
 	Type_ObjectGroup,
+	Type_PointCloud,
 	Type_Turbulence,
 	Type_Procedure,
 	Type_Renderer,
@@ -355,6 +356,57 @@ ID SiNewObjectGroup(void)
 
 	set_errno(SI_ERR_NONE);
 	return encode_id(Type_ObjectGroup, GET_LAST_ADDED_ID(ObjectGroup));
+}
+
+ID SiNewPointCloud(void)
+{
+	struct PointCloud *ptc = NULL;
+	struct Accelerator *acc = NULL;
+	struct PrimitiveSet primset;
+
+	ID ptc_id = SI_BADID;
+	ID accel_id = SI_BADID;
+
+	ptc = ScnNewPointCloud(get_scene());
+	if (ptc == NULL) {
+		set_errno(SI_ERR_NO_MEMORY);
+		return SI_BADID;
+	}
+	/*
+	if (strcmp(filename, "null") == 0) {
+		MshClear(ptc);
+	} else {
+		if (MshLoadFile(ptc, filename)) {
+			set_errno(SI_ERR_FAILLOAD);
+			return SI_BADID;
+		}
+	}
+	*/
+
+	acc = ScnNewAccelerator(get_scene(), ACC_GRID);
+	if (acc == NULL) {
+		set_errno(SI_ERR_NO_MEMORY);
+		return SI_BADID;
+	}
+
+	PtcGetPrimitiveSet(ptc, &primset);
+	AccSetPrimitiveSet(acc, &primset);
+
+	ptc_id = encode_id(Type_PointCloud, GET_LAST_ADDED_ID(PointCloud));
+	accel_id = encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
+	push_idmap_endtry(ptc_id, accel_id);
+
+	set_errno(SI_ERR_NONE);
+	return ptc_id;
+#if 0
+	if (ScnNewPointCloud(get_scene()) == NULL) {
+		set_errno(SI_ERR_NO_MEMORY);
+		return SI_BADID;
+	}
+
+	set_errno(SI_ERR_NONE);
+	return encode_id(Type_PointCloud, GET_LAST_ADDED_ID(PointCloud));
+#endif
 }
 
 ID SiNewTurbulence(void)

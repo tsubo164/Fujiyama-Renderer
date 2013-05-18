@@ -50,6 +50,7 @@ struct Scene {
 	struct Array *AcceleratorList;
 	struct Array *FrameBufferList;
 	struct Array *ObjectGroupList;
+	struct Array *PointCloudList;
 	struct Array *TurbulenceList;
 	struct Array *ProcedureList;
 	struct Array *RendererList;
@@ -111,6 +112,12 @@ struct FrameBuffer *ScnNewFrameBuffer(struct Scene *scene)
 struct ObjectGroup *ScnNewObjectGroup(struct Scene *scene)
 {
 	return (struct ObjectGroup *) push_entry(scene->ObjectGroupList, ObjGroupNew());
+}
+
+/* PointCloud */
+struct PointCloud *ScnNewPointCloud(struct Scene *scene)
+{
+	return (struct PointCloud *) push_entry(scene->PointCloudList, PtcNew());
 }
 
 /* Turbulence */
@@ -183,6 +190,7 @@ DEFINE_LIST_FUNCTIONS(ObjectInstance)
 DEFINE_LIST_FUNCTIONS(Accelerator)
 DEFINE_LIST_FUNCTIONS(FrameBuffer)
 DEFINE_LIST_FUNCTIONS(ObjectGroup)
+DEFINE_LIST_FUNCTIONS(PointCloud)
 DEFINE_LIST_FUNCTIONS(Turbulence)
 DEFINE_LIST_FUNCTIONS(Procedure)
 DEFINE_LIST_FUNCTIONS(Renderer)
@@ -201,6 +209,7 @@ static void new_all_node_list(struct Scene *scene)
 	NEW_LIST(scene, Accelerator);
 	NEW_LIST(scene, FrameBuffer);
 	NEW_LIST(scene, ObjectGroup);
+	NEW_LIST(scene, PointCloud);
 	NEW_LIST(scene, Turbulence);
 	NEW_LIST(scene, Procedure);
 	NEW_LIST(scene, Renderer);
@@ -220,6 +229,7 @@ static void free_all_node_list(struct Scene *scene)
 	FREE_LIST(scene, Accelerator, AccFree);
 	FREE_LIST(scene, FrameBuffer, FbFree);
 	FREE_LIST(scene, ObjectGroup, ObjGroupFree);
+	FREE_LIST(scene, PointCloud, PtcFree);
 	FREE_LIST(scene, Turbulence, TrbFree);
 	FREE_LIST(scene, Procedure, PrcFree);
 	FREE_LIST(scene, Renderer, RdrFree);

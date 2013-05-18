@@ -79,8 +79,8 @@ tgtdir_  := lib
 files_   := Accelerator Array Box BVHAccelerator Camera Color Curve CurveIO Filter \
 	FrameBuffer FrameBufferIO GridAccelerator ImportanceSampling Interval IO Light \
 	Matrix Mesh MeshIO Mipmap Noise Numeric ObjectGroup ObjectInstance OS Plugin \
-	PrimitiveSet Procedure Progress Property Random Renderer Sampler Scene \
-	SceneInterface Shader String SL TexCoord Texture Tiler Timer Transform \
+	PointCloud PrimitiveSet Procedure Progress Property Random Renderer Sampler \
+	Scene SceneInterface Shader String SL TexCoord Texture Tiler Timer Transform \
 	Triangle Turbulence Vector Volume VolumeAccelerator VolumeFilling
 
 subtgt_  := libscene.so

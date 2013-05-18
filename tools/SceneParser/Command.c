@@ -105,6 +105,18 @@ static struct CommandResult NewObjectGroup_run(const struct CommandArgument *arg
 	return result;
 }
 
+/* NewPointCloud */
+static const int NewPointCloud_args[] = {
+	ARG_COMMAND_NAME,
+	ARG_NEW_ENTRY_ID};
+static struct CommandResult NewPointCloud_run(const struct CommandArgument *args)
+{
+	struct CommandResult result = INIT_COMMAND_RESULT;
+	result.new_entry_id = SiNewPointCloud();
+	result.new_entry_name = args[1].str;
+	return result;
+}
+
 /* NewTurbulence */
 static const int NewTurbulence_args[] = {
 	ARG_COMMAND_NAME,
@@ -448,6 +460,7 @@ static const struct Command command_list[] = {
 	REGISTER_COMMAND(NewObjectInstance),
 	REGISTER_COMMAND(NewFrameBuffer),
 	REGISTER_COMMAND(NewObjectGroup),
+	REGISTER_COMMAND(NewPointCloud),
 	REGISTER_COMMAND(NewTurbulence),
 	REGISTER_COMMAND(NewProcedure),
 	REGISTER_COMMAND(NewRenderer),

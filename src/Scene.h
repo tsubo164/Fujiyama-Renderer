@@ -10,6 +10,7 @@ See LICENSE and README
 #include "Accelerator.h"
 #include "FrameBuffer.h"
 #include "ObjectGroup.h"
+#include "PointCloud.h"
 #include "Turbulence.h"
 #include "Procedure.h"
 #include "Renderer.h"
@@ -55,6 +56,12 @@ extern struct ObjectGroup *ScnNewObjectGroup(struct Scene *scene);
 extern struct ObjectGroup **ScnGetObjectGroupList(const struct Scene *scene);
 extern struct ObjectGroup *ScnGetObjectGroup(const struct Scene *scene, int index);
 extern size_t ScnGetObjectGroupCount(const struct Scene *scene);
+
+/* PointCloud */
+extern struct PointCloud *ScnNewPointCloud(struct Scene *scene);
+extern struct PointCloud **ScnGetPointCloudList(const struct Scene *scene);
+extern struct PointCloud *ScnGetPointCloud(const struct Scene *scene, int index);
+extern size_t ScnGetPointCloudCount(const struct Scene *scene);
 
 /* Turbulence */
 extern struct Turbulence *ScnNewTurbulence(struct Scene *scene);
