@@ -139,6 +139,7 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
 	isect->N.x = isect->P.x - center->x;
 	isect->N.y = isect->P.y - center->y;
 	isect->N.z = isect->P.z - center->z;
+	VEC3_NORMALIZE(&isect->N);
 
 	isect->object = NULL;
 	isect->prim_id = prim_id;

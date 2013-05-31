@@ -398,15 +398,6 @@ ID SiNewPointCloud(void)
 
 	set_errno(SI_ERR_NONE);
 	return ptc_id;
-#if 0
-	if (ScnNewPointCloud(get_scene()) == NULL) {
-		set_errno(SI_ERR_NO_MEMORY);
-		return SI_BADID;
-	}
-
-	set_errno(SI_ERR_NONE);
-	return encode_id(Type_PointCloud, GET_LAST_ADDED_ID(PointCloud));
-#endif
 }
 
 ID SiNewTurbulence(void)

@@ -79,9 +79,9 @@ tgtdir_  := lib
 files_   := Accelerator Array Box BVHAccelerator Camera Color Curve CurveIO Filter \
 	FrameBuffer FrameBufferIO GridAccelerator ImportanceSampling Interval IO Light \
 	Matrix Mesh MeshIO Mipmap Noise Numeric ObjectGroup ObjectInstance OS Plugin \
-	PointCloud PrimitiveSet Procedure Progress Property Random Renderer Sampler \
-	Scene SceneInterface Shader String SL TexCoord Texture Tiler Timer Transform \
-	Triangle Turbulence Vector Volume VolumeAccelerator VolumeFilling
+	PointCloud PointCloudIO PrimitiveSet Procedure Progress Property Random Renderer \
+	Sampler Scene SceneInterface Shader String SL TexCoord Texture Tiler Timer \
+	Transform Triangle Turbulence Vector Volume VolumeAccelerator VolumeFilling
 
 subtgt_  := libscene.so
 cflags_  := -fPIC
@@ -218,6 +218,16 @@ srcdir_  := tools/obj2mesh
 tgtdir_  := bin
 files_   := main ObjParser
 subtgt_  := obj2mesh
+cflags_  :=
+ldflags_ := -lscene
+$(eval $(call submodule))
+
+install_bin += $(subtgt_)
+
+srcdir_  := tools/mesh2ptc
+tgtdir_  := bin
+files_   := main
+subtgt_  := mesh2ptc
 cflags_  :=
 ldflags_ := -lscene
 $(eval $(call submodule))
