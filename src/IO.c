@@ -88,20 +88,31 @@ int ChkGetElementCount(const struct ChunkData *chunk)
 	return chunk->element_count;
 }
 
+typedef unsigned char Endian;
+typedef unsigned char FmtVer;
+enum { IO_LITTLE_ENDIAN = 0x10, IO_BIG_ENDIAN = 0x11 };
+#define INFO_N_PADDINGS (12-2)
+#define INFO_PADDING '*'
+struct FileInfo {
+	char magic[MAGIC_SIZE];
+	Endian endian;
+	FmtVer fmtver;
+};
 static int copy_magic_number(char *dst, const char *src);
-static int read_magic_number(struct InputFile *in);
-static int write_magic_number(struct OutputFile *out);
 
-static int write_chunk_info(FILE *file, const struct ChunkData *chunk);
-static int write_chunk_data(FILE *file, const struct ChunkData *chunk);
+static int read_file_info(FILE *file, struct FileInfo *info);
+static int write_file_info(FILE *file, struct FileInfo *info);
 
 static int read_chunk_info(FILE *file, struct ChunkData *chunk);
+static int write_chunk_info(FILE *file, const struct ChunkData *chunk);
+
 static int read_chunk_data(FILE *file, struct ChunkData *chunk);
+static int write_chunk_data(FILE *file, const struct ChunkData *chunk);
 
 /* InputFile */
 struct InputFile {
 	FILE *file;
-	char magic[MAGIC_SIZE];
+	struct FileInfo info;
 
 	struct Array *header_chunks;
 	struct Array *data_chunks;
@@ -127,12 +138,12 @@ struct InputFile *IOOpenInputFile(const char *filename, const char *magic)
 	in->data_chunks = ArrNew(sizeof(struct ChunkData));
 	in->is_header_ended = 0;
 
-	err = read_magic_number(in);
+	err = read_file_info(in->file, &in->info);
 	if (err) {
 		IOCloseInputFile(in);
 		return NULL;
 	}
-	if (memcmp(in->magic, magic, MAGIC_SIZE) != 0) {
+	if (memcmp(in->info.magic, magic, MAGIC_SIZE) != 0) {
 		IOCloseInputFile(in);
 		return NULL;
 	}
@@ -175,10 +186,15 @@ const struct ChunkData *IOGetInputHeaderChunk(const struct InputFile *in, int in
 
 const struct ChunkData *IOGetInputDataChunk(const struct InputFile *in, int index)
 {
-	if (index < 0 || index > IOGetInputDataChunkCount(in)) {
+	if (index < 0 || index >= IOGetInputDataChunkCount(in)) {
 		return NULL;
 	}
 	return (const struct ChunkData *) ArrGet(in->data_chunks, index);
+}
+
+int IOGetInputFileFormatVersion(const struct InputFile *in)
+{
+	return in->info.fmtver;
 }
 
 void IOEndInputHeader(struct InputFile *in)
@@ -193,15 +209,10 @@ int IOReadInputHeader(struct InputFile *in)
 	size_t nreads = 0;
 	int i;
 
-	for (i = 0; i < 12; i++) {
-		char c = '\0';
-		nreads = fread(&c, sizeof(c), 1, in->file);
-	}
-
 	nreads = fread(&header_chunk_count, sizeof(header_chunk_count), 1, in->file);
 	nreads = fread(&data_chunk_count,   sizeof(data_chunk_count),   1, in->file);
 
-	for (i = 0; i < in->header_chunks->nelems; i++) {
+	for (i = 0; i < IOGetInputHeaderChunkCount(in); i++) {
 		struct ChunkData *chunk = (struct ChunkData *) ArrGet(in->header_chunks, i);
 		read_chunk_data(in->file, chunk);
 	}
@@ -217,7 +228,7 @@ int IOReadInputHeader(struct InputFile *in)
 
 int IOReadInputData(struct InputFile *in)
 {
-	int n_chunks = 0;
+	int data_chunk_count = 0;
 	int i;
 
 	if (in == NULL) {
@@ -228,9 +239,9 @@ int IOReadInputData(struct InputFile *in)
 		return -1;
 	}
 
-	n_chunks = in->data_chunks->nelems;
+	data_chunk_count = IOGetInputDataChunkCount(in);
 
-	for (i = 0; i < n_chunks; i++) {
+	for (i = 0; i < data_chunk_count; i++) {
 		struct ChunkData *chunk = (struct ChunkData *) ArrGet(in->data_chunks, i);
 		read_chunk_data(in->file, chunk);
 	}
@@ -241,14 +252,15 @@ int IOReadInputData(struct InputFile *in)
 /* OutputFile */
 struct OutputFile {
 	FILE *file;
-	char magic[MAGIC_SIZE];
+	struct FileInfo info;
 
 	struct Array *header_chunks;
 	struct Array *data_chunks;
 	int is_header_ended;
 };
 
-struct OutputFile *IOOpenOutputFile(const char *filename, const char *magic)
+struct OutputFile *IOOpenOutputFile(const char *filename,
+		const char *magic, int format_version)
 {
 	struct OutputFile *out = MEM_ALLOC(struct OutputFile);
 
@@ -266,7 +278,14 @@ struct OutputFile *IOOpenOutputFile(const char *filename, const char *magic)
 	out->data_chunks = ArrNew(sizeof(struct ChunkData));
 	out->is_header_ended = 0;
 
-	if (copy_magic_number(out->magic, magic)) {
+	if (copy_magic_number(out->info.magic, magic)) {
+		IOCloseOutputFile(out);
+		return NULL;
+	}
+	/* TODO detect endian */
+	out->info.endian = IO_LITTLE_ENDIAN;
+	out->info.fmtver = format_version;
+	if (format_version > 127) {
 		IOCloseOutputFile(out);
 		return NULL;
 	}
@@ -296,7 +315,8 @@ void IOEndOutputHeader(struct OutputFile *out)
 
 int IOWriteOutputHeader(struct OutputFile *out)
 {
-	int element_count = 0;
+	int header_chunk_count = 0;
+	int data_chunk_count = 0;
 	int err = 0;
 	int i;
 
@@ -308,29 +328,24 @@ int IOWriteOutputHeader(struct OutputFile *out)
 		return -1;
 	}
 
-	err = write_magic_number(out);
+	err = write_file_info(out->file, &out->info);
 	if (err) {
 		return -1;
 	}
 
-	for (i = 0; i < 12; i++) {
-		const char c = '*';
-		fwrite(&c, sizeof(c), 1, out->file);
-	}
+	header_chunk_count = out->header_chunks->nelems;
+	fwrite(&header_chunk_count, sizeof(header_chunk_count), 1, out->file);
 
-	element_count = out->header_chunks->nelems;
-	fwrite(&element_count, sizeof(element_count), 1, out->file);
+	data_chunk_count = out->data_chunks->nelems;
+	fwrite(&data_chunk_count, sizeof(data_chunk_count), 1, out->file);
 
-	element_count = out->data_chunks->nelems;
-	fwrite(&element_count, sizeof(element_count), 1, out->file);
-
-	for (i = 0; i < out->header_chunks->nelems; i++) {
+	for (i = 0; i < header_chunk_count; i++) {
 		const struct ChunkData *chunk =
 				(const struct ChunkData *) ArrGet(out->header_chunks, i);
 		write_chunk_data(out->file, chunk);
 	}
 
-	for (i = 0; i < out->data_chunks->nelems; i++) {
+	for (i = 0; i < data_chunk_count; i++) {
 		const struct ChunkData *chunk =
 				(const struct ChunkData *) ArrGet(out->data_chunks, i);
 		write_chunk_info(out->file, chunk);
@@ -341,6 +356,7 @@ int IOWriteOutputHeader(struct OutputFile *out)
 
 int IOWriteOutputData(struct OutputFile *out)
 {
+	int data_chunk_count = 0;
 	int i;
 
 	if (out == NULL) {
@@ -351,7 +367,9 @@ int IOWriteOutputData(struct OutputFile *out)
 		return -1;
 	}
 
-	for (i = 0; i < out->data_chunks->nelems; i++) {
+	data_chunk_count = out->data_chunks->nelems;
+
+	for (i = 0; i < data_chunk_count; i++) {
 		const struct ChunkData *chunk =
 				(const struct ChunkData *) ArrGet(out->data_chunks, i);
 		write_chunk_data(out->file, chunk);
@@ -367,7 +385,7 @@ void IOSetInputInt(struct InputFile *in,
 {
 	if (in->is_header_ended) {
 		int i;
-		for (i = 0; i < in->data_chunks->nelems; i++) {
+		for (i = 0; i < IOGetInputDataChunkCount(in); i++) {
 			struct ChunkData *chk = (struct ChunkData *) ArrGet(in->data_chunks, i);
 			if (strcmp(chk->element_name, element_name) == 0) {
 				chk->dst_data = (dst_ptr) dst_data;
@@ -391,7 +409,7 @@ void IOSetInputDouble(struct InputFile *in,
 {
 	if (in->is_header_ended) {
 		int i;
-		for (i = 0; i < in->data_chunks->nelems; i++) {
+		for (i = 0; i < IOGetInputDataChunkCount(in); i++) {
 			struct ChunkData *chk = (struct ChunkData *) ArrGet(in->data_chunks, i);
 			if (strcmp(chk->element_name, element_name) == 0) {
 				chk->dst_data = (dst_ptr) dst_data;
@@ -415,7 +433,7 @@ void IOSetInputVector3(struct InputFile *in,
 {
 	if (in->is_header_ended) {
 		int i;
-		for (i = 0; i < in->data_chunks->nelems; i++) {
+		for (i = 0; i < IOGetInputDataChunkCount(in); i++) {
 			struct ChunkData *chk = (struct ChunkData *) ArrGet(in->data_chunks, i);
 			if (strcmp(chk->element_name, element_name) == 0) {
 				chk->dst_data = (dst_ptr) dst_data;
@@ -498,75 +516,65 @@ static int copy_magic_number(char *dst, const char *src)
 	return 0;
 }
 
-static int read_magic_number(struct InputFile *in)
+static int read_file_info(FILE *file, struct FileInfo *info)
 {
-	const size_t nreads = fread(in->magic, sizeof(char), MAGIC_SIZE, in->file);
+	size_t nreads = 0;
+	int err = 0;
 
+	nreads = fread(info->magic, sizeof(char), MAGIC_SIZE, file);
 	if (nreads != MAGIC_SIZE) {
 		return -1;
 	}
 
-	return 0;
-}
+	nreads = fread(&info->endian, sizeof(info->endian), 1, file);
+	if (nreads != 1) {
+		return -1;
+	}
 
-static int write_magic_number(struct OutputFile *out)
-{
-	const size_t nwrotes = fwrite(out->magic, sizeof(char), MAGIC_SIZE, out->file);
+	nreads = fread(&info->fmtver, sizeof(info->fmtver), 1, file);
+	if (nreads != 1) {
+		return -1;
+	}
 
-	if (nwrotes != MAGIC_SIZE) {
+	/* skip padding */
+	err = fseek(file, INFO_N_PADDINGS, SEEK_CUR);
+	if (err) {
+		/* TODO error handling */
 		return -1;
 	}
 
 	return 0;
 }
 
-static int write_chunk_info(FILE *file, const struct ChunkData *chunk)
+static int write_file_info(FILE *file, struct FileInfo *info)
 {
-	const NameSize namesize = (NameSize) strlen(chunk->element_name) + 1;
-
-	fwrite(&namesize, sizeof(namesize), 1, file);
-	fwrite(chunk->element_name, sizeof(char), namesize, file);
-	fwrite(&chunk->element_type, sizeof(chunk->element_type), 1, file);
-	fwrite(&chunk->element_count, sizeof(chunk->element_count), 1, file);
-
-	return 0;
-}
-
-static int write_chunk_data(FILE *file, const struct ChunkData *chunk)
-{
-	const int NELEMS = chunk->element_count;
+	size_t nwrotes = 0;
 	int i;
 
-	switch (chunk->element_type) {
+	nwrotes = fwrite(info->magic, sizeof(char), MAGIC_SIZE, file);
+	if (nwrotes != MAGIC_SIZE) {
+		return -1;
+	}
 
-	case ELM_INT: {
-		const int *src_data = (const int *) chunk->src_data;
-		for (i = 0; i < NELEMS; i++) {
-			fwrite(&src_data[i], sizeof(*src_data), 1, file);
-		}
-		}
-		break;
+	nwrotes = fwrite(&info->endian, sizeof(info->endian), 1, file);
+	if (nwrotes != 1) {
+		/* TODO error handling */
+		return -1;
+	}
 
-	case ELM_DOUBLE: {
-		const double *src_data = (const double *) chunk->src_data;
-		for (i = 0; i < NELEMS; i++) {
-			fwrite(&src_data[i], sizeof(*src_data), 1, file);
-		}
-		}
-		break;
+	nwrotes = fwrite(&info->fmtver, sizeof(info->fmtver), 1, file);
+	if (nwrotes != 1) {
+		/* TODO error handling */
+		return -1;
+	}
 
-	case ELM_VECTOR3: {
-		const struct Vector *src_data = (const struct Vector *) chunk->src_data;
-		for (i = 0; i < NELEMS; i++) {
-			fwrite(&src_data[i].x, sizeof(*src_data), 1, file);
-			fwrite(&src_data[i].y, sizeof(*src_data), 1, file);
-			fwrite(&src_data[i].z, sizeof(*src_data), 1, file);
+	for (i = 0; i < INFO_N_PADDINGS; i++) {
+		char c = INFO_PADDING;
+		nwrotes = fwrite(&c, sizeof(c), 1, file);
+		if (nwrotes != 1) {
+			/* TODO error handling */
+			return -1;
 		}
-		}
-		break;
-
-	default:
-		break;
 	}
 
 	return 0;
@@ -581,6 +589,18 @@ static int read_chunk_info(FILE *file, struct ChunkData *chunk)
 	nread = fread(chunk->element_name, sizeof(char), namesize, file);
 	nread = fread(&chunk->element_type, sizeof(chunk->element_type), 1, file);
 	nread = fread(&chunk->element_count, sizeof(chunk->element_count), 1, file);
+
+	return 0;
+}
+
+static int write_chunk_info(FILE *file, const struct ChunkData *chunk)
+{
+	const NameSize namesize = (NameSize) strlen(chunk->element_name) + 1;
+
+	fwrite(&namesize, sizeof(namesize), 1, file);
+	fwrite(chunk->element_name, sizeof(char), namesize, file);
+	fwrite(&chunk->element_type, sizeof(chunk->element_type), 1, file);
+	fwrite(&chunk->element_count, sizeof(chunk->element_count), 1, file);
 
 	return 0;
 }
@@ -621,6 +641,46 @@ static int read_chunk_data(FILE *file, struct ChunkData *chunk)
 			nreads = fread(&dst_data[i].x, sizeof(*dst_data), 1, file);
 			nreads = fread(&dst_data[i].y, sizeof(*dst_data), 1, file);
 			nreads = fread(&dst_data[i].z, sizeof(*dst_data), 1, file);
+		}
+		}
+		break;
+
+	default:
+		break;
+	}
+
+	return 0;
+}
+
+static int write_chunk_data(FILE *file, const struct ChunkData *chunk)
+{
+	const int NELEMS = chunk->element_count;
+	int i;
+
+	switch (chunk->element_type) {
+
+	case ELM_INT: {
+		const int *src_data = (const int *) chunk->src_data;
+		for (i = 0; i < NELEMS; i++) {
+			fwrite(&src_data[i], sizeof(*src_data), 1, file);
+		}
+		}
+		break;
+
+	case ELM_DOUBLE: {
+		const double *src_data = (const double *) chunk->src_data;
+		for (i = 0; i < NELEMS; i++) {
+			fwrite(&src_data[i], sizeof(*src_data), 1, file);
+		}
+		}
+		break;
+
+	case ELM_VECTOR3: {
+		const struct Vector *src_data = (const struct Vector *) chunk->src_data;
+		for (i = 0; i < NELEMS; i++) {
+			fwrite(&src_data[i].x, sizeof(*src_data), 1, file);
+			fwrite(&src_data[i].y, sizeof(*src_data), 1, file);
+			fwrite(&src_data[i].z, sizeof(*src_data), 1, file);
 		}
 		}
 		break;

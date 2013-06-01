@@ -38,6 +38,7 @@ extern int IOGetInputHeaderChunkCount(const struct InputFile *in);
 extern int IOGetInputDataChunkCount(const struct InputFile *in);
 extern const struct ChunkData *IOGetInputHeaderChunk(const struct InputFile *in, int index);
 extern const struct ChunkData *IOGetInputDataChunk(const struct InputFile *in, int index);
+extern int IOGetInputFileFormatVersion(const struct InputFile *in);
 
 extern void IOEndInputHeader(struct InputFile *in);
 extern int IOReadInputHeader(struct InputFile *in);
@@ -59,7 +60,8 @@ extern void IOSetInputVector3(struct InputFile *in,
 		int element_count);
 
 /* OutputFile */
-extern struct OutputFile *IOOpenOutputFile(const char *filename, const char *magic);
+extern struct OutputFile *IOOpenOutputFile(const char *filename,
+		const char *magic, int format_version);
 extern void IOCloseOutputFile(struct OutputFile *out);
 
 extern void IOEndOutputHeader(struct OutputFile *out);
