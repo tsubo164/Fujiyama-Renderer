@@ -258,6 +258,11 @@ void MshSetFaceVertexIndices(struct Mesh *mesh, int face_index,
 	mesh->indices[face_index] = *tri_index;
 }
 
+void MshGetVertexPosition(struct Mesh *mesh, int index, struct Vector *P)
+{
+	*P = mesh->P[index];
+}
+
 int MshGetVertexCount(const struct Mesh *mesh)
 {
 	return mesh->nverts;

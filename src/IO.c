@@ -90,7 +90,7 @@ int ChkGetElementCount(const struct ChunkData *chunk)
 
 typedef unsigned char Endian;
 typedef unsigned char FmtVer;
-enum { IO_LITTLE_ENDIAN = 0x10, IO_BIG_ENDIAN = 0x11 };
+enum { IO_LITTLE_ENDIAN = 0x00, IO_BIG_ENDIAN = 0x01 };
 #define INFO_N_PADDINGS (12-2)
 #define INFO_PADDING '*'
 struct FileInfo {
@@ -257,6 +257,7 @@ struct OutputFile {
 	struct Array *header_chunks;
 	struct Array *data_chunks;
 	int is_header_ended;
+	int is_written;
 };
 
 struct OutputFile *IOOpenOutputFile(const char *filename,
@@ -277,6 +278,7 @@ struct OutputFile *IOOpenOutputFile(const char *filename,
 	out->header_chunks = ArrNew(sizeof(struct ChunkData));
 	out->data_chunks = ArrNew(sizeof(struct ChunkData));
 	out->is_header_ended = 0;
+	out->is_written = 0;
 
 	if (copy_magic_number(out->info.magic, magic)) {
 		IOCloseOutputFile(out);
@@ -297,6 +299,10 @@ void IOCloseOutputFile(struct OutputFile *out)
 {
 	if (out == NULL) {
 		return;
+	}
+
+	if (out->is_written == 0) {
+		IOWriteOutputHeader(out);
 	}
 
 	if (out->file != NULL) {
@@ -350,6 +356,8 @@ int IOWriteOutputHeader(struct OutputFile *out)
 				(const struct ChunkData *) ArrGet(out->data_chunks, i);
 		write_chunk_info(out->file, chunk);
 	}
+
+	out->is_written = 1;
 
 	return 0;
 }
@@ -638,9 +646,9 @@ static int read_chunk_data(FILE *file, struct ChunkData *chunk)
 		size_t nreads = 0;
 		struct Vector *dst_data = (struct Vector *) chunk->dst_data;
 		for (i = 0; i < NELEMS; i++) {
-			nreads = fread(&dst_data[i].x, sizeof(*dst_data), 1, file);
-			nreads = fread(&dst_data[i].y, sizeof(*dst_data), 1, file);
-			nreads = fread(&dst_data[i].z, sizeof(*dst_data), 1, file);
+			nreads = fread(&dst_data[i].x, sizeof(dst_data[i].x), 1, file);
+			nreads = fread(&dst_data[i].y, sizeof(dst_data[i].y), 1, file);
+			nreads = fread(&dst_data[i].z, sizeof(dst_data[i].z), 1, file);
 		}
 		}
 		break;
@@ -678,9 +686,9 @@ static int write_chunk_data(FILE *file, const struct ChunkData *chunk)
 	case ELM_VECTOR3: {
 		const struct Vector *src_data = (const struct Vector *) chunk->src_data;
 		for (i = 0; i < NELEMS; i++) {
-			fwrite(&src_data[i].x, sizeof(*src_data), 1, file);
-			fwrite(&src_data[i].y, sizeof(*src_data), 1, file);
-			fwrite(&src_data[i].z, sizeof(*src_data), 1, file);
+			fwrite(&src_data[i].x, sizeof(src_data[i].x), 1, file);
+			fwrite(&src_data[i].y, sizeof(src_data[i].y), 1, file);
+			fwrite(&src_data[i].z, sizeof(src_data[i].z), 1, file);
 		}
 		}
 		break;

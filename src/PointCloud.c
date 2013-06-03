@@ -23,7 +23,7 @@ static int point_count(const void *prim_set);
 static void update_bounds(struct PointCloud *ptc);
 
 struct PointCloud {
-	int npoints;
+	int point_count;
 	struct Vector *P;
 	double *radius;
 
@@ -38,11 +38,12 @@ struct PointCloud *PtcNew(void)
 	if (ptc == NULL)
 		return NULL;
 
-	ptc->npoints = 0;
+	ptc->point_count = 0;
 	ptc->P = NULL;
 	BOX3_SET(&ptc->bounds, 0, 0, 0, 0, 0, 0);
 
 	/* TODO TEST */
+#if 0
 	PtcAllocatePoint(ptc, 1);
 	ptc->P[0].x = 0;
 	ptc->P[0].y = 0;
@@ -50,6 +51,7 @@ struct PointCloud *PtcNew(void)
 	ptc->radius = (double *) malloc(sizeof(double) * 1);
 	ptc->radius[0] = .5;
 	update_bounds(ptc);
+#endif
 
 	return ptc;
 }
@@ -65,23 +67,53 @@ void PtcFree(struct PointCloud *ptc)
 	MEM_FREE(ptc);
 }
 
-void PtcAllocatePoint(struct PointCloud *ptc, int npoints)
+void PtcAllocatePoint(struct PointCloud *ptc, int point_count)
 {
 	struct Vector *P_tmp = NULL;
 
 	if (ptc == NULL)
 		return;
 
-	if (npoints < 1)
+	if (point_count < 1)
 		return;
 
-	P_tmp = VecRealloc(ptc->P, npoints);
+	P_tmp = VecRealloc(ptc->P, point_count);
 	if (P_tmp == NULL)
 		return;
 
 	/* commit */
 	ptc->P = P_tmp;
-	ptc->npoints = npoints;
+	ptc->point_count = point_count;
+
+	{
+		/* TODO TEST */
+		int i;
+		ptc->radius = MEM_ALLOC_ARRAY(double, point_count);
+		for (i = 0; i < point_count; i++) {
+			ptc->radius[i] = .02;
+		}
+	}
+}
+
+void PtcSetPosition(struct PointCloud *ptc, int index, const struct Vector *P)
+{
+	if (index < 0 && index >= ptc->point_count) {
+		return;
+	}
+	ptc->P[index] = *P;
+}
+
+void PtcGetPosition(const struct PointCloud *ptc, int index, struct Vector *P)
+{
+	if (index < 0 && index >= ptc->point_count) {
+		return;
+	}
+	*P = ptc->P[index];
+}
+
+void PtcComputeBounds(struct PointCloud *ptc)
+{
+	update_bounds(ptc);
 }
 
 void PtcGetPrimitiveSet(const struct PointCloud *ptc, struct PrimitiveSet *primset)
@@ -172,7 +204,7 @@ static void point_cloud_bounds(const void *prim_set, struct Box *bounds)
 static int point_count(const void *prim_set)
 {
 	const struct PointCloud *ptc = (const struct PointCloud *) prim_set;
-	return ptc->npoints;
+	return ptc->point_count;
 }
 
 static void update_bounds(struct PointCloud *ptc)
@@ -181,7 +213,7 @@ static void update_bounds(struct PointCloud *ptc)
 
 	BOX3_SET(&ptc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX); 
 
-	for (i = 0; i < ptc->npoints; i++) {
+	for (i = 0; i < ptc->point_count; i++) {
 		const struct Vector *P = &ptc->P[i];
 		const double radius = ptc->radius[i];
 		struct Box ptbox;

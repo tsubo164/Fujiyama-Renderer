@@ -73,7 +73,7 @@ extern Status SiAddObjectToGroup(ID group, ID object);
 extern ID SiNewObjectInstance(ID primset_id);
 extern ID SiNewFrameBuffer(const char *arg);
 extern ID SiNewObjectGroup(void);
-extern ID SiNewPointCloud(void);
+extern ID SiNewPointCloud(const char *filename);
 extern ID SiNewTurbulence(void);
 extern ID SiNewProcedure(const char *plugin_name);
 extern ID SiNewRenderer(void);

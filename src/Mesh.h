@@ -45,6 +45,8 @@ extern void MshSetVertexTexture(struct Mesh *mesh, int index, const struct TexCo
 extern void MshSetFaceVertexIndices(struct Mesh *mesh, int face_index,
 		const struct TriIndex *tri_index);
 
+extern void MshGetVertexPosition(struct Mesh *mesh, int index, struct Vector *P);
+
 /* re-computation */
 extern void MshComputeBounds(struct Mesh *mesh);
 extern void MshComputeNormals(struct Mesh *mesh);

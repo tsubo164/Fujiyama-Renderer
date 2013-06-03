@@ -92,8 +92,8 @@ class SceneInterface:
 		cmd = 'NewObjectGroup %s' % (name)
 		self.commands.append(cmd)
 
-	def NewPointCloud(self, name):
-		cmd = 'NewPointCloud %s' % (name)
+	def NewPointCloud(self, name, filename):
+		cmd = 'NewPointCloud %s %s' % (name, filename)
 		self.commands.append(cmd)
 
 	def NewTurbulence(self, name):

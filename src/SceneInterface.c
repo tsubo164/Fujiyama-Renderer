@@ -5,6 +5,7 @@ See LICENSE and README
 
 #include "SceneInterface.h"
 #include "FrameBufferIO.h"
+#include "PointCloudIO.h"
 #include "PrimitiveSet.h"
 #include "CurveIO.h"
 #include "MeshIO.h"
@@ -358,7 +359,7 @@ ID SiNewObjectGroup(void)
 	return encode_id(Type_ObjectGroup, GET_LAST_ADDED_ID(ObjectGroup));
 }
 
-ID SiNewPointCloud(void)
+ID SiNewPointCloud(const char *filename)
 {
 	struct PointCloud *ptc = NULL;
 	struct Accelerator *acc = NULL;
@@ -376,10 +377,12 @@ ID SiNewPointCloud(void)
 	if (strcmp(filename, "null") == 0) {
 		MshClear(ptc);
 	} else {
-		if (MshLoadFile(ptc, filename)) {
+	*/
+		if (PtcLoadFile(ptc, filename)) {
 			set_errno(SI_ERR_FAILLOAD);
 			return SI_BADID;
 		}
+	/*
 	}
 	*/
 

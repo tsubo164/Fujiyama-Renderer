@@ -108,11 +108,12 @@ static struct CommandResult NewObjectGroup_run(const struct CommandArgument *arg
 /* NewPointCloud */
 static const int NewPointCloud_args[] = {
 	ARG_COMMAND_NAME,
-	ARG_NEW_ENTRY_ID};
+	ARG_NEW_ENTRY_ID,
+	ARG_FILE_PATH};
 static struct CommandResult NewPointCloud_run(const struct CommandArgument *args)
 {
 	struct CommandResult result = INIT_COMMAND_RESULT;
-	result.new_entry_id = SiNewPointCloud();
+	result.new_entry_id = SiNewPointCloud(args[2].str);
 	result.new_entry_name = args[1].str;
 	return result;
 }
