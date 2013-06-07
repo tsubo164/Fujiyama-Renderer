@@ -25,6 +25,8 @@ extern void PtcSetInputPosition(struct PtcInputFile *in, struct Vector *P);
 extern void PtcSetInputAttributeDouble(struct PtcInputFile *in,
 		const char *attr_name, double *attr_data);
 
+extern int PtcGetInputAttributeCount(const struct PtcInputFile *in);
+
 /* point cloud output */
 struct PtcOutputFile;
 extern struct PtcOutputFile *PtcOpenOutputFile(const char *filename);

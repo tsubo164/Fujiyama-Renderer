@@ -224,16 +224,6 @@ $(eval $(call submodule))
 
 install_bin += $(subtgt_)
 
-srcdir_  := tools/mesh2ptc
-tgtdir_  := bin
-files_   := main
-subtgt_  := mesh2ptc
-cflags_  :=
-ldflags_ := -lscene
-$(eval $(call submodule))
-
-install_bin += $(subtgt_)
-
 srcdir_  := tools/hdr2mip
 tgtdir_  := bin
 files_   := main rgbe
@@ -258,6 +248,16 @@ srcdir_  := tools/CurveGenerator
 tgtdir_  := bin
 files_   := main
 subtgt_  := curvegen
+cflags_  :=
+ldflags_ := -lscene
+$(eval $(call submodule))
+
+install_bin += $(subtgt_)
+
+srcdir_  := tools/PointCloudGenerator
+tgtdir_  := bin
+files_   := main
+subtgt_  := ptcgen
 cflags_  :=
 ldflags_ := -lscene
 $(eval $(call submodule))

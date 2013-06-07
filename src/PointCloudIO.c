@@ -74,6 +74,11 @@ void PtcSetInputAttributeDouble(struct PtcInputFile *in,
 	IOSetInputDouble(in->file, attr_name, attr_data, PtcGetInputPointCount(in));
 }
 
+int PtcGetInputAttributeCount(const struct PtcInputFile *in)
+{
+	return IOGetInputDataChunkCount(in->file);
+}
+
 struct PtcOutputFile {
 	struct OutputFile *file;
 
@@ -149,6 +154,16 @@ int PtcLoadFile(struct PointCloud *ptc, const char *filename)
 
 	PtcSetInputPosition(in, P);
 	PtcSetInputAttributeDouble(in, "radius", radius);
+	/*
+	{
+		const int N = PtcGetInputAttributeCount(in);
+		printf("================== %d\n", N);
+		int j;
+		for (j = 0; j < N; j++) {
+		}
+	}
+	*/
+
 	PtcReadData(in);
 
 	PtcCloseInputFile(in);

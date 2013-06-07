@@ -27,7 +27,7 @@ extern void TriComputeBounds(struct Box *box,
 extern void TriComputeFaceNormal(struct Vector *N,
 		const struct Vector *vert0, const struct Vector *vert1, const struct Vector *vert2);
 
-extern void TriComputeNormal( struct Vector *N,
+extern void TriComputeNormal(struct Vector *N,
 		const struct Vector *N0, const struct Vector *N1, const struct Vector *N2,
 		double u, double v);
 

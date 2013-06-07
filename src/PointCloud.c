@@ -12,6 +12,7 @@ See LICENSE and README
 #include "Box.h"
 #include "Ray.h"
 
+#include <string.h>
 #include <float.h>
 
 static int point_ray_intersect(const void *prim_set, int prim_id, double time,
@@ -32,34 +33,25 @@ struct PointCloud {
 
 struct PointCloud *PtcNew(void)
 {
-	struct PointCloud *ptc = NULL;
+	struct PointCloud *ptc = MEM_ALLOC(struct PointCloud);
 
-	ptc = MEM_ALLOC(struct PointCloud);
-	if (ptc == NULL)
+	if (ptc == NULL) {
 		return NULL;
+	}
 
 	ptc->point_count = 0;
 	ptc->P = NULL;
+	ptc->radius = NULL;
 	BOX3_SET(&ptc->bounds, 0, 0, 0, 0, 0, 0);
-
-	/* TODO TEST */
-#if 0
-	PtcAllocatePoint(ptc, 1);
-	ptc->P[0].x = 0;
-	ptc->P[0].y = 0;
-	ptc->P[0].z = 0;
-	ptc->radius = (double *) malloc(sizeof(double) * 1);
-	ptc->radius[0] = .5;
-	update_bounds(ptc);
-#endif
 
 	return ptc;
 }
 
 void PtcFree(struct PointCloud *ptc)
 {
-	if (ptc == NULL)
+	if (ptc == NULL) {
 		return;
+	}
 
 	VecFree(ptc->P);
 	free(ptc->radius);
@@ -71,15 +63,18 @@ void PtcAllocatePoint(struct PointCloud *ptc, int point_count)
 {
 	struct Vector *P_tmp = NULL;
 
-	if (ptc == NULL)
+	if (ptc == NULL) {
 		return;
+	}
 
-	if (point_count < 1)
+	if (point_count < 1) {
 		return;
+	}
 
 	P_tmp = VecRealloc(ptc->P, point_count);
-	if (P_tmp == NULL)
+	if (P_tmp == NULL) {
 		return;
+	}
 
 	/* commit */
 	ptc->P = P_tmp;
@@ -90,7 +85,7 @@ void PtcAllocatePoint(struct PointCloud *ptc, int point_count)
 		int i;
 		ptc->radius = MEM_ALLOC_ARRAY(double, point_count);
 		for (i = 0; i < point_count; i++) {
-			ptc->radius[i] = .02;
+			ptc->radius[i] = .01 * .2;
 		}
 	}
 }
@@ -110,6 +105,31 @@ void PtcGetPosition(const struct PointCloud *ptc, int index, struct Vector *P)
 	}
 	*P = ptc->P[index];
 }
+
+#if 0
+AttributeID PtcAddAttributeDouble(struct PointCloud *ptc, const char *attr_name)
+{
+	/* TODO imprement */
+	if (strcmp(attr_name, "radius") == 0) {
+		int i;
+		ptc->radius = MEM_ALLOC_ARRAY(double, ptc->point_count);
+		for (i = 0; i < ptc->point_count; i++) {
+			ptc->radius[i] = .01;
+		}
+	}
+
+	return 0;
+}
+
+void PtcSetAttributeDouble(struct PointCloud *ptc,
+		AttributeID attr_id, int index, double value)
+{
+	/* TODO imprement */
+	if (attr_id == 0) {
+		ptc->radius[index] = value;
+	}
+}
+#endif
 
 void PtcComputeBounds(struct PointCloud *ptc)
 {
@@ -144,7 +164,7 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
 
 	struct Vector orig_local = {0, 0, 0};
 	double a = 0, b = 0, c = 0;
-	double discriminant = 0, disc_sqrt;
+	double discriminant = 0, disc_sqrt = 0;
 	double t_hit = 0, t0 = 0, t1 = 0;
 
 	orig_local.x = ray->orig.x - center->x;
@@ -156,16 +176,23 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
 	c = VEC3_DOT(&orig_local, &orig_local) - radius * radius;
 
 	discriminant = b * b - a * c;
-	if (discriminant < 0)
+	if (discriminant < 0) {
 		return 0;
+	}
 
 	disc_sqrt = sqrt(discriminant);
 	t0 = -b - disc_sqrt;
 	t1 = -b + disc_sqrt;
 
-	t_hit = MIN(t0, t1);
-	if (t_hit < 0)
+	if (t1 <= 0) {
 		return 0;
+	}
+	/* TODO handle case with ray->t_min */
+	if (t0 <= 0) {
+		t_hit = t1;
+	} else {
+		t_hit = t0;
+	}
 
 	POINT_ON_RAY(&isect->P, &ray->orig, &ray->dir, t_hit);
 	isect->N.x = isect->P.x - center->x;
