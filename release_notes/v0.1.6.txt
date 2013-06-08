@@ -1,0 +1,15 @@
+Fujiyama Renderer v0.1.6(Alpha) Release Notes
+=============================================
+
+New features since v0.1.5
+-------------------------
+ * Point Could has been implemented. This can be rendered as particles.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Deep shadow
+ * Displacement shader
+ * Subdivision surface
+ * Alembic support

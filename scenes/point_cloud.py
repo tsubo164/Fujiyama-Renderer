@@ -17,7 +17,6 @@ si.SetProperty3('cam1', 'translate', 0, .5, 3)
 si.SetProperty3('cam1', 'rotate', -1, 0, 0)
 
 #Light
-rot = 0
 rot = -30
 si.NewLight('light1', 'DomeLight')
 si.SetProperty3('light1', 'rotate', 0, rot, 0)

@@ -19,6 +19,7 @@ designed to handle production image rendering.
   + Triangle Mesh - Compact representation
   + Bezier Curves - Unlimited smoothness subdividing in render time 
   + Volume Primitive - Ray traced self-shadowing
+  + Point Cloud - Can be rendered as particles
 
 * Procedure Plugin
   + Volume Filling Procedure - Pyroclastic clouds procedure provided
@@ -28,6 +29,7 @@ designed to handle production image rendering.
 * File format
   + Original mesh format - ply2mesh and obj2mesh are provided
   + Original curve format - curvegen is provided
+  + Original point cloud format - ptcgen is provided
   + Original mipmap format - hdr2mip is provided
   + Original framebuffer format - fb2exr is provided
   + Command-like scene description language - works with text filter tools

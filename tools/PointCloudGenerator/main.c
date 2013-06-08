@@ -3,13 +3,6 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#if 0
-#include "ObjParser.h"
-#include "TexCoord.h"
-#include "MeshIO.h"
-#include "Array.h"
-#include "Mesh.h"
-#endif
 #include "PointCloudIO.h"
 #include "PointCloud.h"
 #include "Triangle.h"
@@ -25,41 +18,8 @@ See LICENSE and README
 #include <ctype.h>
 #include <string.h>
 
-/* TODO TEST */
-enum ArgType {
-	ARG_NULL = 0,
-	ARG_REQUIRED,
-	ARG_OPTION
-};
-struct Option {
-	const char type;
-	const char short_name;
-	const char *long_name;
-
-	struct {
-		long Integer;
-		double Float;
-		const char *String;
-	} value;
-
-	const char *desc;
-};
-#define DEFAULT_INTEGER(val) {(val),    0.,  NULL}
-#define DEFAULT_FLOAT(val)   {    0, (val),  NULL}
-#define DEFAULT_STRING(val)  {    0,    0., (val)}
-#define NULL_OPTION {ARG_NULL, '\0', NULL, DEFAULT_INTEGER(0), NULL}
-
-/*
-static struct Option options[] = {
-	{ARG_OPTION, 'p', "points-per-area", DEFAULT_FLOAT(1), "# of points per polygon area"},
-	NULL_OPTION
-};
-*/
-
-int OptParse(struct Option *options, int argc, const char **argv);
-
 static const char USAGE[] =
-"Usage: mesh2ptc [options] inputfile(*.mesh) outputfile(*.ptc)\n"
+"Usage: ptcgen [options] inputfile(*.mesh) outputfile(*.ptc)\n"
 "Options:\n"
 "  --help         Display this information\n"
 "\n";
@@ -68,12 +28,6 @@ int main(int argc, const char **argv)
 {
 	const char *in_filename = NULL;
 	const char *out_filename = NULL;
-	/*
-	int err = 0;
-	int n = OptParse(options, argc, argv);
-
-	printf("option count: %d\n", n);
-	*/
 
 	if (argc == 2 && strcmp(argv[1], "--help") == 0) {
 		printf("%s", USAGE);
@@ -90,7 +44,7 @@ int main(int argc, const char **argv)
 	out_filename = argv[2];
 
 	{
-		struct XorShift xor;
+		struct XorShift xr;
 		struct Mesh *mesh = MshNew();
 		struct PtcOutputFile *out = PtcOpenOutputFile(out_filename);
 		struct Vector *P = NULL;
@@ -125,9 +79,6 @@ int main(int argc, const char **argv)
 			center.z *= 2.5;
 			noise_val = PerlinNoise(&center, 2, .5, 8);
 			noise_val = Fit(noise_val, -.2, 1, 0, 1);
-			/*
-			noise_val = MAX(noise_val, 0);
-			*/
 
 			area = TriComputeArea(&P0, &P1, &P2);
 			area *= noise_val;
@@ -141,7 +92,7 @@ int main(int argc, const char **argv)
 		P = MEM_ALLOC_ARRAY(struct Vector, total_point_count);
 		radius = MEM_ALLOC_ARRAY(double, total_point_count);
 
-		XorInit(&xor);
+		XorInit(&xr);
 		point_id = 0;
 		for (i = 0; i < face_count; i++) {
 			struct Vector P0 = {0, 0, 0};
@@ -158,18 +109,12 @@ int main(int argc, const char **argv)
 
 			for (j = 0; j < npt_on_face; j++) {
 				struct Vector normal = {0, 0, 0};
-				/*
-				struct Vector noise_val = {0, 0, 0};
-				struct Vector noise_pos = {0, 0, 0};
-				*/
 				struct Vector *P_out = &P[point_id];
-				double u = 0;
-				double v = 0;
-				double t = 0;
-				double n = 0;
+				double u = 0, v = 0, t = 0;
+				double offset = 0;
 
-				u = XorNextFloat01(&xor);
-				v = (1 - u) * XorNextFloat01(&xor);
+				u = XorNextFloat01(&xr);
+				v = (1 - u) * XorNextFloat01(&xr);
 
 				TriComputeNormal(&normal, &N0, &N1, &N2, u, v);
 
@@ -178,25 +123,13 @@ int main(int argc, const char **argv)
 				P_out->y = t * P0.y + u * P1.y + v * P2.y;
 				P_out->z = t * P0.z + u * P1.z + v * P2.z;
 
-				n = XorNextFloat01(&xor);
-				n *= -.05;
-				P_out->x += n * normal.x;
-				P_out->y += n * normal.y;
-				P_out->z += n * normal.z;
+				offset = XorNextFloat01(&xr);
+				offset *= -.05;
+				P_out->x += offset * normal.x;
+				P_out->y += offset * normal.y;
+				P_out->z += offset * normal.z;
 
 				radius[point_id] = .01 * .2;
-
-#if 0
-				noise_pos.x = 1.5 * P_out->x;
-				noise_pos.y = 1.5 * P_out->y;
-				noise_pos.z = 1.5 * P_out->z;
-
-				PerlinNoise3d(&noise_pos, 2, .5, 8, &noise_val);
-
-				P_out->x += .3 * noise_val.x;
-				P_out->y += .3 * noise_val.y;
-				P_out->z += .3 * noise_val.z;
-#endif
 
 				point_id++;
 			}
@@ -216,42 +149,5 @@ int main(int argc, const char **argv)
 	}
 
 	return 0;
-}
-
-int OptParse(struct Option *options, int argc, const char **argv)
-{
-	int required_count = 0;
-	int option_count = 0;
-	int i;
-
-	for (;;) {
-		struct Option *opt = &options[option_count];
-
-		if (opt->type == ARG_REQUIRED) {
-			required_count++;
-		}
-		else if (opt->type == ARG_OPTION) {
-			option_count++;
-		}
-		else if (opt->type == ARG_NULL) {
-			break;
-		}
-	}
-
-	for (i = 0; i < argc; i++) {
-		const char *arg = argv[i];
-
-		if (arg[0] == '-' && isalpha(arg[1]) && arg[2] == '\0') {
-			printf("short name: [%s]\n", arg);
-		}
-		else if (arg[0] == '-' && arg[1] == '-') {
-			printf("long name: [%s]\n", arg);
-		}
-		else {
-			printf("unrecognized option: [%s]\n", arg);
-		}
-	}
-
-	return option_count;
 }
 
