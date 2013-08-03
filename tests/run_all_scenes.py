@@ -17,6 +17,7 @@ py_list = [
 	'scenes/dome_light2.py',
 	'scenes/glassy_happy.py',
 	'scenes/grid_light.py',
+	'scenes/point_cloud.py',
 	'scenes/pyro_ball.py',
 	'scenes/sphere_light.py',
 	'scenes/spline_wisps.py',

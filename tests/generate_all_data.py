@@ -15,7 +15,6 @@ ply_list = [
 	'happy',
 	'horse',
 	'sphere',
-	'sphere2',
 	'teapot',
 	'xyzrgb_dragon']
 
@@ -24,6 +23,7 @@ obj_list = ['head']
 mesh_list = ['bunny']
 
 hdr_list = [
+	'austria',
 	'doge2',
 	'ennis',
 	'forrest_salzburg02',
@@ -53,6 +53,13 @@ try:
 
 		print 'bin/curvegen', src, dst
 		return_code = subprocess.call(['bin/curvegen', src, dst])
+
+	for name in mesh_list:
+		src = '../../mesh/' + name + '.mesh'
+		dst = '../../ptc/'  + name + '.ptc'
+
+		print 'bin/ptcgen', src, dst
+		return_code = subprocess.call(['bin/ptcgen', src, dst])
 
 	for name in hdr_list:
 		src = '../../hdr/' + name + '.hdr'

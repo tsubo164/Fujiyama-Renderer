@@ -116,10 +116,12 @@ void FbvDraw(struct FrameBufferViewer *v)
 	int xviewsize = v->viewbox[2] - v->viewbox[0];
 	int yviewsize = v->viewbox[3] - v->viewbox[1];
 
+#if 0
 	if (!v->is_gl_initialized) {
 		initialize_gl(v);
 		v->is_gl_initialized = 1;
 	}
+#endif
 
 	glClearColor(.2f, .2f, .2f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -404,6 +406,8 @@ int FbvLoadImage(struct FrameBufferViewer *v, const char *filename)
 			pixel[i] = pow(pixel[i], gamma);
 		}
 	}
+
+  initialize_gl(v);
 
 	return err;
 }
