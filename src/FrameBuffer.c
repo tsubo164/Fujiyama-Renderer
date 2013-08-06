@@ -154,7 +154,7 @@ const float *FbGetReadOnly(const struct FrameBuffer *fb, int x, int y, int z)
 	return fb->buf + y * fb->width * fb->nchannels + x * fb->nchannels + z;
 }
 
-void FbGetColor(struct FrameBuffer *fb, int x, int y, struct Color4 *rgba)
+void FbGetColor(const struct FrameBuffer *fb, int x, int y, struct Color4 *rgba)
 {
 	const float *pixel = fb->buf + y * fb->width * fb->nchannels + x * fb->nchannels;
 	

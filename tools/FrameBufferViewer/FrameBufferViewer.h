@@ -22,7 +22,7 @@ struct FrameBufferViewer;
 extern struct FrameBufferViewer *FbvNewViewer(void);
 extern void FbvFreeViewer(struct FrameBufferViewer *v);
 
-extern void FbvDraw(struct FrameBufferViewer *v);
+extern void FbvDraw(const struct FrameBufferViewer *v);
 extern void FbvResize(struct FrameBufferViewer *v, int width, int height);
 extern void FbvPressButton(struct FrameBufferViewer *v, MouseButton button, int x, int y);
 extern void FbvReleaseButton(struct FrameBufferViewer *v, MouseButton button, int x, int y);

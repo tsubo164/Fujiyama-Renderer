@@ -31,8 +31,6 @@ struct FrameBufferViewer {
 	struct FrameBuffer *fb;
 	char filename[1024];
 
-	int is_gl_initialized;
-
 	int win_width;
 	int win_height;
 	int disp_chans;
@@ -71,8 +69,6 @@ static void clear_image_viewer(struct FrameBufferViewer *v)
 {
 	v->fb = NULL;
 
-	v->is_gl_initialized = 0;
-
 	v->win_width = 0;
 	v->win_height = 0;
 	v->disp_chans = DISP_RGB;
@@ -109,19 +105,12 @@ void FbvFreeViewer(struct FrameBufferViewer *v)
 	MEM_FREE(v);
 }
 
-void FbvDraw(struct FrameBufferViewer *v)
+void FbvDraw(const struct FrameBufferViewer *v)
 {
 	int xmove = 0.f;
 	int ymove = 0.f;
 	int xviewsize = v->viewbox[2] - v->viewbox[0];
 	int yviewsize = v->viewbox[3] - v->viewbox[1];
-
-#if 0
-	if (!v->is_gl_initialized) {
-		initialize_gl(v);
-		v->is_gl_initialized = 1;
-	}
-#endif
 
 	glClearColor(.2f, .2f, .2f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT);
