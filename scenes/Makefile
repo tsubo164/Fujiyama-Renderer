@@ -16,7 +16,7 @@ all: help
 help:
 	@echo
 	@echo 'Run this command to render sample scene file written in c'
-	@echo '  $$make sample'
+	@echo '  $$ make sample'
 	@echo
 
 sample: cube.fb $(topdir)bin/fbview
@@ -32,5 +32,6 @@ cube: cube.c $(topdir)lib/libscene.so $(topdir)lib/PlasticShader.so
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 clean:
-	-$(RM) cube cube.fb cube.mesh
+	@echo '  clean samples'
+	@-$(RM) cube cube.fb cube.mesh
 

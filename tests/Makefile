@@ -35,7 +35,8 @@ check: $(targets)
 	done;
 
 clean:
-	-$(RM) Test.o $(objects)
-	-$(RM) $(targets)
-	-$(RM) io_test_file.bin
+	@echo '  clean tests'
+	@-$(RM) Test.o $(objects)
+	@-$(RM) $(targets)
+	@-$(RM) io_test_file.bin
 
