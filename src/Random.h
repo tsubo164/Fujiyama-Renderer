@@ -6,6 +6,8 @@ See LICENSE and README
 #ifndef RANDOM_H
 #define RANDOM_H
 
+#include "Compatibility.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -14,12 +16,12 @@ struct Vector2;
 struct Vector;
 
 struct XorShift {
-	unsigned long state[4];
+	uint32_t state[4];
 };
 
 extern void XorInit(struct XorShift *xr);
 
-extern unsigned long XorNextInteger(struct XorShift *xr);
+extern uint32_t XorNextInteger(struct XorShift *xr);
 extern double XorNextFloat01(struct XorShift *xr);
 
 extern void XorSolidSphereRand(struct XorShift *xr, struct Vector *out_position);

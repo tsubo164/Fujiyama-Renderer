@@ -15,10 +15,10 @@ void XorInit(struct XorShift *xr)
 	xr->state[3] = 88675123;
 }
 
-unsigned long XorNextInteger(struct XorShift *xr)
+uint32_t XorNextInteger(struct XorShift *xr)
 {
-	unsigned long *st = xr->state;
-	unsigned long t;
+	uint32_t *st = xr->state;
+	uint32_t t;
 
 	t = (st[0]^(st[0]<<11));
 	st[0] = st[1];
@@ -31,7 +31,7 @@ unsigned long XorNextInteger(struct XorShift *xr)
 
 double XorNextFloat01(struct XorShift *xr)
 {
-	return (double) XorNextInteger(xr) / ULONG_MAX;
+	return (double) XorNextInteger(xr) / UINT32_MAX;
 }
 
 void XorSolidSphereRand(struct XorShift *xr, struct Vector *out_position)

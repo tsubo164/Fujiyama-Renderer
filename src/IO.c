@@ -210,7 +210,16 @@ int IOReadInputHeader(struct InputFile *in)
 	int i;
 
 	nreads = fread(&header_chunk_count, sizeof(header_chunk_count), 1, in->file);
-	nreads = fread(&data_chunk_count,   sizeof(data_chunk_count),   1, in->file);
+  if (nreads != 1) {
+    /* TODO error handling */
+    return -1;
+  }
+
+	nreads = fread(&data_chunk_count, sizeof(data_chunk_count), 1, in->file);
+  if (nreads != 1) {
+    /* TODO error handling */
+    return -1;
+  }
 
 	for (i = 0; i < IOGetInputHeaderChunkCount(in); i++) {
 		struct ChunkData *chunk = (struct ChunkData *) ArrGet(in->header_chunks, i);
@@ -590,13 +599,29 @@ static int write_file_info(FILE *file, struct FileInfo *info)
 
 static int read_chunk_info(FILE *file, struct ChunkData *chunk)
 {
-	size_t nread = 0;
+	size_t nreads = 0;
 	NameSize namesize = 0;
 
-	nread = fread(&namesize, sizeof(namesize), 1, file);
-	nread = fread(chunk->element_name, sizeof(char), namesize, file);
-	nread = fread(&chunk->element_type, sizeof(chunk->element_type), 1, file);
-	nread = fread(&chunk->element_count, sizeof(chunk->element_count), 1, file);
+	nreads = fread(&namesize, sizeof(namesize), 1, file);
+  if (nreads != 1) {
+    /* TODO error handling */
+    return -1;
+  }
+	nreads = fread(chunk->element_name, sizeof(char), namesize, file);
+  if (nreads != namesize) {
+    /* TODO error handling */
+    return -1;
+  }
+	nreads = fread(&chunk->element_type, sizeof(chunk->element_type), 1, file);
+  if (nreads != 1) {
+    /* TODO error handling */
+    return -1;
+  }
+	nreads = fread(&chunk->element_count, sizeof(chunk->element_count), 1, file);
+  if (nreads != 1) {
+    /* TODO error handling */
+    return -1;
+  }
 
 	return 0;
 }
@@ -629,6 +654,10 @@ static int read_chunk_data(FILE *file, struct ChunkData *chunk)
 		int *dst_data = (int *) chunk->dst_data;
 		for (i = 0; i < NELEMS; i++) {
 			nreads = fread(&dst_data[i], sizeof(*dst_data), 1, file);
+      if (nreads != 1) {
+        /* TODO error handling */
+        return -1;
+      }
 		}
 		}
 		break;
@@ -638,6 +667,10 @@ static int read_chunk_data(FILE *file, struct ChunkData *chunk)
 		double *dst_data = (double *) chunk->dst_data;
 		for (i = 0; i < NELEMS; i++) {
 			nreads = fread(&dst_data[i], sizeof(*dst_data), 1, file);
+      if (nreads != 1) {
+        /* TODO error handling */
+        return -1;
+      }
 		}
 		}
 		break;
@@ -647,8 +680,20 @@ static int read_chunk_data(FILE *file, struct ChunkData *chunk)
 		struct Vector *dst_data = (struct Vector *) chunk->dst_data;
 		for (i = 0; i < NELEMS; i++) {
 			nreads = fread(&dst_data[i].x, sizeof(dst_data[i].x), 1, file);
+      if (nreads != 1) {
+        /* TODO error handling */
+        return -1;
+      }
 			nreads = fread(&dst_data[i].y, sizeof(dst_data[i].y), 1, file);
+      if (nreads != 1) {
+        /* TODO error handling */
+        return -1;
+      }
 			nreads = fread(&dst_data[i].z, sizeof(dst_data[i].z), 1, file);
+      if (nreads != 1) {
+        /* TODO error handling */
+        return -1;
+      }
 		}
 		}
 		break;
