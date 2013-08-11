@@ -12,6 +12,7 @@ See LICENSE and README
 #include "String.h"
 #include "Box.h"
 
+#include "glsl_shaders.h"
 #include "load_images.h"
 
 #include <math.h>
@@ -56,18 +57,14 @@ struct FrameBufferViewer {
 
 	int tilesize;
 	int draw_tile;
+
+  struct ShaderProgram shader_program;
+  int shader_initialized;
 };
 
 static void clear_image_viewer(struct FrameBufferViewer *v);
 static void initialize_gl(struct FrameBufferViewer *v);
 static void set_to_home_position(struct FrameBufferViewer *v);
-
-/* TODO TEST */
-static void init_shaders(void);
-static GLuint vert_shader_id = 0;
-static GLuint shader_id = 0;
-static GLuint program_id = 0;
-
 void GlDrawTileGuide(int width, int height, int tilesize);
 
 static void clear_image_viewer(struct FrameBufferViewer *v)
@@ -86,6 +83,10 @@ static void clear_image_viewer(struct FrameBufferViewer *v)
 	BOX2_SET(v->viewbox, 0, 0, 0, 0);
 	v->tilesize = 0;
 	v->draw_tile = 1;
+
+  v->shader_program.vert_shader_id = 0;
+  v->shader_program.frag_shader_id = 0;
+  v->shader_initialized = 0;
 }
 
 struct FrameBufferViewer *FbvNewViewer(void)
@@ -488,9 +489,13 @@ static void initialize_gl(struct FrameBufferViewer *v)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-    init_shaders();
-    glUniform1i(glGetUniformLocation(program_id, "texture"), 0);
-    glUniform1i(glGetUniformLocation(program_id, "display_channels"), disp_chan);
+    /* glsl shader */
+    if (!v->shader_initialized) {
+      init_shaders(&v->shader_program);
+      v->shader_initialized = 1;
+    }
+    set_uniform_int(&v->shader_program, "texture", 0);
+    set_uniform_int(&v->shader_program, "display_channels", disp_chan);
 	}
 }
 
@@ -525,69 +530,3 @@ void GlDrawTileGuide(int width, int height, int tilesize)
 	}
 	glEnd();
 }
-
-static void init_shaders(void)
-{
-  static const GLchar *vert_source[] = {
-  "#version 120\n"
-  "void main(void)\n"
-  "{\n"
-  "  gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
-  "  gl_Position = ftransform();\n"
-  "}\n"
-  };
-  static const GLchar *source[] = {
-  "#version 120\n"
-  "uniform sampler2D texture;\n"
-  "uniform int display_channels;\n"
-  "void main(void)\n"
-  "{\n"
-  "  vec4 C_tex = texture2DProj(texture, gl_TexCoord[0]);\n"
-  "  if (display_channels != -1) {\n"
-  "    float C_disp = C_tex[display_channels];\n"
-  "    C_tex[0] = C_disp;\n"
-  "    C_tex[1] = C_disp;\n"
-  "    C_tex[2] = C_disp;\n"
-  "    C_tex[3] = 1.;\n"
-  "  }\n"
-  "  gl_FragColor = C_tex;\n"
-  "}\n"
-  };
-
-  GLint compiled = GL_FALSE;
-  GLint linked = GL_FALSE;
-  static int shader_initialized = 0;
-  if (shader_initialized) {
-    return;
-  }
-
-  vert_shader_id = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vert_shader_id, 1, vert_source, NULL);
-  glCompileShader(vert_shader_id);
-  glGetShaderiv(vert_shader_id, GL_COMPILE_STATUS, &compiled);
-  if (compiled == GL_FALSE) {
-    fprintf(stderr, "vertex shader compile error\n");
-  }
-
-  shader_id = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(shader_id, 1, source, NULL);
-  glCompileShader(shader_id);
-  glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compiled);
-  if (compiled == GL_FALSE) {
-    fprintf(stderr, "fragment shader compile error\n");
-  }
-
-  program_id = glCreateProgram();
-  glAttachShader(program_id, vert_shader_id);
-  glAttachShader(program_id, shader_id);
-
-  glLinkProgram(program_id);
-  glGetProgramiv(program_id, GL_LINK_STATUS, &linked);
-  if (linked == GL_FALSE) {
-    fprintf(stderr, "link error\n");
-  }
-  glUseProgram(program_id);
-
-  shader_initialized = 1;
-}
-
