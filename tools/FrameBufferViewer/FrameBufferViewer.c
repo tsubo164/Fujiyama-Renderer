@@ -12,10 +12,13 @@ See LICENSE and README
 #include "String.h"
 #include "Box.h"
 
+#include "load_images.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glu.h>
 
@@ -55,13 +58,15 @@ struct FrameBufferViewer {
 	int draw_tile;
 };
 
-static int load_fb(struct FrameBufferViewer *v);
-static int load_mip(struct FrameBufferViewer *v);
-static const char *file_extension(const char *filename);
-
 static void clear_image_viewer(struct FrameBufferViewer *v);
 static void initialize_gl(struct FrameBufferViewer *v);
 static void set_to_home_position(struct FrameBufferViewer *v);
+
+/* TODO TEST */
+static void init_shaders(void);
+static GLuint vert_shader_id = 0;
+static GLuint shader_id = 0;
+static GLuint program_id = 0;
 
 void GlDrawTileGuide(int width, int height, int tilesize);
 
@@ -367,14 +372,27 @@ int FbvLoadImage(struct FrameBufferViewer *v, const char *filename)
 	}
 
 	ext = file_extension(v->filename);
-	if (ext == NULL)
+	if (ext == NULL) {
 		return -1;
+  }
+
+	if (v->fb == NULL) {
+		v->fb = FbNew();
+	}
 
 	if (strcmp(ext, "fb") == 0) {
-		err = load_fb(v);
+    struct BufferInfo info = BUFINFO_INIT;
+    err = load_fb(v->filename, v->fb, &info);
+    BOX2_COPY(v->viewbox, info.viewbox);
+    BOX2_COPY(v->databox, info.databox);
+    v->tilesize = info.tilesize;
 	}
 	else if (strcmp(ext, "mip") == 0) {
-		err = load_mip(v);
+    struct BufferInfo info = BUFINFO_INIT;
+    err = load_mip(v->filename, v->fb, &info);
+    BOX2_COPY(v->viewbox, info.viewbox);
+    BOX2_COPY(v->databox, info.databox);
+    v->tilesize = info.tilesize;
 	}
 	else {
 		return -1;
@@ -427,6 +445,8 @@ static void initialize_gl(struct FrameBufferViewer *v)
 	}
 
 	if (v->fb != NULL && !FbIsEmpty(v->fb)) {
+    /* TODO TEST */
+    GLint disp_chan = -1;
 		float m[16] = {
 			0.f, 0.f, 0.f, 0.f,
 			0.f, 0.f, 0.f, 0.f,
@@ -437,29 +457,40 @@ static void initialize_gl(struct FrameBufferViewer *v)
 		switch (v->disp_chans) {
 		case DISP_RGB:
 			m[0] = m[5] = m[10] = 1.f;
+      disp_chan = -1;
 			break;
 		case DISP_R:
 			m[0] = m[1] = m[2] = 1.f;
+      disp_chan = 0;
 			break;
 		case DISP_G:
 			m[4] = m[5] = m[6] = 1.f;
+      disp_chan = 1;
 			break;
 		case DISP_B:
 			m[8] = m[9] = m[10] = 1.f;
+      disp_chan = 2;
 			break;
 		case DISP_A:
 			m[12] = m[13] = m[14] = 1.f;
+      disp_chan = 3;
 			break;
 		default:
 			break;
 		}
+    /*
 		glLoadMatrixf(m);
+    */
 
 		glPixelStorei(GL_UNPACK_ALIGNMENT, FbGetChannelCount(v->fb));
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, FbGetWidth(v->fb), FbGetHeight(v->fb), 0,
 					  format, GL_FLOAT, FbGetReadOnly(v->fb, 0, 0, 0));
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    init_shaders();
+    glUniform1i(glGetUniformLocation(program_id, "texture"), 0);
+    glUniform1i(glGetUniformLocation(program_id, "display_channels"), disp_chan);
 	}
 }
 
@@ -475,107 +506,6 @@ static void set_to_home_position(struct FrameBufferViewer *v)
 	v->ypresspos = 0;
 	v->xlockoffset = 0.f;
 	v->ylockoffset = 0.f;
-}
-
-static int load_fb(struct FrameBufferViewer *v)
-{
-	struct FbInput *in = FbOpenInputFile(v->filename);
-
-	if (in == NULL)
-		return -1;
-
-	if (FbReadHeader(in)) {
-		FbCloseInputFile(in);
-		return -1;
-	}
-
-	if (v->fb == NULL) {
-		v->fb = FbNew();
-	}
-
-	if (v->fb == NULL) {
-		FbCloseInputFile(in);
-		return -1;
-	}
-
-	FbResize(v->fb, in->width, in->height, in->nchannels);
-	BOX2_COPY(v->viewbox, in->viewbox);
-	BOX2_COPY(v->databox, in->databox);
-	in->data = FbGetWritable(v->fb, 0, 0, 0);
-
-	FbReadData(in);
-	FbCloseInputFile(in);
-
-	v->tilesize = 0;
-
-	return 0;
-}
-
-static int load_mip(struct FrameBufferViewer *v)
-{
-	struct MipInput *in = MipOpenInputFile(v->filename);
-
-	if (in == NULL)
-		return -1;
-
-	if (MipReadHeader(in)) {
-		MipCloseInputFile(in);
-		return -1;
-	}
-
-	if (v->fb == NULL) {
-		v->fb = FbNew();
-	}
-
-	if (v->fb == NULL) {
-		MipCloseInputFile(in);
-		return -1;
-	}
-
-	FbResize(v->fb, in->width, in->height, in->nchannels);
-
-	BOX2_SET(v->viewbox, 0, 0, in->width, in->height);
-	BOX2_COPY(v->databox, v->viewbox);
-
-	{
-		int x, y;
-		struct FrameBuffer *tilebuf = FbNew();
-
-		if (tilebuf == NULL) {
-			/* TODO error handling */
-		}
-		FbResize(tilebuf, in->tilesize, in->tilesize, in->nchannels);
-
-		for (y = 0; y < in->yntiles; y++) {
-			for (x = 0; x < in->xntiles; x++) {
-				int i;
-				in->data = FbGetWritable(tilebuf, 0, 0, 0);
-				MipReadTile(in, x, y);
-				for (i = 0; i < in->tilesize; i++) {
-					float *dst;
-					const float *src;
-					dst = FbGetWritable(v->fb, x * in->tilesize, y * in->tilesize + i, 0);
-					src = FbGetReadOnly(tilebuf, 0, i, 0);
-					memcpy(dst, src, sizeof(float) * in->tilesize * in->nchannels);
-				}
-			}
-		}
-		FbFree(tilebuf);
-	}
-
-	v->tilesize = in->tilesize;
-	MipCloseInputFile(in);
-
-	return 0;
-}
-
-static const char *file_extension(const char *filename)
-{
-	const char *s = strrchr(filename, '.');
-	if (s == NULL)
-		return 0;
-
-	return s + 1;
 }
 
 void GlDrawTileGuide(int width, int height, int tilesize)
@@ -594,5 +524,70 @@ void GlDrawTileGuide(int width, int height, int tilesize)
 		glVertex3f(width, tilesize * i, 0);
 	}
 	glEnd();
+}
+
+static void init_shaders(void)
+{
+  static const GLchar *vert_source[] = {
+  "#version 120\n"
+  "void main(void)\n"
+  "{\n"
+  "  gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
+  "  gl_Position = ftransform();\n"
+  "}\n"
+  };
+  static const GLchar *source[] = {
+  "#version 120\n"
+  "uniform sampler2D texture;\n"
+  "uniform int display_channels;\n"
+  "void main(void)\n"
+  "{\n"
+  "  vec4 C_tex = texture2DProj(texture, gl_TexCoord[0]);\n"
+  "  if (display_channels != -1) {\n"
+  "    float C_disp = C_tex[display_channels];\n"
+  "    C_tex[0] = C_disp;\n"
+  "    C_tex[1] = C_disp;\n"
+  "    C_tex[2] = C_disp;\n"
+  "    C_tex[3] = 1.;\n"
+  "  }\n"
+  "  gl_FragColor = C_tex;\n"
+  "}\n"
+  };
+
+  GLint compiled = GL_FALSE;
+  GLint linked = GL_FALSE;
+  static int shader_initialized = 0;
+  if (shader_initialized) {
+    return;
+  }
+
+  vert_shader_id = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vert_shader_id, 1, vert_source, NULL);
+  glCompileShader(vert_shader_id);
+  glGetShaderiv(vert_shader_id, GL_COMPILE_STATUS, &compiled);
+  if (compiled == GL_FALSE) {
+    fprintf(stderr, "vertex shader compile error\n");
+  }
+
+  shader_id = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(shader_id, 1, source, NULL);
+  glCompileShader(shader_id);
+  glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compiled);
+  if (compiled == GL_FALSE) {
+    fprintf(stderr, "fragment shader compile error\n");
+  }
+
+  program_id = glCreateProgram();
+  glAttachShader(program_id, vert_shader_id);
+  glAttachShader(program_id, shader_id);
+
+  glLinkProgram(program_id);
+  glGetProgramiv(program_id, GL_LINK_STATUS, &linked);
+  if (linked == GL_FALSE) {
+    fprintf(stderr, "link error\n");
+  }
+  glUseProgram(program_id);
+
+  shader_initialized = 1;
 }
 

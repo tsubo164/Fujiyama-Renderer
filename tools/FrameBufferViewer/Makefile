@@ -9,7 +9,7 @@ RM = rm -f
 
 target_dir  := bin
 target_name := fbview
-files       := main FrameBufferViewer
+files       := main FrameBufferViewer load_images
 topdir      := ../..
 
 incdir  := $(topdir)/src
