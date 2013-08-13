@@ -43,138 +43,137 @@ static int initialize_viewer(const char *filename);
 
 int main(int argc, char **argv)
 {
-	const int WIN_W = 256;
-	const int WIN_H = 256;
+  const int WIN_W = 256;
+  const int WIN_H = 256;
 
-	if (argc == 2 && strcmp(argv[1], "--help") == 0) {
-		fprintf(stderr, "%s%s", USAGE, USAGE2);
-		return 0;
-	}
-
-	if (argc != 2) {
-		fprintf(stderr, "error: invalid number of arguments.\n");
-		fprintf(stderr, "%s%s", USAGE, USAGE2);
-		return -1;
-	}
-
-	/* tipical glut settings */
-	glutInit(&argc, argv);
-	glutInitWindowSize(WIN_W, WIN_H);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-	glutCreateWindow("FrameBuffer Viewer");
-
-	glutDisplayFunc(display);
-	glutReshapeFunc(resize);
-	glutMouseFunc(mouse);
-	glutMotionFunc(motion);
-	glutKeyboardFunc(keyboard);
-
-  if (initialize_viewer(argv[1])) {
-		return -1;
+  if (argc == 2 && strcmp(argv[1], "--help") == 0) {
+    fprintf(stderr, "%s%s", USAGE, USAGE2);
+    return 0;
   }
 
-	glutMainLoop();
+  if (argc != 2) {
+    fprintf(stderr, "error: invalid number of arguments.\n");
+    fprintf(stderr, "%s%s", USAGE, USAGE2);
+    return -1;
+  }
 
-	return 0;
-}
+  /* tipical glut settings */
+  glutInit(&argc, argv);
+  glutInitWindowSize(WIN_W, WIN_H);
+  glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
+  glutCreateWindow("FrameBuffer Viewer");
 
-static void exit_viewer(void)
-{
-	FbvFreeViewer(viewer);
-}
+  glutDisplayFunc(display);
+  glutReshapeFunc(resize);
+  glutMouseFunc(mouse);
+  glutMotionFunc(motion);
+  glutKeyboardFunc(keyboard);
 
-static void display(void)
-{
-	FbvDraw(viewer);
-	glutSwapBuffers();
-}
+  if (initialize_viewer(argv[1])) {
+    return -1;
+  }
 
-static void resize(int w, int h)
-{
-	FbvResize(viewer, w, h);
-	glutPostRedisplay();
-}
-
-static void mouse(int button, int state, int x, int y)
-{
-	if (state == GLUT_DOWN) {
-		MouseButton btn = MB_NONE;
-		switch (button)
-		{
-		case GLUT_LEFT_BUTTON:
-			btn = MB_LEFT;
-			break;
-		case GLUT_MIDDLE_BUTTON:
-			btn = MB_MIDDLE;
-			break;
-		case GLUT_RIGHT_BUTTON:
-			btn = MB_RIGHT;
-			break;
-		default:
-			break;
-		}
-		FbvPressButton(viewer, btn, x, y);
-	} else if (state == GLUT_UP) {
-		FbvReleaseButton(viewer, MB_NONE, x, y);
-	}
-}
-
-static void motion(int x, int y)
-{
-	FbvMoveMouse(viewer, x, y);
-	glutPostRedisplay();
-}
-
-static void keyboard(unsigned char key, int x, int y)
-{
-	FbvPressKey(viewer, key, x, y);
-	glutPostRedisplay();
-}
-
-static int initialize_viewer(const char *filename)
-{
-	int databox[4] = {0, 0, 0, 0};
-	int viewbox[4] = {0, 0, 0, 0};
-
-	/* create viewer */
-	viewer = FbvNewViewer();
-	if (viewer == NULL) {
-		fprintf(stderr, "Could not allocate FrameBufferViewer\n");
-		return -1;
-	}
-
-	/* register cleanup function */
-	if (atexit(exit_viewer) != 0) {
-		fprintf(stderr, "Could not register viewer_exit()\n");
-	}
-
-	/* load image */
-	{
-		if (FbvLoadImage(viewer, filename)) {
-			fprintf(stderr, "Could not open framebuffer file: %s\n", filename);
-			return -1;
-		} else {
-			const char *format;
-			int nchannels;
-			/* get image size info */
-			FbvGetImageSize(viewer, databox, viewbox, &nchannels);
-			switch (nchannels) {
-			case 3:
-				format = "RGB";
-				break;
-			case 4:
-				format = "RGBA";
-				break;
-			default:
-				format = "UNKNOWN";
-				break;
-			}
-			printf("%d x %d: %s\n", viewbox[2]-viewbox[0], viewbox[3]-viewbox[1], format);
-			printf("databox: %d %d %d %d\n", databox[0], databox[1], databox[2], databox[3]);
-			printf("viewbox: %d %d %d %d\n", viewbox[0], viewbox[1], viewbox[2], viewbox[3]);
-		}
-	}
+  glutMainLoop();
 
   return 0;
 }
 
+static void exit_viewer(void)
+{
+  FbvFreeViewer(viewer);
+}
+
+static void display(void)
+{
+  FbvDraw(viewer);
+  glutSwapBuffers();
+}
+
+static void resize(int w, int h)
+{
+  FbvResize(viewer, w, h);
+  glutPostRedisplay();
+}
+
+static void mouse(int button, int state, int x, int y)
+{
+  if (state == GLUT_DOWN) {
+    MouseButton btn = MB_NONE;
+    switch (button)
+    {
+    case GLUT_LEFT_BUTTON:
+      btn = MB_LEFT;
+      break;
+    case GLUT_MIDDLE_BUTTON:
+      btn = MB_MIDDLE;
+      break;
+    case GLUT_RIGHT_BUTTON:
+      btn = MB_RIGHT;
+      break;
+    default:
+      break;
+    }
+    FbvPressButton(viewer, btn, x, y);
+  } else if (state == GLUT_UP) {
+    FbvReleaseButton(viewer, MB_NONE, x, y);
+  }
+}
+
+static void motion(int x, int y)
+{
+  FbvMoveMouse(viewer, x, y);
+  glutPostRedisplay();
+}
+
+static void keyboard(unsigned char key, int x, int y)
+{
+  FbvPressKey(viewer, key, x, y);
+  glutPostRedisplay();
+}
+
+static int initialize_viewer(const char *filename)
+{
+  int databox[4] = {0, 0, 0, 0};
+  int viewbox[4] = {0, 0, 0, 0};
+
+  /* create viewer */
+  viewer = FbvNewViewer();
+  if (viewer == NULL) {
+    fprintf(stderr, "Could not allocate FrameBufferViewer\n");
+    return -1;
+  }
+
+  /* register cleanup function */
+  if (atexit(exit_viewer) != 0) {
+    fprintf(stderr, "Could not register viewer_exit()\n");
+  }
+
+  /* load image */
+  {
+    if (FbvLoadImage(viewer, filename)) {
+      fprintf(stderr, "Could not open framebuffer file: %s\n", filename);
+      return -1;
+    } else {
+      const char *format;
+      int nchannels;
+      /* get image size info */
+      FbvGetImageSize(viewer, databox, viewbox, &nchannels);
+      switch (nchannels) {
+      case 3:
+        format = "RGB";
+        break;
+      case 4:
+        format = "RGBA";
+        break;
+      default:
+        format = "UNKNOWN";
+        break;
+      }
+      printf("%d x %d: %s\n", viewbox[2]-viewbox[0], viewbox[3]-viewbox[1], format);
+      printf("databox: %d %d %d %d\n", databox[0], databox[1], databox[2], databox[3]);
+      printf("viewbox: %d %d %d %d\n", viewbox[0], viewbox[1], viewbox[2], viewbox[3]);
+    }
+  }
+
+  return 0;
+}

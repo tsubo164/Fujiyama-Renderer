@@ -13,8 +13,8 @@ extern "C" {
 struct FrameBuffer;
 
 struct BufferInfo {
-	int databox[4];
-	int viewbox[4];
+  int databox[4];
+  int viewbox[4];
   int tilesize;
 };
 #define BUFINFO_INIT {{0,0,0,0},{0,0,0,0},0}

@@ -11,10 +11,10 @@ extern "C" {
 #endif
 
 typedef enum MouseButton {
-	MB_NONE = 0,
-	MB_LEFT,
-	MB_MIDDLE,
-	MB_RIGHT
+  MB_NONE = 0,
+  MB_LEFT,
+  MB_MIDDLE,
+  MB_RIGHT
 } MouseButton;
 
 struct FrameBufferViewer;
@@ -31,11 +31,10 @@ extern void FbvPressKey(struct FrameBufferViewer *v, unsigned char key, int mous
 
 extern int FbvLoadImage(struct FrameBufferViewer *v, const char *filename);
 extern void FbvGetImageSize(const struct FrameBufferViewer *v,
-		int databox[4], int viewbox[4], int *nchannels);
+    int databox[4], int viewbox[4], int *nchannels);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 #endif /* XXX_H */
-

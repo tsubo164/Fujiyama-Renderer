@@ -10,14 +10,13 @@ See LICENSE and README
 extern "C" {
 #endif
 
-void *OsDlopen(const char *filename);
-void *OsDlsym(void *handle, const char *symbol);
-char *OsDlerror(void *handle);
-int OsDlclose(void *handle);
+extern void *OsDlopen(const char *filename);
+extern void *OsDlsym(void *handle, const char *symbol);
+extern char *OsDlerror(void *handle);
+extern int OsDlclose(void *handle);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 #endif /* XXX_H */
-
