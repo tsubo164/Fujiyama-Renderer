@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{04EB4B4B-92E2-40BB-8CE1-866428361813}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>CoreLibrary</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;CORELIBRARY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4996;4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;CORELIBRARY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\src\Accelerator.c" />
+    <ClCompile Include="..\..\..\..\src\Array.c" />
+    <ClCompile Include="..\..\..\..\src\Box.c" />
+    <ClCompile Include="..\..\..\..\src\BVHAccelerator.c" />
+    <ClCompile Include="..\..\..\..\src\Camera.c" />
+    <ClCompile Include="..\..\..\..\src\Color.c" />
+    <ClCompile Include="..\..\..\..\src\Curve.c" />
+    <ClCompile Include="..\..\..\..\src\CurveIO.c" />
+    <ClCompile Include="..\..\..\..\src\Filter.c" />
+    <ClCompile Include="..\..\..\..\src\FrameBuffer.c" />
+    <ClCompile Include="..\..\..\..\src\FrameBufferIO.c" />
+    <ClCompile Include="..\..\..\..\src\GridAccelerator.c" />
+    <ClCompile Include="..\..\..\..\src\ImportanceSampling.c" />
+    <ClCompile Include="..\..\..\..\src\Interval.c" />
+    <ClCompile Include="..\..\..\..\src\IO.c" />
+    <ClCompile Include="..\..\..\..\src\Light.c" />
+    <ClCompile Include="..\..\..\..\src\Matrix.c" />
+    <ClCompile Include="..\..\..\..\src\Mesh.c" />
+    <ClCompile Include="..\..\..\..\src\MeshIO.c" />
+    <ClCompile Include="..\..\..\..\src\Mipmap.c" />
+    <ClCompile Include="..\..\..\..\src\Noise.c" />
+    <ClCompile Include="..\..\..\..\src\Numeric.c" />
+    <ClCompile Include="..\..\..\..\src\ObjectGroup.c" />
+    <ClCompile Include="..\..\..\..\src\ObjectInstance.c" />
+    <ClCompile Include="..\..\..\..\src\OS.c" />
+    <ClCompile Include="..\..\..\..\src\Plugin.c" />
+    <ClCompile Include="..\..\..\..\src\PointCloud.c" />
+    <ClCompile Include="..\..\..\..\src\PointCloudIO.c" />
+    <ClCompile Include="..\..\..\..\src\PrimitiveSet.c" />
+    <ClCompile Include="..\..\..\..\src\Procedure.c" />
+    <ClCompile Include="..\..\..\..\src\Progress.c" />
+    <ClCompile Include="..\..\..\..\src\Property.c" />
+    <ClCompile Include="..\..\..\..\src\Random.c" />
+    <ClCompile Include="..\..\..\..\src\Renderer.c" />
+    <ClCompile Include="..\..\..\..\src\Sampler.c" />
+    <ClCompile Include="..\..\..\..\src\Scene.c" />
+    <ClCompile Include="..\..\..\..\src\SceneInterface.c" />
+    <ClCompile Include="..\..\..\..\src\Shader.c" />
+    <ClCompile Include="..\..\..\..\src\SL.c" />
+    <ClCompile Include="..\..\..\..\src\String.c" />
+    <ClCompile Include="..\..\..\..\src\TexCoord.c" />
+    <ClCompile Include="..\..\..\..\src\Texture.c" />
+    <ClCompile Include="..\..\..\..\src\Tiler.c" />
+    <ClCompile Include="..\..\..\..\src\Timer.c" />
+    <ClCompile Include="..\..\..\..\src\Transform.c" />
+    <ClCompile Include="..\..\..\..\src\Triangle.c" />
+    <ClCompile Include="..\..\..\..\src\Turbulence.c" />
+    <ClCompile Include="..\..\..\..\src\Vector.c" />
+    <ClCompile Include="..\..\..\..\src\Volume.c" />
+    <ClCompile Include="..\..\..\..\src\VolumeAccelerator.c" />
+    <ClCompile Include="..\..\..\..\src\VolumeFilling.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\src\Accelerator.h" />
+    <ClInclude Include="..\..\..\..\src\Array.h" />
+    <ClInclude Include="..\..\..\..\src\Box.h" />
+    <ClInclude Include="..\..\..\..\src\BVHAccelerator.h" />
+    <ClInclude Include="..\..\..\..\src\Camera.h" />
+    <ClInclude Include="..\..\..\..\src\Color.h" />
+    <ClInclude Include="..\..\..\..\src\Compatibility.h" />
+    <ClInclude Include="..\..\..\..\src\Curve.h" />
+    <ClInclude Include="..\..\..\..\src\CurveIO.h" />
+    <ClInclude Include="..\..\..\..\src\Filter.h" />
+    <ClInclude Include="..\..\..\..\src\FrameBuffer.h" />
+    <ClInclude Include="..\..\..\..\src\FrameBufferIO.h" />
+    <ClInclude Include="..\..\..\..\src\GridAccelerator.h" />
+    <ClInclude Include="..\..\..\..\src\ImportanceSampling.h" />
+    <ClInclude Include="..\..\..\..\src\Intersection.h" />
+    <ClInclude Include="..\..\..\..\src\Interval.h" />
+    <ClInclude Include="..\..\..\..\src\IO.h" />
+    <ClInclude Include="..\..\..\..\src\Light.h" />
+    <ClInclude Include="..\..\..\..\src\Matrix.h" />
+    <ClInclude Include="..\..\..\..\src\Memory.h" />
+    <ClInclude Include="..\..\..\..\src\Mesh.h" />
+    <ClInclude Include="..\..\..\..\src\MeshIO.h" />
+    <ClInclude Include="..\..\..\..\src\Mipmap.h" />
+    <ClInclude Include="..\..\..\..\src\Noise.h" />
+    <ClInclude Include="..\..\..\..\src\Numeric.h" />
+    <ClInclude Include="..\..\..\..\src\ObjectGroup.h" />
+    <ClInclude Include="..\..\..\..\src\ObjectInstance.h" />
+    <ClInclude Include="..\..\..\..\src\OS.h" />
+    <ClInclude Include="..\..\..\..\src\Plugin.h" />
+    <ClInclude Include="..\..\..\..\src\PointCloud.h" />
+    <ClInclude Include="..\..\..\..\src\PointCloudIO.h" />
+    <ClInclude Include="..\..\..\..\src\PrimitiveSet.h" />
+    <ClInclude Include="..\..\..\..\src\Procedure.h" />
+    <ClInclude Include="..\..\..\..\src\Progress.h" />
+    <ClInclude Include="..\..\..\..\src\Property.h" />
+    <ClInclude Include="..\..\..\..\src\Random.h" />
+    <ClInclude Include="..\..\..\..\src\Ray.h" />
+    <ClInclude Include="..\..\..\..\src\Renderer.h" />
+    <ClInclude Include="..\..\..\..\src\Sampler.h" />
+    <ClInclude Include="..\..\..\..\src\Scene.h" />
+    <ClInclude Include="..\..\..\..\src\SceneInterface.h" />
+    <ClInclude Include="..\..\..\..\src\Shader.h" />
+    <ClInclude Include="..\..\..\..\src\SL.h" />
+    <ClInclude Include="..\..\..\..\src\String.h" />
+    <ClInclude Include="..\..\..\..\src\TexCoord.h" />
+    <ClInclude Include="..\..\..\..\src\Texture.h" />
+    <ClInclude Include="..\..\..\..\src\Tiler.h" />
+    <ClInclude Include="..\..\..\..\src\Timer.h" />
+    <ClInclude Include="..\..\..\..\src\Transform.h" />
+    <ClInclude Include="..\..\..\..\src\Triangle.h" />
+    <ClInclude Include="..\..\..\..\src\Turbulence.h" />
+    <ClInclude Include="..\..\..\..\src\Vector.h" />
+    <ClInclude Include="..\..\..\..\src\Volume.h" />
+    <ClInclude Include="..\..\..\..\src\VolumeAccelerator.h" />
+    <ClInclude Include="..\..\..\..\src\VolumeFilling.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

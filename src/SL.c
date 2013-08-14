@@ -202,7 +202,7 @@ struct TraceContext SlCameraContext(const struct ObjectGroup *target)
 
 	cxt.time = 0;
 
-	cxt.opacity_threshold = .995;
+	cxt.opacity_threshold = .995f;
 	cxt.raymarch_step = .05;
 	cxt.raymarch_shadow_step = .05;
 	cxt.raymarch_reflect_step = .05;

@@ -442,7 +442,7 @@ static int render_scene(struct Renderer *renderer)
 		printf(" Tile Done: %d/%d (%d %%)\n",
 				tile->id+1,
 				TlrGetTileCount(tiler),
-				(int ) ((tile->id+1) / (double )TlrGetTileCount(tiler) * 100));
+				(int) ((tile->id+1) / (double) TlrGetTileCount(tiler) * 100));
 		PrgDone(progress);
 	}
 	elapse = TimerGetElapse(&timer);
