@@ -28,10 +28,10 @@ extern float *FbGetWritable(struct FrameBuffer *fb, int x, int y, int z);
 extern const float *FbGetReadOnly(const struct FrameBuffer *fb, int x, int y, int z);
 
 extern void FbGetColor(const struct FrameBuffer *fb, int x, int y, struct Color4 *rgba);
+extern void FbSetColor(struct FrameBuffer *fb, int x, int y, const struct Color4 *rgba);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 #endif /* XXX_H */
-

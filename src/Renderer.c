@@ -55,6 +55,17 @@ static int prepare_render(struct Renderer *renderer);
 static int render_scene(struct Renderer *renderer);
 static int preprocess_lights(struct Renderer *renderer);
 
+static struct Color4 apply_pixel_filter(const struct Filter *filter,
+    struct Sample *pixel_samples, int nsamples,
+    int xres, int yres, int x, int y);
+static void reconstruct_image(
+    struct FrameBuffer *fb,
+    struct Sampler *sampler,
+    const struct Filter *filter,
+    struct Sample *pixel_samples,
+    int xres, int yres,
+    const int *pixel_bounds);
+
 struct Renderer *RdrNew(void)
 {
 	struct Renderer *renderer = MEM_ALLOC(struct Renderer);
@@ -275,7 +286,9 @@ static int render_scene(struct Renderer *renderer)
 	/* context */
 	struct TraceContext cxt;
 
+/*
 	int x, y;
+*/
 	struct Sample *pixelsmps = NULL;
 	struct Sample *smp = NULL;
 	struct Ray ray;
@@ -400,11 +413,29 @@ static int render_scene(struct Renderer *renderer)
 			PrgIncrement(progress);
 		}
 
+    reconstruct_image(
+        fb,
+        sampler,
+        filter,
+        pixelsmps,
+        xres, yres,
+        pixel_bounds);
+
+#if 0
 		for (y = pixel_bounds[1]; y < pixel_bounds[3]; y++) {
 			for (x = pixel_bounds[0]; x < pixel_bounds[2]; x++) {
+				const int nsamples = SmpGetSampleCountForPixel(sampler);
+        struct Color4 pixel = {0, 0, 0, 0};
+				SmpGetPixelSamples(sampler, pixelsmps, x, y);
+
+        /* TODO remove xres, yres, x, y parameters by pre-computing weights */
+        pixel = apply_pixel_filter(filter, pixelsmps, nsamples,
+            xres, yres, x, y);
+
+				FbSetColor(fb, x, y, &pixel);
+#if 0
 				const int NSAMPLES = SmpGetSampleCountForPixel(sampler);
-				float *dst = NULL;
-				float pixel[4] = {0, 0, 0, 0};
+        struct Color4 pixel = {0, 0, 0, 0};
 				float sum = 0;
 				int i;
 
@@ -418,27 +449,25 @@ static int render_scene(struct Renderer *renderer)
 					filtx = xres * sample->uv.x - (x + .5);
 					filty = yres * (1-sample->uv.y) - (y + .5);
 					wgt = FltEvaluate(filter, filtx, filty);
-					pixel[0] += wgt * sample->data[0];
-					pixel[1] += wgt * sample->data[1];
-					pixel[2] += wgt * sample->data[2];
-					pixel[3] += wgt * sample->data[3];
+					pixel.r += wgt * sample->data[0];
+					pixel.g += wgt * sample->data[1];
+					pixel.b += wgt * sample->data[2];
+					pixel.a += wgt * sample->data[3];
 					sum += wgt;
 				}
 				{
-					const float inv_sum = 1. / sum;
-					pixel[0] *= inv_sum;
-					pixel[1] *= inv_sum;
-					pixel[2] *= inv_sum;
-					pixel[3] *= inv_sum;
+					const float inv_sum = 1.f / sum;
+					pixel.r *= inv_sum;
+					pixel.g *= inv_sum;
+					pixel.b *= inv_sum;
+					pixel.a *= inv_sum;
 				}
 
-				dst = FbGetWritable(fb, x, y, 0);
-				dst[0] = pixel[0];
-				dst[1] = pixel[1];
-				dst[2] = pixel[2];
-				dst[3] = pixel[3];
+				FbSetColor(fb, x, y, &pixel);
+#endif
 			}
 		}
+#endif
 		printf(" Tile Done: %d/%d (%d %%)\n",
 				tile->id+1,
 				TlrGetTileCount(tiler),
@@ -477,3 +506,65 @@ static int preprocess_lights(struct Renderer *renderer)
 	return 0;
 }
 
+static struct Color4 apply_pixel_filter(const struct Filter *filter,
+    struct Sample *pixel_samples, int nsamples,
+    int xres, int yres, int x, int y)
+{
+  struct Color4 pixel = {0, 0, 0, 0};
+  float sum = 0.f, inv_sum = 0.f;
+  int i;
+
+  for (i = 0; i < nsamples; i++) {
+    struct Sample *sample = &pixel_samples[i];
+    double filtx = 0, filty = 0;
+    double wgt = 0;
+
+    filtx = xres * sample->uv.x - (x + .5);
+    filty = yres * (1-sample->uv.y) - (y + .5);
+    wgt = FltEvaluate(filter, filtx, filty);
+
+    pixel.r += wgt * sample->data[0];
+    pixel.g += wgt * sample->data[1];
+    pixel.b += wgt * sample->data[2];
+    pixel.a += wgt * sample->data[3];
+    sum += wgt;
+  }
+
+  inv_sum = 1.f / sum;
+  pixel.r *= inv_sum;
+  pixel.g *= inv_sum;
+  pixel.b *= inv_sum;
+  pixel.a *= inv_sum;
+
+  return pixel;
+}
+
+static void reconstruct_image(
+    struct FrameBuffer *fb,
+    struct Sampler *sampler,
+    const struct Filter *filter,
+    struct Sample *pixel_samples,
+    int xres, int yres,
+    const int *pixel_bounds)
+{
+#if 0
+#endif
+  int x, y;
+  /*
+  int xres, yres;
+  */
+
+  for (y = pixel_bounds[1]; y < pixel_bounds[3]; y++) {
+    for (x = pixel_bounds[0]; x < pixel_bounds[2]; x++) {
+      const int nsamples = SmpGetSampleCountForPixel(sampler);
+      struct Color4 pixel = {0, 0, 0, 0};
+      SmpGetPixelSamples(sampler, pixel_samples, x, y);
+
+      /* TODO remove xres, yres, x, y parameters by pre-computing weights */
+      pixel = apply_pixel_filter(filter, pixel_samples, nsamples,
+          xres, yres, x, y);
+
+      FbSetColor(fb, x, y, &pixel);
+    }
+  }
+}
