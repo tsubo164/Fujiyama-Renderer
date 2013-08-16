@@ -5,6 +5,7 @@ See LICENSE and README
 
 #include "Renderer.h"
 #include "FrameBuffer.h"
+#include "Rectangle.h"
 #include "Progress.h"
 #include "Property.h"
 #include "Numeric.h"
@@ -55,6 +56,8 @@ static int prepare_render(struct Renderer *renderer);
 static int render_scene(struct Renderer *renderer);
 static int preprocess_lights(struct Renderer *renderer);
 
+/* TODO TEST */
+int render_scene__(struct Renderer *renderer);
 static struct Color4 apply_pixel_filter(const struct Filter *filter,
     struct Sample *pixel_samples, int nsamples,
     int xres, int yres, int x, int y);
@@ -242,7 +245,10 @@ int RdrRender(struct Renderer *renderer)
 		return -1;
 	}
 
-	err = render_scene(renderer);
+  if (0)
+    err = render_scene(renderer);
+  else
+    err = render_scene__(renderer);
 	if (err) {
 		/* TODO error handling */
 		return -1;
@@ -553,18 +559,305 @@ static void reconstruct_image(
   /*
   int xres, yres;
   */
+  struct Sample *pixelsmps = SmpAllocatePixelSamples(sampler);
+  /*
+  */
 
   for (y = pixel_bounds[1]; y < pixel_bounds[3]; y++) {
     for (x = pixel_bounds[0]; x < pixel_bounds[2]; x++) {
       const int nsamples = SmpGetSampleCountForPixel(sampler);
       struct Color4 pixel = {0, 0, 0, 0};
-      SmpGetPixelSamples(sampler, pixel_samples, x, y);
+      SmpGetPixelSamples(sampler, pixelsmps, x, y);
 
       /* TODO remove xres, yres, x, y parameters by pre-computing weights */
-      pixel = apply_pixel_filter(filter, pixel_samples, nsamples,
+      pixel = apply_pixel_filter(filter, pixelsmps, nsamples,
           xres, yres, x, y);
 
       FbSetColor(fb, x, y, &pixel);
     }
   }
+
+	SmpFreePixelSamples(pixelsmps);
+  /*
+  */
+}
+
+/* TODO TEST */
+struct Worker {
+	struct Camera *camera;
+	struct FrameBuffer *framebuffer;
+  struct Progress *progress;
+  struct Sampler *sampler;
+	struct Filter *filter;
+	struct Sample *pixel_samples;
+
+	struct TraceContext context;
+  struct Rectangle region;
+
+  int xres, yres;
+};
+#define WORKER_INIT {NULL,NULL,NULL,NULL,0,0,{0,0,0,0}}
+void init_worker(struct Worker *worker, struct Renderer *renderer)
+{
+	const int xres = renderer->resolution[0];
+	const int yres = renderer->resolution[1];
+	const int xrate = renderer->pixelsamples[0];
+	const int yrate = renderer->pixelsamples[1];
+	const double xfwidth = renderer->filterwidth[0];
+	const double yfwidth = renderer->filterwidth[1];
+
+	worker->camera = renderer->camera;
+	worker->framebuffer = renderer->framebuffers;
+
+  worker->xres = xres;
+  worker->yres = yres;
+
+	/* Progress */
+	worker->progress = PrgNew();
+	if (worker->progress == NULL) {
+    /*
+		render_state = -1;
+		goto cleanup_and_exit;
+    */
+	}
+
+	/* Sampler */
+	worker->sampler = SmpNew(xres, yres, xrate, yrate, xfwidth, yfwidth);
+	if (worker->sampler == NULL) {
+    /*
+		render_state = -1;
+		goto cleanup_and_exit;
+    */
+	}
+	SmpSetJitter(worker->sampler, renderer->jitter);
+	SmpSetSampleTimeRange(worker->sampler,
+      renderer->sample_time_start, renderer->sample_time_end);
+	worker->pixel_samples = SmpAllocatePixelSamples(worker->sampler);
+
+	/* Filter */
+	worker->filter = FltNew(FLT_GAUSSIAN, xfwidth, yfwidth);
+	if (worker->filter == NULL) {
+    /*
+		render_state = -1;
+		goto cleanup_and_exit;
+    */
+	}
+
+	/* context */
+	worker->context = SlCameraContext(renderer->target_objects);
+	worker->context.cast_shadow = renderer->cast_shadow;
+	worker->context.max_reflect_depth = renderer->max_reflect_depth;
+	worker->context.max_refract_depth = renderer->max_refract_depth;
+	worker->context.raymarch_step = renderer->raymarch_step;
+	worker->context.raymarch_shadow_step = renderer->raymarch_shadow_step;
+	worker->context.raymarch_reflect_step = renderer->raymarch_reflect_step;
+	worker->context.raymarch_refract_step = renderer->raymarch_refract_step;
+
+  /* region */
+	worker->region.xmin = 0;
+	worker->region.xmax = 0;
+	worker->region.ymin = 0;
+	worker->region.ymax = 0;
+}
+
+void set_working_region(struct Worker *worker, const int *region)
+{
+	worker->region.xmin = region[0];
+	worker->region.ymin = region[1];
+	worker->region.xmax = region[2];
+	worker->region.ymax = region[3];
+}
+
+void finish_worker(struct Worker *worker)
+{
+	SmpFreePixelSamples(worker->pixel_samples);
+	PrgFree(worker->progress);
+	SmpFree(worker->sampler);
+	FltFree(worker->filter);
+}
+
+static struct Color4 apply_pixel_filter__(struct Worker *worker, int x, int y)
+{
+  const int nsamples = SmpGetSampleCountForPixel(worker->sampler);
+  const int xres = worker->xres;
+  const int yres = worker->yres;
+  struct Sample *pixel_samples = worker->pixel_samples;
+  struct Filter *filter = worker->filter;
+
+  struct Color4 pixel = {0, 0, 0, 0};
+  float wgt_sum = 0.f;
+  float inv_sum = 0.f;
+  int i;
+
+  for (i = 0; i < nsamples; i++) {
+    struct Sample *sample = &pixel_samples[i];
+    double filtx = 0, filty = 0;
+    double wgt = 0;
+
+    filtx = xres * sample->uv.x - (x + .5);
+    filty = yres * (1-sample->uv.y) - (y + .5);
+    wgt = FltEvaluate(filter, filtx, filty);
+
+    pixel.r += wgt * sample->data[0];
+    pixel.g += wgt * sample->data[1];
+    pixel.b += wgt * sample->data[2];
+    pixel.a += wgt * sample->data[3];
+    wgt_sum += wgt;
+  }
+
+  inv_sum = 1.f / wgt_sum;
+  pixel.r *= inv_sum;
+  pixel.g *= inv_sum;
+  pixel.b *= inv_sum;
+  pixel.a *= inv_sum;
+
+  return pixel;
+}
+
+static void reconstruct_image__(
+    struct Worker *worker,
+    struct FrameBuffer *fb)
+{
+  const int xmin = worker->region.xmin;
+  const int ymin = worker->region.ymin;
+  const int xmax = worker->region.xmax;
+  const int ymax = worker->region.ymax;
+  int x, y;
+
+  for (y = ymin; y < ymax; y++) {
+    for (x = xmin; x < xmax; x++) {
+      struct Color4 pixel = {0, 0, 0, 0};
+
+      SmpGetPixelSamples(worker->sampler, worker->pixel_samples, x, y);
+      pixel = apply_pixel_filter__(worker, x, y);
+
+      FbSetColor(fb, x, y, &pixel);
+    }
+  }
+}
+
+static void work_start(struct Worker *worker)
+{
+		PrgStart(worker->progress, SmpGetSampleCount(worker->sampler));
+}
+
+static void work_doen(struct Worker *worker)
+{
+		PrgDone(worker->progress);
+}
+
+static void integrate_samples(struct Worker *worker)
+{
+  struct Sample *smp = NULL;
+  struct TraceContext cxt = worker->context;
+	struct Ray ray;
+
+  while ((smp = SmpGetNextSample(worker->sampler)) != NULL) {
+    struct Color4 C_trace = {0, 0, 0, 0};
+    double t_hit = FLT_MAX;
+    int hit = 0;
+
+    CamGetRay(worker->camera, &smp->uv, smp->time, &ray);
+    cxt.time = smp->time;
+
+    hit = SlTrace(&cxt, &ray.orig, &ray.dir, ray.tmin, ray.tmax, &C_trace, &t_hit);
+    if (hit) {
+      smp->data[0] = C_trace.r;
+      smp->data[1] = C_trace.g;
+      smp->data[2] = C_trace.b;
+      smp->data[3] = C_trace.a;
+    } else {
+      smp->data[0] = 0;
+      smp->data[1] = 0;
+      smp->data[2] = 0;
+      smp->data[3] = 0;
+    }
+
+    PrgIncrement(worker->progress);
+  }
+}
+
+int render_scene__(struct Renderer *renderer)
+{
+	struct FrameBuffer *fb = renderer->framebuffers;
+	struct Timer timer;
+	struct Elapse elapse;
+
+	/* aux */
+	struct Tiler *tiler = NULL;
+	struct Tile *tile = NULL;
+
+	int region[4] = {0};
+	int render_state = 0;
+	int err = 0;
+
+	const int xres = renderer->resolution[0];
+	const int yres = renderer->resolution[1];
+	const int xtilesize = renderer->tilesize[0];
+	const int ytilesize = renderer->tilesize[1];
+
+  struct Worker worker[1];
+  init_worker(&worker[0], renderer);
+
+	/* Tiler */
+	tiler = TlrNew(xres, yres, xtilesize, ytilesize);
+	if (tiler == NULL) {
+		render_state = -1;
+		goto cleanup_and_exit;
+	}
+
+	/* region */
+	BOX2_COPY(region, renderer->render_region);
+	TlrGenerateTiles(tiler, region[0], region[1], region[2], region[3]);
+
+	/* preprocessing lights */
+	printf("Preprocessing lights ...\n");
+	TimerStart(&timer);
+	err = preprocess_lights(renderer);
+	if (err) {
+		render_state = -1;
+		goto cleanup_and_exit;
+	}
+	elapse = TimerGetElapse(&timer);
+	printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
+
+	/* Run sampling */
+	TimerStart(&timer);
+	printf("Rendering ...\n");
+	while ((tile = TlrGetNextTile(tiler)) != NULL) {
+		int pixel_bounds[4] = {0};
+		pixel_bounds[0] = tile->xmin;
+		pixel_bounds[1] = tile->ymin;
+		pixel_bounds[2] = tile->xmax;
+		pixel_bounds[3] = tile->ymax;
+		if (SmpGenerateSamples(worker->sampler, pixel_bounds)) {
+			render_state = -1;
+			goto cleanup_and_exit;
+		}
+
+    set_working_region(&worker[0], pixel_bounds);
+
+    work_start(&worker[0]);
+
+    integrate_samples(&worker[0]);
+
+    reconstruct_image__(&worker[0], fb);
+
+		printf(" Tile Done: %d/%d (%d %%)\n",
+				tile->id+1,
+				TlrGetTileCount(tiler),
+				(int) ((tile->id+1) / (double) TlrGetTileCount(tiler) * 100));
+
+    work_doen(&worker[0]);
+	}
+	elapse = TimerGetElapse(&timer);
+	printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
+	printf("*** render_scene__ ***\n");
+
+cleanup_and_exit:
+	TlrFree(tiler);
+
+  finish_worker(&worker[0]);
+
+	return render_state;
 }
