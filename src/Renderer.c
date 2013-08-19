@@ -371,12 +371,12 @@ static int render_scene(struct Renderer *renderer)
   TimerStart(&timer);
   printf("Rendering ...\n");
   while ((tile = TlrGetNextTile(tiler)) != NULL) {
-    int pixel_bounds[4] = {0};
-    pixel_bounds[0] = tile->xmin;
-    pixel_bounds[1] = tile->ymin;
-    pixel_bounds[2] = tile->xmax;
-    pixel_bounds[3] = tile->ymax;
-    if (SmpGenerateSamples(sampler, pixel_bounds)) {
+    struct Rectangle pixel_bounds = {0, 0, 0, 0};
+    pixel_bounds.xmin = tile->xmin;
+    pixel_bounds.ymin = tile->ymin;
+    pixel_bounds.xmax = tile->xmax;
+    pixel_bounds.ymax = tile->ymax;
+    if (SmpGenerateSamples(sampler, &pixel_bounds)) {
       render_state = -1;
       goto cleanup_and_exit;
     }
@@ -407,8 +407,8 @@ static int render_scene(struct Renderer *renderer)
       PrgIncrement(progress);
     }
 
-    for (y = pixel_bounds[1]; y < pixel_bounds[3]; y++) {
-      for (x = pixel_bounds[0]; x < pixel_bounds[2]; x++) {
+    for (y = pixel_bounds.ymin; y < pixel_bounds.ymax; y++) {
+      for (x = pixel_bounds.xmin; x < pixel_bounds.xmax; x++) {
         const int NSAMPLES = SmpGetSampleCountForPixel(sampler);
         struct Color4 pixel = {0, 0, 0, 0};
         float sum = 0;
@@ -562,17 +562,13 @@ void init_worker(struct Worker *worker, struct Renderer *renderer)
 }
 
 void set_working_region(struct Worker *worker,
-    int region_id, int region_count, const int *region)
+    int region_id, int region_count, const struct Rectangle *region)
 {
   worker->region_id = region_id;
   worker->region_count = region_count;
+  worker->region = *region;
 
-  worker->region.xmin = region[0];
-  worker->region.ymin = region[1];
-  worker->region.xmax = region[2];
-  worker->region.ymax = region[3];
-
-  if (SmpGenerateSamples(worker->sampler, region)) {
+  if (SmpGenerateSamples(worker->sampler, &worker->region)) {
     /* TODO error handling */
   }
 }
@@ -741,13 +737,12 @@ int render_scene__(struct Renderer *renderer)
 
   for (i = 0; i < TlrGetTileCount(tiler); i++) {
     struct Tile *tile = TlrGetTile(tiler, i);
-    int pixel_bounds[4] = {0};
-    pixel_bounds[0] = tile->xmin;
-    pixel_bounds[1] = tile->ymin;
-    pixel_bounds[2] = tile->xmax;
-    pixel_bounds[3] = tile->ymax;
-
-    set_working_region(&worker[0], i, TlrGetTileCount(tiler), pixel_bounds);
+    struct Rectangle pixel_bounds = {0, 0, 0, 0};
+    pixel_bounds.xmin = tile->xmin;
+    pixel_bounds.ymin = tile->ymin;
+    pixel_bounds.xmax = tile->xmax;
+    pixel_bounds.ymax = tile->ymax;
+    set_working_region(&worker[0], i, TlrGetTileCount(tiler), &pixel_bounds);
 
     work_start(&worker[0]);
 

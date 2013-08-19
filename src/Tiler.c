@@ -75,7 +75,7 @@ struct Tile *TlrGetNextTile(struct Tiler *tiler)
   return tile;
 }
 
-struct Tile *TlrGetTile(struct Tiler *tiler, int index)
+struct Tile *TlrGetTile(const struct Tiler *tiler, int index)
 {
   if (index < 0 || index >= TlrGetTileCount(tiler)) {
     return NULL;

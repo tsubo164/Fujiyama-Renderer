@@ -24,7 +24,7 @@ extern int TlrGetTileCount(const struct Tiler *tiler);
 extern struct Tile *TlrGetNextTile(struct Tiler *tiler);
 
 /* TODO TEST */
-extern struct Tile *TlrGetTile(struct Tiler *tiler, int index);
+extern struct Tile *TlrGetTile(const struct Tiler *tiler, int index);
 
 extern int TlrGenerateTiles(struct Tiler *tiler, int xmin, int ymin, int xmax, int ymax);
 
