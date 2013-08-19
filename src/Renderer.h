@@ -48,4 +48,3 @@ extern int RdrRender(struct Renderer *renderer);
 #endif
 
 #endif /* XXX_H */
-

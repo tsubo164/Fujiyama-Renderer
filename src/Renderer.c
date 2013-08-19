@@ -34,7 +34,7 @@ struct Renderer {
   int nlights;
 
   int resolution[2];
-  int render_region[4];
+  struct Rectangle render_region;
   int pixelsamples[2];
   int tilesize[2];
   float filterwidth[2];
@@ -55,9 +55,6 @@ struct Renderer {
 static int prepare_render(struct Renderer *renderer);
 static int render_scene(struct Renderer *renderer);
 static int preprocess_lights(struct Renderer *renderer);
-
-/* TODO TEST */
-int render_scene__(struct Renderer *renderer);
 
 struct Renderer *RdrNew(void)
 {
@@ -116,7 +113,10 @@ void RdrSetRenderRegion(struct Renderer *renderer, int xmin, int ymin, int xmax,
   assert(xmin < xmax);
   assert(ymin < ymax);
 
-  BOX2_SET(renderer->render_region, xmin, ymin, xmax, ymax);
+  renderer->render_region.xmin = xmin;
+  renderer->render_region.ymin = ymin;
+  renderer->render_region.xmax = xmax;
+  renderer->render_region.ymax = ymax;
 }
 
 void RdrSetPixelSamples(struct Renderer *renderer, int xrate, int yrate)
@@ -235,10 +235,7 @@ int RdrRender(struct Renderer *renderer)
     return -1;
   }
 
-  if (0)
-    err = render_scene(renderer);
-  else
-    err = render_scene__(renderer);
+  err = render_scene(renderer);
   if (err) {
     /* TODO error handling */
     return -1;
@@ -271,193 +268,6 @@ static int prepare_render(struct Renderer *renderer)
   FbResize(fb, xres, yres, 4);
 
   return 0;
-}
-
-static int render_scene(struct Renderer *renderer)
-{
-  struct Camera *cam = renderer->camera;
-  struct FrameBuffer *fb = renderer->framebuffers;
-  struct ObjectGroup *target_objects = renderer->target_objects;
-
-  /* context */
-  struct TraceContext cxt;
-
-  int x, y;
-  struct Sample *pixelsmps = NULL;
-  struct Sample *smp = NULL;
-  struct Ray ray;
-  struct Timer timer;
-  struct Elapse elapse;
-  struct Progress *progress = NULL;
-
-  /* aux */
-  struct Sampler *sampler = NULL;
-  struct Filter *filter = NULL;
-  struct Tiler *tiler = NULL;
-  struct Tile *tile = NULL;
-
-  int region[4] = {0};
-  int render_state = 0;
-  int err = 0;
-
-  const int xres = renderer->resolution[0];
-  const int yres = renderer->resolution[1];
-  const int xrate = renderer->pixelsamples[0];
-  const int yrate = renderer->pixelsamples[1];
-  const double xfwidth = renderer->filterwidth[0];
-  const double yfwidth = renderer->filterwidth[1];
-  const int xtilesize = renderer->tilesize[0];
-  const int ytilesize = renderer->tilesize[1];
-
-  /* Progress */
-  progress = PrgNew();
-  if (progress == NULL) {
-    render_state = -1;
-    goto cleanup_and_exit;
-  }
-
-  /* Sampler */
-  sampler = SmpNew(xres, yres, xrate, yrate, xfwidth, yfwidth);
-  if (sampler == NULL) {
-    render_state = -1;
-    goto cleanup_and_exit;
-  }
-  SmpSetJitter(sampler, renderer->jitter);
-  SmpSetSampleTimeRange(sampler, renderer->sample_time_start, renderer->sample_time_end);
-
-  /* Filter */
-  filter = FltNew(FLT_GAUSSIAN, xfwidth, yfwidth);
-  if (filter == NULL) {
-    render_state = -1;
-    goto cleanup_and_exit;
-  }
-
-  /* Tiler */
-  tiler = TlrNew(xres, yres, xtilesize, ytilesize);
-  if (tiler == NULL) {
-    render_state = -1;
-    goto cleanup_and_exit;
-  }
-
-  /* context */
-  cxt = SlCameraContext(target_objects);
-  cxt.cast_shadow = renderer->cast_shadow;
-  cxt.max_reflect_depth = renderer->max_reflect_depth;
-  cxt.max_refract_depth = renderer->max_refract_depth;
-  cxt.raymarch_step = renderer->raymarch_step;
-  cxt.raymarch_shadow_step = renderer->raymarch_shadow_step;
-  cxt.raymarch_reflect_step = renderer->raymarch_reflect_step;
-  cxt.raymarch_refract_step = renderer->raymarch_refract_step;
-
-  /* region */
-  BOX2_COPY(region, renderer->render_region);
-  TlrGenerateTiles(tiler, region[0], region[1], region[2], region[3]);
-
-  /* samples for a pixel */
-  pixelsmps = SmpAllocatePixelSamples(sampler);
-
-  /* preprocessing lights */
-  printf("Preprocessing lights ...\n");
-  TimerStart(&timer);
-  err = preprocess_lights(renderer);
-  if (err) {
-    render_state = -1;
-    goto cleanup_and_exit;
-  }
-  elapse = TimerGetElapse(&timer);
-  printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
-
-  /* Run sampling */
-  TimerStart(&timer);
-  printf("Rendering ...\n");
-  while ((tile = TlrGetNextTile(tiler)) != NULL) {
-    struct Rectangle pixel_bounds = {0, 0, 0, 0};
-    pixel_bounds.xmin = tile->xmin;
-    pixel_bounds.ymin = tile->ymin;
-    pixel_bounds.xmax = tile->xmax;
-    pixel_bounds.ymax = tile->ymax;
-    if (SmpGenerateSamples(sampler, &pixel_bounds)) {
-      render_state = -1;
-      goto cleanup_and_exit;
-    }
-
-    PrgStart(progress, SmpGetSampleCount(sampler));
-
-    while ((smp = SmpGetNextSample(sampler)) != NULL) {
-      struct Color4 C_trace = {0, 0, 0, 0};
-      double t_hit = FLT_MAX;
-      int hit = 0;
-
-      CamGetRay(cam, &smp->uv, smp->time, &ray);
-      cxt.time = smp->time;
-
-      hit = SlTrace(&cxt, &ray.orig, &ray.dir, ray.tmin, ray.tmax, &C_trace, &t_hit);
-      if (hit) {
-        smp->data[0] = C_trace.r;
-        smp->data[1] = C_trace.g;
-        smp->data[2] = C_trace.b;
-        smp->data[3] = C_trace.a;
-      } else {
-        smp->data[0] = 0;
-        smp->data[1] = 0;
-        smp->data[2] = 0;
-        smp->data[3] = 0;
-      }
-
-      PrgIncrement(progress);
-    }
-
-    for (y = pixel_bounds.ymin; y < pixel_bounds.ymax; y++) {
-      for (x = pixel_bounds.xmin; x < pixel_bounds.xmax; x++) {
-        const int NSAMPLES = SmpGetSampleCountForPixel(sampler);
-        struct Color4 pixel = {0, 0, 0, 0};
-        float sum = 0;
-        int i;
-
-        SmpGetPixelSamples(sampler, pixelsmps, x, y);
-
-        for (i = 0; i < NSAMPLES; i++) {
-          struct Sample *sample = pixelsmps + i;
-          double filtx, filty;
-          double wgt;
-
-          filtx = xres * sample->uv.x - (x + .5);
-          filty = yres * (1-sample->uv.y) - (y + .5);
-          wgt = FltEvaluate(filter, filtx, filty);
-          pixel.r += wgt * sample->data[0];
-          pixel.g += wgt * sample->data[1];
-          pixel.b += wgt * sample->data[2];
-          pixel.a += wgt * sample->data[3];
-          sum += wgt;
-        }
-        {
-          const float inv_sum = 1.f / sum;
-          pixel.r *= inv_sum;
-          pixel.g *= inv_sum;
-          pixel.b *= inv_sum;
-          pixel.a *= inv_sum;
-        }
-
-        FbSetColor(fb, x, y, &pixel);
-      }
-    }
-    printf(" Tile Done: %d/%d (%d %%)\n",
-        tile->id+1,
-        TlrGetTileCount(tiler),
-        (int) ((tile->id+1) / (double) TlrGetTileCount(tiler) * 100));
-    PrgDone(progress);
-  }
-  elapse = TimerGetElapse(&timer);
-  printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
-
-cleanup_and_exit:
-  SmpFreePixelSamples(pixelsmps);
-  PrgFree(progress);
-  SmpFree(sampler);
-  FltFree(filter);
-  TlrFree(tiler);
-
-  return render_state;
 }
 
 static int preprocess_lights(struct Renderer *renderer)
@@ -561,12 +371,16 @@ void init_worker(struct Worker *worker, struct Renderer *renderer)
   worker->region.ymax = 0;
 }
 
-void set_working_region(struct Worker *worker,
-    int region_id, int region_count, const struct Rectangle *region)
+void set_working_region(struct Worker *worker, struct Tiler *tiler, int tile_id)
 {
-  worker->region_id = region_id;
-  worker->region_count = region_count;
-  worker->region = *region;
+  struct Tile *tile = TlrGetTile(tiler, tile_id);
+
+  worker->region_id = tile_id;
+  worker->region_count = TlrGetTileCount(tiler);
+  worker->region.xmin = tile->xmin;
+  worker->region.ymin = tile->ymin;
+  worker->region.xmax = tile->xmax;
+  worker->region.ymax = tile->ymax;
 
   if (SmpGenerateSamples(worker->sampler, &worker->region)) {
     /* TODO error handling */
@@ -646,7 +460,7 @@ static void work_start(struct Worker *worker)
     PrgStart(worker->progress, SmpGetSampleCount(worker->sampler));
 }
 
-static void work_doen(struct Worker *worker)
+static void work_done(struct Worker *worker)
 {
   printf(" Tile Done: %d/%d (%d %%)\n",
       worker->region_id + 1,
@@ -687,19 +501,16 @@ static void integrate_samples(struct Worker *worker)
   }
 }
 
-int render_scene__(struct Renderer *renderer)
+static int render_scene(struct Renderer *renderer)
 {
   struct FrameBuffer *fb = renderer->framebuffers;
   struct Timer timer;
   struct Elapse elapse;
-
-  /* aux */
   struct Tiler *tiler = NULL;
-  int i;
 
-  int region[4] = {0};
   int render_state = 0;
   int err = 0;
+  int i;
 
   const int xres = renderer->resolution[0];
   const int yres = renderer->resolution[1];
@@ -708,17 +519,6 @@ int render_scene__(struct Renderer *renderer)
 
   struct Worker worker[1];
   init_worker(&worker[0], renderer);
-
-  /* Tiler */
-  tiler = TlrNew(xres, yres, xtilesize, ytilesize);
-  if (tiler == NULL) {
-    render_state = -1;
-    goto cleanup_and_exit;
-  }
-
-  /* region */
-  BOX2_COPY(region, renderer->render_region);
-  TlrGenerateTiles(tiler, region[0], region[1], region[2], region[3]);
 
   /* preprocessing lights */
   printf("Preprocessing lights ...\n");
@@ -731,18 +531,20 @@ int render_scene__(struct Renderer *renderer)
   elapse = TimerGetElapse(&timer);
   printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
 
+  /* Tiler */
+  tiler = TlrNew(xres, yres, xtilesize, ytilesize);
+  if (tiler == NULL) {
+    render_state = -1;
+    goto cleanup_and_exit;
+  }
+  TlrGenerateTiles(tiler, &renderer->render_region);
+
   /* Run sampling */
   TimerStart(&timer);
   printf("Rendering ...\n");
 
   for (i = 0; i < TlrGetTileCount(tiler); i++) {
-    struct Tile *tile = TlrGetTile(tiler, i);
-    struct Rectangle pixel_bounds = {0, 0, 0, 0};
-    pixel_bounds.xmin = tile->xmin;
-    pixel_bounds.ymin = tile->ymin;
-    pixel_bounds.xmax = tile->xmax;
-    pixel_bounds.ymax = tile->ymax;
-    set_working_region(&worker[0], i, TlrGetTileCount(tiler), &pixel_bounds);
+    set_working_region(&worker[0], tiler, i);
 
     work_start(&worker[0]);
 
@@ -750,12 +552,11 @@ int render_scene__(struct Renderer *renderer)
 
     reconstruct_image__(&worker[0], fb);
 
-    work_doen(&worker[0]);
+    work_done(&worker[0]);
   }
 
   elapse = TimerGetElapse(&timer);
   printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
-  printf("*** render_scene__ ***\n");
 
 cleanup_and_exit:
   TlrFree(tiler);
