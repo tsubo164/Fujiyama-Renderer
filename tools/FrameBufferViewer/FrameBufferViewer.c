@@ -15,6 +15,7 @@ See LICENSE and README
 
 #include "glsl_shaders.h"
 #include "load_images.h"
+#include "draw_image.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -24,111 +25,13 @@ See LICENSE and README
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-/* TODO TEST IMAGE DRAWER */
-enum {
-  DISPLAY_RGB = -1,
-  DISPLAY_R = 0,
-  DISPLAY_G = 1,
-  DISPLAY_B = 2,
-  DISPLAY_A = 3
-};
-struct ImageCard {
-  const float *pixels;
-  int display_channel;
-  int channel_count;
-
-  struct Rectangle box;
-  struct ShaderProgram shader_program;
-};
-void init_image_drawer(struct ImageCard *image)
-{
-  image->pixels = NULL;
-  image->display_channel = DISPLAY_RGB;
-  image->channel_count = 4;
-  image->box.xmin = 0;
-  image->box.ymin = 0;
-  image->box.xmax = 0;
-  image->box.ymax = 0;
-
-  image->shader_program.vert_shader_id = 0;
-  image->shader_program.frag_shader_id = 0;
-  image->shader_program.program_id = 0;
-}
-void setup_image_drawer(struct ImageCard *image, const float *pixels,
-    int channel_count, int display_channel,
-    int xoffset, int yoffset, int xsize, int ysize)
-{
-  GLenum format = 0;
-
-  image->pixels = pixels;
-  image->display_channel = display_channel;
-  image->channel_count = channel_count;
-  image->box.xmin = xoffset;
-  image->box.ymin = yoffset;
-  image->box.xmax = xoffset + xsize;
-  image->box.ymax = yoffset + ysize;
-
-  switch (image->channel_count) {
-  case 3:
-    format = GL_RGB;
-    break;
-  case 4:
-    format = GL_RGBA;
-    break;
-  default:
-    assert(!"invalid channel count");
-    break;
-  }
-  glPixelStorei(GL_UNPACK_ALIGNMENT, image->channel_count);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, xsize, ysize, 0,
-          format, GL_FLOAT, image->pixels);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-  if (image->shader_program.program_id == 0) {
-    init_shaders(&image->shader_program);
-  }
-  set_uniform_int(&image->shader_program, "texture", 0);
-  set_uniform_int(&image->shader_program, "display_channels", image->display_channel);
-}
-void draw_image(const struct ImageCard *image)
-{
-  if (image->pixels == NULL) {
-    return;
-  }
-
-  glColor3f(1.f, 1.f, 1.f);
-
-  glUseProgram(image->shader_program.program_id);
-  set_uniform_int(&image->shader_program, "display_channels", image->display_channel);
-
-  glEnable(GL_TEXTURE_2D);
-  glBegin(GL_QUADS);
-    glTexCoord2f(0.f, 1.f); glVertex3f(image->box.xmin, image->box.ymin, 0.f);
-    glTexCoord2f(1.f, 1.f); glVertex3f(image->box.xmax, image->box.ymin, 0.f);
-    glTexCoord2f(1.f, 0.f); glVertex3f(image->box.xmax, image->box.ymax, 0.f);
-    glTexCoord2f(0.f, 0.f); glVertex3f(image->box.xmin, image->box.ymax, 0.f);
-  glEnd();
-  glDisable(GL_TEXTURE_2D);
-
-  glUseProgram(0);
-}
-
-enum DisplayChannels {
-  DISP_RGB = 0,
-  DISP_R,
-  DISP_G,
-  DISP_B,
-  DISP_A
-};
-
 struct FrameBufferViewer {
   struct FrameBuffer *fb;
   char filename[1024];
 
   int win_width;
   int win_height;
-  int disp_chans;
+  int diplay_channel;
 
   MouseButton pressbutton;
   int xpresspos;
@@ -149,14 +52,11 @@ struct FrameBufferViewer {
   int tilesize;
   int draw_tile;
 
-  struct ShaderProgram shader_program;
-  int shader_initialized;
-/* TODO TEST IMAGE DRAWER */
   struct ImageCard image;
 };
 
 static void clear_image_viewer(struct FrameBufferViewer *v);
-static void initialize_gl(struct FrameBufferViewer *v);
+static void setup_image_drawing(struct FrameBufferViewer *v);
 static void set_to_home_position(struct FrameBufferViewer *v);
 void GlDrawTileGuide(int width, int height, int tilesize);
 
@@ -166,7 +66,7 @@ static void clear_image_viewer(struct FrameBufferViewer *v)
 
   v->win_width = 0;
   v->win_height = 0;
-  v->disp_chans = DISP_RGB;
+  v->diplay_channel = DISPLAY_RGB;
 
   v->pressbutton = MB_NONE;
 
@@ -177,11 +77,6 @@ static void clear_image_viewer(struct FrameBufferViewer *v)
   v->tilesize = 0;
   v->draw_tile = 1;
 
-  v->shader_program.vert_shader_id = 0;
-  v->shader_program.frag_shader_id = 0;
-  v->shader_initialized = 0;
-
-  /* TODO TEST IMAGE DRAWER */
   init_image_drawer(&v->image);
 }
 
@@ -241,64 +136,10 @@ void FbvDraw(const struct FrameBufferViewer *v)
 
   /* render framebuffer */
   glTranslatef(0.f, 0.f, 0.1f); 
-  glColor3f(1.f, 1.f, 1.f);
+
   if (!FbIsEmpty(v->fb)) {
-
     draw_image(&v->image);
-#if 0
-/* TODO refactoring texture drawing */
-glUseProgram(v->shader_program.program_id);
-switch (v->disp_chans) {
-case DISP_RGB:
-  set_uniform_int(&v->shader_program, "display_channels", -1);
-  break;
-case DISP_R:
-  set_uniform_int(&v->shader_program, "display_channels", 0);
-  break;
-case DISP_G:
-  set_uniform_int(&v->shader_program, "display_channels", 1);
-  break;
-case DISP_B:
-  set_uniform_int(&v->shader_program, "display_channels", 2);
-  break;
-case DISP_A:
-  set_uniform_int(&v->shader_program, "display_channels", 3);
-  break;
-default:
-  break;
-}
-/*
-*/
-    glEnable(GL_TEXTURE_2D);
-    glBegin(GL_QUADS);
-      glTexCoord2f(0.f, 1.f);
-      glVertex3f(v->databox[0], yviewsize - v->databox[3], 0.f);
-      glTexCoord2f(1.f, 1.f);               
-      glVertex3f(v->databox[2], yviewsize - v->databox[3], 0.f);
-      glTexCoord2f(1.f, 0.f);
-      glVertex3f(v->databox[2], yviewsize - v->databox[1], 0.f);
-      glTexCoord2f(0.f, 0.f);
-      glVertex3f(v->databox[0], yviewsize - v->databox[1], 0.f);
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
-/*
-set_uniform_int(&v->shader_program, "display_channels", -1);
-*/
-glUseProgram(0);
-#endif
-
-    /* render databox line */
-    glPushAttrib(GL_CURRENT_BIT);
-    glEnable(GL_LINE_STIPPLE);
-    glColor3f(0.3f, .3f, .3f);
-    glLineStipple(1, 0x3333);
-    glBegin(GL_LINE_LOOP);
-      glVertex3f(v->databox[0], yviewsize - v->databox[3], 0.f);
-      glVertex3f(v->databox[0], yviewsize - v->databox[1], 0.f);
-      glVertex3f(v->databox[2], yviewsize - v->databox[1], 0.f);
-      glVertex3f(v->databox[2], yviewsize - v->databox[3], 0.f);
-    glEnd();
-    glPopAttrib();
+    draw_outline(&v->image);
   }
 
   /* render viewbox line */
@@ -451,23 +292,23 @@ void FbvPressKey(struct FrameBufferViewer *v, unsigned char key, int mouse_x, in
     FbvDraw(v);
     break;
   case 'r':
-    v->disp_chans = ( v->disp_chans == DISP_R ) ? DISP_RGB : DISP_R;
-    initialize_gl(v);
+    v->diplay_channel = ( v->diplay_channel == DISPLAY_R ) ? DISPLAY_RGB : DISPLAY_R;
+    setup_image_drawing(v);
     FbvDraw(v);
     break;
   case 'g':
-    v->disp_chans = ( v->disp_chans == DISP_G ) ? DISP_RGB : DISP_G;
-    initialize_gl(v);
+    v->diplay_channel = ( v->diplay_channel == DISPLAY_G ) ? DISPLAY_RGB : DISPLAY_G;
+    setup_image_drawing(v);
     FbvDraw(v);
     break;
   case 'b':
-    v->disp_chans = ( v->disp_chans == DISP_B ) ? DISP_RGB : DISP_B;
-    initialize_gl(v);
+    v->diplay_channel = ( v->diplay_channel == DISPLAY_B ) ? DISPLAY_RGB : DISPLAY_B;
+    setup_image_drawing(v);
     FbvDraw(v);
     break;
   case 'a':
-    v->disp_chans = ( v->disp_chans == DISP_A ) ? DISP_RGB : DISP_A;
-    initialize_gl(v);
+    v->diplay_channel = ( v->diplay_channel == DISPLAY_A ) ? DISPLAY_RGB : DISPLAY_A;
+    setup_image_drawing(v);
     FbvDraw(v);
     break;
   case 't':
@@ -476,7 +317,7 @@ void FbvPressKey(struct FrameBufferViewer *v, unsigned char key, int mouse_x, in
     break;
   case 'u':
     FbvLoadImage(v, v->filename);
-    initialize_gl(v);
+    setup_image_drawing(v);
     FbvDraw(v);
     break;
   case '\033': /* ESC ASCII code */
@@ -542,7 +383,7 @@ int FbvLoadImage(struct FrameBufferViewer *v, const char *filename)
     }
   }
 
-  initialize_gl(v);
+  setup_image_drawing(v);
 
   return err;
 }
@@ -556,83 +397,14 @@ void FbvGetImageSize(const struct FrameBufferViewer *v,
 }
 
 /*----------------------------------------------------------------------------*/
-static void initialize_gl(struct FrameBufferViewer *v)
+static void setup_image_drawing(struct FrameBufferViewer *v)
 {
-  GLenum format;
-
-  switch (FbGetChannelCount(v->fb)) {
-  case 3:
-    format = GL_RGB;
-    break;
-  case 4:
-    format = GL_RGBA;
-    break;
-  default:
-    assert(!"invalid channel count");
-    break;
-  }
-
-  if (v->fb != NULL && !FbIsEmpty(v->fb)) {
-    /* TODO TEST */
-    GLint disp_chan = -1;
-    float m[16] = {
-      0.f, 0.f, 0.f, 0.f,
-      0.f, 0.f, 0.f, 0.f,
-      0.f, 0.f, 0.f, 0.f,
-      0.f, 0.f, 0.f, 0.f};
-
-    glMatrixMode(GL_COLOR);
-    switch (v->disp_chans) {
-    case DISP_RGB:
-      m[0] = m[5] = m[10] = 1.f;
-      disp_chan = -1;
-      break;
-    case DISP_R:
-      m[0] = m[1] = m[2] = 1.f;
-      disp_chan = 0;
-      break;
-    case DISP_G:
-      m[4] = m[5] = m[6] = 1.f;
-      disp_chan = 1;
-      break;
-    case DISP_B:
-      m[8] = m[9] = m[10] = 1.f;
-      disp_chan = 2;
-      break;
-    case DISP_A:
-      m[12] = m[13] = m[14] = 1.f;
-      disp_chan = 3;
-      break;
-    default:
-      break;
-    }
-    /*
-    glLoadMatrixf(m);
-    */
-
-    glPixelStorei(GL_UNPACK_ALIGNMENT, FbGetChannelCount(v->fb));
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, FbGetWidth(v->fb), FbGetHeight(v->fb), 0,
-            format, GL_FLOAT, FbGetReadOnly(v->fb, 0, 0, 0));
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-    /* glsl shader */
-    if (!v->shader_initialized) {
-      init_shaders(&v->shader_program);
-      v->shader_initialized = 1;
-    }
-    set_uniform_int(&v->shader_program, "texture", 0);
-    set_uniform_int(&v->shader_program, "display_channels", disp_chan);
-
-    /* TODO TEST IMAGE DRAWER */
-    setup_image_drawer(&v->image, FbGetReadOnly(v->fb, 0, 0, 0),
-        FbGetChannelCount(v->fb), disp_chan,
-        v->databox[0],
-        v->viewbox[3] - v->viewbox[1] - v->databox[3],
-        v->databox[2] - v->databox[0],
-        v->databox[3] - v->databox[1]);
-    /* TODO TEST IMAGE DRAWER */
-  }
+  setup_image_drawer(&v->image, FbGetReadOnly(v->fb, 0, 0, 0),
+      FbGetChannelCount(v->fb), v->diplay_channel,
+      v->databox[0],
+      v->viewbox[3] - v->viewbox[1] - v->databox[3],
+      v->databox[2] - v->databox[0],
+      v->databox[3] - v->databox[1]);
 }
 
 static void set_to_home_position(struct FrameBufferViewer *v)
