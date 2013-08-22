@@ -26,6 +26,17 @@ See LICENSE and README
 #include <stdio.h>
 #include <float.h>
 
+/* TODO TEST INTERRUPT */
+typedef int (*InterruptCallback)(void *data);
+static int no_interrupt(void *data)
+{
+  static int n = 0;
+  if (n == 320 * 240 * 3 * 3 / 2)
+    return 1;
+  n++;
+  return 0;
+}
+
 struct Renderer {
   struct Camera *camera;
   struct FrameBuffer *framebuffers;
@@ -50,6 +61,10 @@ struct Renderer {
   double raymarch_shadow_step;
   double raymarch_reflect_step;
   double raymarch_refract_step;
+
+  /* TODO TEST INTERRUPT */
+  InterruptCallback interrupt;
+  void *interruption_data;
 };
 
 static int prepare_render(struct Renderer *renderer);
@@ -83,6 +98,10 @@ struct Renderer *RdrNew(void)
   RdrSetRaymarchShadowStep(renderer, .1);
   RdrSetRaymarchReflectStep(renderer, .1);
   RdrSetRaymarchRefractStep(renderer, .1);
+
+  /* TODO TEST INTERRUPT */
+  renderer->interrupt = no_interrupt;
+  renderer->interruption_data = NULL;
 
   return renderer;
 }
@@ -301,6 +320,10 @@ struct Worker {
   struct TraceContext context;
   struct Rectangle region;
 
+  /* TODO TEST INTERRUPT */
+  InterruptCallback interrupt;
+  void *interruption_data;
+
   int region_id;
   int region_count;
   int xres, yres;
@@ -369,6 +392,10 @@ void init_worker(struct Worker *worker, struct Renderer *renderer)
   worker->region.xmax = 0;
   worker->region.ymin = 0;
   worker->region.ymax = 0;
+
+  /* interruption */
+  worker->interrupt = renderer->interrupt;
+  worker->interruption_data = renderer->interruption_data;
 }
 
 void set_working_region(struct Worker *worker, struct Tiler *tiler, int tile_id)
@@ -470,7 +497,7 @@ static void work_done(struct Worker *worker)
   PrgDone(worker->progress);
 }
 
-static void integrate_samples(struct Worker *worker)
+static int integrate_samples(struct Worker *worker)
 {
   struct Sample *smp = NULL;
   struct TraceContext cxt = worker->context;
@@ -480,6 +507,7 @@ static void integrate_samples(struct Worker *worker)
     struct Color4 C_trace = {0, 0, 0, 0};
     double t_hit = FLT_MAX;
     int hit = 0;
+    int interrupted = 0;
 
     CamGetRay(worker->camera, &smp->uv, smp->time, &ray);
     cxt.time = smp->time;
@@ -498,7 +526,14 @@ static void integrate_samples(struct Worker *worker)
     }
 
     PrgIncrement(worker->progress);
+
+    /* TODO TEST INTERRUPT */
+    interrupted = worker->interrupt(worker->interruption_data);
+    if (interrupted) {
+      return -1;
+    }
   }
+  return 0;
 }
 
 static int render_scene(struct Renderer *renderer)
@@ -544,11 +579,16 @@ static int render_scene(struct Renderer *renderer)
   printf("Rendering ...\n");
 
   for (i = 0; i < TlrGetTileCount(tiler); i++) {
+    int interrupted = 0;
+
     set_working_region(&worker[0], tiler, i);
 
     work_start(&worker[0]);
 
-    integrate_samples(&worker[0]);
+    interrupted = integrate_samples(&worker[0]);
+    if (interrupted) {
+      break;
+    }
 
     reconstruct_image__(&worker[0], fb);
 

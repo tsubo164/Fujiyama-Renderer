@@ -6,6 +6,7 @@ See LICENSE and README
 #include "FrameBufferViewer.h"
 #include "FrameBufferIO.h"
 #include "FrameBuffer.h"
+#include "Rectangle.h"
 #include "Numeric.h"
 #include "Memory.h"
 #include "Mipmap.h"
@@ -22,6 +23,96 @@ See LICENSE and README
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glu.h>
+
+/* TODO TEST IMAGE DRAWER */
+enum {
+  DISPLAY_RGB = -1,
+  DISPLAY_R = 0,
+  DISPLAY_G = 1,
+  DISPLAY_B = 2,
+  DISPLAY_A = 3
+};
+struct ImageCard {
+  const float *pixels;
+  int display_channel;
+  int channel_count;
+
+  struct Rectangle box;
+  struct ShaderProgram shader_program;
+};
+void init_image_drawer(struct ImageCard *image)
+{
+  image->pixels = NULL;
+  image->display_channel = DISPLAY_RGB;
+  image->channel_count = 4;
+  image->box.xmin = 0;
+  image->box.ymin = 0;
+  image->box.xmax = 0;
+  image->box.ymax = 0;
+
+  image->shader_program.vert_shader_id = 0;
+  image->shader_program.frag_shader_id = 0;
+  image->shader_program.program_id = 0;
+}
+void setup_image_drawer(struct ImageCard *image, const float *pixels,
+    int channel_count, int display_channel,
+    int xoffset, int yoffset, int xsize, int ysize)
+{
+  GLenum format = 0;
+
+  image->pixels = pixels;
+  image->display_channel = display_channel;
+  image->channel_count = channel_count;
+  image->box.xmin = xoffset;
+  image->box.ymin = yoffset;
+  image->box.xmax = xoffset + xsize;
+  image->box.ymax = yoffset + ysize;
+
+  switch (image->channel_count) {
+  case 3:
+    format = GL_RGB;
+    break;
+  case 4:
+    format = GL_RGBA;
+    break;
+  default:
+    assert(!"invalid channel count");
+    break;
+  }
+  glPixelStorei(GL_UNPACK_ALIGNMENT, image->channel_count);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, xsize, ysize, 0,
+          format, GL_FLOAT, image->pixels);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+  if (image->shader_program.program_id == 0) {
+    init_shaders(&image->shader_program);
+  }
+  set_uniform_int(&image->shader_program, "texture", 0);
+  set_uniform_int(&image->shader_program, "display_channels", image->display_channel);
+}
+void draw_image(const struct ImageCard *image)
+{
+  if (image->pixels == NULL) {
+    return;
+  }
+
+  glColor3f(1.f, 1.f, 1.f);
+
+  glUseProgram(image->shader_program.program_id);
+  set_uniform_int(&image->shader_program, "display_channels", image->display_channel);
+
+  glEnable(GL_TEXTURE_2D);
+  glBegin(GL_QUADS);
+    glTexCoord2f(0.f, 1.f); glVertex3f(image->box.xmin, image->box.ymin, 0.f);
+    glTexCoord2f(1.f, 1.f); glVertex3f(image->box.xmax, image->box.ymin, 0.f);
+    glTexCoord2f(1.f, 0.f); glVertex3f(image->box.xmax, image->box.ymax, 0.f);
+    glTexCoord2f(0.f, 0.f); glVertex3f(image->box.xmin, image->box.ymax, 0.f);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+
+  glUseProgram(0);
+}
 
 enum DisplayChannels {
   DISP_RGB = 0,
@@ -60,6 +151,8 @@ struct FrameBufferViewer {
 
   struct ShaderProgram shader_program;
   int shader_initialized;
+/* TODO TEST IMAGE DRAWER */
+  struct ImageCard image;
 };
 
 static void clear_image_viewer(struct FrameBufferViewer *v);
@@ -87,6 +180,9 @@ static void clear_image_viewer(struct FrameBufferViewer *v)
   v->shader_program.vert_shader_id = 0;
   v->shader_program.frag_shader_id = 0;
   v->shader_initialized = 0;
+
+  /* TODO TEST IMAGE DRAWER */
+  init_image_drawer(&v->image);
 }
 
 struct FrameBufferViewer *FbvNewViewer(void)
@@ -113,8 +209,8 @@ void FbvFreeViewer(struct FrameBufferViewer *v)
 
 void FbvDraw(const struct FrameBufferViewer *v)
 {
-  int xmove = 0.f;
-  int ymove = 0.f;
+  int xmove = 0;
+  int ymove = 0;
   int xviewsize = v->viewbox[2] - v->viewbox[0];
   int yviewsize = v->viewbox[3] - v->viewbox[1];
 
@@ -147,6 +243,32 @@ void FbvDraw(const struct FrameBufferViewer *v)
   glTranslatef(0.f, 0.f, 0.1f); 
   glColor3f(1.f, 1.f, 1.f);
   if (!FbIsEmpty(v->fb)) {
+
+    draw_image(&v->image);
+#if 0
+/* TODO refactoring texture drawing */
+glUseProgram(v->shader_program.program_id);
+switch (v->disp_chans) {
+case DISP_RGB:
+  set_uniform_int(&v->shader_program, "display_channels", -1);
+  break;
+case DISP_R:
+  set_uniform_int(&v->shader_program, "display_channels", 0);
+  break;
+case DISP_G:
+  set_uniform_int(&v->shader_program, "display_channels", 1);
+  break;
+case DISP_B:
+  set_uniform_int(&v->shader_program, "display_channels", 2);
+  break;
+case DISP_A:
+  set_uniform_int(&v->shader_program, "display_channels", 3);
+  break;
+default:
+  break;
+}
+/*
+*/
     glEnable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);
       glTexCoord2f(0.f, 1.f);
@@ -159,6 +281,11 @@ void FbvDraw(const struct FrameBufferViewer *v)
       glVertex3f(v->databox[0], yviewsize - v->databox[1], 0.f);
     glEnd();
     glDisable(GL_TEXTURE_2D);
+/*
+set_uniform_int(&v->shader_program, "display_channels", -1);
+*/
+glUseProgram(0);
+#endif
 
     /* render databox line */
     glPushAttrib(GL_CURRENT_BIT);
@@ -496,6 +623,15 @@ static void initialize_gl(struct FrameBufferViewer *v)
     }
     set_uniform_int(&v->shader_program, "texture", 0);
     set_uniform_int(&v->shader_program, "display_channels", disp_chan);
+
+    /* TODO TEST IMAGE DRAWER */
+    setup_image_drawer(&v->image, FbGetReadOnly(v->fb, 0, 0, 0),
+        FbGetChannelCount(v->fb), disp_chan,
+        v->databox[0],
+        v->viewbox[3] - v->viewbox[1] - v->databox[3],
+        v->databox[2] - v->databox[0],
+        v->databox[3] - v->databox[1]);
+    /* TODO TEST IMAGE DRAWER */
   }
 }
 
