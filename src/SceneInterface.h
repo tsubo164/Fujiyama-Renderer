@@ -6,6 +6,8 @@ See LICENSE and README
 #ifndef SCENEINTERFACE_H
 #define SCENEINTERFACE_H
 
+#include "Callback.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -16,43 +18,43 @@ enum { SI_BADID = -1 };
 enum { SI_FAIL = -1, SI_SUCCESS = 0 };
 
 enum SiErrorNo {
-	SI_ERR_NONE = 0,
-	SI_ERR_NO_MEMORY,
-	SI_ERR_BADTYPE,
-	SI_ERR_FAILLOAD,
-	SI_ERR_FAILNEW,
-	/* plugin */
-	SI_ERR_PLUGIN_NOT_FOUND,
-	SI_ERR_INIT_PLUGIN_FUNC_NOT_EXIST,
-	SI_ERR_INIT_PLUGIN_FUNC_FAIL,
-	SI_ERR_BAD_PLUGIN_INFO,
-	SI_ERR_CLOSE_PLUGIN_FAIL,
-	/* undefined */
-	SI_ERR_UNDEFINED
+  SI_ERR_NONE = 0,
+  SI_ERR_NO_MEMORY,
+  SI_ERR_BADTYPE,
+  SI_ERR_FAILLOAD,
+  SI_ERR_FAILNEW,
+  /* plugin */
+  SI_ERR_PLUGIN_NOT_FOUND,
+  SI_ERR_INIT_PLUGIN_FUNC_NOT_EXIST,
+  SI_ERR_INIT_PLUGIN_FUNC_FAIL,
+  SI_ERR_BAD_PLUGIN_INFO,
+  SI_ERR_CLOSE_PLUGIN_FAIL,
+  /* undefined */
+  SI_ERR_UNDEFINED
 };
 
 enum SiTransformOrder {
-	/* transform orders */
-	SI_ORDER_SRT = 0,
-	SI_ORDER_STR,
-	SI_ORDER_RST,
-	SI_ORDER_RTS,
-	SI_ORDER_TRS,
-	SI_ORDER_TSR,
-	/* rotate orders */
-	SI_ORDER_XYZ,
-	SI_ORDER_XZY,
-	SI_ORDER_YXZ,
-	SI_ORDER_YZX,
-	SI_ORDER_ZXY,
-	SI_ORDER_ZYX
+  /* transform orders */
+  SI_ORDER_SRT = 0,
+  SI_ORDER_STR,
+  SI_ORDER_RST,
+  SI_ORDER_RTS,
+  SI_ORDER_TRS,
+  SI_ORDER_TSR,
+  /* rotate orders */
+  SI_ORDER_XYZ,
+  SI_ORDER_XZY,
+  SI_ORDER_YXZ,
+  SI_ORDER_YZX,
+  SI_ORDER_ZXY,
+  SI_ORDER_ZYX
 };
 
 enum SiLightType {
-	SI_POINT_LIGHT = 0,
-	SI_GRID_LIGHT,
-	SI_SPHERE_LIGHT,
-	SI_DOME_LIGHT
+  SI_POINT_LIGHT = 0,
+  SI_GRID_LIGHT,
+  SI_SPHERE_LIGHT,
+  SI_DOME_LIGHT
 };
 
 /* Error interfaces */
@@ -103,12 +105,16 @@ extern Status SiSetStringProperty(ID id, const char *name, const char *string);
 
 /* time variable property */
 extern Status SiSetSampleProperty3(ID id, const char *name,
-		double v0, double v1, double v2, double time);
+    double v0, double v1, double v2, double time);
 
 extern Status SiGetPropertyList(const char *type_name,
-		const char ***property_types,
-		const char ***property_names,
-		int *property_count);
+    const char ***property_types,
+    const char ***property_names,
+    int *property_count);
+
+/* TODO TEST INTERRUPT */
+/* Callback interfaces */
+extern Status SiSetInterruptCallback(ID id, InterruptCallback interrupt, void *data);
 
 #ifdef __cplusplus
 } /* extern "C" */

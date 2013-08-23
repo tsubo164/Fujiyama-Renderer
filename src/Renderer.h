@@ -6,6 +6,8 @@ See LICENSE and README
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include "Callback.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -42,6 +44,10 @@ extern void RdrSetTargetObjects(struct Renderer *renderer, struct ObjectGroup *g
 extern void RdrSetTargetLights(struct Renderer *renderer, struct Light **lights, int nlights);
 
 extern int RdrRender(struct Renderer *renderer);
+
+/* TODO TEST INTERRUPT */
+extern void RdrSetInterruptCallback(struct Renderer *renderer,
+    InterruptCallback interrupt, void *data);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -26,15 +26,27 @@ See LICENSE and README
 #include <stdio.h>
 #include <float.h>
 
-/* TODO TEST INTERRUPT */
-typedef int (*InterruptCallback)(void *data);
 static int no_interrupt(void *data)
 {
+  /*
   static int n = 0;
   if (n == 320 * 240 * 3 * 3 / 2)
     return 1;
   n++;
+  */
   return 0;
+}
+struct Interrupter {
+  InterruptCallback interrupt;
+  void *data;
+};
+
+int is_interrupted(const struct Interrupter *interrupter)
+{
+  if (interrupter->interrupt(interrupter->data) == 1)
+    return 1;
+  else
+    return 0;
 }
 
 struct Renderer {
@@ -63,8 +75,7 @@ struct Renderer {
   double raymarch_refract_step;
 
   /* TODO TEST INTERRUPT */
-  InterruptCallback interrupt;
-  void *interruption_data;
+  struct Interrupter interrupter;
 };
 
 static int prepare_render(struct Renderer *renderer);
@@ -100,8 +111,8 @@ struct Renderer *RdrNew(void)
   RdrSetRaymarchRefractStep(renderer, .1);
 
   /* TODO TEST INTERRUPT */
-  renderer->interrupt = no_interrupt;
-  renderer->interruption_data = NULL;
+  renderer->interrupter.interrupt = no_interrupt;
+  renderer->interrupter.data = NULL;
 
   return renderer;
 }
@@ -263,6 +274,14 @@ int RdrRender(struct Renderer *renderer)
   return 0;
 }
 
+/* TODO TEST INTERRUPT */
+void RdrSetInterruptCallback(struct Renderer *renderer,
+    InterruptCallback interrupt, void *data)
+{
+  renderer->interrupter.interrupt = interrupt;
+  renderer->interrupter.data = data;
+}
+
 static int prepare_render(struct Renderer *renderer)
 {
   int xres, yres;
@@ -323,6 +342,7 @@ struct Worker {
   /* TODO TEST INTERRUPT */
   InterruptCallback interrupt;
   void *interruption_data;
+  struct Interrupter interrupter;
 
   int region_id;
   int region_count;
@@ -394,8 +414,7 @@ void init_worker(struct Worker *worker, struct Renderer *renderer)
   worker->region.ymax = 0;
 
   /* interruption */
-  worker->interrupt = renderer->interrupt;
-  worker->interruption_data = renderer->interruption_data;
+  worker->interrupter = renderer->interrupter;
 }
 
 void set_working_region(struct Worker *worker, struct Tiler *tiler, int tile_id)
@@ -460,7 +479,7 @@ static struct Color4 apply_pixel_filter__(struct Worker *worker, int x, int y)
   return pixel;
 }
 
-static void reconstruct_image__(
+static void reconstruct_image(
     struct Worker *worker,
     struct FrameBuffer *fb)
 {
@@ -507,7 +526,6 @@ static int integrate_samples(struct Worker *worker)
     struct Color4 C_trace = {0, 0, 0, 0};
     double t_hit = FLT_MAX;
     int hit = 0;
-    int interrupted = 0;
 
     CamGetRay(worker->camera, &smp->uv, smp->time, &ray);
     cxt.time = smp->time;
@@ -528,8 +546,7 @@ static int integrate_samples(struct Worker *worker)
     PrgIncrement(worker->progress);
 
     /* TODO TEST INTERRUPT */
-    interrupted = worker->interrupt(worker->interruption_data);
-    if (interrupted) {
+    if (is_interrupted(&worker->interrupter)) {
       return -1;
     }
   }
@@ -590,7 +607,7 @@ static int render_scene(struct Renderer *renderer)
       break;
     }
 
-    reconstruct_image__(&worker[0], fb);
+    reconstruct_image(&worker[0], fb);
 
     work_done(&worker[0]);
   }
