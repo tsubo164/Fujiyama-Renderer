@@ -65,7 +65,6 @@ int init_shaders(struct ShaderProgram *prog)
   if (linked == GL_FALSE) {
     fprintf(stderr, "link error\n");
   }
-  glUseProgram(program_id);
 
   prog->vert_shader_id = vert_shader_id;
   prog->frag_shader_id = frag_shader_id;

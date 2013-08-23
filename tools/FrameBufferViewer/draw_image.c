@@ -47,7 +47,7 @@ void setup_image_drawer(struct ImageCard *image, const float *pixels,
     break;
   }
   glPixelStorei(GL_UNPACK_ALIGNMENT, image->channel_count);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, xsize, ysize, 0,
+  glTexImage2D(GL_TEXTURE_2D, 0, format, xsize, ysize, 0,
           format, GL_FLOAT, image->pixels);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -55,8 +55,6 @@ void setup_image_drawer(struct ImageCard *image, const float *pixels,
   if (image->shader_program.program_id == 0) {
     init_shaders(&image->shader_program);
   }
-  set_uniform_int(&image->shader_program, "texture", 0);
-  set_uniform_int(&image->shader_program, "display_channels", image->display_channel);
 }
 
 void draw_image(const struct ImageCard *image)
@@ -68,6 +66,7 @@ void draw_image(const struct ImageCard *image)
   glColor3f(1.f, 1.f, 1.f);
 
   glUseProgram(image->shader_program.program_id);
+  set_uniform_int(&image->shader_program, "texture", 0);
   set_uniform_int(&image->shader_program, "display_channels", image->display_channel);
 
   glEnable(GL_TEXTURE_2D);
