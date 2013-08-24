@@ -26,28 +26,57 @@ See LICENSE and README
 #include <stdio.h>
 #include <float.h>
 
-static int no_interrupt(void *data)
-{
-  /*
-  static int n = 0;
-  if (n == 320 * 240 * 3 * 3 / 2)
-    return 1;
-  n++;
-  */
-  return 0;
-}
-struct Interrupter {
-  InterruptCallback interrupt;
+struct ProgressReport {
   void *data;
+  WorkStartCallback start;
+  WorkIncrementCallback increment;
+  WorkDoneCallback done;
 };
 
-int is_interrupted(const struct Interrupter *interrupter)
+static void progress_start(void *data, const struct WorkInfo *info)
 {
-  if (interrupter->interrupt(interrupter->data) == 1)
+  struct Progress *progress = (struct Progress *) data;
+  PrgStart(progress, info->total_sample_count);
+}
+static int progress_increment(void *data)
+{
+  struct Progress *progress = (struct Progress *) data;
+  PrgIncrement(progress);
+  return 0;
+}
+static void progress_done(void *data, const struct WorkInfo *info)
+{
+  struct Progress *progress = (struct Progress *) data;
+
+  printf(" Tile Done: %d/%d (%d %%)\n",
+      info->region_id + 1,
+      info->total_region_count,
+      (int) ((info->region_id + 1) / (double) info->total_region_count * 100));
+
+  PrgDone(progress);
+}
+
+static int work_increment(const struct ProgressReport *report)
+{
+  if (report->increment(report->data) == 1)
     return 1;
   else
     return 0;
 }
+
+#if 0
+struct WorkReporter {
+  void *data;
+  WorkStartCallback start;
+  WorkIncrementCallback interrupt;
+  WorkDoneCallback done;
+};
+struct WorkProgress {
+  int id;
+  int total_iteration;
+  int current_iteration;
+};
+#endif
 
 struct Renderer {
   struct Camera *camera;
@@ -75,7 +104,8 @@ struct Renderer {
   double raymarch_refract_step;
 
   /* TODO TEST INTERRUPT */
-  struct Interrupter interrupter;
+  struct Progress *progress;
+  struct ProgressReport report;
 };
 
 static int prepare_render(struct Renderer *renderer);
@@ -111,8 +141,14 @@ struct Renderer *RdrNew(void)
   RdrSetRaymarchRefractStep(renderer, .1);
 
   /* TODO TEST INTERRUPT */
-  renderer->interrupter.interrupt = no_interrupt;
-  renderer->interrupter.data = NULL;
+  renderer->progress = PrgNew();
+  /*
+  RdrSetInterruptCallback(renderer, progress_increment, renderer->progress);
+  */
+  renderer->report.data = renderer->progress;
+  renderer->report.start = progress_start;
+  renderer->report.increment = progress_increment;
+  renderer->report.done = progress_done;
 
   return renderer;
 }
@@ -121,6 +157,8 @@ void RdrFree(struct Renderer *renderer)
 {
   if (renderer == NULL)
     return;
+  /* TODO TEST INTERRUPT */
+  PrgFree(renderer->progress);
   MEM_FREE(renderer);
 }
 
@@ -275,11 +313,11 @@ int RdrRender(struct Renderer *renderer)
 }
 
 /* TODO TEST INTERRUPT */
-void RdrSetInterruptCallback(struct Renderer *renderer,
-    InterruptCallback interrupt, void *data)
+void RdrSetInterruptCallback(struct Renderer *renderer, void *data,
+    WorkIncrementCallback increment)
 {
-  renderer->interrupter.interrupt = interrupt;
-  renderer->interrupter.data = data;
+  renderer->report.increment = increment;
+  renderer->report.data = data;
 }
 
 static int prepare_render(struct Renderer *renderer)
@@ -329,6 +367,11 @@ static int preprocess_lights(struct Renderer *renderer)
 
 /* TODO TEST */
 struct Worker {
+  int id;
+  int region_id;
+  int region_count;
+  int xres, yres;
+
   struct Camera *camera;
   struct FrameBuffer *framebuffer;
   struct Progress *progress;
@@ -340,15 +383,9 @@ struct Worker {
   struct Rectangle region;
 
   /* TODO TEST INTERRUPT */
-  InterruptCallback interrupt;
-  void *interruption_data;
-  struct Interrupter interrupter;
-
-  int region_id;
-  int region_count;
-  int xres, yres;
+  struct ProgressReport report;
 };
-#define WORKER_INIT {NULL,NULL,NULL,NULL,0,0,{0,0,0,0}}
+
 void init_worker(struct Worker *worker, struct Renderer *renderer)
 {
   const int xres = renderer->resolution[0];
@@ -414,14 +451,14 @@ void init_worker(struct Worker *worker, struct Renderer *renderer)
   worker->region.ymax = 0;
 
   /* interruption */
-  worker->interrupter = renderer->interrupter;
+  worker->report = renderer->report;
 }
 
-void set_working_region(struct Worker *worker, struct Tiler *tiler, int tile_id)
+void set_working_region(struct Worker *worker, struct Tiler *tiler, int region_id)
 {
-  struct Tile *tile = TlrGetTile(tiler, tile_id);
+  struct Tile *tile = TlrGetTile(tiler, region_id);
 
-  worker->region_id = tile_id;
+  worker->region_id = region_id;
   worker->region_count = TlrGetTileCount(tiler);
   worker->region.xmin = tile->xmin;
   worker->region.ymin = tile->ymin;
@@ -503,17 +540,38 @@ static void reconstruct_image(
 
 static void work_start(struct Worker *worker)
 {
-    PrgStart(worker->progress, SmpGetSampleCount(worker->sampler));
+  struct WorkInfo info;
+  info.worker_id = worker->id;
+  info.region_id = worker->region_id;
+  info.total_region_count = worker->region_count;
+  info.total_sample_count = SmpGetSampleCount(worker->sampler);
+  info.region = worker->region;
+
+  worker->report.start(worker->report.data, &info);
+  /*
+
+  PrgStart(worker->progress, SmpGetSampleCount(worker->sampler));
+  */
 }
 
 static void work_done(struct Worker *worker)
 {
+  struct WorkInfo info;
+  info.worker_id = worker->id;
+  info.region_id = worker->region_id;
+  info.total_region_count = worker->region_count;
+  info.total_sample_count = SmpGetSampleCount(worker->sampler);
+  info.region = worker->region;
+
+  worker->report.done(worker->report.data, &info);
+#if 0
   printf(" Tile Done: %d/%d (%d %%)\n",
       worker->region_id + 1,
       worker->region_count,
       (int) ((worker->region_id + 1) / (double) worker->region_count * 100));
 
   PrgDone(worker->progress);
+#endif
 }
 
 static int integrate_samples(struct Worker *worker)
@@ -543,11 +601,16 @@ static int integrate_samples(struct Worker *worker)
       smp->data[3] = 0;
     }
 
+    /*
     PrgIncrement(worker->progress);
+    */
 
     /* TODO TEST INTERRUPT */
-    if (is_interrupted(&worker->interrupter)) {
-      return -1;
+    {
+      const int interrupted = work_increment(&worker->report);
+      if (interrupted) {
+        return -1;
+      }
     }
   }
   return 0;

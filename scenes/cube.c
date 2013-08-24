@@ -110,7 +110,9 @@ int main(int argc, const char **argv)
   SiAssignCamera(renderer, camera);
   SiAssignFrameBuffer(renderer, framebuffer);
 
+  /*
   SiSetInterruptCallback(renderer, interrupt_in_the_middle, &N);
+  */
 
   /* Render scene */
   SiRenderScene(renderer);
