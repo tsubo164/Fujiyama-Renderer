@@ -879,16 +879,19 @@ Status SiAssignMesh(ID id, const char *name, ID mesh)
   return status_of_error(err);
 }
 
-Status SiSetInterruptCallback(ID id, void *data,
-    WorkStartCallback start,
-    WorkIncrementCallback increment,
-    WorkDoneCallback done)
+Status SiSetTileReportCallback(ID id, void *data,
+    TileStartCallback tile_start,
+    SampleDoneCallback sample_done,
+    TileDoneCallback tile_done)
 {
   const struct Entry entry = decode_id(id);
 
   if (entry.type == Type_Renderer) {
     struct Renderer *renderer_ptr = ScnGetRenderer(get_scene(), entry.index);
-    RdrSetReportCallback(renderer_ptr, data, start, increment, done);
+    RdrSetTileReportCallback(renderer_ptr, data,
+        tile_start,
+        sample_done,
+        tile_done);
     return SI_SUCCESS;
   } else {
     return SI_FAIL;

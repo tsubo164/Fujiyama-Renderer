@@ -17,7 +17,7 @@ to compile and render this scene, run this at the top level of source tree
 #include <stdio.h>
 
 static int N = 0;
-static void progress_start(void *data, const struct WorkInfo *info)
+static void progress_start(void *data, const struct TileInfo *info)
 {
 }
 static int interrupt_in_the_middle(void *data)
@@ -28,7 +28,7 @@ static int interrupt_in_the_middle(void *data)
   (*n)++;
   return 0;
 }
-static void progress_done(void *data, const struct WorkInfo *info)
+static void progress_done(void *data, const struct TileInfo *info)
 {
   printf(" Tile Done: %d/%d (%d %%)\n",
       info->region_id + 1,

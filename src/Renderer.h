@@ -45,11 +45,14 @@ extern void RdrSetTargetLights(struct Renderer *renderer, struct Light **lights,
 
 extern int RdrRender(struct Renderer *renderer);
 
-/* TODO TEST INTERRUPT */
-extern void RdrSetReportCallback(struct Renderer *renderer, void *data,
-    WorkStartCallback start,
-    WorkIncrementCallback increment,
-    WorkDoneCallback done);
+extern void RdrSetFrameReportCallback(struct Renderer *renderer, void *data,
+    FrameStartCallback frame_start,
+    FrameDoneCallback frame_done);
+
+extern void RdrSetTileReportCallback(struct Renderer *renderer, void *data,
+    TileStartCallback tile_start,
+    SampleDoneCallback sample_done,
+    TileDoneCallback tile_done);
 
 #ifdef __cplusplus
 } /* extern "C" */

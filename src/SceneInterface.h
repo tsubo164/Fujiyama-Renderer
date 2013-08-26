@@ -112,16 +112,14 @@ extern Status SiGetPropertyList(const char *type_name,
     const char ***property_names,
     int *property_count);
 
-/* TODO TEST INTERRUPT */
 /* Callback interfaces */
-extern Status SiSetInterruptCallback(ID id, void *data,
-    WorkStartCallback start,
-    WorkIncrementCallback increment,
-    WorkDoneCallback done);
+extern Status SiSetTileReportCallback(ID id, void *data,
+    TileStartCallback tile_start,
+    SampleDoneCallback sample_done,
+    TileDoneCallback tile_done);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 #endif /* XXX_H */
-

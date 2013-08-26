@@ -26,25 +26,38 @@ See LICENSE and README
 #include <stdio.h>
 #include <float.h>
 
-struct WorkReport {
-  void *data;
-  WorkStartCallback start;
-  WorkIncrementCallback increment;
-  WorkDoneCallback done;
-};
+static Interrupt default_frame_start(void *data, const struct FrameInfo *info)
+{
+  struct Timer *timer = (struct Timer *) data;
+  TimerStart(timer);
+  printf("# Rendering Frame\n");
+  printf("#   Thread Count: %4d\n", info->worker_count);
+  printf("#   Tile Count:   %4d\n\n", info->tile_count);
+  return CALLBACK_CONTINUE;
+}
+static Interrupt default_frame_done(void *data, const struct FrameInfo *info)
+{
+  struct Timer *timer = (struct Timer *) data;
+  struct Elapse elapse;
+  elapse = TimerGetElapse(timer);
+  printf("# Frame Done\n");
+  printf("#   %dh %dm %gs\n\n", elapse.hour, elapse.min, elapse.sec);
+  return CALLBACK_CONTINUE;
+}
 
-static void progress_start(void *data, const struct WorkInfo *info)
+static Interrupt default_tile_start(void *data, const struct TileInfo *info)
 {
   struct Progress *progress = (struct Progress *) data;
   PrgStart(progress, info->total_sample_count);
+  return CALLBACK_CONTINUE;
 }
-static int progress_increment(void *data)
+static Interrupt default_sample_done(void *data)
 {
   struct Progress *progress = (struct Progress *) data;
   PrgIncrement(progress);
-  return 0;
+  return CALLBACK_CONTINUE;
 }
-static void progress_done(void *data, const struct WorkInfo *info)
+static Interrupt default_tile_done(void *data, const struct TileInfo *info)
 {
   struct Progress *progress = (struct Progress *) data;
 
@@ -54,14 +67,7 @@ static void progress_done(void *data, const struct WorkInfo *info)
       (int) ((info->region_id + 1) / (double) info->total_region_count * 100));
 
   PrgDone(progress);
-}
-
-static int work_increment(const struct WorkReport *report)
-{
-  if (report->increment(report->data) == 1)
-    return 1;
-  else
-    return 0;
+  return CALLBACK_CONTINUE;
 }
 
 struct Renderer {
@@ -89,9 +95,10 @@ struct Renderer {
   double raymarch_reflect_step;
   double raymarch_refract_step;
 
-  /* TODO TEST INTERRUPT */
+  struct FrameReport frame_report;
+  struct TileReport tile_report;
+  struct Timer frame_timer;
   struct Progress *progress;
-  struct WorkReport report;
 };
 
 static int prepare_render(struct Renderer *renderer);
@@ -127,11 +134,15 @@ struct Renderer *RdrNew(void)
   RdrSetRaymarchRefractStep(renderer, .1);
 
   /* TODO TEST INTERRUPT */
+  RdrSetFrameReportCallback(renderer, &renderer->frame_timer,
+      default_frame_start,
+      default_frame_done);
+
   renderer->progress = PrgNew();
-  RdrSetReportCallback(renderer, renderer->progress,
-      progress_start,
-      progress_increment,
-      progress_done);
+  RdrSetTileReportCallback(renderer, renderer->progress,
+      default_tile_start,
+      default_sample_done,
+      default_tile_done);
 
   return renderer;
 }
@@ -296,15 +307,24 @@ int RdrRender(struct Renderer *renderer)
 }
 
 /* TODO TEST INTERRUPT */
-void RdrSetReportCallback(struct Renderer *renderer, void *data,
-    WorkStartCallback start,
-    WorkIncrementCallback increment,
-    WorkDoneCallback done)
+void RdrSetFrameReportCallback(struct Renderer *renderer, void *data,
+    FrameStartCallback frame_start,
+    FrameDoneCallback frame_done)
 {
-  renderer->report.data = data;
-  renderer->report.start = start;
-  renderer->report.increment = increment;
-  renderer->report.done = done;
+  renderer->frame_report.data = data;
+  renderer->frame_report.start = frame_start;
+  renderer->frame_report.done = frame_done;
+}
+
+void RdrSetTileReportCallback(struct Renderer *renderer, void *data,
+    TileStartCallback tile_start,
+    SampleDoneCallback sample_done,
+    TileDoneCallback tile_done)
+{
+  renderer->tile_report.data = data;
+  renderer->tile_report.start = tile_start;
+  renderer->tile_report.sample_done = sample_done;
+  renderer->tile_report.done = tile_done;
 }
 
 static int prepare_render(struct Renderer *renderer)
@@ -335,11 +355,16 @@ static int prepare_render(struct Renderer *renderer)
 
 static int preprocess_lights(struct Renderer *renderer)
 {
-  int N = 0;
+  struct Timer timer;
+  struct Elapse elapse;
+  const int NLIGHTS = renderer->nlights;
   int i;
 
-  N = renderer->nlights;
-  for (i = 0; i < N; i++) {
+  printf("# Preprocessing Lights\n");
+  printf("#   Light Count: %d\n", NLIGHTS);
+  TimerStart(&timer);
+
+  for (i = 0; i < NLIGHTS; i++) {
     struct Light *light = renderer->target_lights[i];
     const int err = LgtPreprocess(light);
 
@@ -348,6 +373,10 @@ static int preprocess_lights(struct Renderer *renderer)
       return -1;
     }
   }
+
+  elapse = TimerGetElapse(&timer);
+  printf("# Preprocessing Lights Done\n");
+  printf("#   %dh %dm %gs\n\n", elapse.hour, elapse.min, elapse.sec);
 
   return 0;
 }
@@ -370,7 +399,7 @@ struct Worker {
   struct Rectangle region;
 
   /* TODO TEST INTERRUPT */
-  struct WorkReport report;
+  struct TileReport tile_report;
 };
 
 void init_worker(struct Worker *worker, struct Renderer *renderer)
@@ -438,7 +467,7 @@ void init_worker(struct Worker *worker, struct Renderer *renderer)
   worker->region.ymax = 0;
 
   /* interruption */
-  worker->report = renderer->report;
+  worker->tile_report = renderer->tile_report;
 }
 
 void set_working_region(struct Worker *worker, struct Tiler *tiler, int region_id)
@@ -523,28 +552,48 @@ static void reconstruct_image(struct Worker *worker, struct FrameBuffer *fb)
   }
 }
 
+static void frame_start(struct Renderer *renderer, const struct Tiler *tiler)
+{
+  struct FrameInfo info;
+  info.worker_count = 1;
+  info.tile_count = TlrGetTileCount(tiler);
+  info.render_region = renderer->render_region;;
+
+  renderer->frame_report.start(renderer->frame_report.data, &info);
+}
+
+static void frame_done(struct Renderer *renderer, const struct Tiler *tiler)
+{
+  struct FrameInfo info;
+  info.worker_count = 1;
+  info.tile_count = TlrGetTileCount(tiler);
+  info.render_region = renderer->render_region;;
+
+  renderer->frame_report.done(renderer->frame_report.data, &info);
+}
+
 static void work_start(struct Worker *worker)
 {
-  struct WorkInfo info;
+  struct TileInfo info;
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
   info.total_sample_count = SmpGetSampleCount(worker->sampler);
   info.region = worker->region;
 
-  worker->report.start(worker->report.data, &info);
+  worker->tile_report.start(worker->tile_report.data, &info);
 }
 
 static void work_done(struct Worker *worker)
 {
-  struct WorkInfo info;
+  struct TileInfo info;
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
   info.total_sample_count = SmpGetSampleCount(worker->sampler);
   info.region = worker->region;
 
-  worker->report.done(worker->report.data, &info);
+  worker->tile_report.done(worker->tile_report.data, &info);
 }
 
 static int integrate_samples(struct Worker *worker)
@@ -576,7 +625,7 @@ static int integrate_samples(struct Worker *worker)
     }
 
     /* TODO TEST INTERRUPT */
-    interrupted = work_increment(&worker->report);
+    interrupted = worker->tile_report.sample_done(worker->tile_report.data);
     if (interrupted) {
       return -1;
     }
@@ -587,8 +636,6 @@ static int integrate_samples(struct Worker *worker)
 static int render_scene(struct Renderer *renderer)
 {
   struct FrameBuffer *fb = renderer->framebuffers;
-  struct Timer timer;
-  struct Elapse elapse;
   struct Tiler *tiler = NULL;
 
   int render_state = 0;
@@ -604,15 +651,11 @@ static int render_scene(struct Renderer *renderer)
   init_worker(&worker[0], renderer);
 
   /* preprocessing lights */
-  printf("Preprocessing lights ...\n");
-  TimerStart(&timer);
   err = preprocess_lights(renderer);
   if (err) {
     render_state = -1;
     goto cleanup_and_exit;
   }
-  elapse = TimerGetElapse(&timer);
-  printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
 
   /* Tiler */
   tiler = TlrNew(xres, yres, xtilesize, ytilesize);
@@ -623,8 +666,7 @@ static int render_scene(struct Renderer *renderer)
   TlrGenerateTiles(tiler, &renderer->render_region);
 
   /* Run sampling */
-  TimerStart(&timer);
-  printf("Rendering ...\n");
+  frame_start(renderer, tiler);
 
   for (i = 0; i < TlrGetTileCount(tiler); i++) {
     int interrupted = 0;
@@ -643,8 +685,7 @@ static int render_scene(struct Renderer *renderer)
     }
   }
 
-  elapse = TimerGetElapse(&timer);
-  printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
+  frame_done(renderer, tiler);
 
 cleanup_and_exit:
   TlrFree(tiler);
