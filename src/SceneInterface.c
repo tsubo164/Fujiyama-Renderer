@@ -1070,4 +1070,3 @@ static int set_property(const struct Entry *entry,
 
   return find_and_set_property(dst_object, src_props, name, value);
 }
-

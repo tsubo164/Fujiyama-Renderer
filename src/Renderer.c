@@ -306,14 +306,14 @@ int RdrRender(struct Renderer *renderer)
   return 0;
 }
 
-/* TODO TEST INTERRUPT */
 void RdrSetFrameReportCallback(struct Renderer *renderer, void *data,
     FrameStartCallback frame_start,
     FrameDoneCallback frame_done)
 {
-  renderer->frame_report.data = data;
-  renderer->frame_report.start = frame_start;
-  renderer->frame_report.done = frame_done;
+  CbSetFrameReport(&renderer->frame_report,
+      data,
+      frame_start,
+      frame_done);
 }
 
 void RdrSetTileReportCallback(struct Renderer *renderer, void *data,
@@ -321,10 +321,11 @@ void RdrSetTileReportCallback(struct Renderer *renderer, void *data,
     SampleDoneCallback sample_done,
     TileDoneCallback tile_done)
 {
-  renderer->tile_report.data = data;
-  renderer->tile_report.start = tile_start;
-  renderer->tile_report.sample_done = sample_done;
-  renderer->tile_report.done = tile_done;
+  CbSetTileReport(&renderer->tile_report,
+      data,
+      tile_start,
+      sample_done,
+      tile_done);
 }
 
 static int prepare_render(struct Renderer *renderer)
@@ -559,7 +560,7 @@ static void frame_start(struct Renderer *renderer, const struct Tiler *tiler)
   info.tile_count = TlrGetTileCount(tiler);
   info.render_region = renderer->render_region;;
 
-  renderer->frame_report.start(renderer->frame_report.data, &info);
+  CbReportFrameStart(&renderer->frame_report, &info);
 }
 
 static void frame_done(struct Renderer *renderer, const struct Tiler *tiler)
@@ -569,7 +570,7 @@ static void frame_done(struct Renderer *renderer, const struct Tiler *tiler)
   info.tile_count = TlrGetTileCount(tiler);
   info.render_region = renderer->render_region;;
 
-  renderer->frame_report.done(renderer->frame_report.data, &info);
+  CbReportFrameDone(&renderer->frame_report, &info);
 }
 
 static void work_start(struct Worker *worker)
@@ -581,7 +582,7 @@ static void work_start(struct Worker *worker)
   info.total_sample_count = SmpGetSampleCount(worker->sampler);
   info.region = worker->region;
 
-  worker->tile_report.start(worker->tile_report.data, &info);
+  CbReportTileStart(&worker->tile_report, &info);
 }
 
 static void work_done(struct Worker *worker)
@@ -593,7 +594,7 @@ static void work_done(struct Worker *worker)
   info.total_sample_count = SmpGetSampleCount(worker->sampler);
   info.region = worker->region;
 
-  worker->tile_report.done(worker->tile_report.data, &info);
+  CbReportTileDone(&worker->tile_report, &info);
 }
 
 static int integrate_samples(struct Worker *worker)
@@ -624,8 +625,7 @@ static int integrate_samples(struct Worker *worker)
       smp->data[3] = 0;
     }
 
-    /* TODO TEST INTERRUPT */
-    interrupted = worker->tile_report.sample_done(worker->tile_report.data);
+    interrupted = CbReportSampleDone(&worker->tile_report);
     if (interrupted) {
       return -1;
     }

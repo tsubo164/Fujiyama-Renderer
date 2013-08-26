@@ -59,7 +59,16 @@ extern Interrupt CbReportFrameDone(struct FrameReport *report, const struct Fram
 extern Interrupt CbReportTileStart(struct TileReport *report, const struct TileInfo *info);
 extern Interrupt CbReportTileDone(struct TileReport *report, const struct TileInfo *info);
 
-extern Interrupt CbReportSampleDone(struct TileReport *report, const struct TileInfo *info);
+extern Interrupt CbReportSampleDone(struct TileReport *report);
+
+extern void CbSetFrameReport(struct FrameReport *report, void *data,
+    FrameStartCallback frame_start,
+    FrameDoneCallback frame_done);
+
+extern void CbSetTileReport(struct TileReport *report, void *data,
+    TileStartCallback tile_start,
+    SampleDoneCallback sample_done,
+    TileDoneCallback tile_done);
 
 #ifdef __cplusplus
 } /* extern "C" */
