@@ -114,7 +114,10 @@ extern Status SiGetPropertyList(const char *type_name,
 
 /* TODO TEST INTERRUPT */
 /* Callback interfaces */
-extern Status SiSetInterruptCallback(ID id, void *data, WorkIncrementCallback increment);
+extern Status SiSetInterruptCallback(ID id, void *data,
+    WorkStartCallback start,
+    WorkIncrementCallback increment,
+    WorkDoneCallback done);
 
 #ifdef __cplusplus
 } /* extern "C" */

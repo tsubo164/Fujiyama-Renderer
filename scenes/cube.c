@@ -17,6 +17,9 @@ to compile and render this scene, run this at the top level of source tree
 #include <stdio.h>
 
 static int N = 0;
+static void progress_start(void *data, const struct WorkInfo *info)
+{
+}
 static int interrupt_in_the_middle(void *data)
 {
   int *n = (int *) data;
@@ -24,6 +27,13 @@ static int interrupt_in_the_middle(void *data)
     return 1;
   (*n)++;
   return 0;
+}
+static void progress_done(void *data, const struct WorkInfo *info)
+{
+  printf(" Tile Done: %d/%d (%d %%)\n",
+      info->region_id + 1,
+      info->total_region_count,
+      (int) ((info->region_id + 1) / (double) info->total_region_count * 100));
 }
 
 int main(int argc, const char **argv)
@@ -110,9 +120,12 @@ int main(int argc, const char **argv)
   SiAssignCamera(renderer, camera);
   SiAssignFrameBuffer(renderer, framebuffer);
 
-  /*
-  SiSetInterruptCallback(renderer, interrupt_in_the_middle, &N);
-  */
+#if 0
+  SiSetInterruptCallback(renderer, &N,
+      progress_start,
+      interrupt_in_the_middle,
+      progress_done);
+#endif
 
   /* Render scene */
   SiRenderScene(renderer);

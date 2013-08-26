@@ -26,7 +26,7 @@ See LICENSE and README
 #include <stdio.h>
 #include <float.h>
 
-struct ProgressReport {
+struct WorkReport {
   void *data;
   WorkStartCallback start;
   WorkIncrementCallback increment;
@@ -56,27 +56,13 @@ static void progress_done(void *data, const struct WorkInfo *info)
   PrgDone(progress);
 }
 
-static int work_increment(const struct ProgressReport *report)
+static int work_increment(const struct WorkReport *report)
 {
   if (report->increment(report->data) == 1)
     return 1;
   else
     return 0;
 }
-
-#if 0
-struct WorkReporter {
-  void *data;
-  WorkStartCallback start;
-  WorkIncrementCallback interrupt;
-  WorkDoneCallback done;
-};
-struct WorkProgress {
-  int id;
-  int total_iteration;
-  int current_iteration;
-};
-#endif
 
 struct Renderer {
   struct Camera *camera;
@@ -105,7 +91,7 @@ struct Renderer {
 
   /* TODO TEST INTERRUPT */
   struct Progress *progress;
-  struct ProgressReport report;
+  struct WorkReport report;
 };
 
 static int prepare_render(struct Renderer *renderer);
@@ -142,13 +128,10 @@ struct Renderer *RdrNew(void)
 
   /* TODO TEST INTERRUPT */
   renderer->progress = PrgNew();
-  /*
-  RdrSetInterruptCallback(renderer, progress_increment, renderer->progress);
-  */
-  renderer->report.data = renderer->progress;
-  renderer->report.start = progress_start;
-  renderer->report.increment = progress_increment;
-  renderer->report.done = progress_done;
+  RdrSetReportCallback(renderer, renderer->progress,
+      progress_start,
+      progress_increment,
+      progress_done);
 
   return renderer;
 }
@@ -313,11 +296,15 @@ int RdrRender(struct Renderer *renderer)
 }
 
 /* TODO TEST INTERRUPT */
-void RdrSetInterruptCallback(struct Renderer *renderer, void *data,
-    WorkIncrementCallback increment)
+void RdrSetReportCallback(struct Renderer *renderer, void *data,
+    WorkStartCallback start,
+    WorkIncrementCallback increment,
+    WorkDoneCallback done)
 {
-  renderer->report.increment = increment;
   renderer->report.data = data;
+  renderer->report.start = start;
+  renderer->report.increment = increment;
+  renderer->report.done = done;
 }
 
 static int prepare_render(struct Renderer *renderer)
@@ -383,7 +370,7 @@ struct Worker {
   struct Rectangle region;
 
   /* TODO TEST INTERRUPT */
-  struct ProgressReport report;
+  struct WorkReport report;
 };
 
 void init_worker(struct Worker *worker, struct Renderer *renderer)
@@ -478,7 +465,7 @@ void finish_worker(struct Worker *worker)
   FltFree(worker->filter);
 }
 
-static struct Color4 apply_pixel_filter__(struct Worker *worker, int x, int y)
+static struct Color4 apply_pixel_filter(struct Worker *worker, int x, int y)
 {
   const int nsamples = SmpGetSampleCountForPixel(worker->sampler);
   const int xres = worker->xres;
@@ -516,9 +503,7 @@ static struct Color4 apply_pixel_filter__(struct Worker *worker, int x, int y)
   return pixel;
 }
 
-static void reconstruct_image(
-    struct Worker *worker,
-    struct FrameBuffer *fb)
+static void reconstruct_image(struct Worker *worker, struct FrameBuffer *fb)
 {
   const int xmin = worker->region.xmin;
   const int ymin = worker->region.ymin;
@@ -531,7 +516,7 @@ static void reconstruct_image(
       struct Color4 pixel = {0, 0, 0, 0};
 
       SmpGetPixelSamples(worker->sampler, worker->pixel_samples, x, y);
-      pixel = apply_pixel_filter__(worker, x, y);
+      pixel = apply_pixel_filter(worker, x, y);
 
       FbSetColor(fb, x, y, &pixel);
     }
@@ -548,10 +533,6 @@ static void work_start(struct Worker *worker)
   info.region = worker->region;
 
   worker->report.start(worker->report.data, &info);
-  /*
-
-  PrgStart(worker->progress, SmpGetSampleCount(worker->sampler));
-  */
 }
 
 static void work_done(struct Worker *worker)
@@ -564,14 +545,6 @@ static void work_done(struct Worker *worker)
   info.region = worker->region;
 
   worker->report.done(worker->report.data, &info);
-#if 0
-  printf(" Tile Done: %d/%d (%d %%)\n",
-      worker->region_id + 1,
-      worker->region_count,
-      (int) ((worker->region_id + 1) / (double) worker->region_count * 100));
-
-  PrgDone(worker->progress);
-#endif
 }
 
 static int integrate_samples(struct Worker *worker)
@@ -584,6 +557,7 @@ static int integrate_samples(struct Worker *worker)
     struct Color4 C_trace = {0, 0, 0, 0};
     double t_hit = FLT_MAX;
     int hit = 0;
+    int interrupted = 0;
 
     CamGetRay(worker->camera, &smp->uv, smp->time, &ray);
     cxt.time = smp->time;
@@ -601,16 +575,10 @@ static int integrate_samples(struct Worker *worker)
       smp->data[3] = 0;
     }
 
-    /*
-    PrgIncrement(worker->progress);
-    */
-
     /* TODO TEST INTERRUPT */
-    {
-      const int interrupted = work_increment(&worker->report);
-      if (interrupted) {
-        return -1;
-      }
+    interrupted = work_increment(&worker->report);
+    if (interrupted) {
+      return -1;
     }
   }
   return 0;
@@ -666,13 +634,13 @@ static int render_scene(struct Renderer *renderer)
     work_start(&worker[0]);
 
     interrupted = integrate_samples(&worker[0]);
-    if (interrupted) {
-      break;
-    }
-
     reconstruct_image(&worker[0], fb);
 
     work_done(&worker[0]);
+
+    if (interrupted) {
+      break;
+    }
   }
 
   elapse = TimerGetElapse(&timer);

@@ -46,8 +46,10 @@ extern void RdrSetTargetLights(struct Renderer *renderer, struct Light **lights,
 extern int RdrRender(struct Renderer *renderer);
 
 /* TODO TEST INTERRUPT */
-extern void RdrSetInterruptCallback(struct Renderer *renderer, void *data,
-    WorkIncrementCallback increment);
+extern void RdrSetReportCallback(struct Renderer *renderer, void *data,
+    WorkStartCallback start,
+    WorkIncrementCallback increment,
+    WorkDoneCallback done);
 
 #ifdef __cplusplus
 } /* extern "C" */
