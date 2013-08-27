@@ -32,7 +32,8 @@ static Interrupt default_frame_start(void *data, const struct FrameInfo *info)
   TimerStart(timer);
   printf("# Rendering Frame\n");
   printf("#   Thread Count: %4d\n", info->worker_count);
-  printf("#   Tile Count:   %4d\n\n", info->tile_count);
+  printf("#   Tile Count:   %4d\n", info->tile_count);
+  printf("\n");
   return CALLBACK_CONTINUE;
 }
 static Interrupt default_frame_done(void *data, const struct FrameInfo *info)
@@ -41,7 +42,8 @@ static Interrupt default_frame_done(void *data, const struct FrameInfo *info)
   struct Elapse elapse;
   elapse = TimerGetElapse(timer);
   printf("# Frame Done\n");
-  printf("#   %dh %dm %gs\n\n", elapse.hour, elapse.min, elapse.sec);
+  printf("#   %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
+  printf("\n");
   return CALLBACK_CONTINUE;
 }
 
@@ -78,7 +80,7 @@ struct Renderer {
   int nlights;
 
   int resolution[2];
-  struct Rectangle render_region;
+  struct Rectangle frame_region;
   int pixelsamples[2];
   int tilesize[2];
   float filterwidth[2];
@@ -175,10 +177,10 @@ void RdrSetRenderRegion(struct Renderer *renderer, int xmin, int ymin, int xmax,
   assert(xmin < xmax);
   assert(ymin < ymax);
 
-  renderer->render_region.xmin = xmin;
-  renderer->render_region.ymin = ymin;
-  renderer->render_region.xmax = xmax;
-  renderer->render_region.ymax = ymax;
+  renderer->frame_region.xmin = xmin;
+  renderer->frame_region.ymin = ymin;
+  renderer->frame_region.xmax = xmax;
+  renderer->frame_region.ymax = ymax;
 }
 
 void RdrSetPixelSamples(struct Renderer *renderer, int xrate, int yrate)
@@ -297,6 +299,12 @@ int RdrRender(struct Renderer *renderer)
     return -1;
   }
 
+  err = preprocess_lights(renderer);
+  if (err) {
+    /* TODO error handling */
+    return -1;
+  }
+
   err = render_scene(renderer);
   if (err) {
     /* TODO error handling */
@@ -397,7 +405,7 @@ struct Worker {
   struct Sample *pixel_samples;
 
   struct TraceContext context;
-  struct Rectangle region;
+  struct Rectangle tile_region;
 
   /* TODO TEST INTERRUPT */
   struct TileReport tile_report;
@@ -462,10 +470,10 @@ void init_worker(struct Worker *worker, struct Renderer *renderer)
   worker->context.raymarch_refract_step = renderer->raymarch_refract_step;
 
   /* region */
-  worker->region.xmin = 0;
-  worker->region.xmax = 0;
-  worker->region.ymin = 0;
-  worker->region.ymax = 0;
+  worker->tile_region.xmin = 0;
+  worker->tile_region.xmax = 0;
+  worker->tile_region.ymin = 0;
+  worker->tile_region.ymax = 0;
 
   /* interruption */
   worker->tile_report = renderer->tile_report;
@@ -477,12 +485,12 @@ void set_working_region(struct Worker *worker, struct Tiler *tiler, int region_i
 
   worker->region_id = region_id;
   worker->region_count = TlrGetTileCount(tiler);
-  worker->region.xmin = tile->xmin;
-  worker->region.ymin = tile->ymin;
-  worker->region.xmax = tile->xmax;
-  worker->region.ymax = tile->ymax;
+  worker->tile_region.xmin = tile->xmin;
+  worker->tile_region.ymin = tile->ymin;
+  worker->tile_region.xmax = tile->xmax;
+  worker->tile_region.ymax = tile->ymax;
 
-  if (SmpGenerateSamples(worker->sampler, &worker->region)) {
+  if (SmpGenerateSamples(worker->sampler, &worker->tile_region)) {
     /* TODO error handling */
   }
 }
@@ -533,12 +541,13 @@ static struct Color4 apply_pixel_filter(struct Worker *worker, int x, int y)
   return pixel;
 }
 
-static void reconstruct_image(struct Worker *worker, struct FrameBuffer *fb)
+static void reconstruct_image(struct Worker *worker)
 {
-  const int xmin = worker->region.xmin;
-  const int ymin = worker->region.ymin;
-  const int xmax = worker->region.xmax;
-  const int ymax = worker->region.ymax;
+  struct FrameBuffer *fb = worker->framebuffer;
+  const int xmin = worker->tile_region.xmin;
+  const int ymin = worker->tile_region.ymin;
+  const int xmax = worker->tile_region.xmax;
+  const int ymax = worker->tile_region.ymax;
   int x, y;
 
   for (y = ymin; y < ymax; y++) {
@@ -553,46 +562,50 @@ static void reconstruct_image(struct Worker *worker, struct FrameBuffer *fb)
   }
 }
 
-static void frame_start(struct Renderer *renderer, const struct Tiler *tiler)
+static void render_frame_start(struct Renderer *renderer, const struct Tiler *tiler)
 {
   struct FrameInfo info;
   info.worker_count = 1;
   info.tile_count = TlrGetTileCount(tiler);
-  info.render_region = renderer->render_region;;
+  info.frame_region = renderer->frame_region;;
+  info.framebuffer = renderer->framebuffers;
 
   CbReportFrameStart(&renderer->frame_report, &info);
 }
 
-static void frame_done(struct Renderer *renderer, const struct Tiler *tiler)
+static void render_frame_done(struct Renderer *renderer, const struct Tiler *tiler)
 {
   struct FrameInfo info;
   info.worker_count = 1;
   info.tile_count = TlrGetTileCount(tiler);
-  info.render_region = renderer->render_region;;
+  info.frame_region = renderer->frame_region;;
+  info.framebuffer = renderer->framebuffers;
 
   CbReportFrameDone(&renderer->frame_report, &info);
 }
 
-static void work_start(struct Worker *worker)
+static void render_tile_start(struct Worker *worker)
 {
   struct TileInfo info;
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
   info.total_sample_count = SmpGetSampleCount(worker->sampler);
-  info.region = worker->region;
+  info.tile_region = worker->tile_region;
+  info.framebuffer = worker->framebuffer;
 
   CbReportTileStart(&worker->tile_report, &info);
 }
 
-static void work_done(struct Worker *worker)
+static void render_tile_done(struct Worker *worker)
 {
   struct TileInfo info;
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
   info.total_sample_count = SmpGetSampleCount(worker->sampler);
-  info.region = worker->region;
+  info.tile_region = worker->tile_region;
+  info.framebuffer = worker->framebuffer;
 
   CbReportTileDone(&worker->tile_report, &info);
 }
@@ -635,11 +648,10 @@ static int integrate_samples(struct Worker *worker)
 
 static int render_scene(struct Renderer *renderer)
 {
-  struct FrameBuffer *fb = renderer->framebuffers;
   struct Tiler *tiler = NULL;
 
   int render_state = 0;
-  int err = 0;
+  int ntiles = 0;
   int i;
 
   const int xres = renderer->resolution[0];
@@ -650,42 +662,36 @@ static int render_scene(struct Renderer *renderer)
   struct Worker worker[1];
   init_worker(&worker[0], renderer);
 
-  /* preprocessing lights */
-  err = preprocess_lights(renderer);
-  if (err) {
-    render_state = -1;
-    goto cleanup_and_exit;
-  }
-
   /* Tiler */
   tiler = TlrNew(xres, yres, xtilesize, ytilesize);
   if (tiler == NULL) {
     render_state = -1;
     goto cleanup_and_exit;
   }
-  TlrGenerateTiles(tiler, &renderer->render_region);
+  TlrGenerateTiles(tiler, &renderer->frame_region);
+  ntiles = TlrGetTileCount(tiler);
 
   /* Run sampling */
-  frame_start(renderer, tiler);
+  render_frame_start(renderer, tiler);
 
-  for (i = 0; i < TlrGetTileCount(tiler); i++) {
+  for (i = 0; i < ntiles; i++) {
     int interrupted = 0;
 
     set_working_region(&worker[0], tiler, i);
 
-    work_start(&worker[0]);
+    render_tile_start(&worker[0]);
 
     interrupted = integrate_samples(&worker[0]);
-    reconstruct_image(&worker[0], fb);
+    reconstruct_image(&worker[0]);
 
-    work_done(&worker[0]);
+    render_tile_done(&worker[0]);
 
     if (interrupted) {
       break;
     }
   }
 
-  frame_done(renderer, tiler);
+  render_frame_done(renderer, tiler);
 
 cleanup_and_exit:
   TlrFree(tiler);

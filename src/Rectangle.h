@@ -14,6 +14,8 @@ struct Rectangle {
   int xmin, ymin, xmax, ymax;
 };
 
+extern void RctPrint(const struct Rectangle *rect);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

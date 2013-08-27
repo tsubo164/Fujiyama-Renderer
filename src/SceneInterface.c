@@ -879,6 +879,23 @@ Status SiAssignMesh(ID id, const char *name, ID mesh)
   return status_of_error(err);
 }
 
+Status SiSetFrameReportCallback(ID id, void *data,
+    FrameStartCallback frame_start,
+    FrameDoneCallback frame_done)
+{
+  const struct Entry entry = decode_id(id);
+
+  if (entry.type == Type_Renderer) {
+    struct Renderer *renderer_ptr = ScnGetRenderer(get_scene(), entry.index);
+    RdrSetFrameReportCallback(renderer_ptr, data,
+        frame_start,
+        frame_done);
+    return SI_SUCCESS;
+  } else {
+    return SI_FAIL;
+  }
+}
+
 Status SiSetTileReportCallback(ID id, void *data,
     TileStartCallback tile_start,
     SampleDoneCallback sample_done,

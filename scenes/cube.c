@@ -16,25 +16,40 @@ to compile and render this scene, run this at the top level of source tree
 #include "SceneInterface.h"
 #include <stdio.h>
 
-static int N = 0;
-static void progress_start(void *data, const struct TileInfo *info)
+#define USE_CUSTOM_CALLBACKS 0
+
+#if USE_CUSTOM_CALLBACKS
+static Interrupt frame_start(void *data, const struct FrameInfo *info)
 {
+  printf("# Callback Sample -- Frame Start\n");
+  return CALLBACK_CONTINUE;
 }
-static int interrupt_in_the_middle(void *data)
+static Interrupt frame_done(void *data, const struct FrameInfo *info)
+{
+  printf("# Callback Sample -- Frame Done\n");
+  return CALLBACK_CONTINUE;
+}
+
+static int N = 0;
+static Interrupt tile_start(void *data, const struct TileInfo *info)
+{
+  printf("#   Callback Sample -- Tile Start\n");
+  return CALLBACK_CONTINUE;
+}
+static Interrupt interrupt_in_the_middle(void *data)
 {
   int *n = (int *) data;
   if (*n == 320 * 240 * 3 * 3 / 2)
-    return 1;
+    return CALLBACK_INTERRUPT;
   (*n)++;
-  return 0;
+  return CALLBACK_CONTINUE;
 }
-static void progress_done(void *data, const struct TileInfo *info)
+static Interrupt tile_done(void *data, const struct TileInfo *info)
 {
-  printf(" Tile Done: %d/%d (%d %%)\n",
-      info->region_id + 1,
-      info->total_region_count,
-      (int) ((info->region_id + 1) / (double) info->total_region_count * 100));
+  printf("#   Callback Sample -- Tile Done\n");
+  return CALLBACK_CONTINUE;
 }
+#endif /* USE_CUSTOM_CALLBACKS */
 
 int main(int argc, const char **argv)
 {
@@ -120,12 +135,17 @@ int main(int argc, const char **argv)
   SiAssignCamera(renderer, camera);
   SiAssignFrameBuffer(renderer, framebuffer);
 
-#if 0
-  SiSetInterruptCallback(renderer, &N,
-      progress_start,
+#if USE_CUSTOM_CALLBACKS
+  SiSetFrameReportCallback(renderer,
+      NULL,
+      frame_start,
+      frame_done);
+  SiSetTileReportCallback(renderer,
+      &N,
+      tile_start,
       interrupt_in_the_middle,
-      progress_done);
-#endif
+      tile_done);
+#endif /* USE_CUSTOM_CALLBACKS */
 
   /* Render scene */
   SiRenderScene(renderer);
@@ -134,4 +154,3 @@ int main(int argc, const char **argv)
 
   return 0;
 }
-

@@ -34,4 +34,3 @@ cube: cube.c $(topdir)lib/libscene.so $(topdir)lib/PlasticShader.so
 clean:
 	@echo '  clean samples'
 	@-$(RM) cube cube.fb cube.mesh
-

@@ -15,7 +15,9 @@ extern "C" {
 struct FrameInfo {
   int worker_count;
   int tile_count;
-  struct Rectangle render_region;
+  struct Rectangle frame_region;
+  
+  const struct FrameBuffer *framebuffer;
 };
 
 struct TileInfo {
@@ -23,7 +25,9 @@ struct TileInfo {
   int region_id;
   int total_region_count;
   int total_sample_count;
-  struct Rectangle region;
+  struct Rectangle tile_region;
+
+  const struct FrameBuffer *framebuffer;
 };
 
 enum {

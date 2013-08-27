@@ -113,6 +113,10 @@ extern Status SiGetPropertyList(const char *type_name,
     int *property_count);
 
 /* Callback interfaces */
+extern Status SiSetFrameReportCallback(ID id, void *data,
+    FrameStartCallback frame_start,
+    FrameDoneCallback frame_done);
+
 extern Status SiSetTileReportCallback(ID id, void *data,
     TileStartCallback tile_start,
     SampleDoneCallback sample_done,
