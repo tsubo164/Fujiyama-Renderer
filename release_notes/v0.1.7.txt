@@ -1,0 +1,39 @@
+Fujiyama Renderer v0.1.7(Alpha) Release Notes
+=============================================
+
+New features since v0.1.6
+-------------------------
+ * Added callback capability to hook rendering progress from host applications.
+   There are 5 points where you can hook the progress.
+
+     1. When fujiyama starts rendering a frame
+     2. When fujiyama finishes rendering a frame
+     3. When fujiyama starts rendering a tile
+     4. When fujiyama finishes rendering a tile
+     5. When fujiyama finishes sampling a sub pixel
+
+   If you return CALLBACK_CONTINUE, then fujiyama will keep rendering, otherwise
+   returning CALLBACK_INTERRUPT, then it stops rendering.
+
+   Typically, on finishing sampling you decide to interrupt rendering or not.
+   And on finishing tile rendering, you copy the contents of frame buffer.
+
+   See scenes/cube.c for actual code.
+
+ * The fbview switched to GLSL to display individual image channel, instead of
+   glMatrixMode(GL_COLOR) since it is still an ARB_imaging extention.
+
+ * Divided top level Makefile into individual ones for each library and tool.
+   This makes it easy to see how to build custom shaders and your own tools.
+
+ * Added fixed-size integer type to make the random module behave the same.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Multi-threaded
+ * Deep shadow
+ * Displacement shader
+ * Subdivision surface
+ * Alembic support

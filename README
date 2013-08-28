@@ -66,5 +66,8 @@ designed to handle production image rendering.
   + Region rendering - accelerates distribution rendering pipeline
   + Tile based rendering
 
+* Extensibility
+  + Rendering callbacks - 5 points to hook rendering process
+
 http://fujiyama-renderer.com/
 Copyright (c) 2011-2013 Hiroshi Tsubokawa

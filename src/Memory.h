@@ -27,4 +27,3 @@ extern "C" {
 #endif
 
 #endif /* XXX_H */
-
