@@ -15,37 +15,37 @@ extern "C" {
 struct FrameBuffer;
 
 struct FbInput {
-	FILE *file;
-	int version;
-	int width;
-	int height;
-	int nchannels;
+  FILE *file;
+  int version;
+  int width;
+  int height;
+  int nchannels;
 
-	int viewbox[4];
-	int databox[4];
+  int viewbox[4];
+  int databox[4];
 
-	float *data;
+  float *data;
 };
 
 struct FbOutput {
-	FILE *file;
-	int version;
-	int width;
-	int height;
-	int nchannels;
+  FILE *file;
+  int version;
+  int width;
+  int height;
+  int nchannels;
 
-	int viewbox[4];
-	int databox[4];
+  int viewbox[4];
+  int databox[4];
 
-	const float *data;
+  const float *data;
 };
 
 enum FbErrorNo {
-	ERR_FB_NOERR = 0,
-	ERR_FB_NOMEM,
-	ERR_FB_NOFILE,
-	ERR_FB_NOTFB,
-	ERR_FB_BADVER
+  ERR_FB_NOERR = 0,
+  ERR_FB_NOMEM,
+  ERR_FB_NOFILE,
+  ERR_FB_NOTFB,
+  ERR_FB_BADVER
 };
 
 extern int FbGetErrorNo(void);

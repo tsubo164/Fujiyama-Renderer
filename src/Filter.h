@@ -13,8 +13,8 @@ extern "C" {
 struct Filter;
 
 enum {
-	FLT_BOX = 0,
-	FLT_GAUSSIAN
+  FLT_BOX = 0,
+  FLT_GAUSSIAN
 };
 
 extern struct Filter *FltNew(int filtertype, double xwidth, double ywidth);

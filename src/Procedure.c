@@ -14,109 +14,109 @@ See LICENSE and README
 static int error_no = PRC_ERR_NOERR;
 
 struct Procedure {
-	void *self;
-	const struct ProcedureFunctionTable *vptr;
-	const struct Plugin *plugin;
+  void *self;
+  const struct ProcedureFunctionTable *vptr;
+  const struct Plugin *plugin;
 };
 
 static void set_error(int err);
 
 struct Procedure *PrcNew(const struct Plugin *plugin)
 {
-	struct Procedure *procedure = NULL;
-	const void *tmpvtbl = NULL;
-	void *tmpobj = NULL;
+  struct Procedure *procedure = NULL;
+  const void *tmpvtbl = NULL;
+  void *tmpobj = NULL;
 
-	if (!PlgTypeMatch(plugin, PROCEDURE_PLUGIN_TYPE)) {
-		set_error(PRC_ERR_TYPE_NOT_MATCH);
-		return NULL;
-	}
+  if (!PlgTypeMatch(plugin, PROCEDURE_PLUGIN_TYPE)) {
+    set_error(PRC_ERR_TYPE_NOT_MATCH);
+    return NULL;
+  }
 
-	tmpobj = PlgCreateInstance(plugin);
-	if (tmpobj == NULL) {
-		set_error(PRC_ERR_NOOBJ);
-		return NULL;
-	}
+  tmpobj = PlgCreateInstance(plugin);
+  if (tmpobj == NULL) {
+    set_error(PRC_ERR_NOOBJ);
+    return NULL;
+  }
 
-	tmpvtbl = PlgGetVtable(plugin);
-	if (tmpvtbl == NULL) {
-		set_error(PRC_ERR_NOVTBL);
-		PlgDeleteInstance(plugin, tmpobj);
-		return NULL;
-	}
+  tmpvtbl = PlgGetVtable(plugin);
+  if (tmpvtbl == NULL) {
+    set_error(PRC_ERR_NOVTBL);
+    PlgDeleteInstance(plugin, tmpobj);
+    return NULL;
+  }
 
-	procedure = MEM_ALLOC(struct Procedure);
-	if (procedure == NULL) {
-		set_error(PRC_ERR_NOMEM);
-		PlgDeleteInstance(plugin, tmpobj);
-		return NULL;
-	}
+  procedure = MEM_ALLOC(struct Procedure);
+  if (procedure == NULL) {
+    set_error(PRC_ERR_NOMEM);
+    PlgDeleteInstance(plugin, tmpobj);
+    return NULL;
+  }
 
-	/* commit */
-	procedure->self = tmpobj;
-	procedure->vptr = (const struct ProcedureFunctionTable *) tmpvtbl;
-	procedure->plugin = plugin;
-	set_error(PRC_ERR_NOERR);
+  /* commit */
+  procedure->self = tmpobj;
+  procedure->vptr = (const struct ProcedureFunctionTable *) tmpvtbl;
+  procedure->plugin = plugin;
+  set_error(PRC_ERR_NOERR);
 
-	return procedure;
+  return procedure;
 }
 
 void PrcFree(struct Procedure *procedure)
 {
-	if (procedure == NULL)
-		return;
+  if (procedure == NULL)
+    return;
 
-	PlgDeleteInstance(procedure->plugin, procedure->self);
-	MEM_FREE(procedure);
+  PlgDeleteInstance(procedure->plugin, procedure->self);
+  MEM_FREE(procedure);
 }
 
 int PrcRun(struct Procedure *procedure)
 {
-	struct Timer timer;
-	struct Elapse elapse;
-	int err = 0;
+  struct Timer timer;
+  struct Elapse elapse;
+  int err = 0;
 
-	TimerStart(&timer);
-	/* TODO come up with the best place to put message */
-	printf("Running Procedure ...\n");
+  TimerStart(&timer);
+  /* TODO come up with the best place to put message */
+  printf("Running Procedure ...\n");
 
-	err = procedure->vptr->MyRun(procedure->self);
+  err = procedure->vptr->MyRun(procedure->self);
 
-	elapse = TimerGetElapse(&timer);
+  elapse = TimerGetElapse(&timer);
 
-	if (err) {
-		printf("Error: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
+  if (err) {
+    printf("Error: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
 
-		return -1;
-	} else {
-		printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
+    return -1;
+  } else {
+    printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
 
-		return 0;
-	}
+    return 0;
+  }
 }
 
 const struct Property *PrcGetPropertyList(const struct Procedure *procedure)
 {
-	return PlgGetPropertyList(procedure->plugin);
+  return PlgGetPropertyList(procedure->plugin);
 }
 
 int PrcSetProperty(struct Procedure *procedure,
-		const char *prop_name, const struct PropertyValue *src_data)
+    const char *prop_name, const struct PropertyValue *src_data)
 {
-	const struct Property *prc_props;
-	const struct Property *dst_prop;
+  const struct Property *prc_props;
+  const struct Property *dst_prop;
 
-	prc_props = PrcGetPropertyList(procedure);
-	dst_prop = PropFind(prc_props, src_data->type, prop_name);
-	if (dst_prop == NULL)
-		return -1;
+  prc_props = PrcGetPropertyList(procedure);
+  dst_prop = PropFind(prc_props, src_data->type, prop_name);
+  if (dst_prop == NULL)
+    return -1;
 
-	assert(dst_prop->SetProperty != NULL);
-	return dst_prop->SetProperty(procedure->self, src_data);
+  assert(dst_prop->SetProperty != NULL);
+  return dst_prop->SetProperty(procedure->self, src_data);
 }
 
 static void set_error(int err)
 {
-	error_no = err;
+  error_no = err;
 }
 

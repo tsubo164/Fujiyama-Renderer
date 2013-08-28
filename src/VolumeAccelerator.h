@@ -17,12 +17,12 @@ struct Box;
 struct Ray;
 
 enum VolumeAcceleratorType {
-	VOLACC_BRUTEFORCE = 0,
-	VOLACC_BVH
+  VOLACC_BRUTEFORCE = 0,
+  VOLACC_BVH
 };
 
 typedef int (*VolumeIntersectFunction)(const void *volume_set, int volume_id, double time,
-			const struct Ray *ray, struct Interval *interval);
+      const struct Ray *ray, struct Interval *interval);
 typedef void (*VolumeBoundsFunction)(const void *volume_set, int volume_id, struct Box *bounds);
 
 extern struct VolumeAccelerator *VolumeAccNew(int accelerator_type);
@@ -30,13 +30,13 @@ extern void VolumeAccFree(struct VolumeAccelerator *acc);
 
 extern void VolumeAccGetBounds(const struct VolumeAccelerator *acc, struct Box *bounds);
 extern void VolumeAccSetTargetGeometry(struct VolumeAccelerator *acc,
-	const void *primset, int nprims, const struct Box *primset_bounds,
-	VolumeIntersectFunction prim_intersect_function,
-	VolumeBoundsFunction prim_bounds_function);
+  const void *primset, int nprims, const struct Box *primset_bounds,
+  VolumeIntersectFunction prim_intersect_function,
+  VolumeBoundsFunction prim_bounds_function);
 
 extern int VolumeAccBuild(struct VolumeAccelerator *acc);
 extern int VolumeAccIntersect(const struct VolumeAccelerator *acc, double time,
-		const struct Ray *ray, struct IntervalList *intervals);
+    const struct Ray *ray, struct IntervalList *intervals);
 
 #ifdef __cplusplus
 } /* extern "C" */

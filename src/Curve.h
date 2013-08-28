@@ -20,18 +20,18 @@ struct Color;
 
 /* TODO temporary visible structure */
 struct Curve {
-	struct Box bounds;
+  struct Box bounds;
 
-	struct Vector *P;
-	double *width;
-	struct Color *Cd;
-	struct TexCoord *uv;
-	int *indices;
+  struct Vector *P;
+  double *width;
+  struct Color *Cd;
+  struct TexCoord *uv;
+  int *indices;
 
-	int nverts;
-	int ncurves;
+  int nverts;
+  int ncurves;
 
-	int *split_depth;
+  int *split_depth;
 };
 
 extern struct Curve *CrvNew(void);

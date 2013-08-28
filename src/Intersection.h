@@ -17,18 +17,18 @@ extern "C" {
 struct ObjectInstance;
 
 struct Intersection {
-	struct Vector P;
-	struct Vector N;
-	struct Color Cd;
-	struct TexCoord uv;
+  struct Vector P;
+  struct Vector N;
+  struct Color Cd;
+  struct TexCoord uv;
 
-	struct Vector dPds;
-	struct Vector dPdt;
+  struct Vector dPds;
+  struct Vector dPdt;
 
-	const struct ObjectInstance *object;
-	int prim_id;
+  const struct ObjectInstance *object;
+  int prim_id;
 
-	double t_hit;
+  double t_hit;
 };
 
 #ifdef __cplusplus

@@ -13,14 +13,14 @@ extern "C" {
 #endif
 
 struct Timer {
-	clock_t start_clock;
-	time_t start_time;
+  clock_t start_clock;
+  time_t start_time;
 };
 
 struct Elapse {
-	int hour;
-	int min;
-	double sec;
+  int hour;
+  int min;
+  double sec;
 };
 
 extern void TimerStart(struct Timer *t);
@@ -31,4 +31,3 @@ extern struct Elapse TimerGetElapse(const struct Timer *t);
 #endif
 
 #endif /* XXX_H */
-

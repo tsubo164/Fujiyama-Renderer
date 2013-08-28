@@ -11,18 +11,18 @@ extern "C" {
 #endif
 
 enum PropertyType {
-	PROP_NONE = 0,
-	PROP_SCALAR,
-	PROP_VECTOR2,
-	PROP_VECTOR3,
-	PROP_VECTOR4,
-	PROP_STRING,
-	PROP_OBJECTGROUP,
-	PROP_TURBULENCE,
-	PROP_TEXTURE,
-	PROP_SHADER,
-	PROP_VOLUME,
-	PROP_MESH
+  PROP_NONE = 0,
+  PROP_SCALAR,
+  PROP_VECTOR2,
+  PROP_VECTOR3,
+  PROP_VECTOR4,
+  PROP_STRING,
+  PROP_OBJECTGROUP,
+  PROP_TURBULENCE,
+  PROP_TEXTURE,
+  PROP_SHADER,
+  PROP_VOLUME,
+  PROP_MESH
 };
 
 struct ObjectGroup;
@@ -33,37 +33,37 @@ struct Volume;
 struct Mesh;
 
 struct PropertyValue {
-	int type;
+  int type;
 
-	double vector[4];
-	const char *string;
+  double vector[4];
+  const char *string;
 
-	struct ObjectGroup *object_group;
-	struct Turbulence *turbulence;
-	struct Texture *texture;
-	struct Shader *shader;
-	struct Volume *volume;
-	struct Mesh *mesh;
+  struct ObjectGroup *object_group;
+  struct Turbulence *turbulence;
+  struct Texture *texture;
+  struct Shader *shader;
+  struct Volume *volume;
+  struct Mesh *mesh;
 
-	double time;
+  double time;
 };
 
 #define INIT_PROPERTYVALUE { \
-	PROP_NONE, \
-	{0, 0, 0, 0}, \
-	NULL, \
-	NULL, \
-	NULL, \
-	NULL, \
-	NULL, \
-	NULL, \
-	NULL, \
-	0}
+  PROP_NONE, \
+  {0, 0, 0, 0}, \
+  NULL, \
+  NULL, \
+  NULL, \
+  NULL, \
+  NULL, \
+  NULL, \
+  NULL, \
+  0}
 
 struct Property {
-	int type;
-	const char *name;
-	int (*SetProperty)(void *self, const struct PropertyValue *value);
+  int type;
+  const char *name;
+  int (*SetProperty)(void *self, const struct PropertyValue *value);
 };
 
 extern const char *PropTypeString(int property_type);
@@ -87,23 +87,23 @@ extern const struct Property *PropFind(const struct Property *list, int type, co
 enum { MAX_PROPERTY_SAMPLES = 8 };
 
 struct PropertySample {
-	double vector[4];
-	double time;
+  double vector[4];
+  double time;
 };
 
 #define INIT_PROPERTYSAMPLE { \
-	{0, 0, 0, 0}, \
-	0}
+  {0, 0, 0, 0}, \
+  0}
 
 struct PropertySampleList {
-	struct PropertySample samples[MAX_PROPERTY_SAMPLES];
-	int sample_count;
+  struct PropertySample samples[MAX_PROPERTY_SAMPLES];
+  int sample_count;
 };
 
 extern void PropInitSampleList(struct PropertySampleList *list);
 extern int PropPushSample(struct PropertySampleList *list, const struct PropertySample *sample);
 extern void PropLerpSamples(const struct PropertySampleList *list, double time,
-		struct PropertySample *dst);
+    struct PropertySample *dst);
 
 #ifdef __cplusplus
 } /* extern "C" */

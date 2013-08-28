@@ -11,7 +11,7 @@ extern "C" {
 #endif
 
 struct TexCoord {
-	float u, v;
+  float u, v;
 };
 
 extern struct TexCoord *TexCoordAlloc(long count);

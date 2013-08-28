@@ -13,7 +13,7 @@ extern "C" {
 typedef int Index;
 
 struct TriIndex {
-	Index i0, i1, i2;
+  Index i0, i1, i2;
 };
 
 struct PrimitiveSet;
@@ -34,16 +34,16 @@ extern int MshGetVertexCount(const struct Mesh *mesh);
 extern int MshGetFaceCount(const struct Mesh *mesh);
 
 extern void MshGetFaceVertexPosition(const struct Mesh *mesh, int face_index,
-		struct Vector *P0, struct Vector *P1, struct Vector *P2);
+    struct Vector *P0, struct Vector *P1, struct Vector *P2);
 extern void MshGetFaceVertexNormal(const struct Mesh *mesh, int face_index,
-		struct Vector *N0, struct Vector *N1, struct Vector *N2);
+    struct Vector *N0, struct Vector *N1, struct Vector *N2);
 
 /* property setting */
 extern void MshSetVertexPosition(struct Mesh *mesh, int index, const struct Vector *P);
 extern void MshSetVertexNormal(struct Mesh *mesh, int index, const struct Vector *N);
 extern void MshSetVertexTexture(struct Mesh *mesh, int index, const struct TexCoord *uv);
 extern void MshSetFaceVertexIndices(struct Mesh *mesh, int face_index,
-		const struct TriIndex *tri_index);
+    const struct TriIndex *tri_index);
 
 extern void MshGetVertexPosition(struct Mesh *mesh, int index, struct Vector *P);
 

@@ -22,27 +22,27 @@ extern "C" {
 struct Shader;
 
 struct ShaderFunctionTable {
-	void (*MyEvaluate)(const void *self, const struct TraceContext *cxt,
-			const struct SurfaceInput *in, struct SurfaceOutput *out);
+  void (*MyEvaluate)(const void *self, const struct TraceContext *cxt,
+      const struct SurfaceInput *in, struct SurfaceOutput *out);
 };
 
 enum ShdErrorNo {
-	SHD_ERR_NOERR = 0,
-	SHD_ERR_TYPE_NOT_MATCH,
-	SHD_ERR_NOOBJ,
-	SHD_ERR_NOVTBL,
-	SHD_ERR_NOMEM
+  SHD_ERR_NOERR = 0,
+  SHD_ERR_TYPE_NOT_MATCH,
+  SHD_ERR_NOOBJ,
+  SHD_ERR_NOVTBL,
+  SHD_ERR_NOMEM
 };
 
 extern struct Shader *ShdNew(const struct Plugin *plg);
 extern void ShdFree(struct Shader *shader);
 
 extern void ShdEvaluate(const struct Shader *shader, const struct TraceContext *cxt,
-		const struct SurfaceInput *in, struct SurfaceOutput *out);
+    const struct SurfaceInput *in, struct SurfaceOutput *out);
 
 extern const struct Property *ShdGetPropertyList(const struct Shader *shader);
 extern int ShdSetProperty(struct Shader *shader,
-		const char *prop_name, const struct PropertyValue *src_data);
+    const char *prop_name, const struct PropertyValue *src_data);
 
 #ifdef __cplusplus
 } /* extern "C" */

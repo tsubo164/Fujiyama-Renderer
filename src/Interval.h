@@ -15,10 +15,10 @@ struct ObjectInstance;
 
 /* ray-march interval for volumetric object */
 struct Interval {
-	double tmin;
-	double tmax;
-	const struct ObjectInstance *object;
-	struct Interval *next;
+  double tmin;
+  double tmax;
+  const struct ObjectInstance *object;
+  struct Interval *next;
 };
 
 extern struct IntervalList *IntervalListNew(void);

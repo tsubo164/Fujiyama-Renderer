@@ -18,41 +18,41 @@ struct Color;
 struct Mesh;
 
 enum MshErrorNo {
-	MSH_ERR_NONE = 0,
-	MSH_ERR_FILE_NOT_EXIST,
-	MSH_ERR_BAD_MAGIC_NUMBER,
-	MSH_ERR_BAD_FILE_VERSION,
-	MSH_ERR_LONG_ATTRIB_NAME,
-	MSH_ERR_NO_MEMORY
+  MSH_ERR_NONE = 0,
+  MSH_ERR_FILE_NOT_EXIST,
+  MSH_ERR_BAD_MAGIC_NUMBER,
+  MSH_ERR_BAD_FILE_VERSION,
+  MSH_ERR_LONG_ATTRIB_NAME,
+  MSH_ERR_NO_MEMORY
 };
 
 struct MeshInput {
-	FILE *file;
-	int version;
-	int nverts;
-	int nvert_attrs;
-	int nfaces;
-	int nface_attrs;
+  FILE *file;
+  int version;
+  int nverts;
+  int nvert_attrs;
+  int nfaces;
+  int nface_attrs;
 
-	char *data_buffer;
-	size_t buffer_size;
+  char *data_buffer;
+  size_t buffer_size;
 
-	char **attr_names;
+  char **attr_names;
 };
 
 struct MeshOutput {
-	FILE *file;
-	int version;
-	int nverts;
-	int nvert_attrs;
-	int nfaces;
-	int nface_attrs;
+  FILE *file;
+  int version;
+  int nverts;
+  int nvert_attrs;
+  int nfaces;
+  int nface_attrs;
 
-	struct Vector *P;
-	struct Vector *N;
-	struct Color *Cd;
-	struct TexCoord *uv;
-	struct TriIndex *indices;
+  struct Vector *P;
+  struct Vector *N;
+  struct Color *Cd;
+  struct TexCoord *uv;
+  struct TriIndex *indices;
 };
 
 /* mesh input file interfaces */

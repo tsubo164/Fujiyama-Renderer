@@ -18,44 +18,44 @@ struct Vector;
 struct Color;
 
 struct CurveInput {
-	FILE *file;
-	int version;
-	int nverts;
-	int nvert_attrs;
-	int ncurves;
-	int ncurve_attrs;
+  FILE *file;
+  int version;
+  int nverts;
+  int nvert_attrs;
+  int ncurves;
+  int ncurve_attrs;
 
-	struct Vector *P;
-	double *width;
-	struct Color *Cd;
-	struct TexCoord *uv;
-	int *indices;
+  struct Vector *P;
+  double *width;
+  struct Color *Cd;
+  struct TexCoord *uv;
+  int *indices;
 
-	char **attr_names;
+  char **attr_names;
 };
 
 struct CurveOutput {
-	FILE *file;
-	int version;
-	int nverts;
-	int nvert_attrs;
-	int ncurves;
-	int ncurve_attrs;
+  FILE *file;
+  int version;
+  int nverts;
+  int nvert_attrs;
+  int ncurves;
+  int ncurve_attrs;
 
-	struct Vector *P;
-	double *width;
-	struct Color *Cd;
-	struct TexCoord *uv;
-	int *indices;
+  struct Vector *P;
+  double *width;
+  struct Color *Cd;
+  struct TexCoord *uv;
+  int *indices;
 };
 
 enum CrvErrorNo {
-	ERR_CRV_NOERR = 0,
-	ERR_CRV_NOMEM,
-	ERR_CRV_NOFILE,
-	ERR_CRV_NOTMESH,
-	ERR_CRV_BADVER,
-	ERR_CRV_BADATTRNAME
+  ERR_CRV_NOERR = 0,
+  ERR_CRV_NOMEM,
+  ERR_CRV_NOFILE,
+  ERR_CRV_NOTMESH,
+  ERR_CRV_BADVER,
+  ERR_CRV_BADATTRNAME
 };
 
 /* error no interfaces */

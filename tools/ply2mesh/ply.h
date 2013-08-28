@@ -83,7 +83,7 @@ extern "C" {
 #define PLY_BINARY_BE     2      /* binary PLY file, big endian */
 #define PLY_BINARY_LE     3      /* binary PLY file, little endian */
 #define PLY_BINARY_NATIVE 4      /* binary PLY file, same endianness as
-				    current architecture */
+            current architecture */
     
 #define PLY_OKAY    0           /* ply routine worked okay */
 #define PLY_ERROR  -1           /* error in ply routine */
@@ -172,35 +172,35 @@ extern char *my_alloc();
 #define myalloc(mem_size) my_alloc((mem_size), __LINE__, __FILE__)
 
 #ifndef ALLOCN
-#define REALLOCN(PTR,TYPE,OLD_N,NEW_N)							\
-        {										\
-	    if ((OLD_N) == 0)                                           		\
-	    {   ALLOCN((PTR),TYPE,(NEW_N));}                            		\
-	    else									\
-	    {								    		\
-	       (PTR) = (TYPE *)realloc((PTR),(NEW_N)*sizeof(TYPE));			\
-	       if (((PTR) == NULL) && ((NEW_N) != 0))					\
-	       {									\
-		   fprintf(stderr, "Memory reallocation failed on line %d in %s\n", 	\
-		           __LINE__, __FILE__);                             		\
-		   fprintf(stderr, "  tried to reallocate %d->%d\n",       		\
-			   (OLD_N), (NEW_N));                              		\
-		   exit(-1);								\
-	       }									\
-	       if ((NEW_N)>(OLD_N))							\
-		   memset((char *)(PTR)+(OLD_N)*sizeof(TYPE), 0,			\
-		          ((NEW_N)-(OLD_N))*sizeof(TYPE));				\
-	    }										\
-	}
+#define REALLOCN(PTR,TYPE,OLD_N,NEW_N)              \
+        {                    \
+      if ((OLD_N) == 0)                                               \
+      {   ALLOCN((PTR),TYPE,(NEW_N));}                                \
+      else                  \
+      {                        \
+         (PTR) = (TYPE *)realloc((PTR),(NEW_N)*sizeof(TYPE));      \
+         if (((PTR) == NULL) && ((NEW_N) != 0))          \
+         {                  \
+       fprintf(stderr, "Memory reallocation failed on line %d in %s\n",   \
+               __LINE__, __FILE__);                                 \
+       fprintf(stderr, "  tried to reallocate %d->%d\n",           \
+         (OLD_N), (NEW_N));                                  \
+       exit(-1);                \
+         }                  \
+         if ((NEW_N)>(OLD_N))              \
+       memset((char *)(PTR)+(OLD_N)*sizeof(TYPE), 0,      \
+              ((NEW_N)-(OLD_N))*sizeof(TYPE));        \
+      }                    \
+  }
 
-#define  ALLOCN(PTR,TYPE,N) 					\
-	{ (PTR) = (TYPE *) calloc(((unsigned)(N)),sizeof(TYPE));\
-	  if ((PTR) == NULL) {    				\
-	  fprintf(stderr, "Memory allocation failed on line %d in %s\n", \
-		 __LINE__, __FILE__);                           \
-	  exit(-1);                                             \
-	  }							\
-	}
+#define  ALLOCN(PTR,TYPE,N)           \
+  { (PTR) = (TYPE *) calloc(((unsigned)(N)),sizeof(TYPE));\
+    if ((PTR) == NULL) {            \
+    fprintf(stderr, "Memory allocation failed on line %d in %s\n", \
+     __LINE__, __FILE__);                           \
+    exit(-1);                                             \
+    }              \
+  }
 
 
 #define FREE(PTR)  { free((PTR)); (PTR) = NULL; }

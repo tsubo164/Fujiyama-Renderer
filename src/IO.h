@@ -19,10 +19,10 @@ struct ChunkData;
 struct Vector;
 
 enum ElementType {
-	ELM_NONE = 0,
-	ELM_INT,
-	ELM_DOUBLE,
-	ELM_VECTOR3
+  ELM_NONE = 0,
+  ELM_INT,
+  ELM_DOUBLE,
+  ELM_VECTOR3
 };
 
 /* ChunkData */
@@ -45,23 +45,23 @@ extern int IOReadInputHeader(struct InputFile *in);
 extern int IOReadInputData(struct InputFile *in);
 
 extern void IOSetInputInt(struct InputFile *in,
-		const char *element_name,
-		int *dst_data,
-		int element_count);
+    const char *element_name,
+    int *dst_data,
+    int element_count);
 
 extern void IOSetInputDouble(struct InputFile *in,
-		const char *element_name,
-		double *dst_data,
-		int element_count);
+    const char *element_name,
+    double *dst_data,
+    int element_count);
 
 extern void IOSetInputVector3(struct InputFile *in,
-		const char *element_name,
-		struct Vector *dst_data,
-		int element_count);
+    const char *element_name,
+    struct Vector *dst_data,
+    int element_count);
 
 /* OutputFile */
 extern struct OutputFile *IOOpenOutputFile(const char *filename,
-		const char *magic, int format_version);
+    const char *magic, int format_version);
 extern void IOCloseOutputFile(struct OutputFile *out);
 
 extern void IOEndOutputHeader(struct OutputFile *out);
@@ -69,19 +69,19 @@ extern int IOWriteOutputHeader(struct OutputFile *out);
 extern int IOWriteOutputData(struct OutputFile *out);
 
 extern void IOSetOutputInt(struct OutputFile *out,
-		const char *element_name,
-		const int *src_data,
-		int element_count);
+    const char *element_name,
+    const int *src_data,
+    int element_count);
 
 extern void IOSetOutputDouble(struct OutputFile *out,
-		const char *element_name,
-		const double *src_data,
-		int element_count);
+    const char *element_name,
+    const double *src_data,
+    int element_count);
 
 extern void IOSetOutputVector3(struct OutputFile *out,
-		const char *element_name,
-		const struct Vector *src_data,
-		int element_count);
+    const char *element_name,
+    const struct Vector *src_data,
+    int element_count);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -16,7 +16,7 @@ struct Vector2;
 struct Vector;
 
 struct XorShift {
-	uint32_t state[4];
+  uint32_t state[4];
 };
 
 extern void XorInit(struct XorShift *xr);

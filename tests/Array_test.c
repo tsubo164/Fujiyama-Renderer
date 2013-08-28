@@ -9,111 +9,111 @@ See LICENSE and README
 
 int main(int argc, const char **argv)
 {
-	{
-		struct Array *a;
-		int i = 0;
-		int *pa = NULL;
+  {
+    struct Array *a;
+    int i = 0;
+    int *pa = NULL;
 
-		a = ArrNew(sizeof(int));
-		TEST(a->data == NULL);
-		TEST(a->nelems == 0);
-		TEST(a->nallocs == 0);
+    a = ArrNew(sizeof(int));
+    TEST(a->data == NULL);
+    TEST(a->nelems == 0);
+    TEST(a->nallocs == 0);
 
-		pa = (int *) ArrReserve(a, 3); 
+    pa = (int *) ArrReserve(a, 3); 
 
-		TEST(a->nelems == 0);
-		TEST(a->nallocs == 3);
-		TEST(pa != NULL);
+    TEST(a->nelems == 0);
+    TEST(a->nallocs == 3);
+    TEST(pa != NULL);
 
-		i = 123;
-		pa = (int *) ArrPush(a, &i);
-		TEST(a->nelems == 1);
-		TEST(a->nallocs == 3);
-		TEST(pa != NULL);
-		TEST(pa[0] == 123);
+    i = 123;
+    pa = (int *) ArrPush(a, &i);
+    TEST(a->nelems == 1);
+    TEST(a->nallocs == 3);
+    TEST(pa != NULL);
+    TEST(pa[0] == 123);
 
-		i = -329;
-		pa = (int *) ArrPush(a, &i);
-		TEST(a->nelems == 2);
-		TEST(a->nallocs == 3);
-		TEST(pa != NULL);
-		TEST(pa[0] == 123);
-		TEST(pa[1] == -329);
+    i = -329;
+    pa = (int *) ArrPush(a, &i);
+    TEST(a->nelems == 2);
+    TEST(a->nallocs == 3);
+    TEST(pa != NULL);
+    TEST(pa[0] == 123);
+    TEST(pa[1] == -329);
 
-		i = 1120;
-		pa = (int *) ArrPush(a, &i);
-		TEST(a->nelems == 3);
-		TEST(a->nallocs == 3);
-		TEST(pa != NULL);
-		TEST(pa[0] == 123);
-		TEST(pa[1] == -329);
-		TEST(pa[2] == 1120);
+    i = 1120;
+    pa = (int *) ArrPush(a, &i);
+    TEST(a->nelems == 3);
+    TEST(a->nallocs == 3);
+    TEST(pa != NULL);
+    TEST(pa[0] == 123);
+    TEST(pa[1] == -329);
+    TEST(pa[2] == 1120);
 
-		ArrFree(a);
-	}
-	{
-		struct Array *a;
-		int i = 0;
-		int *pa = NULL;
+    ArrFree(a);
+  }
+  {
+    struct Array *a;
+    int i = 0;
+    int *pa = NULL;
 
-		a = ArrNew(sizeof(int));
-		TEST(a->data == NULL);
-		TEST(a->nelems == 0);
-		TEST(a->nallocs == 0);
+    a = ArrNew(sizeof(int));
+    TEST(a->data == NULL);
+    TEST(a->nelems == 0);
+    TEST(a->nallocs == 0);
 
-		i = 123;
-		pa = (int *) ArrPush(a, &i);
-		TEST(a->nelems == 1);
-		TEST(a->nelems<=a->nallocs);
-		TEST(pa != NULL);
-		TEST(pa[0] == 123);
+    i = 123;
+    pa = (int *) ArrPush(a, &i);
+    TEST(a->nelems == 1);
+    TEST(a->nelems<=a->nallocs);
+    TEST(pa != NULL);
+    TEST(pa[0] == 123);
 
-		i = -329;
-		pa = (int *) ArrPush(a, &i);
-		TEST(a->nelems == 2);
-		TEST(a->nelems<=a->nallocs);
-		TEST(pa != NULL);
-		TEST(pa[0] == 123);
-		TEST(pa[1] == -329);
+    i = -329;
+    pa = (int *) ArrPush(a, &i);
+    TEST(a->nelems == 2);
+    TEST(a->nelems<=a->nallocs);
+    TEST(pa != NULL);
+    TEST(pa[0] == 123);
+    TEST(pa[1] == -329);
 
-		i = 1120;
-		pa = (int *) ArrPush(a, &i);
-		TEST(a->nelems == 3);
-		TEST(a->nelems<=a->nallocs);
-		TEST(pa != NULL);
-		TEST(pa[0] == 123);
-		TEST(pa[1] == -329);
-		TEST(pa[2] == 1120);
+    i = 1120;
+    pa = (int *) ArrPush(a, &i);
+    TEST(a->nelems == 3);
+    TEST(a->nelems<=a->nallocs);
+    TEST(pa != NULL);
+    TEST(pa[0] == 123);
+    TEST(pa[1] == -329);
+    TEST(pa[2] == 1120);
 
-		ArrFree(a);
-	}
-	{
-		struct Array *a;
-		int *pa = NULL;
+    ArrFree(a);
+  }
+  {
+    struct Array *a;
+    int *pa = NULL;
 
-		a = ArrNew(sizeof(int));
-		TEST(a->data == NULL);
-		TEST(a->nelems == 0);
-		TEST(a->nallocs == 0);
+    a = ArrNew(sizeof(int));
+    TEST(a->data == NULL);
+    TEST(a->nelems == 0);
+    TEST(a->nallocs == 0);
 
-		pa = (int *) ArrReserve(a, 3); 
+    pa = (int *) ArrReserve(a, 3); 
 
-		TEST(a->nelems == 0);
-		TEST(a->nallocs == 3);
-		TEST(pa != NULL);
+    TEST(a->nelems == 0);
+    TEST(a->nallocs == 3);
+    TEST(pa != NULL);
 
-		pa = (int *) ArrResize(a, 3); 
+    pa = (int *) ArrResize(a, 3); 
 
-		TEST(a->nelems == 3);
-		TEST(a->nallocs == 3);
-		TEST(pa != NULL);
+    TEST(a->nelems == 3);
+    TEST(a->nallocs == 3);
+    TEST(pa != NULL);
 
-		ArrFree(a);
-	}
+    ArrFree(a);
+  }
 
-	printf("%s: %d/%d/%d: (FAIL/PASS/TOTAL)\n", __FILE__,
-		TestGetFailCount(), TestGetPassCount(), TestGetTotalCount());
+  printf("%s: %d/%d/%d: (FAIL/PASS/TOTAL)\n", __FILE__,
+    TestGetFailCount(), TestGetPassCount(), TestGetTotalCount());
 
-	return 0;
+  return 0;
 }
 

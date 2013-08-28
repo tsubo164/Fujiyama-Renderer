@@ -13,10 +13,10 @@ extern "C" {
 #endif
 
 struct Array {
-	size_t elemsize;
-	size_t nelems;
-	size_t nallocs;
-	char *data;
+  size_t elemsize;
+  size_t nelems;
+  size_t nallocs;
+  char *data;
 };
 
 extern struct Array *ArrNew(size_t size_of_element);

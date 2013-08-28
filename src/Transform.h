@@ -15,30 +15,30 @@ extern "C" {
 #endif
 
 enum TransformOrder {
-	ORDER_SRT = 0,
-	ORDER_STR,
-	ORDER_RST,
-	ORDER_RTS,
-	ORDER_TRS,
-	ORDER_TSR,
-	ORDER_XYZ,
-	ORDER_XZY,
-	ORDER_YXZ,
-	ORDER_YZX,
-	ORDER_ZXY,
-	ORDER_ZYX
+  ORDER_SRT = 0,
+  ORDER_STR,
+  ORDER_RST,
+  ORDER_RTS,
+  ORDER_TRS,
+  ORDER_TSR,
+  ORDER_XYZ,
+  ORDER_XZY,
+  ORDER_YXZ,
+  ORDER_YZX,
+  ORDER_ZXY,
+  ORDER_ZYX
 };
 
 struct Transform {
-	struct Matrix matrix;
-	struct Matrix inverse;
+  struct Matrix matrix;
+  struct Matrix inverse;
 
-	int transform_order;
-	int rotate_order;
+  int transform_order;
+  int rotate_order;
 
-	struct Vector translate;
-	struct Vector rotate;
-	struct Vector scale;
+  struct Vector translate;
+  struct Vector rotate;
+  struct Vector scale;
 };
 
 struct Box;
@@ -59,36 +59,36 @@ extern void XfmSetScale(struct Transform *transform, double sx, double sy, doubl
 extern void XfmSetTransformOrder(struct Transform *transform, int order);
 extern void XfmSetRotateOrder(struct Transform *transform, int order);
 extern void XfmSetTransform(struct Transform *transform,
-		int transform_order, int rotate_order,
-		double tx, double ty, double tz,
-		double rx, double ry, double rz,
-		double sx, double sy, double sz);
+    int transform_order, int rotate_order,
+    double tx, double ty, double tz,
+    double rx, double ry, double rz,
+    double sx, double sy, double sz);
 
 extern int XfmIsTransformOrder(int order);
 extern int XfmIsRotateOrder(int order);
 
 /* TransformSampleList */
 struct TransformSampleList {
-	struct PropertySampleList translate;
-	struct PropertySampleList rotate;
-	struct PropertySampleList scale;
-	int transform_order;
-	int rotate_order;
+  struct PropertySampleList translate;
+  struct PropertySampleList rotate;
+  struct PropertySampleList scale;
+  int transform_order;
+  int rotate_order;
 
-	struct Transform last_sample_transform;
-	double last_sample_time;
+  struct Transform last_sample_transform;
+  double last_sample_time;
 };
 
 extern void XfmInitTransformSampleList(struct TransformSampleList *list);
 extern void XfmLerpTransformSample(const struct TransformSampleList *list, double time,
-		struct Transform *transform_interp);
+    struct Transform *transform_interp);
 
 extern void XfmPushTranslateSample(struct TransformSampleList *list,
-		double tx, double ty, double tz, double time);
+    double tx, double ty, double tz, double time);
 extern void XfmPushRotateSample(struct TransformSampleList *list,
-		double rx, double ry, double rz, double time);
+    double rx, double ry, double rz, double time);
 extern void XfmPushScaleSample(struct TransformSampleList *list,
-		double sx, double sy, double sz, double time);
+    double sx, double sy, double sz, double time);
 
 extern void XfmSetSampleTransformOrder(struct TransformSampleList *list, int order);
 extern void XfmSetSampleRotateOrder(struct TransformSampleList *list, int order);

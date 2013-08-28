@@ -161,17 +161,17 @@ void check_types();
 
 char *my_strdup(const char *s)
 {
-	size_t len;
-	char *dup;
+  size_t len;
+  char *dup;
 
-	len = strlen(s);
-	if (len == 0)
-		return NULL;
+  len = strlen(s);
+  if (len == 0)
+    return NULL;
 
-	dup = (char *) malloc(sizeof(char) * len);
-	strcpy(dup, s);
+  dup = (char *) malloc(sizeof(char) * len);
+  strcpy(dup, s);
 
-	return dup;
+  return dup;
 }
 
 /*************/
@@ -662,7 +662,7 @@ void ply_put_element(PlyFile *plyfile, void *elem_ptr)
         get_stored_item ((void *) item, prop->count_internal,
                          &int_val, &uint_val, &double_val);
         write_binary_item (fp, plyfile->file_type, int_val, uint_val,
-			   double_val, prop->count_external);
+         double_val, prop->count_external);
         list_count = uint_val;
         item_ptr = (char **) (elem_data + prop->offset);
         item = item_ptr[0];
@@ -671,7 +671,7 @@ void ply_put_element(PlyFile *plyfile, void *elem_ptr)
           get_stored_item ((void *) item, prop->internal_type,
                            &int_val, &uint_val, &double_val);
           write_binary_item (fp, plyfile->file_type, int_val, uint_val,
-			     double_val, prop->external_type);
+           double_val, prop->external_type);
           item += item_size;
         }
       }
@@ -681,7 +681,7 @@ void ply_put_element(PlyFile *plyfile, void *elem_ptr)
         get_stored_item ((void *) item, prop->internal_type,
                          &int_val, &uint_val, &double_val);
         write_binary_item (fp, plyfile->file_type, int_val, uint_val,
-			   double_val, prop->external_type);
+         double_val, prop->external_type);
       }
     }
 
@@ -795,7 +795,7 @@ PlyFile *ply_read(FILE *fp, int *nelems, char ***elem_names)
   if (!words || !equal_strings (words[0], "ply"))
   {
        if (words)
-	 free(words);
+   free(words);
      
      
       return (NULL);
@@ -807,8 +807,8 @@ PlyFile *ply_read(FILE *fp, int *nelems, char ***elem_names)
 
     if (equal_strings (words[0], "format")) {
       if (nwords != 3) {
-	free(words);
-	return (NULL);
+  free(words);
+  return (NULL);
       }
       if (equal_strings (words[1], "ascii"))
         plyfile->file_type = PLY_ASCII;
@@ -817,7 +817,7 @@ PlyFile *ply_read(FILE *fp, int *nelems, char ***elem_names)
       else if (equal_strings (words[1], "binary_little_endian"))
         plyfile->file_type = PLY_BINARY_LE;
       else {
-	free(words);
+  free(words);
         return (NULL);
       }
       plyfile->version = atof (words[2]);
@@ -1393,7 +1393,7 @@ void ply_describe_other_elements (
      only other properties */
   
   REALLOCN(plyfile->elems, PlyElement *,
-	   plyfile->nelems, plyfile->nelems + other_elems->num_elems);
+     plyfile->nelems, plyfile->nelems + other_elems->num_elems);
   for (i = 0; i < other_elems->num_elems; i++) {
       other = &(other_elems->other_list[i]);
       elem = (PlyElement *) myalloc (sizeof (PlyElement));
@@ -1402,7 +1402,7 @@ void ply_describe_other_elements (
       elem->num = other->elem_count;
       elem->nprops = 0;
       ply_describe_other_properties (plyfile, other->other_props,
-				     offsetof(OtherData,other_props));
+             offsetof(OtherData,other_props));
   }
 }
 
@@ -1624,14 +1624,14 @@ void ascii_get_element(PlyFile *plyfile, char *elem_ptr)
     store_it = (elem->store_prop[j] | other_flag);
 
     /* store either in the user's structure or in other_props */
-	/*
+  /*
   //  if (elem->store_prop[j])
-	*/
+  */
       elem_data = elem_ptr;
-	/*
+  /*
     //else
       //elem_data = other_data;
-	*/
+  */
 
     if (prop->is_list) {       /* a list */
 
@@ -1739,14 +1739,14 @@ void binary_get_element(PlyFile *plyfile, char *elem_ptr)
     store_it = (elem->store_prop[j] | other_flag);
 
     /* store either in the user's structure or in other_props */
-	/*
+  /*
 //    if (elem->store_prop[j])
-	*/
+  */
       elem_data = elem_ptr;
-	/*
+  /*
 //    else
 //      elem_data = other_data;
-	*/
+  */
 
     if (prop->is_list) {       /* a list */
 
@@ -1775,9 +1775,9 @@ void binary_get_element(PlyFile *plyfile, char *elem_ptr)
           *store_array = item_ptr;
         }
 
-		/*
+    /*
         // read items and store them into the array  
-		*/
+    */
         for (k = 0; k < list_count; k++) {
           get_binary_item (fp, plyfile->file_type, prop->external_type,
                           &int_val, &uint_val, &double_val);
@@ -1844,9 +1844,9 @@ void swap_bytes(char *bytes, int num_bytes)
     
     for (i=0; i < num_bytes/2; i++)
     {
-	temp = bytes[i];
-	bytes[i] = bytes[(num_bytes-1)-i];
-	bytes[(num_bytes-1)-i] = temp;
+  temp = bytes[i];
+  bytes[i] = bytes[(num_bytes-1)-i];
+  bytes[(num_bytes-1)-i] = temp;
     }
 }
 
@@ -1871,9 +1871,9 @@ void get_native_binary_type()
        native_binary_type = PLY_BINARY_BE;
     else
     {
-	fprintf(stderr, "ply: Couldn't determine machine endianness.\n");
-	fprintf(stderr, "ply: Exiting...\n");
-	exit(1);
+  fprintf(stderr, "ply: Couldn't determine machine endianness.\n");
+  fprintf(stderr, "ply: Exiting...\n");
+  exit(1);
     }
 }
 
@@ -1889,9 +1889,9 @@ int get_native_binary_type2()
        return PLY_BINARY_BE;
     else
     {
-	fprintf(stderr, "ply: Couldn't determine machine endianness.\n");
-	fprintf(stderr, "ply: Exiting...\n");
-	exit(1);
+  fprintf(stderr, "ply: Couldn't determine machine endianness.\n");
+  fprintf(stderr, "ply: Exiting...\n");
+  exit(1);
     }
 }
 
@@ -1904,17 +1904,17 @@ int get_native_binary_type2()
 void check_types()
 {
     if ((ply_type_size[PLY_CHAR] != sizeof(char)) ||
-	(ply_type_size[PLY_SHORT] != sizeof(short)) ||	
-	(ply_type_size[PLY_INT] != sizeof(int)) ||	
-	(ply_type_size[PLY_UCHAR] != sizeof(unsigned char)) ||	
-	(ply_type_size[PLY_USHORT] != sizeof(unsigned short)) ||	
-	(ply_type_size[PLY_UINT] != sizeof(unsigned int)) ||	
-	(ply_type_size[PLY_FLOAT] != sizeof(float)) ||	
-	(ply_type_size[PLY_DOUBLE] != sizeof(double)))
+  (ply_type_size[PLY_SHORT] != sizeof(short)) ||  
+  (ply_type_size[PLY_INT] != sizeof(int)) ||  
+  (ply_type_size[PLY_UCHAR] != sizeof(unsigned char)) ||  
+  (ply_type_size[PLY_USHORT] != sizeof(unsigned short)) ||  
+  (ply_type_size[PLY_UINT] != sizeof(unsigned int)) ||  
+  (ply_type_size[PLY_FLOAT] != sizeof(float)) ||  
+  (ply_type_size[PLY_DOUBLE] != sizeof(double)))
     {
-	fprintf(stderr, "ply: Type sizes do not match built-in types\n");
-	fprintf(stderr, "ply: Exiting...\n");
-	exit(1);
+  fprintf(stderr, "ply: Type sizes do not match built-in types\n");
+  fprintf(stderr, "ply: Exiting...\n");
+  exit(1);
     }
     
     types_checked = 1;
@@ -1983,17 +1983,17 @@ char **get_words(FILE *fp, int *nwords, char **orig_line)
       break;
     }
     else if (*ptr == '\r') 
-    {	  /* //MAC line break */
+    {    /* //MAC line break */
       nonUNIX=1;
-      if(*(ptr+1)=='\n')		  /* //actuall PC line break */
-      {	
-      	nbytes++;
+      if(*(ptr+1)=='\n')      /* //actuall PC line break */
+      {  
+        nbytes++;
       }
        
      *ptr = ' '; 
      
-     *(ptr+1) = '\0';	/* //when reading mac, best end string here */
-     *ptr2 = '\0'; 		/* //note a pc \r is followed by \n */
+     *(ptr+1) = '\0';  /* //when reading mac, best end string here */
+     *ptr2 = '\0';     /* //note a pc \r is followed by \n */
       
       break;
     }
@@ -2003,8 +2003,8 @@ char **get_words(FILE *fp, int *nwords, char **orig_line)
   /*check to see if a PC or MAC header was detected instead of UNIX*/
   if(nonUNIX==1)
   {
-  	fsetpos(fp, &pos);
-  	fseek(fp, nbytes, SEEK_CUR);	
+    fsetpos(fp, &pos);
+    fseek(fp, nbytes, SEEK_CUR);  
   }
 
   /* find the words in the line */
@@ -2284,8 +2284,8 @@ void write_ascii_item(
     case PLY_INT:
       if (fprintf (fp, "%d ", int_val) <= 0)
       {
-	  fprintf(stderr, "PLY ERROR: fprintf() failed -- aborting.\n");
-	  exit(1);
+    fprintf(stderr, "PLY ERROR: fprintf() failed -- aborting.\n");
+    exit(1);
       }
       break;
     case PLY_UCHAR:
@@ -2293,16 +2293,16 @@ void write_ascii_item(
     case PLY_UINT:
       if (fprintf (fp, "%u ", uint_val) <= 0)
       {
-	  fprintf(stderr, "PLY ERROR: fprintf() failed -- aborting.\n");
-	  exit(1);
+    fprintf(stderr, "PLY ERROR: fprintf() failed -- aborting.\n");
+    exit(1);
       }
       break;
     case PLY_FLOAT:
     case PLY_DOUBLE:
       if (fprintf (fp, "%g ", double_val) <= 0)
       {
-	  fprintf(stderr, "PLY ERROR: fprintf() failed -- aborting.\n");
-	  exit(1);
+    fprintf(stderr, "PLY ERROR: fprintf() failed -- aborting.\n");
+    exit(1);
       }
       break;
     default:

@@ -15,7 +15,7 @@ struct Vector;
 struct Box;
 
 struct VolumeSample {
-	float density;
+  float density;
 };
 
 extern struct Volume *VolNew(void);
@@ -29,20 +29,20 @@ extern void VolGetResolution(const struct Volume *volume, int *i, int *j, int *k
 extern double VolGetFilterSize(const struct Volume *volume);
 
 extern void VolIndexToPoint(const struct Volume *volume, int i, int j, int k,
-		struct Vector *point);
+    struct Vector *point);
 extern void VolPointToIndex(const struct Volume *volume, const struct Vector *point,
-		int *i, int *j, int *k);
+    int *i, int *j, int *k);
 
 extern void VolGetIndexRange(const struct Volume *volume,
-		const struct Vector *center, double radius,
-		int *xmin, int *ymin, int *zmin,
-		int *xmax, int *ymax, int *zmax);
+    const struct Vector *center, double radius,
+    int *xmin, int *ymin, int *zmin,
+    int *xmax, int *ymax, int *zmax);
 
 extern void VolSetValue(struct Volume *volume, int x, int y, int z, float value);
 extern float VolGetValue(const struct Volume *volume, int x, int y, int z);
 
 extern int VolGetSample(const struct Volume *volume, const struct Vector *point,
-			struct VolumeSample *sample);
+      struct VolumeSample *sample);
 
 #ifdef __cplusplus
 } /* extern "C" */

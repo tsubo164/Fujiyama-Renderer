@@ -25,7 +25,7 @@ extern void TrbSetOctaves(struct Turbulence *turbulence, int octaves);
 
 extern double TrbEvaluate(const struct Turbulence *turbulence, const struct Vector *position);
 extern void TrbEvaluate3d(const struct Turbulence *turbulence, const struct Vector *position,
-		struct Vector *out_noise);
+    struct Vector *out_noise);
 
 #ifdef __cplusplus
 } /* extern "C" */

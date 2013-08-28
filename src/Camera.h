@@ -30,7 +30,7 @@ extern void CamSetTransformOrder(struct Camera *cam, int order);
 extern void CamSetRotateOrder(struct Camera *cam, int order);
 
 extern void CamGetRay(const struct Camera *cam, const struct Vector2 *screen_uv,
-		double time, struct Ray *ray);
+    double time, struct Ray *ray);
 
 #ifdef __cplusplus
 } /* extern "C" */

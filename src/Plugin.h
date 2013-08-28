@@ -22,29 +22,29 @@ typedef void *(*PlgCreateInstanceFn)(void);
 typedef void (*PlgDeleteInstanceFn)(void *obj);
 
 enum PlgErrorNo {
-	PLG_ERR_NONE = 0,
-	PLG_ERR_PLUGIN_NOT_FOUND,
-	PLG_ERR_INIT_PLUGIN_FUNC_NOT_EXIST,
-	PLG_ERR_INIT_PLUGIN_FUNC_FAIL,
-	PLG_ERR_BAD_PLUGIN_INFO,
-	PLG_ERR_CLOSE_PLUGIN_FAIL,
-	PLG_ERR_NO_MEMORY
+  PLG_ERR_NONE = 0,
+  PLG_ERR_PLUGIN_NOT_FOUND,
+  PLG_ERR_INIT_PLUGIN_FUNC_NOT_EXIST,
+  PLG_ERR_INIT_PLUGIN_FUNC_FAIL,
+  PLG_ERR_BAD_PLUGIN_INFO,
+  PLG_ERR_CLOSE_PLUGIN_FAIL,
+  PLG_ERR_NO_MEMORY
 };
 
 struct PluginInfo {
-	int api_version;
-	const char *plugin_type;
-	const char *plugin_name;
-	PlgCreateInstanceFn create_instance;
-	PlgDeleteInstanceFn delete_instance;
-	const void *vtbl;
-	const struct Property *properties;
-	const struct MetaInfo *meta;
+  int api_version;
+  const char *plugin_type;
+  const char *plugin_name;
+  PlgCreateInstanceFn create_instance;
+  PlgDeleteInstanceFn delete_instance;
+  const void *vtbl;
+  const struct Property *properties;
+  const struct MetaInfo *meta;
 };
 
 struct MetaInfo {
-	const char *name;
-	const char *data;
+  const char *name;
+  const char *data;
 };
 
 extern struct Plugin *PlgOpen(const char *filename);
@@ -61,14 +61,14 @@ extern const char *PlgGetType(const struct Plugin *plugin);
 extern int PlgTypeMatch(const struct Plugin *plugin, const char *type);
 
 extern int PlgSetupInfo(struct PluginInfo *info,
-		int api_version,
-		const char *plugin_type,
-		const char *plugin_name,
-		PlgCreateInstanceFn create_instance,
-		PlgDeleteInstanceFn delete_instance,
-		const void *vtbl,
-		const struct Property *properties,
-		const struct MetaInfo *meta);
+    int api_version,
+    const char *plugin_type,
+    const char *plugin_name,
+    PlgCreateInstanceFn create_instance,
+    PlgDeleteInstanceFn delete_instance,
+    const void *vtbl,
+    const struct Property *properties,
+    const struct MetaInfo *meta);
 
 extern int PlgGetErrorNo(void);
 

@@ -28,8 +28,8 @@ struct ObjectGroup;
 
 /* TODO not used anymore? */
 struct ObjectContent {
-	const struct Accelerator *surface;
-	const struct Volume *volume;
+  const struct Accelerator *surface;
+  const struct Volume *volume;
 };
 
 /* ObjectInstance interfaces */
@@ -43,11 +43,11 @@ extern int ObjIsVolume(const struct ObjectInstance *obj);
 
 /* transformation */
 extern void ObjSetTranslate(struct ObjectInstance *obj,
-		double tx, double ty, double tz, double time);
+    double tx, double ty, double tz, double time);
 extern void ObjSetRotate(struct ObjectInstance *obj,
-		double rx, double ry, double rz, double time);
+    double rx, double ry, double rz, double time);
 extern void ObjSetScale(struct ObjectInstance *obj,
-		double sx, double sy, double sz, double time);
+    double sx, double sy, double sz, double time);
 extern void ObjSetTransformOrder(struct ObjectInstance *obj, int order);
 extern void ObjSetRotateOrder(struct ObjectInstance *obj, int order);
 
@@ -72,11 +72,11 @@ extern void ObjComputeBounds(struct ObjectInstance *obj);
 
 /* sampling */
 extern int ObjIntersect(const struct ObjectInstance *obj, double time,
-			const struct Ray *ray, struct Intersection *isect);
+      const struct Ray *ray, struct Intersection *isect);
 extern int ObjVolumeIntersect(const struct ObjectInstance *obj, double time,
-			const struct Ray *ray, struct Interval *interval);
+      const struct Ray *ray, struct Interval *interval);
 extern int ObjGetVolumeSample(const struct ObjectInstance *obj, double time,
-			const struct Vector *point, struct VolumeSample *sample);
+      const struct Vector *point, struct VolumeSample *sample);
 
 #ifdef __cplusplus
 } /* extern "C" */

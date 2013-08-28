@@ -15,38 +15,38 @@ extern "C" {
 struct FrameBuffer;
 
 struct MipInput {
-	FILE *file;
-	int version;
-	int width;
-	int height;
-	int nchannels;
-	float *data;
+  FILE *file;
+  int version;
+  int width;
+  int height;
+  int nchannels;
+  float *data;
 
-	int tilesize;
-	int xntiles;
-	int yntiles;
+  int tilesize;
+  int xntiles;
+  int yntiles;
 
-	size_t offset_of_header;
-	size_t offset_of_tile;
+  size_t offset_of_header;
+  size_t offset_of_tile;
 };
 
 struct MipOutput {
-	FILE *file;
-	int version;
-	int width;
-	int height;
-	int nchannels;
-	int tilesize;
+  FILE *file;
+  int version;
+  int width;
+  int height;
+  int nchannels;
+  int tilesize;
 
-	struct FrameBuffer *fb;
+  struct FrameBuffer *fb;
 };
 
 enum MipErrorNo {
-	ERR_MIP_NOERR = 0,
-	ERR_MIP_NOMEM,
-	ERR_MIP_NOFILE,
-	ERR_MIP_NOTMIP,
-	ERR_MIP_BADVER
+  ERR_MIP_NOERR = 0,
+  ERR_MIP_NOMEM,
+  ERR_MIP_NOFILE,
+  ERR_MIP_NOTMIP,
+  ERR_MIP_BADVER
 };
 
 extern int MipGetErrorNo(void);
@@ -64,7 +64,7 @@ extern struct MipOutput *MipOpenOutputFile(const char *filename);
 extern void MipCloseOutputFile(struct MipOutput *out);
 
 extern int MipGenerateFromSourceData(struct MipOutput *out,
-		const float *pixels, int width, int height, int nchannels);
+    const float *pixels, int width, int height, int nchannels);
 extern void MipWriteFile(struct MipOutput *out);
 
 #ifdef __cplusplus
