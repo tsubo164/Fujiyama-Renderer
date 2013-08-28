@@ -54,12 +54,4 @@ See LICENSE and README
     #define SI_EXPORT
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
 #endif /* XXX_H */

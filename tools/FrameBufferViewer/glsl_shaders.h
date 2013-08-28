@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef GLSL_SHADERS_H
 #define GLSL_SHADERS_H
 
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include "CompatibleOpenGL.h"
 
 #ifdef __cplusplus
 extern "C" {

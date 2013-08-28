@@ -13,6 +13,7 @@ See LICENSE and README
 #include "String.h"
 #include "Box.h"
 
+#include "CompatibleOpenGL.h"
 #include "glsl_shaders.h"
 #include "load_images.h"
 #include "draw_image.h"
@@ -21,9 +22,6 @@ See LICENSE and README
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glu.h>
 
 struct FrameBufferViewer {
   struct FrameBuffer *fb;

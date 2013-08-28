@@ -4,10 +4,10 @@ See LICENSE and README
 */
 
 #include "FrameBufferViewer.h"
+#include "CompatibleOpenGL.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <GL/glut.h>
 
 static const char USAGE[] =
 "Usage: fbview [options] file(*.fb, *.mip)\n"
