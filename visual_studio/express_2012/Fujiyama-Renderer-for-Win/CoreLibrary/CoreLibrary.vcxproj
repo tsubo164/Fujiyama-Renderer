@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{04EB4B4B-92E2-40BB-8CE1-866428361813}</ProjectGuid>
+    <ProjectGuid>{4C9DD843-4593-4778-B86C-6BBDA93B8886}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>CoreLibrary</RootNamespace>
   </PropertyGroup>
@@ -41,6 +41,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <TargetName>fujiyama-renderer</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -52,7 +53,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;CORELIBRARY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableSpecificWarnings>4996;4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4244;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -81,6 +82,7 @@
     <ClCompile Include="..\..\..\..\src\Array.c" />
     <ClCompile Include="..\..\..\..\src\Box.c" />
     <ClCompile Include="..\..\..\..\src\BVHAccelerator.c" />
+    <ClCompile Include="..\..\..\..\src\Callback.c" />
     <ClCompile Include="..\..\..\..\src\Camera.c" />
     <ClCompile Include="..\..\..\..\src\Color.c" />
     <ClCompile Include="..\..\..\..\src\Curve.c" />
@@ -110,6 +112,7 @@
     <ClCompile Include="..\..\..\..\src\Progress.c" />
     <ClCompile Include="..\..\..\..\src\Property.c" />
     <ClCompile Include="..\..\..\..\src\Random.c" />
+    <ClCompile Include="..\..\..\..\src\Rectangle.c" />
     <ClCompile Include="..\..\..\..\src\Renderer.c" />
     <ClCompile Include="..\..\..\..\src\Sampler.c" />
     <ClCompile Include="..\..\..\..\src\Scene.c" />
@@ -134,6 +137,7 @@
     <ClInclude Include="..\..\..\..\src\Array.h" />
     <ClInclude Include="..\..\..\..\src\Box.h" />
     <ClInclude Include="..\..\..\..\src\BVHAccelerator.h" />
+    <ClInclude Include="..\..\..\..\src\Callback.h" />
     <ClInclude Include="..\..\..\..\src\Camera.h" />
     <ClInclude Include="..\..\..\..\src\Color.h" />
     <ClInclude Include="..\..\..\..\src\Compatibility.h" />
@@ -167,6 +171,7 @@
     <ClInclude Include="..\..\..\..\src\Property.h" />
     <ClInclude Include="..\..\..\..\src\Random.h" />
     <ClInclude Include="..\..\..\..\src\Ray.h" />
+    <ClInclude Include="..\..\..\..\src\Rectangle.h" />
     <ClInclude Include="..\..\..\..\src\Renderer.h" />
     <ClInclude Include="..\..\..\..\src\Sampler.h" />
     <ClInclude Include="..\..\..\..\src\Scene.h" />
