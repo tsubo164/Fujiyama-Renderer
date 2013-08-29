@@ -141,9 +141,6 @@
     <ClCompile Include="..\..\..\..\src\SL.c">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\String.c">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\TexCoord.c">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -175,6 +172,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\VolumeFilling.c">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\StringFunction.c">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -347,7 +347,7 @@
     <ClInclude Include="..\..\..\..\src\VolumeFilling.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\src\String.h">
+    <ClInclude Include="..\..\..\..\src\StringFunction.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

@@ -120,7 +120,7 @@
     <ClCompile Include="..\..\..\..\src\SceneInterface.c" />
     <ClCompile Include="..\..\..\..\src\Shader.c" />
     <ClCompile Include="..\..\..\..\src\SL.c" />
-    <ClCompile Include="..\..\..\..\src\String.c" />
+    <ClCompile Include="..\..\..\..\src\StringFunction.c" />
     <ClCompile Include="..\..\..\..\src\TexCoord.c" />
     <ClCompile Include="..\..\..\..\src\Texture.c" />
     <ClCompile Include="..\..\..\..\src\Tiler.c" />
@@ -179,7 +179,7 @@
     <ClInclude Include="..\..\..\..\src\SceneInterface.h" />
     <ClInclude Include="..\..\..\..\src\Shader.h" />
     <ClInclude Include="..\..\..\..\src\SL.h" />
-    <ClInclude Include="..\..\..\..\src\String.h" />
+    <ClInclude Include="..\..\..\..\src\StringFunction.h" />
     <ClInclude Include="..\..\..\..\src\TexCoord.h" />
     <ClInclude Include="..\..\..\..\src\Texture.h" />
     <ClInclude Include="..\..\..\..\src\Tiler.h" />

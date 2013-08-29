@@ -5,6 +5,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreLibrary", "CoreLibrary\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ply2mesh", "ply2mesh\ply2mesh.vcxproj", "{8D2C049D-011E-433F-AAE2-A419CE07DAD2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PlasticShader", "PlasticShader\PlasticShader.vcxproj", "{BBF836F7-7E0B-4862-AE63-1386AD7EC37B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cube", "cube\cube.vcxproj", "{6340B9AB-0260-4252-AB65-06CE890D1985}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +23,14 @@ Global
 		{8D2C049D-011E-433F-AAE2-A419CE07DAD2}.Debug|Win32.Build.0 = Debug|Win32
 		{8D2C049D-011E-433F-AAE2-A419CE07DAD2}.Release|Win32.ActiveCfg = Release|Win32
 		{8D2C049D-011E-433F-AAE2-A419CE07DAD2}.Release|Win32.Build.0 = Release|Win32
+		{BBF836F7-7E0B-4862-AE63-1386AD7EC37B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BBF836F7-7E0B-4862-AE63-1386AD7EC37B}.Debug|Win32.Build.0 = Debug|Win32
+		{BBF836F7-7E0B-4862-AE63-1386AD7EC37B}.Release|Win32.ActiveCfg = Release|Win32
+		{BBF836F7-7E0B-4862-AE63-1386AD7EC37B}.Release|Win32.Build.0 = Release|Win32
+		{6340B9AB-0260-4252-AB65-06CE890D1985}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6340B9AB-0260-4252-AB65-06CE890D1985}.Debug|Win32.Build.0 = Debug|Win32
+		{6340B9AB-0260-4252-AB65-06CE890D1985}.Release|Win32.ActiveCfg = Release|Win32
+		{6340B9AB-0260-4252-AB65-06CE890D1985}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
