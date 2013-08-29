@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 2012 for Windows Desktop
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreLibrary", "CoreLibrary\CoreLibrary.vcxproj", "{4C9DD843-4593-4778-B86C-6BBDA93B8886}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ply2mesh", "ply2mesh\ply2mesh.vcxproj", "{8D2C049D-011E-433F-AAE2-A419CE07DAD2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -13,6 +15,10 @@ Global
 		{4C9DD843-4593-4778-B86C-6BBDA93B8886}.Debug|Win32.Build.0 = Debug|Win32
 		{4C9DD843-4593-4778-B86C-6BBDA93B8886}.Release|Win32.ActiveCfg = Release|Win32
 		{4C9DD843-4593-4778-B86C-6BBDA93B8886}.Release|Win32.Build.0 = Release|Win32
+		{8D2C049D-011E-433F-AAE2-A419CE07DAD2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8D2C049D-011E-433F-AAE2-A419CE07DAD2}.Debug|Win32.Build.0 = Debug|Win32
+		{8D2C049D-011E-433F-AAE2-A419CE07DAD2}.Release|Win32.ActiveCfg = Release|Win32
+		{8D2C049D-011E-433F-AAE2-A419CE07DAD2}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
