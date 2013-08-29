@@ -3,7 +3,7 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "String.h"
+#include "StringFunction.h"
 #include "Numeric.h"
 #include "Memory.h"
 #include <string.h>

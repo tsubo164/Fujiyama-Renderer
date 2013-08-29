@@ -14,8 +14,8 @@ files       := Accelerator Array Box BVHAccelerator Callback Camera Color Curve 
 	Filter FrameBuffer FrameBufferIO GridAccelerator ImportanceSampling Interval IO \
 	Light Matrix Mesh MeshIO Mipmap Noise Numeric ObjectGroup ObjectInstance OS Plugin \
 	PointCloud PointCloudIO PrimitiveSet Procedure Progress Property Random Rectangle \
-	Renderer Sampler Scene SceneInterface Shader String SL TexCoord Texture Tiler Timer \
-	Transform Triangle Turbulence Vector Volume VolumeAccelerator VolumeFilling
+	Renderer Sampler Scene SceneInterface Shader StringFunction SL TexCoord Texture Tiler \
+	Timer Transform Triangle Turbulence Vector Volume VolumeAccelerator VolumeFilling
 
 incdir  := $(topdir)/src
 libdir  := $(topdir)/lib

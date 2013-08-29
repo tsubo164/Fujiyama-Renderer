@@ -4,8 +4,8 @@ See LICENSE and README
 */
 
 #include "Table.h"
+#include "StringFunction.h"
 #include "Memory.h"
-#include "String.h"
 
 #include <string.h>
 #include <assert.h>

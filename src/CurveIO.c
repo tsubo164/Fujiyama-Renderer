@@ -4,8 +4,8 @@ See LICENSE and README
 */
 
 #include "CurveIO.h"
+#include "StringFunction.h"
 #include "Memory.h"
-#include "String.h"
 #include "Curve.h"
 
 #include <string.h>

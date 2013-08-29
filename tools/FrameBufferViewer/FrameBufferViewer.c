@@ -4,13 +4,13 @@ See LICENSE and README
 */
 
 #include "FrameBufferViewer.h"
+#include "StringFunction.h"
 #include "FrameBufferIO.h"
 #include "FrameBuffer.h"
 #include "Rectangle.h"
 #include "Numeric.h"
 #include "Memory.h"
 #include "Mipmap.h"
-#include "String.h"
 #include "Box.h"
 
 #include "CompatibleOpenGL.h"

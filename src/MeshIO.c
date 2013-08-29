@@ -4,8 +4,8 @@ See LICENSE and README
 */
 
 #include "MeshIO.h"
+#include "StringFunction.h"
 #include "TexCoord.h"
-#include "String.h"
 #include "Memory.h"
 #include "Vector.h"
 #include "Color.h"
