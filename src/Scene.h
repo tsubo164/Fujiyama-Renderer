@@ -133,4 +133,3 @@ extern size_t ScnGetMeshCount(const struct Scene *scene);
 #endif
 
 #endif /* XXX_H */
-

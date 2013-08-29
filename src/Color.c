@@ -20,4 +20,3 @@ void ColFree(struct Color *c)
 {
   MEM_FREE(c);
 }
-

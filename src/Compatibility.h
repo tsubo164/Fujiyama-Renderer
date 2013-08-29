@@ -35,23 +35,4 @@ See LICENSE and README
   #endif
 #endif
 
-/* -- SI_EXTERN_C -- */
-#if defined(__cplusplus)
-  #define SI_EXTERN_C extern "C"
-#else
-  #define SI_EXTERN_C
-#endif
-
-/* -- SI_EXPORT -- */
-#if defined(SI_WINDOWS)
-  /* DLL projects should define CORELIBRARY_EXPORTS */
-  #if defined(CORELIBRARY_EXPORTS)
-    #define SI_EXPORT SI_EXTERN_C __declspec(dllexport)
-  #else
-    #define SI_EXPORT SI_EXTERN_C __declspec(dllimport)
-  #endif
-#else
-    #define SI_EXPORT
-#endif
-
 #endif /* XXX_H */

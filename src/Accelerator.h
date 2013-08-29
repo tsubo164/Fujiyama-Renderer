@@ -57,4 +57,3 @@ extern void AccSetDerivedFunctions(struct Accelerator *acc,
 #endif
 
 #endif /* XXX_H */
-

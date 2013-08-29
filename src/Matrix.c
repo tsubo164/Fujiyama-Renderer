@@ -261,4 +261,3 @@ void MatPrint(const struct Matrix *m)
     printf("%g, %g, %g, %g\n", m->e[4*i+0], m->e[4*i+1], m->e[4*i+2], m->e[4*i+3]);
   }
 }
-

@@ -253,4 +253,3 @@ static void *push_entry(struct Array *array, void *entry)
   ArrPushPointer(array, entry);
   return entry;
 }
-

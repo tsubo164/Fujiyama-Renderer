@@ -45,4 +45,3 @@ extern void MatPrint(const struct Matrix *m);
 #endif
 
 #endif /* XXX_H */
-

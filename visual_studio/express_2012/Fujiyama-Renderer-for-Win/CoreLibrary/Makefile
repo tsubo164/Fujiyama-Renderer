@@ -1,0 +1,20 @@
+#Copyright (c) 2011-2013 Hiroshi Tsubokawa
+#See LICENSE and README
+
+# Generates .def file for core DLL
+
+srcdir  := ../../../../src
+target  := CoreLibrary.def
+dllname := FujiyamaRenderer
+
+.PHONY: $(target)
+
+$(target):
+	@echo '  makeing' $@
+	@echo 'LIBRARY' $(dllname) > $@
+	@echo 'EXPORTS' >> $@
+	@cat $(srcdir)/*.h \
+	| sed -e's/struct //g' \
+	| sed -e's/const //g' \
+	| sed -e's/\*/ /g' \
+	| awk -F'[ ()]+' '/^extern / {if ($$2 != "\"C\"") print "\t" $$3}' >> $@

@@ -41,4 +41,3 @@ extern char *ArrGet(const struct Array *a, int index);
 #endif
 
 #endif /* XXX_H */
-

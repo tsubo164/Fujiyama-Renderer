@@ -6,6 +6,8 @@ See LICENSE and README
 #include <stddef.h>
 #include <windows.h>
 
+static char err_str[1024] = {'\0'};
+
 void *OsDlopen(const char *filename)
 {
   void *handle = LoadLibrary(filename);
@@ -20,10 +22,8 @@ void *OsDlsym(void *handle, const char *symbol)
 
 char *OsDlerror(void *handle)
 {
-  return NULL;
-  /*
-  return dlerror();
-  */
+  strncpy(err_str, GetLastError(), 1000);
+  return err_str;
 }
 
 int OsDlclose(void *handle)

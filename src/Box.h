@@ -89,4 +89,3 @@ extern void BoxPrint(const struct Box *box);
 #endif
 
 #endif /* XXX_H */
-

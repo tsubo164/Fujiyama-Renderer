@@ -150,4 +150,3 @@ void AccSetDerivedFunctions(struct Accelerator *acc,
   acc->IntersectDerived = intersect_derived_function;
   acc->GetDerivedName = get_derived_name_function;
 }
-

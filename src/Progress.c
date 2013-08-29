@@ -83,4 +83,3 @@ void PrgDone(struct Progress *prg)
 
   printf("\n");
 }
-

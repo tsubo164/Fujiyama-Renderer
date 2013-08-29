@@ -39,4 +39,3 @@ extern void ColFree(struct Color *c);
 #endif
 
 #endif /* XXX_H */
-

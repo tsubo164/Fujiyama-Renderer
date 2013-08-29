@@ -24,4 +24,3 @@ extern void PrgDone(struct Progress *prg);
 #endif
 
 #endif /* XXX_H */
-
