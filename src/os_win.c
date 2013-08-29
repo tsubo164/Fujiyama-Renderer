@@ -6,24 +6,43 @@ See LICENSE and README
 #include <stddef.h>
 #include <windows.h>
 
-static char err_str[1024] = {'\0'};
-
 void *OsDlopen(const char *filename)
 {
-  void *handle = LoadLibrary(filename);
+  void *handle = NULL;
+
+  SetLastError(NO_ERROR);
+  handle = LoadLibrary(filename);
+
   return handle;
 }
 
 void *OsDlsym(void *handle, const char *symbol)
 {
-  void *sym = GetProcAddress(handle, symbol);
+  void *sym = NULL;
+
+  SetLastError(NO_ERROR);
+  sym = GetProcAddress(handle, symbol);
+
   return sym;
 }
 
 char *OsDlerror(void *handle)
 {
-  strncpy(err_str, GetLastError(), 1000);
-  return err_str;
+  LPVOID lpMsgBuf;
+
+  FormatMessage(
+      FORMAT_MESSAGE_ALLOCATE_BUFFER |
+      FORMAT_MESSAGE_FROM_SYSTEM |
+      FORMAT_MESSAGE_IGNORE_INSERTS,
+      NULL,
+      GetLastError(),
+      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+      (LPTSTR) &lpMsgBuf,
+      0,
+      NULL
+  );
+
+  return lpMsgBuf;
 }
 
 int OsDlclose(void *handle)
@@ -34,6 +53,7 @@ int OsDlclose(void *handle)
     return 0;
   }
 
+  SetLastError(NO_ERROR);
   ret = FreeLibrary(handle);
 
   if (ret == 0) {
