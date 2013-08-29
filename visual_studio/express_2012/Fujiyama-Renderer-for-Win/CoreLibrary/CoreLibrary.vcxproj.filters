@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="def file">
+      <UniqueIdentifier>{ca499cea-02a9-4c56-9d73-c7300471f494}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\Accelerator.c">
@@ -347,5 +350,10 @@
     <ClInclude Include="..\..\..\..\src\VolumeFilling.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CoreLibrary.def">
+      <Filter>def file</Filter>
+    </None>
   </ItemGroup>
 </Project>
