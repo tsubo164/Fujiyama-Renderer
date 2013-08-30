@@ -4,8 +4,8 @@
 # Generates .def file for core DLL
 
 srcdir  := ../../../../src
-target  := CoreLibrary.def
-dllname := FujiyamaRenderer
+target  := libscene.def
+dllname := libscene
 
 .PHONY: $(target)
 

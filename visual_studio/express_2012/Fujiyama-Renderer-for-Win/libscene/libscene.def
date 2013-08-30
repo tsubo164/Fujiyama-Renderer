@@ -1,4 +1,4 @@
-LIBRARY FujiyamaRenderer
+LIBRARY libscene
 EXPORTS
 	AccNew
 	AccFree

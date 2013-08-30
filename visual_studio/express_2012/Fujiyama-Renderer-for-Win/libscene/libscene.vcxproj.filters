@@ -14,7 +14,7 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="def file">
-      <UniqueIdentifier>{ca499cea-02a9-4c56-9d73-c7300471f494}</UniqueIdentifier>
+      <UniqueIdentifier>{3c27cfa1-5fbe-4d88-88b4-9de2003cc5d2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -141,6 +141,9 @@
     <ClCompile Include="..\..\..\..\src\SL.c">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\src\StringFunction.c">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\src\TexCoord.c">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -172,9 +175,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\VolumeFilling.c">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\src\StringFunction.c">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -314,6 +314,9 @@
     <ClInclude Include="..\..\..\..\src\SL.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\src\StringFunction.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\..\src\TexCoord.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -347,12 +350,9 @@
     <ClInclude Include="..\..\..\..\src\VolumeFilling.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\src\StringFunction.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="CoreLibrary.def">
+    <None Include="libscene.def">
       <Filter>def file</Filter>
     </None>
   </ItemGroup>
