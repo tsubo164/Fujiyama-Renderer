@@ -5,9 +5,9 @@
 # Copyright (c) 2011-2013 Hiroshi Tsubokawa
 
 #plugins
-OpenPlugin PlasticShader.so
-OpenPlugin ConstantShader.so
-OpenPlugin HairShader.so
+OpenPlugin PlasticShader
+OpenPlugin ConstantShader
+OpenPlugin HairShader
 
 #Camera
 NewCamera cam1 PerspectiveCamera
@@ -174,4 +174,3 @@ RenderScene ren1
 
 #Output
 SaveFrameBuffer fb1 ../furry_bunny.fb
-

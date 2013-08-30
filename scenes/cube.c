@@ -68,7 +68,7 @@ int main(int argc, const char **argv)
   SiOpenScene();
 
   /* Plugin */
-  if (SiOpenPlugin("PlasticShader.so")) {
+  if (SiOpenPlugin("PlasticShader")) {
     /* TODO error handling */
     /*
     fprintf(stderr, "Could not open shader: %s\n", SiGetErrorMessage(SiGetErrorNo()));

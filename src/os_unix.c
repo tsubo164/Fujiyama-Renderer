@@ -4,12 +4,24 @@ See LICENSE and README
 */
 
 #include <stddef.h>
+#include <stdio.h>
+#include <string.h>
 #include <dlfcn.h>
 #include <sys/stat.h>
 
 void *OsDlopen(const char *filename)
 {
-  void *handle = dlopen(filename, RTLD_LAZY);
+  static char filename_with_ext[1024] = {'\0'};
+  const char *input_ext = strrchr(filename, '.');
+  const char *added_ext = "";
+  void *handle = NULL;
+
+  if (input_ext == NULL || strcmp(input_ext, ".so") != 0) {
+    added_ext = ".so";
+  }
+  sprintf(filename_with_ext, "%s%s", filename, added_ext);
+
+  handle = dlopen(filename_with_ext, RTLD_LAZY);
   return handle;
 }
 

@@ -11,8 +11,8 @@ import fujiyama
 si = fujiyama.SceneInterface()
 
 #plugins
-si.OpenPlugin('PlasticShader.so')
-si.OpenPlugin('VolumeShader.so')
+si.OpenPlugin('PlasticShader')
+si.OpenPlugin('VolumeShader')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -75,4 +75,3 @@ si.SaveFrameBuffer('fb1', '../volume_and_bunny.fb')
 #Run commands
 si.Run()
 #si.Print()
-

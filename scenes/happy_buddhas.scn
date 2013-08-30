@@ -2,9 +2,9 @@
 # Copyright (c) 2011-2013 Hiroshi Tsubokawa
 
 #plugins
-OpenPlugin PlasticShader.so
-OpenPlugin GlassShader.so
-OpenPlugin ConstantShader.so
+OpenPlugin PlasticShader
+OpenPlugin GlassShader
+OpenPlugin ConstantShader
 
 #Camera
 NewCamera cam1 PerspectiveCamera
@@ -296,4 +296,3 @@ RenderScene ren1
 
 #Output
 SaveFrameBuffer fb1 ../happy_buddhas.fb
-
