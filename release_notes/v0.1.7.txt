@@ -28,6 +28,10 @@ New features since v0.1.6
 
  * Added fixed-size integer type to make the random module behave the same.
 
+ * Started Windows supports. Currently, fbview and fb2exr are not ported yet.
+   Windows version is build on Visual Stuido express 2012 and tested on
+   Windows 7.
+
  * Fixed a lots of minor bugs and updated documentation.
 
 Features under development
