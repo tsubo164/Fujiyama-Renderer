@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{BBF836F7-7E0B-4862-AE63-1386AD7EC37B}</ProjectGuid>
+    <ProjectGuid>{784EB945-367F-4E9A-A945-B50B5BD6A141}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>PlasticShader</RootNamespace>
+    <RootNamespace>SurfaceWispsProcedure</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -53,12 +53,12 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PLASTICSHADER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SURFACEWISPSPROCEDURE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>PlasticShader.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>SurfaceWispsProcedure.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -69,21 +69,21 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PLASTICSHADER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SURFACEWISPSPROCEDURE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <ModuleDefinitionFile>PlasticShader.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>SurfaceWispsProcedure.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\shaders\PlasticShader\PlasticShader.c" />
+    <ClCompile Include="..\..\..\..\procedures\SurfaceWispsProcedure\SurfaceWispsProcedure.c" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="PlasticShader.def" />
+    <None Include="SurfaceWispsProcedure.def" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\libscene\libscene.vcxproj">

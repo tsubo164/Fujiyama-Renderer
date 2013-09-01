@@ -1,0 +1,3 @@
+LIBRARY ConstantShader
+EXPORTS
+	Initialize
