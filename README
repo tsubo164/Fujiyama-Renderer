@@ -15,6 +15,10 @@ designed to handle production image rendering.
 
   Features
 -----------------
+* Platforms
+  + Linux
+  + Windows (NOTE fbview and fb2exr are not ported yet)
+
 * Supported Primitives
   + Triangle Mesh - Compact representation
   + Bezier Curves - Unlimited smoothness subdividing in render time 
