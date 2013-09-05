@@ -398,6 +398,7 @@ static const int SetProperty4_args[] = {
   ARG_PROPERTY_NAME,
   ARG_NUMBER,
   ARG_NUMBER,
+  ARG_NUMBER,
   ARG_NUMBER};
 static struct CommandResult SetProperty4_run(const struct CommandArgument *args)
 {

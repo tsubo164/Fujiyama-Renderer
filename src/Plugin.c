@@ -4,6 +4,7 @@ See LICENSE and README
 */
 
 #include "Plugin.h"
+#include "Compatibility.h"
 #include "Memory.h"
 #include "OS.h"
 
@@ -35,9 +36,11 @@ struct Plugin *PlgOpen(const char *filename)
     goto plugin_error;
   }
 
-  /* ISO C forbids conversion of object pointer to function pointer type.
-  This does void pointer -> long int -> function pointer */
-  initialize_plugin = (PlgInitializeFn) (long) OsDlsym(tmpdso, "Initialize");
+  /*
+  ISO C forbids conversion of object pointer to function pointer type.
+  This does void pointer -> uintptr_t -> function pointer
+  */
+  initialize_plugin = (PlgInitializeFn) (uintptr_t) OsDlsym(tmpdso, "Initialize");
   if (initialize_plugin == NULL) {
     set_errno(PLG_ERR_INIT_PLUGIN_FUNC_NOT_EXIST);
     goto plugin_error;
