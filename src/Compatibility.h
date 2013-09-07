@@ -15,9 +15,7 @@ See LICENSE and README
     #define UINT32_MAX UINT_MAX
   #else
     /* 32bit Windows */
-    typedef unsigned int       uint32_t;
-    typedef unsigned long long uintptr_t;
-    #define UINT32_MAX UINT_MAX
+    #include <stdint.h>
   #endif
 #elif defined(__APPLE__) || defined(MACOSX)
     /* 64bit Mac OS X */

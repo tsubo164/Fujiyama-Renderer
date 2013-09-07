@@ -4,6 +4,7 @@ See LICENSE and README
 */
 
 #include "draw_image.h"
+#include <stddef.h>
 #include <assert.h>
 
 void init_image_drawer(struct ImageCard *image)
