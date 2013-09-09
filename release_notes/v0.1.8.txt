@@ -1,0 +1,16 @@
+Fujiyama Renderer v0.1.8(Alpha) Release Notes
+=============================================
+
+New features since v0.1.7
+-------------------------
+ * Added x64 configurations for windows
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Multi-threaded
+ * Deep shadow
+ * Displacement shader
+ * Subdivision surface
+ * Alembic support
