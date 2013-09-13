@@ -72,7 +72,7 @@ static void *push_entry(struct Array *array, void *entry);
 /* Scene */
 struct Scene *ScnNew(void)
 {
-  struct Scene *scene = MEM_ALLOC(struct Scene);
+  struct Scene *scene = SI_MEM_ALLOC(struct Scene);
 
   if (scene == NULL)
     return NULL;
@@ -87,7 +87,7 @@ void ScnFree(struct Scene *scene)
     return;
 
   free_all_node_list(scene);
-  MEM_FREE(scene);
+  SI_MEM_FREE(scene);
 }
 
 /* ObjectInstance */

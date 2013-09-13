@@ -46,7 +46,7 @@ const char *FbGetErrorMessage(int err)
 
 struct FbInput *FbOpenInputFile(const char *filename)
 {
-  struct FbInput *in = MEM_ALLOC(struct FbInput);
+  struct FbInput *in = SI_MEM_ALLOC(struct FbInput);
 
   if (in == NULL) {
     set_error(ERR_FB_NOMEM);
@@ -57,7 +57,7 @@ struct FbInput *FbOpenInputFile(const char *filename)
   in->file = fopen(filename, "rb");
   if (in->file == NULL) {
     set_error(ERR_FB_NOFILE);
-    MEM_FREE(in);
+    SI_MEM_FREE(in);
     return NULL;
   }
 
@@ -80,7 +80,7 @@ void FbCloseInputFile(struct FbInput *in)
   if (in->file != NULL) {
     fclose(in->file);
   }
-  MEM_FREE(in);
+  SI_MEM_FREE(in);
 }
 
 int FbReadHeader(struct FbInput *in)
@@ -120,7 +120,7 @@ int FbReadData(struct FbInput *in)
 
 struct FbOutput *FbOpenOutputFile(const char *filename)
 {
-  struct FbOutput *out = MEM_ALLOC(struct FbOutput);
+  struct FbOutput *out = SI_MEM_ALLOC(struct FbOutput);
 
   if (out == NULL) {
     set_error(ERR_FB_NOMEM);
@@ -130,7 +130,7 @@ struct FbOutput *FbOpenOutputFile(const char *filename)
   out->file = fopen(filename, "wb");
   if (out->file == NULL) {
     set_error(ERR_FB_NOFILE);
-    MEM_FREE(out);
+    SI_MEM_FREE(out);
     return NULL;
   }
 
@@ -153,7 +153,7 @@ void FbCloseOutputFile(struct FbOutput *out)
   if (out->file != NULL) {
     fclose(out->file);
   }
-  MEM_FREE(out);
+  SI_MEM_FREE(out);
 }
 
 void FbWriteFile(struct FbOutput *out)

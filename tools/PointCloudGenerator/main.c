@@ -58,7 +58,7 @@ int main(int argc, const char **argv)
     MshLoadFile(mesh, in_filename);
 
     face_count = MshGetFaceCount(mesh);
-    point_count_list = MEM_ALLOC_ARRAY(int, face_count);
+    point_count_list = SI_MEM_ALLOC_ARRAY(int, face_count);
 
     for (i = 0; i < face_count; i++) {
       struct Vector P0 = {0, 0, 0};
@@ -89,8 +89,8 @@ int main(int argc, const char **argv)
     }
     printf("total_point_count %d\n", total_point_count);
 
-    P = MEM_ALLOC_ARRAY(struct Vector, total_point_count);
-    radius = MEM_ALLOC_ARRAY(double, total_point_count);
+    P = SI_MEM_ALLOC_ARRAY(struct Vector, total_point_count);
+    radius = SI_MEM_ALLOC_ARRAY(double, total_point_count);
 
     XorInit(&xr);
     point_id = 0;
@@ -143,9 +143,9 @@ int main(int argc, const char **argv)
     PtcCloseOutputFile(out);
     MshFree(mesh);
 
-    MEM_FREE(point_count_list);
-    MEM_FREE(P);
-    MEM_FREE(radius);
+    SI_MEM_FREE(point_count_list);
+    SI_MEM_FREE(P);
+    SI_MEM_FREE(radius);
   }
 
   return 0;

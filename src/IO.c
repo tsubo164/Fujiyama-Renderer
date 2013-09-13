@@ -122,7 +122,7 @@ struct InputFile {
 struct InputFile *IOOpenInputFile(const char *filename, const char *magic)
 {
   int err = 0;
-  struct InputFile *in = MEM_ALLOC(struct InputFile);
+  struct InputFile *in = SI_MEM_ALLOC(struct InputFile);
 
   if (in == NULL) {
     return NULL;
@@ -130,7 +130,7 @@ struct InputFile *IOOpenInputFile(const char *filename, const char *magic)
 
   in->file = fopen(filename, "r");
   if (in->file == NULL) {
-    MEM_FREE(in);
+    SI_MEM_FREE(in);
     return NULL;
   }
 
@@ -163,7 +163,7 @@ void IOCloseInputFile(struct InputFile *in)
 
   ArrFree(in->header_chunks);
   ArrFree(in->data_chunks);
-  MEM_FREE(in);
+  SI_MEM_FREE(in);
 }
 
 int IOGetInputHeaderChunkCount(const struct InputFile *in)
@@ -272,7 +272,7 @@ struct OutputFile {
 struct OutputFile *IOOpenOutputFile(const char *filename,
     const char *magic, int format_version)
 {
-  struct OutputFile *out = MEM_ALLOC(struct OutputFile);
+  struct OutputFile *out = SI_MEM_ALLOC(struct OutputFile);
 
   if (out == NULL) {
     return NULL;
@@ -280,7 +280,7 @@ struct OutputFile *IOOpenOutputFile(const char *filename,
 
   out->file = fopen(filename, "wb");
   if (out->file == NULL) {
-    MEM_FREE(out);
+    SI_MEM_FREE(out);
     return NULL;
   }
 
@@ -320,7 +320,7 @@ void IOCloseOutputFile(struct OutputFile *out)
 
   ArrFree(out->header_chunks);
   ArrFree(out->data_chunks);
-  MEM_FREE(out);
+  SI_MEM_FREE(out);
 }
 
 void IOEndOutputHeader(struct OutputFile *out)

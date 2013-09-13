@@ -23,7 +23,7 @@ static void free_interval(struct Interval *interval);
 
 struct IntervalList *IntervalListNew(void)
 {
-  struct IntervalList *intervals = MEM_ALLOC(struct IntervalList);
+  struct IntervalList *intervals = SI_MEM_ALLOC(struct IntervalList);
 
   if (intervals == NULL)
     return NULL;
@@ -46,7 +46,7 @@ void IntervalListFree(struct IntervalList *intervals)
     return;
 
   free_interval_nodes(intervals->root.next);
-  MEM_FREE(intervals);
+  SI_MEM_FREE(intervals);
 }
 
 void IntervalListPush(struct IntervalList *intervals, const struct Interval *interval)
@@ -114,7 +114,7 @@ static int closer_than(const struct Interval *interval, const struct Interval *o
 
 static struct Interval *dup_interval(const struct Interval *src)
 {
-  struct Interval *new_node = MEM_ALLOC(struct Interval);
+  struct Interval *new_node = SI_MEM_ALLOC(struct Interval);
 
   if (new_node == NULL)
     return NULL;
@@ -130,6 +130,6 @@ static void free_interval(struct Interval *interval)
   if (interval == NULL)
     return;
 
-  MEM_FREE(interval);
+  SI_MEM_FREE(interval);
 }
 

@@ -33,7 +33,7 @@ struct PointCloud {
 
 struct PointCloud *PtcNew(void)
 {
-  struct PointCloud *ptc = MEM_ALLOC(struct PointCloud);
+  struct PointCloud *ptc = SI_MEM_ALLOC(struct PointCloud);
 
   if (ptc == NULL) {
     return NULL;
@@ -56,7 +56,7 @@ void PtcFree(struct PointCloud *ptc)
   VecFree(ptc->P);
   free(ptc->radius);
 
-  MEM_FREE(ptc);
+  SI_MEM_FREE(ptc);
 }
 
 void PtcAllocatePoint(struct PointCloud *ptc, int point_count)
@@ -83,7 +83,7 @@ void PtcAllocatePoint(struct PointCloud *ptc, int point_count)
   {
     /* TODO TEST */
     int i;
-    ptc->radius = MEM_ALLOC_ARRAY(double, point_count);
+    ptc->radius = SI_MEM_ALLOC_ARRAY(double, point_count);
     for (i = 0; i < point_count; i++) {
       ptc->radius[i] = .01 * .2;
     }
@@ -112,7 +112,7 @@ AttributeID PtcAddAttributeDouble(struct PointCloud *ptc, const char *attr_name)
   /* TODO imprement */
   if (strcmp(attr_name, "radius") == 0) {
     int i;
-    ptc->radius = MEM_ALLOC_ARRAY(double, ptc->point_count);
+    ptc->radius = SI_MEM_ALLOC_ARRAY(double, ptc->point_count);
     for (i = 0; i < ptc->point_count; i++) {
       ptc->radius[i] = .01;
     }

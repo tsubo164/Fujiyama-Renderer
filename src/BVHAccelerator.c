@@ -94,7 +94,7 @@ void GetBVHAcceleratorFunction(struct Accelerator *acc)
 
 static DerivedAccelerator new_bvh_accel(void)
 {
-  struct BVHAccelerator *bvh = MEM_ALLOC(struct BVHAccelerator);
+  struct BVHAccelerator *bvh = SI_MEM_ALLOC(struct BVHAccelerator);
 
   if (bvh == NULL)
     return NULL;
@@ -110,7 +110,7 @@ static void free_bvh_accel(DerivedAccelerator derived)
 
   free_bvhnode_recursive(bvh->root);
 
-  MEM_FREE(bvh);
+  SI_MEM_FREE(bvh);
 }
 
 static int build_bvh_accel(DerivedAccelerator derived,
@@ -123,13 +123,13 @@ static int build_bvh_accel(DerivedAccelerator derived,
   const int NPRIMS = PrmGetPrimitiveCount(primset);
   int i;
 
-  prims = MEM_ALLOC_ARRAY(struct Primitive, NPRIMS);
+  prims = SI_MEM_ALLOC_ARRAY(struct Primitive, NPRIMS);
   if (prims == NULL)
     return -1;
 
-  primptrs = MEM_ALLOC_ARRAY(struct Primitive *, NPRIMS);
+  primptrs = SI_MEM_ALLOC_ARRAY(struct Primitive *, NPRIMS);
   if (primptrs == NULL) {
-    MEM_FREE(prims);
+    SI_MEM_FREE(prims);
     return -1;
   }
 
@@ -145,13 +145,13 @@ static int build_bvh_accel(DerivedAccelerator derived,
 
   bvh->root = build_bvh(primptrs, 0, NPRIMS, 0);
   if (bvh->root == NULL) {
-    MEM_FREE(primptrs);
-    MEM_FREE(prims);
+    SI_MEM_FREE(primptrs);
+    SI_MEM_FREE(prims);
     return -1;
   }
 
-  MEM_FREE(primptrs);
-  MEM_FREE(prims);
+  SI_MEM_FREE(primptrs);
+  SI_MEM_FREE(prims);
   return 0;
 }
 
@@ -340,7 +340,7 @@ static struct BVHNode *build_bvh(struct Primitive **primptrs, int begin, int end
 
 static struct BVHNode *new_bvhnode(void)
 {
-  struct BVHNode *node = MEM_ALLOC(struct BVHNode);
+  struct BVHNode *node = SI_MEM_ALLOC(struct BVHNode);
 
   if (node == NULL)
     return NULL;
@@ -359,7 +359,7 @@ static void free_bvhnode_recursive(struct BVHNode *node)
     return;
 
   if (is_bvh_leaf(node)) {
-    MEM_FREE(node);
+    SI_MEM_FREE(node);
     return;
   }
 
@@ -370,7 +370,7 @@ static void free_bvhnode_recursive(struct BVHNode *node)
   free_bvhnode_recursive(node->left);
   free_bvhnode_recursive(node->right);
 
-  MEM_FREE(node);
+  SI_MEM_FREE(node);
 }
 
 static int is_bvh_leaf(const struct BVHNode *node)

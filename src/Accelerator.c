@@ -35,7 +35,7 @@ struct Accelerator {
 
 struct Accelerator *AccNew(int accelerator_type)
 {
-  struct Accelerator *acc = MEM_ALLOC(struct Accelerator);
+  struct Accelerator *acc = SI_MEM_ALLOC(struct Accelerator);
 
   if (acc == NULL)
     return NULL;
@@ -74,7 +74,7 @@ void AccFree(struct Accelerator *acc)
     return;
 
   acc->FreeDerived(acc->derived);
-  MEM_FREE(acc);
+  SI_MEM_FREE(acc);
 }
 
 double AccGetBoundsPadding(void)

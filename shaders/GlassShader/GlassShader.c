@@ -77,7 +77,7 @@ static void *MyNew(void)
 {
   struct GlassShader *glass = NULL;
 
-  glass = MEM_ALLOC(struct GlassShader);
+  glass = SI_MEM_ALLOC(struct GlassShader);
   if (glass == NULL)
     return NULL;
 
@@ -98,7 +98,7 @@ static void MyFree(void *self)
   struct GlassShader *glass = (struct GlassShader *) self;
   if (glass == NULL)
     return;
-  MEM_FREE(glass);
+  SI_MEM_FREE(glass);
 }
 
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,

@@ -22,7 +22,7 @@ struct Tiler {
 
 struct Tiler *TlrNew(int xres, int yres, int xtile_size, int ytile_size)
 {
-  struct Tiler *tiler = MEM_ALLOC(struct Tiler);
+  struct Tiler *tiler = SI_MEM_ALLOC(struct Tiler);
 
   if (tiler == NULL)
     return NULL;
@@ -51,9 +51,9 @@ void TlrFree(struct Tiler *tiler)
     return;
 
   if (tiler->tiles != NULL)
-    MEM_FREE(tiler->tiles);
+    SI_MEM_FREE(tiler->tiles);
 
-  MEM_FREE(tiler);
+  SI_MEM_FREE(tiler);
 }
 
 int TlrGetTileCount(const struct Tiler *tiler)
@@ -98,10 +98,10 @@ int TlrGenerateTiles(struct Tiler *tiler, const struct Rectangle *region)
   assert(ymin < ymax);
 
   if (tiler->tiles != NULL) {
-    MEM_FREE(tiler->tiles);
+    SI_MEM_FREE(tiler->tiles);
   }
 
-  tiles = MEM_ALLOC_ARRAY(struct Tile, total_ntiles);
+  tiles = SI_MEM_ALLOC_ARRAY(struct Tile, total_ntiles);
   if (tiles == NULL) {
     return -1;
   }

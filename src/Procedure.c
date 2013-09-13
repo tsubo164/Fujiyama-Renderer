@@ -45,7 +45,7 @@ struct Procedure *PrcNew(const struct Plugin *plugin)
     return NULL;
   }
 
-  procedure = MEM_ALLOC(struct Procedure);
+  procedure = SI_MEM_ALLOC(struct Procedure);
   if (procedure == NULL) {
     set_error(PRC_ERR_NOMEM);
     PlgDeleteInstance(plugin, tmpobj);
@@ -67,7 +67,7 @@ void PrcFree(struct Procedure *procedure)
     return;
 
   PlgDeleteInstance(procedure->plugin, procedure->self);
-  MEM_FREE(procedure);
+  SI_MEM_FREE(procedure);
 }
 
 int PrcRun(struct Procedure *procedure)

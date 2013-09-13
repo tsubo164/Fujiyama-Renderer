@@ -43,7 +43,7 @@ static int allocate_samples_for_region(struct Sampler *sampler, const struct Rec
 struct Sampler *SmpNew(int xres, int yres,
     int xsamples, int ysamples, float xfwidth, float yfwidth)
 {
-  struct Sampler *sampler = MEM_ALLOC(struct Sampler);
+  struct Sampler *sampler = SI_MEM_ALLOC(struct Sampler);
 
   if (sampler == NULL)
     return NULL;
@@ -76,7 +76,7 @@ void SmpFree(struct Sampler *sampler)
   if (sampler == NULL)
     return;
   ArrFree(sampler->samples);
-  MEM_FREE(sampler);
+  SI_MEM_FREE(sampler);
 }
 
 void SmpSetJitter(struct Sampler *sampler, float jitter)
@@ -202,7 +202,7 @@ void SmpGetPixelSamples(struct Sampler *sampler, struct Sample *pixelsamples,
 struct Sample *SmpAllocatePixelSamples(struct Sampler *sampler)
 {
   const int sample_count = SmpGetSampleCountForPixel(sampler);
-  struct Sample *samples = MEM_ALLOC_ARRAY(struct Sample, sample_count);
+  struct Sample *samples = SI_MEM_ALLOC_ARRAY(struct Sample, sample_count);
 
   return samples;
 }
@@ -216,7 +216,7 @@ void SmpFreePixelSamples(struct Sample *samples)
 {
   if (samples == NULL)
     return;
-  MEM_FREE(samples);
+  SI_MEM_FREE(samples);
 }
 
 static void compute_margins(struct Sampler *sampler)

@@ -18,7 +18,7 @@ struct Progress *PrgNew(void)
 {
   struct Progress *prg;
 
-  prg = MEM_ALLOC(struct Progress);
+  prg = SI_MEM_ALLOC(struct Progress);
   if (prg == NULL)
     return NULL;
 
@@ -32,7 +32,7 @@ void PrgFree(struct Progress *prg)
 {
   if (prg == NULL)
     return;
-  MEM_FREE(prg);
+  SI_MEM_FREE(prg);
 }
 
 void PrgStart(struct Progress *prg, int total_iterations)

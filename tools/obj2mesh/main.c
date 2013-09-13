@@ -93,7 +93,7 @@ int main(int argc, const char **argv)
 
 struct ObjBuffer *ObjBufferNew(void)
 {
-  struct ObjBuffer *buffer = MEM_ALLOC(struct ObjBuffer);
+  struct ObjBuffer *buffer = SI_MEM_ALLOC(struct ObjBuffer);
 
   if (buffer == NULL)
     return NULL;
@@ -123,7 +123,7 @@ void ObjBufferFree(struct ObjBuffer *buffer)
   ArrFree(buffer->texture_indices);
   ArrFree(buffer->normal_indices);
 
-  MEM_FREE(buffer);
+  SI_MEM_FREE(buffer);
 }
 
 static int read_vertx(

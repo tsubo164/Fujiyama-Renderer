@@ -57,7 +57,7 @@ static void *MyNew(void)
 {
   struct VolumeShader *volume = NULL;
 
-  volume = MEM_ALLOC(struct VolumeShader);
+  volume = SI_MEM_ALLOC(struct VolumeShader);
   if (volume == NULL)
     return NULL;
 
@@ -71,7 +71,7 @@ static void MyFree(void *self)
   struct VolumeShader *volume = (struct VolumeShader *) self;
   if (volume == NULL)
     return;
-  MEM_FREE(volume);
+  SI_MEM_FREE(volume);
 }
 
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
@@ -99,7 +99,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     diff.b += Lout.Cl.b;
   }
 
-  /* MEM_FREE samples */
+  /* SI_MEM_FREE samples */
   SlFreeLightSamples(samples);
 
   /* Cs */

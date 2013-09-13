@@ -128,7 +128,7 @@ static const struct VolumeBVHNode *pop_node(struct VolumeBVHNodeStack *stack);
 
 struct VolumeAccelerator *VolumeAccNew(int accelerator_type)
 {
-  struct VolumeAccelerator *acc = MEM_ALLOC(struct VolumeAccelerator);
+  struct VolumeAccelerator *acc = SI_MEM_ALLOC(struct VolumeAccelerator);
   if (acc == NULL)
     return NULL;
 
@@ -181,7 +181,7 @@ void VolumeAccFree(struct VolumeAccelerator *acc)
     return;
 
   acc->FreeDerived(acc);
-  MEM_FREE(acc);
+  SI_MEM_FREE(acc);
 }
 
 void VolumeAccGetBounds(const struct VolumeAccelerator *acc, struct Box *bounds)
@@ -248,7 +248,7 @@ static struct VolumeBruteForceAccelerator *new_bruteforce_accel(void)
 {
   struct VolumeBruteForceAccelerator *bruteforce;
 
-  bruteforce = MEM_ALLOC(struct VolumeBruteForceAccelerator);
+  bruteforce = SI_MEM_ALLOC(struct VolumeBruteForceAccelerator);
   if (bruteforce == NULL)
     return NULL;
 
@@ -262,7 +262,7 @@ static void free_bruteforce_accel(struct VolumeAccelerator *acc)
 {
   struct VolumeBruteForceAccelerator *bruteforce =
       (struct VolumeBruteForceAccelerator *) acc->derived;
-  MEM_FREE(bruteforce);
+  SI_MEM_FREE(bruteforce);
 }
 
 static int build_bruteforce_accel(struct VolumeAccelerator *acc)
@@ -288,7 +288,7 @@ static int intersect_bruteforce_accel(const struct VolumeAccelerator *acc, doubl
 /* VolumeBVHAccelerator */
 static struct VolumeBVHAccelerator *new_bvh_accel(void)
 {
-  struct VolumeBVHAccelerator *bvh = MEM_ALLOC(struct VolumeBVHAccelerator);
+  struct VolumeBVHAccelerator *bvh = SI_MEM_ALLOC(struct VolumeBVHAccelerator);
   if (bvh == NULL)
     return NULL;
 
@@ -302,7 +302,7 @@ static void free_bvh_accel(struct VolumeAccelerator *acc)
   struct VolumeBVHAccelerator *bvh = (struct VolumeBVHAccelerator *) acc->derived;
 
   free_bvhnode_recursive(bvh->root);
-  MEM_FREE(bvh);
+  SI_MEM_FREE(bvh);
 }
 
 static int build_bvh_accel(struct VolumeAccelerator *acc)
@@ -315,13 +315,13 @@ static int build_bvh_accel(struct VolumeAccelerator *acc)
 
   NPRIMS = acc->num_volumes;
 
-  volumes = MEM_ALLOC_ARRAY(struct VolumePrimitive, NPRIMS);
+  volumes = SI_MEM_ALLOC_ARRAY(struct VolumePrimitive, NPRIMS);
   if (volumes == NULL)
     return -1;
 
-  volume_ptr = MEM_ALLOC_ARRAY(struct VolumePrimitive *, NPRIMS);
+  volume_ptr = SI_MEM_ALLOC_ARRAY(struct VolumePrimitive *, NPRIMS);
   if (volume_ptr == NULL) {
-    MEM_FREE(volumes);
+    SI_MEM_FREE(volumes);
     return -1;
   }
 
@@ -338,13 +338,13 @@ static int build_bvh_accel(struct VolumeAccelerator *acc)
 
   bvh->root = build_bvh(volume_ptr, 0, NPRIMS, 0);
   if (bvh->root == NULL) {
-    MEM_FREE(volume_ptr);
-    MEM_FREE(volumes);
+    SI_MEM_FREE(volume_ptr);
+    SI_MEM_FREE(volumes);
     return -1;
   }
 
-  MEM_FREE(volume_ptr);
-  MEM_FREE(volumes);
+  SI_MEM_FREE(volume_ptr);
+  SI_MEM_FREE(volumes);
   return 0;
 }
 
@@ -524,7 +524,7 @@ static struct VolumeBVHNode *build_bvh(struct VolumePrimitive **volume_ptr, int 
 
 static struct VolumeBVHNode *new_bvhnode(void)
 {
-  struct VolumeBVHNode *node = MEM_ALLOC(struct VolumeBVHNode);
+  struct VolumeBVHNode *node = SI_MEM_ALLOC(struct VolumeBVHNode);
   if (node == NULL)
     return NULL;
 
@@ -542,7 +542,7 @@ static void free_bvhnode_recursive(struct VolumeBVHNode *node)
     return;
 
   if (is_bvh_leaf(node)) {
-    MEM_FREE(node);
+    SI_MEM_FREE(node);
     return;
   }
 
@@ -553,7 +553,7 @@ static void free_bvhnode_recursive(struct VolumeBVHNode *node)
   free_bvhnode_recursive(node->left);
   free_bvhnode_recursive(node->right);
 
-  MEM_FREE(node);
+  SI_MEM_FREE(node);
 }
 
 static int is_bvh_leaf(const struct VolumeBVHNode *node)

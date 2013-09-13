@@ -47,7 +47,7 @@ static void merge_sampled_bounds(struct ObjectInstance *obj);
 /* ObjectInstance interfaces */
 struct ObjectInstance *ObjNew(void)
 {
-  struct ObjectInstance *obj = MEM_ALLOC(struct ObjectInstance);
+  struct ObjectInstance *obj = SI_MEM_ALLOC(struct ObjectInstance);
 
   if (obj == NULL)
     return NULL;
@@ -74,7 +74,7 @@ void ObjFree(struct ObjectInstance *obj)
 {
   if (obj == NULL)
     return;
-  MEM_FREE(obj);
+  SI_MEM_FREE(obj);
 }
 
 int ObjSetSurface(struct ObjectInstance *obj, const struct Accelerator *acc)

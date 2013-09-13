@@ -142,7 +142,7 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-  struct SSSShader *sss = MEM_ALLOC(struct SSSShader);
+  struct SSSShader *sss = SI_MEM_ALLOC(struct SSSShader);
 
   if (sss == NULL)
     return NULL;
@@ -187,7 +187,7 @@ static void MyFree(void *self)
   struct SSSShader *sss = (struct SSSShader *) self;
   if (sss == NULL)
     return;
-  MEM_FREE(sss);
+  SI_MEM_FREE(sss);
 }
 
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
@@ -239,7 +239,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     }
   }
 
-  /* MEM_FREE samples */
+  /* SI_MEM_FREE samples */
   SlFreeLightSamples(samples);
 
   /* diffuse map */

@@ -80,7 +80,7 @@ static void clear_image_viewer(struct FrameBufferViewer *v)
 
 struct FrameBufferViewer *FbvNewViewer(void)
 {
-  struct FrameBufferViewer *v = MEM_ALLOC(struct FrameBufferViewer);
+  struct FrameBufferViewer *v = SI_MEM_ALLOC(struct FrameBufferViewer);
 
   if (v == NULL)
     return NULL;
@@ -97,7 +97,7 @@ void FbvFreeViewer(struct FrameBufferViewer *v)
   if (v->fb != NULL)
     FbFree(v->fb);
 
-  MEM_FREE(v);
+  SI_MEM_FREE(v);
 }
 
 void FbvDraw(const struct FrameBufferViewer *v)

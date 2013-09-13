@@ -24,7 +24,7 @@ struct Filter *FltNew(int filtertype, double xwidth, double ywidth)
   assert(xwidth > 0);
   assert(ywidth > 0);
 
-  filter = MEM_ALLOC(struct Filter);
+  filter = SI_MEM_ALLOC(struct Filter);
   if (filter == NULL)
     return NULL;
 
@@ -50,7 +50,7 @@ void FltFree(struct Filter *filter)
   if (filter == NULL)
     return;
 
-  MEM_FREE(filter);
+  SI_MEM_FREE(filter);
 }
 
 double FltEvaluate(const struct Filter *filter, double x, double y)

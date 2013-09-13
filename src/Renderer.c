@@ -109,7 +109,7 @@ static int preprocess_lights(struct Renderer *renderer);
 
 struct Renderer *RdrNew(void)
 {
-  struct Renderer *renderer = MEM_ALLOC(struct Renderer);
+  struct Renderer *renderer = SI_MEM_ALLOC(struct Renderer);
   if (renderer == NULL)
     return NULL;
 
@@ -155,7 +155,7 @@ void RdrFree(struct Renderer *renderer)
     return;
   /* TODO TEST INTERRUPT */
   PrgFree(renderer->progress);
-  MEM_FREE(renderer);
+  SI_MEM_FREE(renderer);
 }
 
 void RdrSetResolution(struct Renderer *renderer, int xres, int yres)

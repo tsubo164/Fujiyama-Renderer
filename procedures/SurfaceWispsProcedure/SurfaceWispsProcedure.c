@@ -67,7 +67,7 @@ static void *MyNew(void)
 {
   struct SurfaceWispsProcedure *surface;
 
-  surface = MEM_ALLOC(struct SurfaceWispsProcedure);
+  surface = SI_MEM_ALLOC(struct SurfaceWispsProcedure);
   if (surface == NULL)
     return NULL;
 
@@ -82,7 +82,7 @@ static void MyFree(void *self)
   struct SurfaceWispsProcedure *surface = (struct SurfaceWispsProcedure *) self;
   if (surface == NULL)
     return;
-  MEM_FREE(surface);
+  SI_MEM_FREE(surface);
 }
 
 static int MyRun(void *self)

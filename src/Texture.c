@@ -28,7 +28,7 @@ struct Texture {
 
 struct Texture *TexNew(void)
 {
-  struct Texture *tex = MEM_ALLOC(struct Texture);
+  struct Texture *tex = SI_MEM_ALLOC(struct Texture);
 
   if (tex == NULL)
     return NULL;
@@ -47,7 +47,7 @@ void TexFree(struct Texture *tex)
 
   FbFree(tex->fb);
   MipCloseInputFile(tex->mip);
-  MEM_FREE(tex);
+  SI_MEM_FREE(tex);
 }
 
 void TexLookup(struct Texture *tex, float u, float v, struct Color4 *rgba)

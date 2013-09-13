@@ -44,7 +44,7 @@ struct Shader *ShdNew(const struct Plugin *plugin)
     return NULL;
   }
 
-  shader = MEM_ALLOC(struct Shader);
+  shader = SI_MEM_ALLOC(struct Shader);
   if (shader == NULL) {
     set_error(SHD_ERR_NOMEM);
     PlgDeleteInstance(plugin, tmpobj);
@@ -66,7 +66,7 @@ void ShdFree(struct Shader *shader)
     return;
 
   PlgDeleteInstance(shader->plugin, shader->self);
-  MEM_FREE(shader);
+  SI_MEM_FREE(shader);
 }
 
 void ShdEvaluate(const struct Shader *shader, const struct TraceContext *cxt,

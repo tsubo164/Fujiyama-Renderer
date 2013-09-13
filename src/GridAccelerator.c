@@ -58,7 +58,7 @@ void GetGridAcceleratorFunction(struct Accelerator *acc)
 
 static DerivedAccelerator new_grid_accel(void)
 {
-  struct GridAccelerator *grid = MEM_ALLOC(struct GridAccelerator);
+  struct GridAccelerator *grid = SI_MEM_ALLOC(struct GridAccelerator);
 
   if (grid == NULL)
     return NULL;
@@ -92,14 +92,14 @@ static void free_grid_accel(DerivedAccelerator derived)
         while (cell != NULL) {
           struct Cell *kill = cell;
           struct Cell *next = cell->next;
-          MEM_FREE(kill);
+          SI_MEM_FREE(kill);
           cell = next;
         }
       }
     }
   }
-  MEM_FREE(grid->cells);
-  MEM_FREE(grid);
+  SI_MEM_FREE(grid->cells);
+  SI_MEM_FREE(grid);
 }
 
 static int build_grid_accel(DerivedAccelerator derived,
@@ -129,7 +129,7 @@ static int build_grid_accel(DerivedAccelerator derived,
       bounds.max.z - bounds.min.z,
       &XNCELLS, &YNCELLS, &ZNCELLS);
 
-  cells = MEM_ALLOC_ARRAY(struct Cell *, XNCELLS * YNCELLS * ZNCELLS);
+  cells = SI_MEM_ALLOC_ARRAY(struct Cell *, XNCELLS * YNCELLS * ZNCELLS);
   if (cells == NULL)
     return -1;
 
@@ -168,7 +168,7 @@ static int build_grid_accel(DerivedAccelerator derived,
       for (y = Y0; y < Y1; y++) {
         for (x = X0; x < X1; x++) {
           int cell_id = z * YNCELLS * XNCELLS + y * XNCELLS + x;
-          struct Cell *newcell = MEM_ALLOC(struct Cell);
+          struct Cell *newcell = SI_MEM_ALLOC(struct Cell);
 
           if (newcell == NULL) {
             /* TODO error handling */

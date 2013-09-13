@@ -47,7 +47,7 @@ static void parse_error(struct Parser *parser, int error_no);
 
 struct Parser *PsrNew(void)
 {
-  struct Parser *parser = MEM_ALLOC(struct Parser);
+  struct Parser *parser = SI_MEM_ALLOC(struct Parser);
 
   if (parser == NULL)
     return NULL;
@@ -73,7 +73,7 @@ void PsrFree(struct Parser *parser)
   SiCloseScene();
 
   TblFree(parser->table);
-  MEM_FREE(parser);
+  SI_MEM_FREE(parser);
 }
 
 const char *PsrGetErrorMessage(const struct Parser *parser)

@@ -53,8 +53,8 @@ int ImportanceSampling(struct Texture *texture, int seed,
     struct DomeSample *dome_samples, int sample_count)
 {
   const int NPIXELS = sample_xres * sample_yres;
-  double *histgram = MEM_ALLOC_ARRAY(double, NPIXELS);
-  char *picked = MEM_ALLOC_ARRAY(char, NPIXELS);
+  double *histgram = SI_MEM_ALLOC_ARRAY(double, NPIXELS);
+  char *picked = SI_MEM_ALLOC_ARRAY(char, NPIXELS);
 
   struct XorShift xr;
   double sum = 0;
@@ -94,8 +94,8 @@ int ImportanceSampling(struct Texture *texture, int seed,
     }
   }
 
-  MEM_FREE(picked);
-  MEM_FREE(histgram);
+  SI_MEM_FREE(picked);
+  SI_MEM_FREE(histgram);
   return 0;
 }
 
@@ -104,8 +104,8 @@ int StratifiedImportanceSampling(struct Texture *texture, int seed,
     struct DomeSample *dome_samples, int sample_count)
 {
   const int NPIXELS = sample_xres * sample_yres;
-  double *histgram = MEM_ALLOC_ARRAY(double, NPIXELS);
-  char *picked = MEM_ALLOC_ARRAY(char, NPIXELS);
+  double *histgram = SI_MEM_ALLOC_ARRAY(double, NPIXELS);
+  char *picked = SI_MEM_ALLOC_ARRAY(char, NPIXELS);
 
   struct XorShift xr;
   double sum = 0;
@@ -149,8 +149,8 @@ int StratifiedImportanceSampling(struct Texture *texture, int seed,
     }
   }
 
-  MEM_FREE(picked);
-  MEM_FREE(histgram);
+  SI_MEM_FREE(picked);
+  SI_MEM_FREE(histgram);
   return 0;
 }
 
@@ -176,7 +176,7 @@ int StructuredImportanceSampling(struct Texture *texture, int seed,
   int i;
 
   /* prepare */
-  L = MEM_ALLOC_ARRAY(double, NPIXELS);
+  L = SI_MEM_ALLOC_ARRAY(double, NPIXELS);
   setup_structured_importance_sampling(texture,
       sample_xres, sample_yres,
       L, &L_whole, &L_mean);
@@ -191,13 +191,13 @@ int StructuredImportanceSampling(struct Texture *texture, int seed,
   gamma_whole = L_whole * pow(delta_omega0, 1./4);
 
   /* layers */
-  strata_id = MEM_ALLOC_ARRAY(char, NPIXELS);
+  strata_id = SI_MEM_ALLOC_ARRAY(char, NPIXELS);
   divide_into_layers(L, NPIXELS,
       thresholds, depth,
       strata_id);
 
   /* connections */
-  connected_label = MEM_ALLOC_ARRAY(int, NPIXELS);
+  connected_label = SI_MEM_ALLOC_ARRAY(int, NPIXELS);
   solve_connected_components(
       sample_xres, sample_yres, strata_id,
       connected_label);
@@ -206,7 +206,7 @@ int StructuredImportanceSampling(struct Texture *texture, int seed,
   remap_connected_label(NPIXELS, connected_label, &sorted_label_count);
 
   /* sample count for each connection */
-  connected_sample_count = MEM_ALLOC_ARRAY(int, sorted_label_count);
+  connected_sample_count = SI_MEM_ALLOC_ARRAY(int, sorted_label_count);
   compute_connected_sample_count(L, NPIXELS,
       connected_label, sorted_label_count,
       sample_count, gamma_whole,
@@ -226,10 +226,10 @@ int StructuredImportanceSampling(struct Texture *texture, int seed,
     sample->color.b = tex_rgba.b;
   }
 
-  MEM_FREE(connected_sample_count);
-  MEM_FREE(connected_label);
-  MEM_FREE(strata_id);
-  MEM_FREE(L);
+  SI_MEM_FREE(connected_sample_count);
+  SI_MEM_FREE(connected_label);
+  SI_MEM_FREE(strata_id);
+  SI_MEM_FREE(L);
 
   return 0;
 }
@@ -413,7 +413,7 @@ static void remap_connected_label(int npixels,
     }
   }
   label_count = max_label + 1; /* for 0 */
-  label_map = MEM_ALLOC_ARRAY(int, label_count);
+  label_map = SI_MEM_ALLOC_ARRAY(int, label_count);
 
   /* initialize */
   for (i = 0; i < label_count; i++) {
@@ -429,7 +429,7 @@ static void remap_connected_label(int npixels,
     }
     connected_label[i] = label_map[old_label];
   }
-  MEM_FREE(label_map);
+  SI_MEM_FREE(label_map);
   *sorted_max_label = new_label;
 }
 
@@ -438,9 +438,9 @@ static void compute_connected_sample_count(const double *illum_values, int nvalu
     int total_sample_count, double gamma_whole,
     int *connected_sample_count)
 {
-  double *connected_domega = MEM_ALLOC_ARRAY(double, label_count);
-  double *connected_illumi = MEM_ALLOC_ARRAY(double, label_count);
-  int *connected_area = MEM_ALLOC_ARRAY(int, label_count);
+  double *connected_domega = SI_MEM_ALLOC_ARRAY(double, label_count);
+  double *connected_illumi = SI_MEM_ALLOC_ARRAY(double, label_count);
+  int *connected_area = SI_MEM_ALLOC_ARRAY(int, label_count);
   const double *L = illum_values;
   double dOmega0 = 0;
   int generated_count = 0;
@@ -491,9 +491,9 @@ static void compute_connected_sample_count(const double *illum_values, int nvalu
         total_sample_count - generated_count;
   }
 
-  MEM_FREE(connected_domega);
-  MEM_FREE(connected_illumi);
-  MEM_FREE(connected_area);
+  SI_MEM_FREE(connected_domega);
+  SI_MEM_FREE(connected_illumi);
+  SI_MEM_FREE(connected_area);
 }
 
 /* Hochbaum-Shmoys algorithm */
@@ -503,9 +503,9 @@ static void generate_dome_samples(int sample_xres, int sample_yres,
     struct DomeSample *dome_samples, int sample_count)
 {
   const int NPIXELS = sample_xres * sample_yres;
-  struct SamplePoint *samples = MEM_ALLOC_ARRAY(struct SamplePoint, NPIXELS);
-  int *nsamples = MEM_ALLOC_ARRAY(int, label_count);
-  int *offsets = MEM_ALLOC_ARRAY(int, label_count);
+  struct SamplePoint *samples = SI_MEM_ALLOC_ARRAY(struct SamplePoint, NPIXELS);
+  int *nsamples = SI_MEM_ALLOC_ARRAY(int, label_count);
+  int *offsets = SI_MEM_ALLOC_ARRAY(int, label_count);
   int next_dome_sample = 0;
   int i;
 
@@ -531,7 +531,7 @@ static void generate_dome_samples(int sample_xres, int sample_yres,
   }
 
   {
-    struct SamplePoint *X = MEM_ALLOC_ARRAY(struct SamplePoint, sample_count);
+    struct SamplePoint *X = SI_MEM_ALLOC_ARRAY(struct SamplePoint, sample_count);
     struct XorShift xr;
     XorInit(&xr);
 
@@ -591,12 +591,12 @@ static void generate_dome_samples(int sample_xres, int sample_yres,
         }
       }
     }
-    MEM_FREE(X);
+    SI_MEM_FREE(X);
   }
 
-  MEM_FREE(samples);
-  MEM_FREE(offsets);
-  MEM_FREE(nsamples);
+  SI_MEM_FREE(samples);
+  SI_MEM_FREE(offsets);
+  SI_MEM_FREE(nsamples);
 }
 
 static int compare_sample_point(const void *ptr0, const void *ptr1)

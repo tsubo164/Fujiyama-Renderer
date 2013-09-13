@@ -20,7 +20,7 @@ struct PtcInputFile {
 
 struct PtcInputFile *PtcOpenInputFile(const char *filename)
 {
-  struct PtcInputFile *in = MEM_ALLOC(struct PtcInputFile);
+  struct PtcInputFile *in = SI_MEM_ALLOC(struct PtcInputFile);
 
   if (in == NULL) {
     return NULL;
@@ -45,7 +45,7 @@ void PtcCloseInputFile(struct PtcInputFile *in)
   }
 
   IOCloseInputFile(in->file);
-  MEM_FREE(in);
+  SI_MEM_FREE(in);
 }
 
 void PtcReadHeader(struct PtcInputFile *in)
@@ -87,7 +87,7 @@ struct PtcOutputFile {
 
 struct PtcOutputFile *PtcOpenOutputFile(const char *filename)
 {
-  struct PtcOutputFile *out = MEM_ALLOC(struct PtcOutputFile);
+  struct PtcOutputFile *out = SI_MEM_ALLOC(struct PtcOutputFile);
 
   if (out == NULL) {
     return NULL;
@@ -112,7 +112,7 @@ void PtcCloseOutputFile(struct PtcOutputFile *out)
   }
 
   IOCloseOutputFile(out->file);
-  MEM_FREE(out);
+  SI_MEM_FREE(out);
 }
 
 void PtcSetOutputPosition(struct PtcOutputFile *out, 
@@ -149,8 +149,8 @@ int PtcLoadFile(struct PointCloud *ptc, const char *filename)
   /* read file */
   PtcReadHeader(in);
   point_count = PtcGetInputPointCount(in);
-  P      = MEM_ALLOC_ARRAY(struct Vector, point_count);
-  radius = MEM_ALLOC_ARRAY(double,        point_count);
+  P      = SI_MEM_ALLOC_ARRAY(struct Vector, point_count);
+  radius = SI_MEM_ALLOC_ARRAY(double,        point_count);
 
   PtcSetInputPosition(in, P);
   PtcSetInputAttributeDouble(in, "radius", radius);
@@ -178,8 +178,8 @@ int PtcLoadFile(struct PointCloud *ptc, const char *filename)
   PtcComputeBounds(ptc);
 
   /* clean up */
-  MEM_FREE(P);
-  MEM_FREE(radius);
+  SI_MEM_FREE(P);
+  SI_MEM_FREE(radius);
 
   return 0;
 }

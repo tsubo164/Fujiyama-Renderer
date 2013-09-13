@@ -38,7 +38,7 @@ struct Mesh {
 
 struct Mesh *MshNew(void)
 {
-  struct Mesh *mesh = MEM_ALLOC(struct Mesh);
+  struct Mesh *mesh = SI_MEM_ALLOC(struct Mesh);
   if (mesh == NULL)
     return NULL;
 
@@ -64,9 +64,9 @@ void MshFree(struct Mesh *mesh)
   VecFree(mesh->N);
   ColFree(mesh->Cd);
   TexCoordFree(mesh->uv);
-  MEM_FREE(mesh->indices);
+  SI_MEM_FREE(mesh->indices);
 
-  MEM_FREE(mesh);
+  SI_MEM_FREE(mesh);
 }
 
 void MshClear(struct Mesh *mesh)
@@ -80,7 +80,7 @@ void MshClear(struct Mesh *mesh)
   if (mesh->uv != NULL)
     TexCoordFree(mesh->uv);
   if (mesh->indices != NULL)
-    MEM_FREE(mesh->indices);
+    SI_MEM_FREE(mesh->indices);
 
   mesh->nverts = 0;
   mesh->nfaces = 0;
@@ -189,7 +189,7 @@ void *MshAllocateFace(struct Mesh *mesh, const char *attr_name, int nfaces)
 
   if (strcmp(attr_name, "indices") == 0) {
     /* TODO define TriIndexRealloc */
-    mesh->indices = MEM_REALLOC_ARRAY(mesh->indices, struct TriIndex, nfaces);
+    mesh->indices = SI_MEM_REALLOC_ARRAY(mesh->indices, struct TriIndex, nfaces);
     ret = mesh->indices;
   }
 

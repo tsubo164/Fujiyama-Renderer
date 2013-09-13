@@ -43,7 +43,7 @@ static float nearest_buffer_value(const struct VoxelBuffer *buffer, const struct
 
 struct Volume *VolNew(void)
 {
-  struct Volume *volume = MEM_ALLOC(struct Volume);
+  struct Volume *volume = SI_MEM_ALLOC(struct Volume);
   if (volume == NULL)
     return NULL;
 
@@ -64,7 +64,7 @@ void VolFree(struct Volume *volume)
     return;
 
   free_voxel_buffer(volume->buffer);
-  MEM_FREE(volume);
+  SI_MEM_FREE(volume);
 }
 
 void VolResize(struct Volume *volume, int xres, int yres, int zres)
@@ -197,7 +197,7 @@ int VolGetSample(const struct Volume *volume, const struct Vector *point,
 
 static struct VoxelBuffer *new_voxel_buffer(void)
 {
-  struct VoxelBuffer *buffer = MEM_ALLOC(struct VoxelBuffer);
+  struct VoxelBuffer *buffer = SI_MEM_ALLOC(struct VoxelBuffer);
   if (buffer == NULL)
     return NULL;
 
@@ -214,18 +214,18 @@ static void free_voxel_buffer(struct VoxelBuffer *buffer)
   if (buffer == NULL)
     return;
 
-  MEM_FREE(buffer->data);
+  SI_MEM_FREE(buffer->data);
   buffer->data = NULL;
   buffer->res.x = 0;
   buffer->res.y = 0;
   buffer->res.z = 0;
 
-  MEM_FREE(buffer);
+  SI_MEM_FREE(buffer);
 }
 
 static void resize_voxel_buffer(struct VoxelBuffer *buffer, int xres, int yres, int zres)
 {
-  buffer->data = MEM_REALLOC_ARRAY(buffer->data, float, xres * yres * zres);
+  buffer->data = SI_MEM_REALLOC_ARRAY(buffer->data, float, xres * yres * zres);
 
   if (buffer->data == NULL) {
     buffer->res.x = 0;

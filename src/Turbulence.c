@@ -22,7 +22,7 @@ struct Turbulence {
 
 struct Turbulence *TrbNew(void)
 {
-  struct Turbulence *turbulence = MEM_ALLOC(struct Turbulence);
+  struct Turbulence *turbulence = SI_MEM_ALLOC(struct Turbulence);
   if (turbulence == NULL)
     return NULL;
 
@@ -40,7 +40,7 @@ void TrbFree(struct Turbulence *turbulence)
 {
   if (turbulence == NULL)
     return;
-  MEM_FREE(turbulence);
+  SI_MEM_FREE(turbulence);
 }
 
 void TrbSetAmplitude(struct Turbulence *turbulence, double x, double y, double z)

@@ -64,7 +64,7 @@ struct Curve *CrvNew(void)
 {
   struct Curve *curve;
 
-  curve = MEM_ALLOC(struct Curve);
+  curve = SI_MEM_ALLOC(struct Curve);
   if (curve == NULL)
     return NULL;
 
@@ -89,13 +89,13 @@ void CrvFree(struct Curve *curve)
     return;
 
   VecFree(curve->P);
-  MEM_FREE(curve->width);
+  SI_MEM_FREE(curve->width);
   ColFree(curve->Cd);
   TexCoordFree(curve->uv);
-  MEM_FREE(curve->indices);
-  MEM_FREE(curve->split_depth);
+  SI_MEM_FREE(curve->indices);
+  SI_MEM_FREE(curve->split_depth);
 
-  MEM_FREE(curve);
+  SI_MEM_FREE(curve);
 }
 
 void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int nverts)
@@ -114,7 +114,7 @@ void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int nverts)
     ret = curve->P;
   }
   else if (strcmp(attr_name, "width") == 0) {
-    curve->width = MEM_REALLOC_ARRAY(curve->width, double, nverts);
+    curve->width = SI_MEM_REALLOC_ARRAY(curve->width, double, nverts);
     ret = curve->width;
   }
   else if (strcmp(attr_name, "Cd") == 0) {
@@ -147,7 +147,7 @@ void *CrvAllocateCurve(struct Curve *curve, const char *attr_name, int ncurves)
   }
 
   if (strcmp(attr_name, "indices") == 0) {
-    curve->indices = MEM_REALLOC_ARRAY(curve->indices, int, ncurves);
+    curve->indices = SI_MEM_REALLOC_ARRAY(curve->indices, int, ncurves);
     ret = curve->indices;
   }
 
@@ -494,7 +494,7 @@ static void cache_split_depth(const struct Curve *curve)
   assert(mutable_curve->split_depth == NULL);
 
 
-  mutable_curve->split_depth = MEM_ALLOC_ARRAY(int, mutable_curve->ncurves);
+  mutable_curve->split_depth = SI_MEM_ALLOC_ARRAY(int, mutable_curve->ncurves);
   for (i = 0; i < mutable_curve->ncurves; i++) {
     struct Bezier3 bezier;
     int depth;

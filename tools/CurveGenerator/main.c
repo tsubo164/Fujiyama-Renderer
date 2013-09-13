@@ -110,7 +110,7 @@ int main(int argc, const char **argv)
   printf("nfaces: %d\n", nfaces);
 
   /* count total_ncurves */
-  ncurves_on_face = MEM_ALLOC_ARRAY(int, nfaces);
+  ncurves_on_face = SI_MEM_ALLOC_ARRAY(int, nfaces);
   total_ncurves = 0;
   for (i = 0; i < nfaces; i++) {
     struct Vector P0 = {0, 0, 0};
@@ -128,9 +128,9 @@ int main(int argc, const char **argv)
 
   total_ncps = 4 * total_ncurves;
   P = VecAlloc(total_ncps);
-  width = MEM_ALLOC_ARRAY(double, total_ncps);
+  width = SI_MEM_ALLOC_ARRAY(double, total_ncps);
   Cd = ColAlloc(total_ncps);
-  indices = MEM_ALLOC_ARRAY(int, total_ncurves);
+  indices = SI_MEM_ALLOC_ARRAY(int, total_ncurves);
 
   sourceP = VecAlloc(total_ncurves);
   sourceN = VecAlloc(total_ncurves);
@@ -283,10 +283,10 @@ int main(int argc, const char **argv)
   CrvCloseOutputFile(out);
   MshFree(mesh);
   VecFree(P);
-  MEM_FREE(width);
+  SI_MEM_FREE(width);
   ColFree(Cd);
-  MEM_FREE(indices);
-  MEM_FREE(ncurves_on_face);
+  SI_MEM_FREE(indices);
+  SI_MEM_FREE(ncurves_on_face);
   VecFree(sourceP);
   VecFree(sourceN);
 

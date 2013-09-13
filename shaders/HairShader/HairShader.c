@@ -76,7 +76,7 @@ static void *MyNew(void)
 {
   struct HairShader *hair = NULL;
 
-  hair = MEM_ALLOC(struct HairShader);
+  hair = SI_MEM_ALLOC(struct HairShader);
   if (hair == NULL)
     return NULL;
 
@@ -95,7 +95,7 @@ static void MyFree(void *self)
   struct HairShader *hair = (struct HairShader *) self;
   if (hair == NULL)
     return;
-  MEM_FREE(hair);
+  SI_MEM_FREE(hair);
 }
 
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
@@ -134,7 +134,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     out->Cs.b += (in->Cd.b * diff + spec) * Lout.Cl.b;
   }
 
-  /* MEM_FREE samples */
+  /* SI_MEM_FREE samples */
   SlFreeLightSamples(samples);
 
   /* TODO fix hard-coded ambient */
