@@ -69,6 +69,17 @@ int main(int argc, char **argv)
   glutMotionFunc(motion);
   glutKeyboardFunc(keyboard);
 
+#if defined(SI_WINDOWS)
+  {
+    const GLenum err = glewInit();
+    if (err != GLEW_OK) {
+      /* Problem: glewInit failed, something is seriously wrong. */
+      fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+      return -1;
+    }
+  }
+#endif
+
   if (initialize_viewer(argv[1])) {
     return -1;
   }
