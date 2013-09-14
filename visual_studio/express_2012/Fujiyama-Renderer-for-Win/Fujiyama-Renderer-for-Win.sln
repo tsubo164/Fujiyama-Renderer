@@ -35,6 +35,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SplineWispsProcedure", "Spl
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SurfaceWispsProcedure", "SurfaceWispsProcedure\SurfaceWispsProcedure.vcxproj", "{784EB945-367F-4E9A-A945-B50B5BD6A141}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrameBufferViewer", "FrameBufferViewer\FrameBufferViewer.vcxproj", "{9A6D7F84-0228-428E-AF01-A7D5795AF399}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -179,6 +181,14 @@ Global
 		{784EB945-367F-4E9A-A945-B50B5BD6A141}.Release|Win32.Build.0 = Release|Win32
 		{784EB945-367F-4E9A-A945-B50B5BD6A141}.Release|x64.ActiveCfg = Release|x64
 		{784EB945-367F-4E9A-A945-B50B5BD6A141}.Release|x64.Build.0 = Release|x64
+		{9A6D7F84-0228-428E-AF01-A7D5795AF399}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9A6D7F84-0228-428E-AF01-A7D5795AF399}.Debug|Win32.Build.0 = Debug|Win32
+		{9A6D7F84-0228-428E-AF01-A7D5795AF399}.Debug|x64.ActiveCfg = Debug|x64
+		{9A6D7F84-0228-428E-AF01-A7D5795AF399}.Debug|x64.Build.0 = Debug|x64
+		{9A6D7F84-0228-428E-AF01-A7D5795AF399}.Release|Win32.ActiveCfg = Release|Win32
+		{9A6D7F84-0228-428E-AF01-A7D5795AF399}.Release|Win32.Build.0 = Release|Win32
+		{9A6D7F84-0228-428E-AF01-A7D5795AF399}.Release|x64.ActiveCfg = Release|x64
+		{9A6D7F84-0228-428E-AF01-A7D5795AF399}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
