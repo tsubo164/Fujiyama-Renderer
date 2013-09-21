@@ -1,0 +1,16 @@
+Fujiyama Renderer v0.1.9(Alpha) Release Notes
+=============================================
+
+New features since v0.1.8
+-------------------------
+ * Added fbview to visual studio solution.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Multi-threaded
+ * Deep shadow
+ * Displacement shader
+ * Subdivision surface
+ * Alembic support

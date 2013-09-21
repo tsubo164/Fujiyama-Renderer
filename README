@@ -17,7 +17,7 @@ designed to handle production image rendering.
 -----------------
 * Platforms
   + Linux
-  + Windows (NOTE fbview and fb2exr are not ported yet)
+  + Windows (NOTE fb2exr is not ported yet)
 
 * Supported Primitives
   + Triangle Mesh - Compact representation

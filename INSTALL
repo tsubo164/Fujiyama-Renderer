@@ -3,8 +3,7 @@ Fujiyama Renderer
 
   Platform
 -----------------
-Fujiyama is currently supported on Linux platform which is supposed to have
-dlfcn.h and sys/stat.h by default.
+Fujiyama is currently supported on Linux and Windows platform.
 
   Requirement
 -----------------
@@ -13,6 +12,10 @@ However, there are some external libraries to be installed for some tools
 come with Fujiyama.
 
   * OpenGL/GLUT for fbview (FrameBuffer viewer)
+  * For Linux, freeglut needs to be installed.
+  * For windows, freeglut and GLEW need to be installed.
+    (freeglut: http://freeglut.sourceforge.net/)
+    (GLEW:     http://glew.sourceforge.net/)
   * OpenEXR for fb2exr (Converter from native image format to exr) 
 
   Compile
