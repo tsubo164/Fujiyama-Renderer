@@ -13,6 +13,36 @@ See LICENSE and README
 #include <string.h>
 #include <errno.h>
 
+/* TODO TEST */
+#include "Compatibility.h"
+/* to get builtin types work with the macro */
+typedef char char_type;
+typedef float float_type;
+typedef double double_type;
+#define DEFINE_FILE_READ_WRITE(TYPE,SUFFIX) \
+int file_read_##TYPE(FILE *file, TYPE##SUFFIX *dst, size_t count) \
+{ \
+  const size_t nreads = fread(dst, sizeof(*dst), count, file); \
+  if (nreads != count) \
+    return -1; \
+  else \
+    return 0; \
+} \
+int file_write_##TYPE(FILE *file, const TYPE##SUFFIX *src, size_t count) \
+{ \
+  const size_t nwrotes = fwrite(src, sizeof(*src), count, file); \
+  if (nwrotes != count) \
+    return -1; \
+  else \
+    return 0; \
+}
+DEFINE_FILE_READ_WRITE(char, _type)
+DEFINE_FILE_READ_WRITE(int32, _t)
+DEFINE_FILE_READ_WRITE(int64, _t)
+DEFINE_FILE_READ_WRITE(float, _type)
+DEFINE_FILE_READ_WRITE(double, _type)
+/* TODO TEST */
+
 #define FB_FILE_VERSION 1
 #define FB_FILE_MAGIC "FBUF"
 #define FB_MAGIC_SIZE 4
@@ -85,36 +115,46 @@ void FbCloseInputFile(struct FbInput *in)
 
 int FbReadHeader(struct FbInput *in)
 {
-  size_t nreads = 0;
   char magic[FB_MAGIC_SIZE] = {'\0'};
+  int err = 0;
 
-  nreads += fread(magic, sizeof(char), FB_MAGIC_SIZE, in->file);
-  if (memcmp(magic, FB_FILE_MAGIC, FB_MAGIC_SIZE) != 0) {
+  err = file_read_char(in->file, magic, FB_MAGIC_SIZE);
+  if (err || memcmp(magic, FB_FILE_MAGIC, FB_MAGIC_SIZE) != 0) {
     set_error(ERR_FB_NOTFB);
     return -1;
   }
-  nreads += fread(&in->version, sizeof(int), 1, in->file);
-  if (in->version != FB_FILE_VERSION) {
+  err = file_read_int32(in->file, &in->version, 1);
+  if (err || in->version != FB_FILE_VERSION) {
     set_error(ERR_FB_BADVER);
     return -1;
   }
-  nreads += fread(&in->width, sizeof(int), 1, in->file);
-  nreads += fread(&in->height, sizeof(int), 1, in->file);
-  nreads += fread(&in->nchannels, sizeof(int), 1, in->file);
-  nreads += fread(in->viewbox, sizeof(int), 4, in->file);
-  nreads += fread(in->databox, sizeof(int), 4, in->file);
+
+  err |= file_read_int32(in->file, &in->width, 1);
+  err |= file_read_int32(in->file, &in->height, 1);
+  err |= file_read_int32(in->file, &in->nchannels, 1);
+  err |= file_read_int32(in->file, in->viewbox, 4);
+  err |= file_read_int32(in->file, in->databox, 4);
+  /*
+  FioReadInt32(in->file, in->databox, 4);
+  */
+  if (err) {
+    /* TODO error handling */
+  }
 
   return 0;
 }
 
 int FbReadData(struct FbInput *in)
 {
-  size_t nreads = 0;
+  int err = 0;
 
   if (in->data == NULL)
     return -1;
 
-  nreads += fread(in->data, sizeof(float), in->width * in->height * in->nchannels, in->file);
+  err = file_read_float(in->file, in->data, in->width * in->height * in->nchannels);
+  if (err) {
+    /* TODO error handling */
+  }
   return 0;
 }
 
@@ -159,15 +199,19 @@ void FbCloseOutputFile(struct FbOutput *out)
 void FbWriteFile(struct FbOutput *out)
 {
   char magic[] = FB_FILE_MAGIC;
+  int err = 0;
 
-  fwrite(magic, sizeof(char), FB_MAGIC_SIZE, out->file);
-  fwrite(&out->version, sizeof(int), 1, out->file);
-  fwrite(&out->width, sizeof(int), 1, out->file);
-  fwrite(&out->height, sizeof(int), 1, out->file);
-  fwrite(&out->nchannels, sizeof(int), 1, out->file);
-  fwrite(out->viewbox, sizeof(int), 4, out->file);
-  fwrite(out->databox, sizeof(int), 4, out->file);
-  fwrite(out->data, sizeof(float), out->width * out->height * out->nchannels, out->file);
+  err |= file_write_char(out->file, magic, FB_MAGIC_SIZE);
+  err |= file_write_int32(out->file, &out->version, 1);
+  err |= file_write_int32(out->file, &out->width, 1);
+  err |= file_write_int32(out->file, &out->height, 1);
+  err |= file_write_int32(out->file, &out->nchannels, 1);
+  err |= file_write_int32(out->file, out->viewbox, 4);
+  err |= file_write_int32(out->file, out->databox, 4);
+  err |= file_write_float(out->file, out->data, out->width * out->height * out->nchannels);
+  if (err) {
+    /* TODO error handling */
+  }
 }
 
 int FbSaveCroppedData(struct FrameBuffer *fb, const char *filename)
@@ -225,4 +269,3 @@ static void set_error(int err)
 {
   error_no = err;
 }
-
