@@ -283,6 +283,13 @@ static int set_Light_intensity(void *self, const struct PropertyValue *value)
   return 0;
 }
 
+static int set_Light_color(void *self, const struct PropertyValue *value)
+{
+  LgtSetColor((struct Light *) self,
+      value->vector[0], value->vector[1], value->vector[2]);
+  return 0;
+}
+
 static int set_Light_sample_count(void *self, const struct PropertyValue *value)
 {
   struct Light *light = (struct Light *) self;
@@ -405,6 +412,7 @@ static const struct Property Camera_properties[] = {
 
 static const struct Property Light_properties[] = {
   {PROP_SCALAR,  "intensity",       set_Light_intensity},
+  {PROP_VECTOR3, "color",           set_Light_color},
   {PROP_SCALAR,  "sample_count",    set_Light_sample_count},
   {PROP_SCALAR,  "double_sided",    set_Light_double_sided},
   {PROP_TEXTURE, "environment_map", set_Light_environment_map},
