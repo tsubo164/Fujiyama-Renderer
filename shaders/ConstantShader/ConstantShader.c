@@ -32,9 +32,9 @@ static int set_diffuse(void *self, const struct PropertyValue *value);
 static int set_texture(void *self, const struct PropertyValue *value);
 
 static const struct Property MyProperties[] = {
-  {PROP_VECTOR3, "diffuse", set_diffuse},
-  {PROP_TEXTURE, "texture", set_texture},
-  {PROP_NONE,    NULL,      NULL}
+  {PROP_VECTOR3, "diffuse", {1, 1, 1, 0}, set_diffuse},
+  {PROP_TEXTURE, "texture", {0, 0, 0, 0}, set_texture},
+  {PROP_NONE,    NULL,      {0, 0, 0, 0}, NULL}
 };
 
 static const struct MetaInfo MyMetainfo[] = {

@@ -96,29 +96,29 @@ static int set_enable_single_scattering(void *self, const struct PropertyValue *
 static int set_enable_multiple_scattering(void *self, const struct PropertyValue *value);
 static int set_single_scattering_samples(void *self, const struct PropertyValue *value);
 static int set_multiple_scattering_samples(void *self, const struct PropertyValue *value);
-static int set_scattering_coefficient(void *self, const struct PropertyValue *value);
-static int set_absorption_coefficient(void *self, const struct PropertyValue *value);
+static int set_scattering_coeff(void *self, const struct PropertyValue *value);
+static int set_absorption_coeff(void *self, const struct PropertyValue *value);
 static int set_single_scattering_intensity(void *self, const struct PropertyValue *value);
 static int set_multiple_scattering_intensity(void *self, const struct PropertyValue *value);
 
 static const struct Property MyProperties[] = {
-  {PROP_VECTOR3, "diffuse",     set_diffuse},
-  {PROP_VECTOR3, "specular",    set_specular},
-  {PROP_VECTOR3, "ambient",     set_ambient},
-  {PROP_SCALAR,  "roughness",   set_roughness},
-  {PROP_VECTOR3, "reflect",     set_reflect},
-  {PROP_SCALAR,  "ior",         set_ior},
-  {PROP_SCALAR,  "opacity",     set_opacity},
-  {PROP_TEXTURE, "diffuse_map", set_diffuse_map},
-  {PROP_SCALAR,  "enable_single_scattering",      set_enable_single_scattering},
-  {PROP_SCALAR,  "enable_multiple_scattering",    set_enable_multiple_scattering},
-  {PROP_SCALAR,  "single_scattering_samples",     set_single_scattering_samples},
-  {PROP_SCALAR,  "multiple_scattering_samples",   set_multiple_scattering_samples},
-  {PROP_VECTOR3, "scattering_coefficient",        set_scattering_coefficient},
-  {PROP_VECTOR3, "absorption_coefficient",        set_absorption_coefficient},
-  {PROP_SCALAR,  "single_scattering_intensity",   set_single_scattering_intensity},
-  {PROP_SCALAR,  "multiple_scattering_intensity", set_multiple_scattering_intensity},
-  {PROP_NONE, NULL, NULL}
+  {PROP_VECTOR3, "diffuse",     {0, 0, 0, 0}, set_diffuse},
+  {PROP_VECTOR3, "specular",    {0, 0, 0, 0}, set_specular},
+  {PROP_VECTOR3, "ambient",     {0, 0, 0, 0}, set_ambient},
+  {PROP_SCALAR,  "roughness",   {0, 0, 0, 0}, set_roughness},
+  {PROP_VECTOR3, "reflect",     {0, 0, 0, 0}, set_reflect},
+  {PROP_SCALAR,  "ior",         {0, 0, 0, 0}, set_ior},
+  {PROP_SCALAR,  "opacity",     {0, 0, 0, 0}, set_opacity},
+  {PROP_TEXTURE, "diffuse_map", {0, 0, 0, 0}, set_diffuse_map},
+  {PROP_SCALAR,  "enable_single_scattering",    {0, 0, 0, 0}, set_enable_single_scattering},
+  {PROP_SCALAR,  "enable_multiple_scattering",  {1, 0, 0, 0}, set_enable_multiple_scattering},
+  {PROP_SCALAR,  "single_scattering_samples",   {1, 0, 0, 0}, set_single_scattering_samples},
+  {PROP_SCALAR,  "multiple_scattering_samples", {1, 0, 0, 0}, set_multiple_scattering_samples},
+  {PROP_VECTOR3, "scattering_coeff", {.07, .122, .19, 0}, set_scattering_coeff},
+  {PROP_VECTOR3, "absorption_coeff", {.00014, .00025, .001420, 0}, set_absorption_coeff},
+  {PROP_SCALAR,  "single_scattering_intensity", {1, 0, 0, 0}, set_single_scattering_intensity},
+  {PROP_SCALAR,  "multiple_scattering_intensity", {.02, 0, 0, 0}, set_multiple_scattering_intensity},
+  {PROP_NONE, NULL, {0, 0, 0, 0}, NULL}
 };
 
 static const struct MetaInfo MyMetainfo[] = {
@@ -727,7 +727,7 @@ static int set_multiple_scattering_samples(void *self, const struct PropertyValu
   return 0;
 }
 
-static int set_scattering_coefficient(void *self, const struct PropertyValue *value)
+static int set_scattering_coeff(void *self, const struct PropertyValue *value)
 {
   struct SSSShader *sss = (struct SSSShader *) self;
   float scattering_coeff[3] = {0, 0, 0};
@@ -745,7 +745,7 @@ static int set_scattering_coefficient(void *self, const struct PropertyValue *va
   return 0;
 }
 
-static int set_absorption_coefficient(void *self, const struct PropertyValue *value)
+static int set_absorption_coeff(void *self, const struct PropertyValue *value)
 {
   struct SSSShader *sss = (struct SSSShader *) self;
   float absorption_coeff[3] = {0, 0, 0};

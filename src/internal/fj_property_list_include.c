@@ -352,76 +352,77 @@ static int set_Light_scale(void *self, const struct PropertyValue *value)
   return 0;
 }
 
+#define END_OF_PROPERTY {PROP_NONE, NULL, {0, 0, 0, 0}, NULL}
 static const struct Property ObjectInstance_properties[] = {
-  {PROP_SCALAR,      "transform_order", set_ObjectInstance_transform_order},
-  {PROP_SCALAR,      "rotate_order",    set_ObjectInstance_rotate_order},
-  {PROP_VECTOR3,     "translate",       set_ObjectInstance_translate},
-  {PROP_VECTOR3,     "rotate",          set_ObjectInstance_rotate},
-  {PROP_VECTOR3,     "scale",           set_ObjectInstance_scale},
-  {PROP_OBJECTGROUP, "reflect_target",  set_ObjectInstance_reflect_target},
-  {PROP_OBJECTGROUP, "refract_target",  set_ObjectInstance_refract_target},
-  {PROP_OBJECTGROUP, "shadow_target",   set_ObjectInstance_shadow_target},
-  {PROP_NONE, NULL, NULL}
+  {PROP_SCALAR,      "transform_order", {0, 0, 0, 0}, set_ObjectInstance_transform_order},
+  {PROP_SCALAR,      "rotate_order",    {0, 0, 0, 0}, set_ObjectInstance_rotate_order},
+  {PROP_VECTOR3,     "translate",       {0, 0, 0, 0}, set_ObjectInstance_translate},
+  {PROP_VECTOR3,     "rotate",          {0, 0, 0, 0}, set_ObjectInstance_rotate},
+  {PROP_VECTOR3,     "scale",           {0, 0, 0, 0}, set_ObjectInstance_scale},
+  {PROP_OBJECTGROUP, "reflect_target",  {0, 0, 0, 0}, set_ObjectInstance_reflect_target},
+  {PROP_OBJECTGROUP, "refract_target",  {0, 0, 0, 0}, set_ObjectInstance_refract_target},
+  {PROP_OBJECTGROUP, "shadow_target",   {0, 0, 0, 0}, set_ObjectInstance_shadow_target},
+  END_OF_PROPERTY
 };
 
 static const struct Property Turbulence_properties[] = {
-  {PROP_SCALAR,  "lacunarity", set_Turbulence_lacunarity},
-  {PROP_SCALAR,  "gain",       set_Turbulence_gain},
-  {PROP_SCALAR,  "octaves",    set_Turbulence_octaves},
-  {PROP_VECTOR3, "amplitude",  set_Turbulence_amplitude},
-  {PROP_VECTOR3, "frequency",  set_Turbulence_frequency},
-  {PROP_VECTOR3, "offset",     set_Turbulence_offset},
-  {PROP_NONE, NULL, NULL}
+  {PROP_SCALAR,  "lacunarity", {0, 0, 0, 0}, set_Turbulence_lacunarity},
+  {PROP_SCALAR,  "gain",       {0, 0, 0, 0}, set_Turbulence_gain},
+  {PROP_SCALAR,  "octaves",    {0, 0, 0, 0}, set_Turbulence_octaves},
+  {PROP_VECTOR3, "amplitude",  {0, 0, 0, 0}, set_Turbulence_amplitude},
+  {PROP_VECTOR3, "frequency",  {0, 0, 0, 0}, set_Turbulence_frequency},
+  {PROP_VECTOR3, "offset",     {0, 0, 0, 0}, set_Turbulence_offset},
+  END_OF_PROPERTY
 };
 
 static const struct Property Renderer_properties[] = {
-  {PROP_SCALAR,  "sample_jitter",         set_Renderer_sample_jitter},
-  {PROP_SCALAR,  "cast_shadow",           set_Renderer_cast_shadow},
-  {PROP_SCALAR,  "max_reflect_depth",     set_Renderer_max_reflect_depth},
-  {PROP_SCALAR,  "max_refract_depth",     set_Renderer_max_refract_depth},
-  {PROP_SCALAR,  "raymarch_step",         set_Renderer_raymarch_step},
-  {PROP_SCALAR,  "raymarch_shadow_step",  set_Renderer_raymarch_shadow_step},
-  {PROP_SCALAR,  "raymarch_reflect_step", set_Renderer_raymarch_reflect_step},
-  {PROP_SCALAR,  "raymarch_refract_step", set_Renderer_raymarch_refract_step},
-  {PROP_VECTOR2, "sample_time_range",     set_Renderer_sample_time_range},
-  {PROP_VECTOR2, "resolution",            set_Renderer_resolution},
-  {PROP_VECTOR2, "pixelsamples",          set_Renderer_pixelsamples},
-  {PROP_VECTOR2, "tilesize",              set_Renderer_tilesize},
-  {PROP_VECTOR2, "filterwidth",           set_Renderer_filterwidth},
-  {PROP_VECTOR4, "render_region",         set_Renderer_render_region},
-  {PROP_NONE, NULL, NULL}
+  {PROP_SCALAR,  "sample_jitter",         {0, 0, 0, 0}, set_Renderer_sample_jitter},
+  {PROP_SCALAR,  "cast_shadow",           {0, 0, 0, 0}, set_Renderer_cast_shadow},
+  {PROP_SCALAR,  "max_reflect_depth",     {0, 0, 0, 0}, set_Renderer_max_reflect_depth},
+  {PROP_SCALAR,  "max_refract_depth",     {0, 0, 0, 0}, set_Renderer_max_refract_depth},
+  {PROP_SCALAR,  "raymarch_step",         {0, 0, 0, 0}, set_Renderer_raymarch_step},
+  {PROP_SCALAR,  "raymarch_shadow_step",  {0, 0, 0, 0}, set_Renderer_raymarch_shadow_step},
+  {PROP_SCALAR,  "raymarch_reflect_step", {0, 0, 0, 0}, set_Renderer_raymarch_reflect_step},
+  {PROP_SCALAR,  "raymarch_refract_step", {0, 0, 0, 0}, set_Renderer_raymarch_refract_step},
+  {PROP_VECTOR2, "sample_time_range",     {0, 0, 0, 0}, set_Renderer_sample_time_range},
+  {PROP_VECTOR2, "resolution",            {0, 0, 0, 0}, set_Renderer_resolution},
+  {PROP_VECTOR2, "pixelsamples",          {0, 0, 0, 0}, set_Renderer_pixelsamples},
+  {PROP_VECTOR2, "tilesize",              {0, 0, 0, 0}, set_Renderer_tilesize},
+  {PROP_VECTOR2, "filterwidth",           {0, 0, 0, 0}, set_Renderer_filterwidth},
+  {PROP_VECTOR4, "render_region",         {0, 0, 0, 0}, set_Renderer_render_region},
+  END_OF_PROPERTY
 };
 
 static const struct Property Volume_properties[] = {
-  {PROP_VECTOR3, "resolution", set_Volume_resolution},
-  {PROP_VECTOR3, "bounds_min", set_Volume_bounds_min},
-  {PROP_VECTOR3, "bounds_max", set_Volume_bounds_max},
-  {PROP_NONE, NULL, NULL}
+  {PROP_VECTOR3, "resolution", {0, 0, 0, 0}, set_Volume_resolution},
+  {PROP_VECTOR3, "bounds_min", {0, 0, 0, 0}, set_Volume_bounds_min},
+  {PROP_VECTOR3, "bounds_max", {0, 0, 0, 0}, set_Volume_bounds_max},
+  END_OF_PROPERTY
 };
 
 static const struct Property Camera_properties[] = {
-  {PROP_SCALAR,  "fov",             set_Camera_fov},
-  {PROP_SCALAR,  "znear",           set_Camera_znear},
-  {PROP_SCALAR,  "zfar",            set_Camera_zfar},
-  {PROP_SCALAR,  "transform_order", set_Camera_transform_order},
-  {PROP_SCALAR,  "rotate_order",    set_Camera_rotate_order},
-  {PROP_VECTOR3, "translate",       set_Camera_translate},
-  {PROP_VECTOR3, "rotate",          set_Camera_rotate},
-  {PROP_NONE, NULL, NULL}
+  {PROP_SCALAR,  "fov",             {0, 0, 0, 0}, set_Camera_fov},
+  {PROP_SCALAR,  "znear",           {0, 0, 0, 0}, set_Camera_znear},
+  {PROP_SCALAR,  "zfar",            {0, 0, 0, 0}, set_Camera_zfar},
+  {PROP_SCALAR,  "transform_order", {0, 0, 0, 0}, set_Camera_transform_order},
+  {PROP_SCALAR,  "rotate_order",    {0, 0, 0, 0}, set_Camera_rotate_order},
+  {PROP_VECTOR3, "translate",       {0, 0, 0, 0}, set_Camera_translate},
+  {PROP_VECTOR3, "rotate",          {0, 0, 0, 0}, set_Camera_rotate},
+  END_OF_PROPERTY
 };
 
 static const struct Property Light_properties[] = {
-  {PROP_SCALAR,  "intensity",       set_Light_intensity},
-  {PROP_VECTOR3, "color",           set_Light_color},
-  {PROP_SCALAR,  "sample_count",    set_Light_sample_count},
-  {PROP_SCALAR,  "double_sided",    set_Light_double_sided},
-  {PROP_TEXTURE, "environment_map", set_Light_environment_map},
-  {PROP_SCALAR,  "transform_order", set_Light_transform_order},
-  {PROP_SCALAR,  "rotate_order",    set_Light_rotate_order},
-  {PROP_VECTOR3, "translate",       set_Light_translate},
-  {PROP_VECTOR3, "rotate",          set_Light_rotate},
-  {PROP_VECTOR3, "scale",           set_Light_scale},
-  {PROP_NONE, NULL, NULL}
+  {PROP_SCALAR,  "intensity",       {0, 0, 0, 0}, set_Light_intensity},
+  {PROP_VECTOR3, "color",           {0, 0, 0, 0}, set_Light_color},
+  {PROP_SCALAR,  "sample_count",    {0, 0, 0, 0}, set_Light_sample_count},
+  {PROP_SCALAR,  "double_sided",    {0, 0, 0, 0}, set_Light_double_sided},
+  {PROP_TEXTURE, "environment_map", {0, 0, 0, 0}, set_Light_environment_map},
+  {PROP_SCALAR,  "transform_order", {0, 0, 0, 0}, set_Light_transform_order},
+  {PROP_SCALAR,  "rotate_order",    {0, 0, 0, 0}, set_Light_rotate_order},
+  {PROP_VECTOR3, "translate",       {0, 0, 0, 0}, set_Light_translate},
+  {PROP_VECTOR3, "rotate",          {0, 0, 0, 0}, set_Light_rotate},
+  {PROP_VECTOR3, "scale",           {0, 0, 0, 0}, set_Light_scale},
+  END_OF_PROPERTY
 };
 
 struct property_desc {

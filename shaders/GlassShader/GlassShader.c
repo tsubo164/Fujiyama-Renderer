@@ -45,13 +45,13 @@ static int set_roughness(void *self, const struct PropertyValue *value);
 static int set_ior(void *self, const struct PropertyValue *value);
 
 static const struct Property MyProperties[] = {
-  {PROP_VECTOR3, "diffuse",      set_diffuse},
-  {PROP_VECTOR3, "specular",     set_specular},
-  {PROP_VECTOR3, "ambient",      set_ambient},
-  {PROP_VECTOR3, "filter_color", set_filter_color},
-  {PROP_SCALAR,  "roughness",    set_roughness},
-  {PROP_SCALAR,  "ior",          set_ior},
-  {PROP_NONE,    NULL,           NULL}
+  {PROP_VECTOR3, "diffuse",      {0, 0, 0, 0},   set_diffuse},
+  {PROP_VECTOR3, "specular",     {1, 1, 1, 0},   set_specular},
+  {PROP_VECTOR3, "ambient",      {1, 1, 1, 0},   set_ambient},
+  {PROP_VECTOR3, "filter_color", {1, 1, 1, 0},   set_filter_color},
+  {PROP_SCALAR,  "roughness",    {.1, 0, 0, 0},  set_roughness},
+  {PROP_SCALAR,  "ior",          {1.4, 0, 0, 0}, set_ior},
+  {PROP_NONE,    NULL,           {0, 0, 0, 0},   NULL}
 };
 
 static const struct MetaInfo MyMetainfo[] = {

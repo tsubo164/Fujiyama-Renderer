@@ -45,12 +45,12 @@ static float kajiya_specular(const struct Vector *tangent,
     const struct Vector *Ln, const struct Vector *I);
 
 static const struct Property MyProperties[] = {
-  {PROP_VECTOR3, "diffuse",   set_diffuse},
-  {PROP_VECTOR3, "specular",  set_specular},
-  {PROP_VECTOR3, "ambient",   set_ambient},
-  {PROP_SCALAR,  "roughness", set_roughness},
-  {PROP_VECTOR3, "reflect",   set_reflect},
-  {PROP_NONE,    NULL,        NULL}
+  {PROP_VECTOR3, "diffuse",   {.7, .8, .8, 0}, set_diffuse},
+  {PROP_VECTOR3, "specular",  {1, 1, 1, 0},    set_specular},
+  {PROP_VECTOR3, "ambient",   {1, 1, 1, 0},    set_ambient},
+  {PROP_SCALAR,  "roughness", {.1, 0, 0, 0},   set_roughness},
+  {PROP_VECTOR3, "reflect",   {1, 1, 1, 0},    set_reflect},
+  {PROP_NONE,    NULL,        {0, 0, 0, 0},    NULL}
 };
 
 static const struct MetaInfo MyMetainfo[] = {

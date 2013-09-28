@@ -49,15 +49,15 @@ static int set_opacity(void *self, const struct PropertyValue *value);
 static int set_diffuse_map(void *self, const struct PropertyValue *value);
 
 static const struct Property MyProperties[] = {
-  {PROP_VECTOR3, "diffuse",     set_diffuse},
-  {PROP_VECTOR3, "specular",    set_specular},
-  {PROP_VECTOR3, "ambient",     set_ambient},
-  {PROP_SCALAR,  "roughness",   set_roughness},
-  {PROP_VECTOR3, "reflect",     set_reflect},
-  {PROP_SCALAR,  "ior",         set_ior},
-  {PROP_SCALAR,  "opacity",     set_opacity},
-  {PROP_TEXTURE, "diffuse_map", set_diffuse_map},
-  {PROP_NONE, NULL, NULL}
+  {PROP_VECTOR3, "diffuse",     {.8, .8, .8, 0}, set_diffuse},
+  {PROP_VECTOR3, "specular",    {1, 1, 1, 0},    set_specular},
+  {PROP_VECTOR3, "ambient",     {1, 1, 1, 0},    set_ambient},
+  {PROP_SCALAR,  "roughness",   {.1, 0, 0, 0},   set_roughness},
+  {PROP_VECTOR3, "reflect",     {1, 1, 1, 0},    set_reflect},
+  {PROP_SCALAR,  "ior",         {1.4, 0, 0, 0},  set_ior},
+  {PROP_SCALAR,  "opacity",     {1, 0, 0, 0},    set_opacity},
+  {PROP_TEXTURE, "diffuse_map", {0, 0, 0, 0},    set_diffuse_map},
+  {PROP_NONE,    NULL,          {0, 0, 0, 0},    NULL}
 };
 
 static const struct MetaInfo MyMetainfo[] = {
@@ -86,19 +86,7 @@ static void *MyNew(void)
   if (plastic == NULL)
     return NULL;
 
-  ColSet(&plastic->diffuse, .7, .8, .8);
-  ColSet(&plastic->specular, 1, 1, 1);
-  ColSet(&plastic->ambient, 1, 1, 1);
-  plastic->roughness = .1;
-
-  ColSet(&plastic->reflect, 1, 1, 1);
-  plastic->ior = 1.4;
-
-  plastic->opacity = 1;
-
-  plastic->do_reflect = 1;
-
-  plastic->diffuse_map = NULL;
+  PropSetAllDefaultValues(plastic, MyProperties);
 
   return plastic;
 }

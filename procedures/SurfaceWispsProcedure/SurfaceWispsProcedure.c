@@ -39,9 +39,9 @@ static int FillWithSpecksOnSurface(struct Volume *volume,
     const struct Turbulence *turbulence);
 
 static const struct Property MyProperties[] = {
-  {PROP_VOLUME,     "volume",     set_volume},
-  {PROP_TURBULENCE, "turbulence", set_turbulence},
-  {PROP_NONE,       NULL,         NULL}
+  {PROP_VOLUME,     "volume",     {0, 0, 0, 0}, set_volume},
+  {PROP_TURBULENCE, "turbulence", {0, 0, 0, 0}, set_turbulence},
+  {PROP_NONE,       NULL,         {0, 0, 0, 0}, NULL}
 };
 
 static const struct MetaInfo MyMetainfo[] = {

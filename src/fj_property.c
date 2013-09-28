@@ -49,7 +49,7 @@ const char *PropTypeString(int property_type)
 
 struct PropertyValue PropScalar(double v0)
 {
-  struct PropertyValue value = INIT_PROPERTYVALUE;
+  struct PropertyValue value = InitPropValue();
 
   value.type = PROP_SCALAR;
   value.vector[0] = v0;
@@ -59,7 +59,7 @@ struct PropertyValue PropScalar(double v0)
 
 struct PropertyValue PropVector2(double v0, double v1)
 {
-  struct PropertyValue value = INIT_PROPERTYVALUE;
+  struct PropertyValue value = InitPropValue();
 
   value.type = PROP_VECTOR2;
   value.vector[0] = v0;
@@ -70,7 +70,7 @@ struct PropertyValue PropVector2(double v0, double v1)
 
 struct PropertyValue PropVector3(double v0, double v1, double v2)
 {
-  struct PropertyValue value = INIT_PROPERTYVALUE;
+  struct PropertyValue value = InitPropValue();
 
   value.type = PROP_VECTOR3;
   value.vector[0] = v0;
@@ -82,7 +82,7 @@ struct PropertyValue PropVector3(double v0, double v1, double v2)
 
 struct PropertyValue PropVector4(double v0, double v1, double v2, double v3)
 {
-  struct PropertyValue value = INIT_PROPERTYVALUE;
+  struct PropertyValue value = InitPropValue();
 
   value.type = PROP_VECTOR4;
   value.vector[0] = v0;
@@ -95,7 +95,7 @@ struct PropertyValue PropVector4(double v0, double v1, double v2, double v3)
 
 struct PropertyValue PropString(const char *string)
 {
-  struct PropertyValue value = INIT_PROPERTYVALUE;
+  struct PropertyValue value = InitPropValue();
 
   value.type = PROP_STRING;
   value.string = string;
@@ -105,7 +105,7 @@ struct PropertyValue PropString(const char *string)
 
 struct PropertyValue PropObjectGroup(struct ObjectGroup *group)
 {
-  struct PropertyValue value = INIT_PROPERTYVALUE;
+  struct PropertyValue value = InitPropValue();
 
   value.type = PROP_OBJECTGROUP;
   value.object_group = group;
@@ -115,7 +115,7 @@ struct PropertyValue PropObjectGroup(struct ObjectGroup *group)
 
 struct PropertyValue PropTurbulence(struct Turbulence *turbulence)
 {
-  struct PropertyValue value = INIT_PROPERTYVALUE;
+  struct PropertyValue value = InitPropValue();
 
   value.type = PROP_TURBULENCE;
   value.turbulence = turbulence;
@@ -125,7 +125,7 @@ struct PropertyValue PropTurbulence(struct Turbulence *turbulence)
 
 struct PropertyValue PropTexture(struct Texture *texture)
 {
-  struct PropertyValue value = INIT_PROPERTYVALUE;
+  struct PropertyValue value = InitPropValue();
 
   value.type = PROP_TEXTURE;
   value.texture = texture;
@@ -135,7 +135,7 @@ struct PropertyValue PropTexture(struct Texture *texture)
 
 struct PropertyValue PropVolume(struct Volume *volume)
 {
-  struct PropertyValue value = INIT_PROPERTYVALUE;
+  struct PropertyValue value = InitPropValue();
 
   value.type = PROP_VOLUME;
   value.volume = volume;
@@ -145,7 +145,7 @@ struct PropertyValue PropVolume(struct Volume *volume)
 
 struct PropertyValue PropMesh(struct Mesh *mesh)
 {
-  struct PropertyValue value = INIT_PROPERTYVALUE;
+  struct PropertyValue value = InitPropValue();
 
   value.type = PROP_MESH;
   value.mesh = mesh;
@@ -172,6 +172,46 @@ const struct Property *PropFind(const struct Property *list, int type, const cha
     prop++;
   }
   return found;
+}
+
+int PropSetAllDefaultValues(void *self, const struct Property *list)
+{
+  const struct Property *prop = NULL;
+  int err_count = 0;
+
+  for (prop = list; prop_is_valid(prop); prop++) {
+    struct PropertyValue value = InitPropValue();
+    int err = 0;
+
+    switch (prop->type) {
+      case PROP_SCALAR:
+        value.vector[0] = prop->default_value[0];
+        break;
+      case PROP_VECTOR2:
+        value.vector[0] = prop->default_value[0];
+        value.vector[1] = prop->default_value[1];
+        break;
+      case PROP_VECTOR3:
+        value.vector[0] = prop->default_value[0];
+        value.vector[1] = prop->default_value[1];
+        value.vector[2] = prop->default_value[2];
+        break;
+      case PROP_VECTOR4:
+        value.vector[0] = prop->default_value[0];
+        value.vector[1] = prop->default_value[1];
+        value.vector[2] = prop->default_value[2];
+        value.vector[3] = prop->default_value[3];
+        break;
+      default:
+        break;
+    }
+    err = prop->SetProperty(self, &value);
+    if (err) {
+      err_count++;
+    }
+  }
+
+  return err_count;
 }
 
 /* for time variable properties */

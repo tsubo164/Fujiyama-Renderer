@@ -63,6 +63,7 @@ struct PropertyValue {
 struct Property {
   int type;
   const char *name;
+  double default_value[4];
   int (*SetProperty)(void *self, const struct PropertyValue *value);
 };
 
@@ -82,6 +83,7 @@ extern struct PropertyValue PropMesh(struct Mesh *mesh);
 
 extern struct PropertyValue InitPropValue(void);
 extern const struct Property *PropFind(const struct Property *list, int type, const char *name);
+extern int PropSetAllDefaultValues(void *self, const struct Property *list);
 
 /* for time variable properties */
 enum { MAX_PROPERTY_SAMPLES = 8 };
@@ -110,4 +112,3 @@ extern void PropLerpSamples(const struct PropertySampleList *list, double time,
 #endif
 
 #endif /* FJ_XXX_H */
-
