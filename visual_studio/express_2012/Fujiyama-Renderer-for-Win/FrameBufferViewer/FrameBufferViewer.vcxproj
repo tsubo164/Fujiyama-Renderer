@@ -144,18 +144,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\tools\FrameBufferViewer\draw_image.c" />
-    <ClCompile Include="..\..\..\..\tools\FrameBufferViewer\FrameBufferViewer.c" />
-    <ClCompile Include="..\..\..\..\tools\FrameBufferViewer\glsl_shaders.c" />
-    <ClCompile Include="..\..\..\..\tools\FrameBufferViewer\load_images.c" />
-    <ClCompile Include="..\..\..\..\tools\FrameBufferViewer\main.c" />
+    <ClCompile Include="..\..\..\..\tools\framebuffer_viewer\draw_image.c" />
+    <ClCompile Include="..\..\..\..\tools\framebuffer_viewer\framebuffer_viewer.c" />
+    <ClCompile Include="..\..\..\..\tools\framebuffer_viewer\glsl_shaders.c" />
+    <ClCompile Include="..\..\..\..\tools\framebuffer_viewer\load_images.c" />
+    <ClCompile Include="..\..\..\..\tools\framebuffer_viewer\main.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\tools\FrameBufferViewer\CompatibleOpenGL.h" />
-    <ClInclude Include="..\..\..\..\tools\FrameBufferViewer\draw_image.h" />
-    <ClInclude Include="..\..\..\..\tools\FrameBufferViewer\FrameBufferViewer.h" />
-    <ClInclude Include="..\..\..\..\tools\FrameBufferViewer\glsl_shaders.h" />
-    <ClInclude Include="..\..\..\..\tools\FrameBufferViewer\load_images.h" />
+    <ClInclude Include="..\..\..\..\tools\framebuffer_viewer\compatible_opengl.h" />
+    <ClInclude Include="..\..\..\..\tools\framebuffer_viewer\draw_image.h" />
+    <ClInclude Include="..\..\..\..\tools\framebuffer_viewer\framebuffer_viewer.h" />
+    <ClInclude Include="..\..\..\..\tools\framebuffer_viewer\glsl_shaders.h" />
+    <ClInclude Include="..\..\..\..\tools\framebuffer_viewer\load_images.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\libscene\libscene.vcxproj">

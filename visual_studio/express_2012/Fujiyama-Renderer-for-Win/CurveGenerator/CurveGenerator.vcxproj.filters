@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\tools\CurveGenerator\main.c">
+    <ClCompile Include="..\..\..\..\tools\curve_generator\main.c">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

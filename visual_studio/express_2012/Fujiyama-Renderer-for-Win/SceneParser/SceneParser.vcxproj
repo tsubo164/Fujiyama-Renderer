@@ -130,15 +130,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\tools\SceneParser\Command.c" />
-    <ClCompile Include="..\..\..\..\tools\SceneParser\main.c" />
-    <ClCompile Include="..\..\..\..\tools\SceneParser\Parser.c" />
-    <ClCompile Include="..\..\..\..\tools\SceneParser\Table.c" />
+    <ClCompile Include="..\..\..\..\tools\scene_parser\command.c" />
+    <ClCompile Include="..\..\..\..\tools\scene_parser\main.c" />
+    <ClCompile Include="..\..\..\..\tools\scene_parser\parser.c" />
+    <ClCompile Include="..\..\..\..\tools\scene_parser\table.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\tools\SceneParser\Command.h" />
-    <ClInclude Include="..\..\..\..\tools\SceneParser\Parser.h" />
-    <ClInclude Include="..\..\..\..\tools\SceneParser\Table.h" />
+    <ClInclude Include="..\..\..\..\tools\scene_parser\command.h" />
+    <ClInclude Include="..\..\..\..\tools\scene_parser\parser.h" />
+    <ClInclude Include="..\..\..\..\tools\scene_parser\table.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\libscene\libscene.vcxproj">

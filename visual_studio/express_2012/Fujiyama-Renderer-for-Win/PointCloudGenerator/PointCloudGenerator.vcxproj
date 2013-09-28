@@ -130,7 +130,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\tools\PointCloudGenerator\main.c" />
+    <ClCompile Include="..\..\..\..\tools\point_cloud_generator\main.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\libscene\libscene.vcxproj">
