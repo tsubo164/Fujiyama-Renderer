@@ -45,13 +45,13 @@ build_dirs   += procedures/SurfaceWispsProcedure
 install_libs += lib/SurfaceWispsProcedure.so
 
 #tools
-build_dirs   += tools/CurveGenerator
+build_dirs   += tools/curve_generator
 install_bins += bin/curvegen
 
 build_dirs   += tools/fb2exr
 install_bins += bin/fb2exr
 
-build_dirs   += tools/FrameBufferViewer
+build_dirs   += tools/framebuffer_viewer
 install_bins += bin/fbview
 
 build_dirs   += tools/hdr2mip
@@ -63,10 +63,10 @@ install_bins += bin/obj2mesh
 build_dirs   += tools/ply2mesh
 install_bins += bin/ply2mesh
 
-build_dirs   += tools/PointCloudGenerator
+build_dirs   += tools/point_cloud_generator
 install_bins += bin/ptcgen
 
-build_dirs   += tools/SceneParser
+build_dirs   += tools/scene_parser
 install_bins += bin/scene
 
 clean_dirs += $(build_dirs)

@@ -3,7 +3,7 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "FrameBufferViewer.h"
+#include "framebuffer_viewer.h"
 #include "fj_string_function.h"
 #include "fj_framebuffer_io.h"
 #include "fj_framebuffer.h"
@@ -13,7 +13,7 @@ See LICENSE and README
 #include "fj_mipmap.h"
 #include "fj_box.h"
 
-#include "CompatibleOpenGL.h"
+#include "compatible_opengl.h"
 #include "glsl_shaders.h"
 #include "load_images.h"
 #include "draw_image.h"

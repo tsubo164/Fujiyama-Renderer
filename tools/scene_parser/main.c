@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
+#include "parser.h"
 #include "fj_scene_interface.h"
-#include "Parser.h"
 
 #include <stdio.h>
 #include <stdlib.h>

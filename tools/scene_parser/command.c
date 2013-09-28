@@ -3,7 +3,7 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "Command.h"
+#include "command.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

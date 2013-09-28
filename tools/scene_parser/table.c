@@ -3,7 +3,7 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "Table.h"
+#include "table.h"
 #include "fj_string_function.h"
 #include "fj_memory.h"
 

@@ -10,7 +10,7 @@ RM = rm -f
 topdir      := ../..
 target_dir  := bin
 target_name := scene
-files       := main Parser Table Command
+files       := command main parser table
 
 incdir  := $(topdir)/src
 libdir  := $(topdir)/lib

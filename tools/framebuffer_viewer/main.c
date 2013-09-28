@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "FrameBufferViewer.h"
-#include "CompatibleOpenGL.h"
+#include "framebuffer_viewer.h"
+#include "compatible_opengl.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

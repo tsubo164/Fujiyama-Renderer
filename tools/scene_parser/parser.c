@@ -3,11 +3,11 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "Parser.h"
+#include "parser.h"
+#include "command.h"
+#include "table.h"
 #include "fj_scene_interface.h"
-#include "Command.h"
 #include "fj_memory.h"
-#include "Table.h"
 
 #include <string.h>
 #include <assert.h>
