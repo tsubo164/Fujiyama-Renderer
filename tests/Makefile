@@ -13,19 +13,19 @@ RM = rm -f
 .PHONY: all check clean
 all: check
 
-files := Array Box IO Numeric Vector
+files := array box io numeric vector
 objects := $(addsuffix _test.o, $(files))
 targets := $(addsuffix _test, $(files))
 
-Test.o: Test.c Test.h
+unit_test.o: unit_test.c unit_test.h
 	@$(CC) $(CFLAGS) -c -o $@ $<
 	@echo '  compile' $<
 
-$(objects) : %.o : %.c Test.h
+$(objects) : %.o : %.c unit_test.h
 	@$(CC) $(CFLAGS) -c -o $@ $<
 	@echo '  compile' $<
 
-$(targets) : % : %.o Test.o
+$(targets) : % : %.o unit_test.o
 	@$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 	@echo '  build' $@
 
@@ -36,7 +36,7 @@ check: $(targets)
 
 clean:
 	@echo '  clean tests'
-	@-$(RM) Test.o $(objects)
+	@-$(RM) unit_test.o $(objects)
 	@-$(RM) $(targets)
 	@-$(RM) io_test_file.bin
 

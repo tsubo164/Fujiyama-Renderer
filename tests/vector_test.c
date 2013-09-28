@@ -3,7 +3,7 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "Test.h"
+#include "unit_test.h"
 #include "fj_vector.h"
 #include <stdio.h>
 
