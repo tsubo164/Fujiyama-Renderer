@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef NOISE_H
-#define NOISE_H
+#ifndef FJ_NOISE_H
+#define FJ_NOISE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,5 +25,5 @@ extern double PeriodicNoise3d(double x, double y, double z);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

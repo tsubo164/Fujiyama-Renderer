@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef TIMER_H
-#define TIMER_H
+#ifndef FJ_TIMER_H
+#define FJ_TIMER_H
 
 #include <time.h>
 
@@ -30,4 +30,4 @@ extern struct Elapse TimerGetElapse(const struct Timer *t);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

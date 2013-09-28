@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef PLUGIN_H
-#define PLUGIN_H
+#ifndef FJ_PLUGIN_H
+#define FJ_PLUGIN_H
 
 #define PLUGIN_API_VERSION 1
 
@@ -76,5 +76,5 @@ extern int PlgGetErrorNo(void);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

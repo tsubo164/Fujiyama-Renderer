@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef PRIMITIVESET_H
-#define PRIMITIVESET_H
+#ifndef FJ_PRIMITIVESET_H
+#define FJ_PRIMITIVESET_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,5 +54,5 @@ extern void PrmGetPrimitiveBounds(const struct PrimitiveSet *primset,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

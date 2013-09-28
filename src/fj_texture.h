@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#ifndef FJ_TEXTURE_H
+#define FJ_TEXTURE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,5 +25,5 @@ extern void TexGetResolution(const struct Texture *tex, int *xres, int *yres);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

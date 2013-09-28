@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef PROCEDURE_H
-#define PROCEDURE_H
+#ifndef FJ_PROCEDURE_H
+#define FJ_PROCEDURE_H
 
 #include "fj_property.h"
 #include "fj_plugin.h"
@@ -42,5 +42,5 @@ extern int PrcSetProperty(struct Procedure *procedure,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

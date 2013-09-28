@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef INTERSECTION_H
-#define INTERSECTION_H
+#ifndef FJ_INTERSECTION_H
+#define FJ_INTERSECTION_H
 
 #include "fj_tex_coord.h"
 #include "fj_vector.h"
@@ -35,5 +35,5 @@ struct Intersection {
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

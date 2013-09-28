@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef FRAMEBUFFERIO_H
-#define FRAMEBUFFERIO_H
+#ifndef FJ_FRAMEBUFFERIO_H
+#define FJ_FRAMEBUFFERIO_H
 
 #include "fj_compatibility.h"
 #include <stdio.h>
@@ -68,4 +68,4 @@ extern int FbSaveCroppedData(struct FrameBuffer *fb, const char *filename);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

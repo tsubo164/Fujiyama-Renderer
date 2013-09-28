@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef FILTER_H
-#define FILTER_H
+#ifndef FJ_FILTER_H
+#define FJ_FILTER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,5 +26,5 @@ extern double FltEvaluate(const struct Filter *filter, double x, double y);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

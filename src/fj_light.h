@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef LIGHT_H
-#define LIGHT_H
+#ifndef FJ_LIGHT_H
+#define FJ_LIGHT_H
 
 #include "fj_transform.h"
 #include "fj_vector.h"
@@ -64,5 +64,5 @@ extern int LgtPreprocess(struct Light *light);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

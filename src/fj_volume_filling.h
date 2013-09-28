@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef VOLUME_FILLING_H
-#define VOLUME_FILLING_H
+#ifndef FJ_VOLUME_FILLING_H
+#define FJ_VOLUME_FILLING_H
 
 #include "fj_vector.h"
 
@@ -57,5 +57,5 @@ extern void FillWithSphere(struct Volume *volume,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

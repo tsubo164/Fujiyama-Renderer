@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef TEXCOORD_H
-#define TEXCOORD_H
+#ifndef FJ_TEXCOORD_H
+#define FJ_TEXCOORD_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,5 +22,5 @@ extern void TexCoordFree(struct TexCoord *texcoord);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

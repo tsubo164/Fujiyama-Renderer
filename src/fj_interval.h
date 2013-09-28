@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef INTERVAL_H
-#define INTERVAL_H
+#ifndef FJ_INTERVAL_H
+#define FJ_INTERVAL_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,5 +34,5 @@ extern const struct Interval *IntervalListGetHead(const struct IntervalList *int
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

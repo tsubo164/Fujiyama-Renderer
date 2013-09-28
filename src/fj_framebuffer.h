@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef FRAMEBUFFER_H
-#define FRAMEBUFFER_H
+#ifndef FJ_FRAMEBUFFER_H
+#define FJ_FRAMEBUFFER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,4 +34,4 @@ extern void FbSetColor(struct FrameBuffer *fb, int x, int y, const struct Color4
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

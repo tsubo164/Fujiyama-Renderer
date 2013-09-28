@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef POINTCLOUD_H
-#define POINTCLOUD_H
+#ifndef FJ_POINTCLOUD_H
+#define FJ_POINTCLOUD_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,5 +29,5 @@ extern void PtcGetPrimitiveSet(const struct PointCloud *ptc, struct PrimitiveSet
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

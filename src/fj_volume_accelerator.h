@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef VOLUMEACCERALATOR_H
-#define VOLUMEACCERALATOR_H
+#ifndef FJ_VOLUMEACCERALATOR_H
+#define FJ_VOLUMEACCERALATOR_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,5 +42,5 @@ extern int VolumeAccIntersect(const struct VolumeAccelerator *acc, double time,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

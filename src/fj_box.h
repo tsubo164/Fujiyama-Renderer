@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef BOX_H
-#define BOX_H
+#ifndef FJ_BOX_H
+#define FJ_BOX_H
 
 #include "fj_vector.h"
 
@@ -88,4 +88,4 @@ extern void BoxPrint(const struct Box *box);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

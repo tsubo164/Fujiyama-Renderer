@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef OBJECTGROUP_H
-#define OBJECTGROUP_H
+#ifndef FJ_OBJECTGROUP_H
+#define FJ_OBJECTGROUP_H
 
 #include "fj_transform.h"
 
@@ -32,5 +32,5 @@ extern void ObjGroupComputeBounds(struct ObjectGroup *grp);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

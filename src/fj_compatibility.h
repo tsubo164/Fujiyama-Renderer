@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef COMPATIBILITY_H
-#define COMPATIBILITY_H
+#ifndef FJ_COMPATIBILITY_H
+#define FJ_COMPATIBILITY_H
 
 #if defined(_WIN32)
   #define SI_WINDOWS
@@ -61,4 +61,4 @@ See LICENSE and README
   #endif
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

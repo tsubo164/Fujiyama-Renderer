@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef OBJECTINSTANCE_H
-#define OBJECTINSTANCE_H
+#ifndef FJ_OBJECTINSTANCE_H
+#define FJ_OBJECTINSTANCE_H
 
 /* to make transform_order visible for fj_object_instance.h's users */
 #include "fj_transform.h"
@@ -82,5 +82,5 @@ extern int ObjGetVolumeSample(const struct ObjectInstance *obj, double time,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

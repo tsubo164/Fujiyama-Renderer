@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef VECTOR_H
-#define VECTOR_H
+#ifndef FJ_VECTOR_H
+#define FJ_VECTOR_H
 
 #include <math.h>
 #include <stdlib.h>
@@ -66,4 +66,4 @@ extern void VecPrint(const struct Vector *a);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

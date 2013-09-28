@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef FJ_FILE_IO_H
-#define FJ_FILE_IO_H
+#ifndef FJ_FJ_FILE_IO_H
+#define FJ_FJ_FILE_IO_H
 
 #include "fj_compatibility.h"
 #include <stdio.h>
@@ -29,4 +29,4 @@ int FjFile_WriteDouble (FILE *file, const double  *src, size_t count);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

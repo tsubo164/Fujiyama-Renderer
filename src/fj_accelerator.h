@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef ACCERALATOR_H
-#define ACCERALATOR_H
+#ifndef FJ_ACCERALATOR_H
+#define FJ_ACCERALATOR_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,4 +56,4 @@ extern void AccSetDerivedFunctions(struct Accelerator *acc,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

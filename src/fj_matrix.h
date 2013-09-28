@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef MATRIX_H
-#define MATRIX_H
+#ifndef FJ_MATRIX_H
+#define FJ_MATRIX_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,4 +44,4 @@ extern void MatPrint(const struct Matrix *m);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef GRIDACCELERATOR_H
-#define GRIDACCELERATOR_H
+#ifndef FJ_GRIDACCELERATOR_H
+#define FJ_GRIDACCELERATOR_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,5 +18,5 @@ extern void GetGridAcceleratorFunction(struct Accelerator *acc);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

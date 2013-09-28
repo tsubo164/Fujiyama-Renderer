@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef RECTANGLE_H
-#define RECTANGLE_H
+#ifndef FJ_RECTANGLE_H
+#define FJ_RECTANGLE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,4 +20,4 @@ extern void RctPrint(const struct Rectangle *rect);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

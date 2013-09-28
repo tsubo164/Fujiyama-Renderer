@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef RENDERER_H
-#define RENDERER_H
+#ifndef FJ_RENDERER_H
+#define FJ_RENDERER_H
 
 #include "fj_callback.h"
 
@@ -58,4 +58,4 @@ extern void RdrSetTileReportCallback(struct Renderer *renderer, void *data,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

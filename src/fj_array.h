@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef ARRAY_H
-#define ARRAY_H
+#ifndef FJ_ARRAY_H
+#define FJ_ARRAY_H
 
 #include <stddef.h>
 
@@ -40,4 +40,4 @@ extern char *ArrGet(const struct Array *a, int index);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

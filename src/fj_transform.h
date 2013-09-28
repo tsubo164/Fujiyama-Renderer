@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef TRANSFORM_H
-#define TRANSFORM_H
+#ifndef FJ_TRANSFORM_H
+#define FJ_TRANSFORM_H
 
 #include "fj_property.h"
 #include "fj_matrix.h"
@@ -97,5 +97,5 @@ extern void XfmSetSampleRotateOrder(struct TransformSampleList *list, int order)
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

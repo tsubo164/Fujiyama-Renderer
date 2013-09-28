@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef SCENEINTERFACE_H
-#define SCENEINTERFACE_H
+#ifndef FJ_SCENEINTERFACE_H
+#define FJ_SCENEINTERFACE_H
 
 #include "fj_callback.h"
 
@@ -126,4 +126,4 @@ extern Status SiSetTileReportCallback(ID id, void *data,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

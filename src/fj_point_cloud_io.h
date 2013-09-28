@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef POINTCLOUDIO_H
-#define POINTCLOUDIO_H
+#ifndef FJ_POINTCLOUDIO_H
+#define FJ_POINTCLOUDIO_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,5 +49,5 @@ extern int PtcLoadFile(struct PointCloud *ptc, const char *filename);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

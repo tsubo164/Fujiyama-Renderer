@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef PROPERTY_H
-#define PROPERTY_H
+#ifndef FJ_PROPERTY_H
+#define FJ_PROPERTY_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -109,5 +109,5 @@ extern void PropLerpSamples(const struct PropertySampleList *list, double time,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef VOLUME_H
-#define VOLUME_H
+#ifndef FJ_VOLUME_H
+#define FJ_VOLUME_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,5 +48,5 @@ extern int VolGetSample(const struct Volume *volume, const struct Vector *point,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

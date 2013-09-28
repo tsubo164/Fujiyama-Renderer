@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef MESH_H
-#define MESH_H
+#ifndef FJ_MESH_H
+#define FJ_MESH_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,5 +57,5 @@ extern void MshGetPrimitiveSet(const struct Mesh *mesh, struct PrimitiveSet *pri
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

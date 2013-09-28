@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef PROGRESS_H
-#define PROGRESS_H
+#ifndef FJ_PROGRESS_H
+#define FJ_PROGRESS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,4 +23,4 @@ extern void PrgDone(struct Progress *prg);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

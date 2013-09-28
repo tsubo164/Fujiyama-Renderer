@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef CAMERA_H
-#define CAMERA_H
+#ifndef FJ_CAMERA_H
+#define FJ_CAMERA_H
 
 #include "fj_transform.h"
 
@@ -36,5 +36,5 @@ extern void CamGetRay(const struct Camera *cam, const struct Vector2 *screen_uv,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

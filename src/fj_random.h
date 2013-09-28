@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef RANDOM_H
-#define RANDOM_H
+#ifndef FJ_RANDOM_H
+#define FJ_RANDOM_H
 
 #include "fj_compatibility.h"
 
@@ -38,5 +38,5 @@ extern double XorGaussianRand(struct XorShift *xr);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

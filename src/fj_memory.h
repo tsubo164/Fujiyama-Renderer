@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef MEMORY_H
-#define MEMORY_H
+#ifndef FJ_MEMORY_H
+#define FJ_MEMORY_H
 
 #include <stdlib.h>
 
@@ -26,4 +26,4 @@ extern "C" {
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

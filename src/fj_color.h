@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef COLOR_H
-#define COLOR_H
+#ifndef FJ_COLOR_H
+#define FJ_COLOR_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,4 +38,4 @@ extern void ColFree(struct Color *c);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

@@ -1,5 +1,5 @@
-#ifndef NUMERIC_H
-#define NUMERIC_H
+#ifndef FJ_NUMERIC_H
+#define FJ_NUMERIC_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,5 +41,5 @@ extern double Bilerp(double v00, double v10, double v01, double v11, double s, d
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

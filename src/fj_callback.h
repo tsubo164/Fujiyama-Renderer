@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef CALLBACK_H
-#define CALLBACK_H
+#ifndef FJ_CALLBACK_H
+#define FJ_CALLBACK_H
 
 #include "fj_rectangle.h"
 
@@ -78,4 +78,4 @@ extern void CbSetTileReport(struct TileReport *report, void *data,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef STRINGFUNCTION_H
-#define STRINGFUNCTION_H
+#ifndef FJ_STRINGFUNCTION_H
+#define FJ_STRINGFUNCTION_H
 
 #include <stddef.h>
 
@@ -21,4 +21,4 @@ extern char *StrCopyAndTerminate(char *dst, const char *src, size_t nchars);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

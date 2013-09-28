@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef SHADER_H
-#define SHADER_H
+#ifndef FJ_SHADER_H
+#define FJ_SHADER_H
 
 #include "fj_property.h"
 #include "fj_shading.h"
@@ -48,5 +48,5 @@ extern int ShdSetProperty(struct Shader *shader,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

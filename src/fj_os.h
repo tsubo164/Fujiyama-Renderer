@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef OS_H
-#define OS_H
+#ifndef FJ_OS_H
+#define FJ_OS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,4 +19,4 @@ extern int OsDlclose(void *handle);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

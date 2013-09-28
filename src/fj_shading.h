@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef SL_H
-#define SL_H
+#ifndef FJ_SL_H
+#define FJ_SL_H
 
 #include "fj_tex_coord.h"
 #include "fj_vector.h"
@@ -112,5 +112,5 @@ extern void SlFreeLightSamples(struct LightSample * samples);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

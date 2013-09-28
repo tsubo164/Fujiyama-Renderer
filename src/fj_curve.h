@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef CURVE_H
-#define CURVE_H
+#ifndef FJ_CURVE_H
+#define FJ_CURVE_H
 
 #include "fj_box.h"
 
@@ -47,5 +47,5 @@ extern void CrvGetPrimitiveSet(const struct Curve *curve, struct PrimitiveSet *p
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

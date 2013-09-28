@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef IO_H
-#define IO_H
+#ifndef FJ_IO_H
+#define FJ_IO_H
 
 #define NO_NAME NULL
 
@@ -87,5 +87,5 @@ extern void IOSetOutputVector3(struct OutputFile *out,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

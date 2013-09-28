@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef SCENE_H
-#define SCENE_H
+#ifndef FJ_SCENE_H
+#define FJ_SCENE_H
 
 #include "fj_object_instance.h"
 #include "fj_object_group.h"
@@ -132,4 +132,4 @@ extern size_t ScnGetMeshCount(const struct Scene *scene);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef TRIANGLE_H
-#define TRIANGLE_H
+#ifndef FJ_TRIANGLE_H
+#define FJ_TRIANGLE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,5 +40,5 @@ extern int TriRayIntersect(
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

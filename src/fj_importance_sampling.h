@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef IMPORTANCESAMPLING_H
-#define IMPORTANCESAMPLING_H
+#ifndef FJ_IMPORTANCESAMPLING_H
+#define FJ_IMPORTANCESAMPLING_H
 
 #include "fj_tex_coord.h"
 #include "fj_vector.h"
@@ -38,5 +38,5 @@ extern int StructuredImportanceSampling(struct Texture *texture, int seed,
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

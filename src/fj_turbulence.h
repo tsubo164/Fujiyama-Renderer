@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef TURBULENCE_H
-#define TURBULENCE_H
+#ifndef FJ_TURBULENCE_H
+#define FJ_TURBULENCE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,5 +31,5 @@ extern void TrbEvaluate3d(const struct Turbulence *turbulence, const struct Vect
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

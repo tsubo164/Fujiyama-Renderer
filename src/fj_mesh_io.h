@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef MESHIO_H
-#define MESHIO_H
+#ifndef FJ_MESHIO_H
+#define FJ_MESHIO_H
 
 #include <stdio.h>
 
@@ -75,5 +75,5 @@ extern int MshGetErrorNo(void);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef TILER_H
-#define TILER_H
+#ifndef FJ_TILER_H
+#define FJ_TILER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,4 +30,4 @@ extern int TlrGenerateTiles(struct Tiler *tiler, const struct Rectangle *region)
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */

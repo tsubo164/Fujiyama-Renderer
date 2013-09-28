@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef MIPMAP_H
-#define MIPMAP_H
+#ifndef FJ_MIPMAP_H
+#define FJ_MIPMAP_H
 
 #include <stdio.h>
 
@@ -71,5 +71,5 @@ extern void MipWriteFile(struct MipOutput *out);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

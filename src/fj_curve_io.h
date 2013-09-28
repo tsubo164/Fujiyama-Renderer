@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef CURVEIO_H
-#define CURVEIO_H
+#ifndef FJ_CURVEIO_H
+#define FJ_CURVEIO_H
 
 #include <stdio.h>
 
@@ -80,5 +80,5 @@ extern int CrvLoadFile(struct Curve *curve, const char *filename);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
 

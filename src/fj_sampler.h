@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef SAMPLER_H
-#define SAMPLER_H
+#ifndef FJ_SAMPLER_H
+#define FJ_SAMPLER_H
 
 #include "fj_vector.h"
 
@@ -45,4 +45,4 @@ extern void SmpFreePixelSamples(struct Sample *samples);
 } /* extern "C" */
 #endif
 
-#endif /* XXX_H */
+#endif /* FJ_XXX_H */
