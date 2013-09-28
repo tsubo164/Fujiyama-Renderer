@@ -113,7 +113,7 @@ static int set_property(const struct Entry *entry,
     const char *name, const struct PropertyValue *value);
 
 /* property list description */
-#include "property_list_include.c"
+#include "internal/fj_property_list_include.c"
 
 /* Error interfaces */
 int SiGetErrorNo(void)

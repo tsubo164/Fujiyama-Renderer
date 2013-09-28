@@ -7,7 +7,7 @@ See LICENSE and README
 #include "Compatibility.h"
 
 #if defined(SI_WINDOWS)
-  #include "os_win.c"
+  #include "internal/fj_os_win.c"
 #else
-  #include "os_unix.c"
+  #include "internal/fj_os_unix.c"
 #endif
