@@ -8,15 +8,15 @@ See LICENSE and README
 
 struct Color *ColAlloc(long count)
 {
-  return SI_MEM_ALLOC_ARRAY(struct Color, count);
+  return FJ_MEM_ALLOC_ARRAY(struct Color, count);
 }
 
 struct Color *ColRealloc(struct Color *c, long count)
 {
-  return SI_MEM_REALLOC_ARRAY(c, struct Color, count);
+  return FJ_MEM_REALLOC_ARRAY(c, struct Color, count);
 }
 
 void ColFree(struct Color *c)
 {
-  SI_MEM_FREE(c);
+  FJ_MEM_FREE(c);
 }

@@ -22,7 +22,7 @@ struct FrameBuffer {
 
 struct FrameBuffer *FbNew(void)
 {
-  struct FrameBuffer *fb = SI_MEM_ALLOC(struct FrameBuffer);
+  struct FrameBuffer *fb = FJ_MEM_ALLOC(struct FrameBuffer);
 
   if (fb == NULL)
     return NULL;
@@ -40,8 +40,8 @@ void FbFree(struct FrameBuffer *fb)
   if (fb == NULL)
     return;
 
-  SI_MEM_FREE(fb->buf);
-  SI_MEM_FREE(fb);
+  FJ_MEM_FREE(fb->buf);
+  FJ_MEM_FREE(fb);
 }
 
 int FbGetWidth(const struct FrameBuffer *fb)
@@ -74,7 +74,7 @@ float *FbResize(struct FrameBuffer *fb, int width, int height, int nchannels)
     return NULL;
 
   if (total_alloc > 0) {
-    buftmp = SI_MEM_ALLOC_ARRAY(float, total_alloc);
+    buftmp = FJ_MEM_ALLOC_ARRAY(float, total_alloc);
     if (buftmp == NULL) {
       return NULL;
     }
@@ -82,7 +82,7 @@ float *FbResize(struct FrameBuffer *fb, int width, int height, int nchannels)
 
   /* successed to get new buffer then free old buffer if exists*/
   if (!FbIsEmpty(fb)) {
-    SI_MEM_FREE(fb->buf);
+    FJ_MEM_FREE(fb->buf);
   }
 
   /* commit */

@@ -64,7 +64,7 @@ static void *MyNew(void)
 {
   struct CloudVolumeProcedure *cloud;
 
-  cloud = SI_MEM_ALLOC(struct CloudVolumeProcedure);
+  cloud = FJ_MEM_ALLOC(struct CloudVolumeProcedure);
   if (cloud == NULL)
     return NULL;
 
@@ -79,7 +79,7 @@ static void MyFree(void *self)
   struct CloudVolumeProcedure *cloud = (struct CloudVolumeProcedure *) self;
   if (cloud == NULL)
     return;
-  SI_MEM_FREE(cloud);
+  FJ_MEM_FREE(cloud);
 }
 
 static int MyRun(void *self)

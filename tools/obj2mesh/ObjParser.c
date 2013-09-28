@@ -64,7 +64,7 @@ struct ObjParser *ObjParserNew(
     ReadVertxFunction read_normal_function,
     ReadFaceFunction read_face_function)
 {
-  struct ObjParser *parser = SI_MEM_ALLOC(struct ObjParser);
+  struct ObjParser *parser = FJ_MEM_ALLOC(struct ObjParser);
 
   if (parser == NULL)
     return NULL;
@@ -83,7 +83,7 @@ void ObjParserFree(struct ObjParser *parser)
   if (parser == NULL)
     return;
 
-  SI_MEM_FREE(parser);
+  FJ_MEM_FREE(parser);
 }
 
 int ObjParse(struct ObjParser *parser, const char *filename)
@@ -385,7 +385,7 @@ static int detect_triplet(const char *line)
 
 static struct IndexList *new_index_list(void)
 {
-  struct IndexList *list = SI_MEM_ALLOC(struct IndexList);
+  struct IndexList *list = FJ_MEM_ALLOC(struct IndexList);
 
   if (list == NULL)
     return NULL;
@@ -393,9 +393,9 @@ static struct IndexList *new_index_list(void)
   list->triplet = FACE_V;
   list->count = 0;
   list->alloc = INITIAL_INDEX_ALLOC;
-  list->vertex  = SI_MEM_ALLOC_ARRAY(long, list->alloc);
-  list->texture = SI_MEM_ALLOC_ARRAY(long, list->alloc);
-  list->normal  = SI_MEM_ALLOC_ARRAY(long, list->alloc);
+  list->vertex  = FJ_MEM_ALLOC_ARRAY(long, list->alloc);
+  list->texture = FJ_MEM_ALLOC_ARRAY(long, list->alloc);
+  list->normal  = FJ_MEM_ALLOC_ARRAY(long, list->alloc);
 
   return list;
 }
@@ -406,13 +406,13 @@ static void free_index_list(struct IndexList *list)
     return;
 
   if (list->vertex != NULL)
-    SI_MEM_FREE(list->vertex);
+    FJ_MEM_FREE(list->vertex);
   if (list->texture != NULL)
-    SI_MEM_FREE(list->texture);
+    FJ_MEM_FREE(list->texture);
   if (list->normal != NULL)
-    SI_MEM_FREE(list->normal);
+    FJ_MEM_FREE(list->normal);
 
-  SI_MEM_FREE(list);
+  FJ_MEM_FREE(list);
 }
 
 static void push_index(struct IndexList *list, long v, long vt, long vn)
@@ -421,9 +421,9 @@ static void push_index(struct IndexList *list, long v, long vt, long vn)
 
   if (list->count == list->alloc) {
     const long new_alloc = list->alloc * 2;
-    list->vertex  = SI_MEM_REALLOC_ARRAY(list->vertex,  long, new_alloc);
-    list->texture = SI_MEM_REALLOC_ARRAY(list->texture, long, new_alloc);
-    list->normal  = SI_MEM_REALLOC_ARRAY(list->normal,  long, new_alloc);
+    list->vertex  = FJ_MEM_REALLOC_ARRAY(list->vertex,  long, new_alloc);
+    list->texture = FJ_MEM_REALLOC_ARRAY(list->texture, long, new_alloc);
+    list->normal  = FJ_MEM_REALLOC_ARRAY(list->normal,  long, new_alloc);
     list->alloc = new_alloc;
   }
 

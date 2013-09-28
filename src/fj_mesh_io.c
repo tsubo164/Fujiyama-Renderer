@@ -27,7 +27,7 @@ static void set_error(int err);
 /* mesh input file interfaces */
 struct MeshInput *MshOpenInputFile(const char *filename)
 {
-  struct MeshInput *in = SI_MEM_ALLOC(struct MeshInput);
+  struct MeshInput *in = FJ_MEM_ALLOC(struct MeshInput);
 
   if (in == NULL) {
     set_error(MSH_ERR_NO_MEMORY);
@@ -37,7 +37,7 @@ struct MeshInput *MshOpenInputFile(const char *filename)
   in->file = fopen(filename, "rb");
   if (in->file == NULL) {
     set_error(MSH_ERR_FILE_NOT_EXIST);
-    SI_MEM_FREE(in);
+    FJ_MEM_FREE(in);
     return NULL;
   }
 
@@ -66,7 +66,7 @@ void MshCloseInputFile(struct MeshInput *in)
     for (name = in->attr_names; *name != NULL; name++) {
       *name = StrFree(*name);
     }
-    SI_MEM_FREE(in->attr_names);
+    FJ_MEM_FREE(in->attr_names);
   }
 
   if (in->file != NULL) {
@@ -74,10 +74,10 @@ void MshCloseInputFile(struct MeshInput *in)
   }
 
   if (in->data_buffer != NULL) {
-    SI_MEM_FREE(in->data_buffer);
+    FJ_MEM_FREE(in->data_buffer);
   }
 
-  SI_MEM_FREE(in);
+  FJ_MEM_FREE(in);
 }
 
 int MshReadHeader(struct MeshInput *in)
@@ -104,7 +104,7 @@ int MshReadHeader(struct MeshInput *in)
   nreads += fread(&in->nface_attrs, sizeof(int), 1, in->file);
 
   nattrs_alloc = in->nvert_attrs + in->nface_attrs + 1; /* for sentinel */
-  in->attr_names = SI_MEM_ALLOC_ARRAY(char *, nattrs_alloc);
+  in->attr_names = FJ_MEM_ALLOC_ARRAY(char *, nattrs_alloc);
   for (i = 0; i < nattrs_alloc; i++) {
     in->attr_names[i] = NULL;
   }
@@ -127,7 +127,7 @@ int MshReadHeader(struct MeshInput *in)
 /* mesh output file interfaces */
 struct MeshOutput *MshOpenOutputFile(const char *filename)
 {
-  struct MeshOutput *out = SI_MEM_ALLOC(struct MeshOutput);
+  struct MeshOutput *out = FJ_MEM_ALLOC(struct MeshOutput);
 
   if (out == NULL) {
     set_error(MSH_ERR_NO_MEMORY);
@@ -137,7 +137,7 @@ struct MeshOutput *MshOpenOutputFile(const char *filename)
   out->file = fopen(filename, "wb");
   if (out->file == NULL) {
     set_error(MSH_ERR_FILE_NOT_EXIST);
-    SI_MEM_FREE(out);
+    FJ_MEM_FREE(out);
     return NULL;
   }
 
@@ -163,7 +163,7 @@ void MshCloseOutputFile(struct MeshOutput *out)
   if (out->file != NULL) {
     fclose(out->file);
   }
-  SI_MEM_FREE(out);
+  FJ_MEM_FREE(out);
 }
 
 void MshWriteFile(struct MeshOutput *out)
@@ -394,7 +394,7 @@ static size_t read_attridata(struct MeshInput *in)
   nreads += fread(&datasize, sizeof(size_t), 1, in->file);
 
   if (in->buffer_size < datasize) {
-    in->data_buffer = SI_MEM_REALLOC_ARRAY(in->data_buffer, char, datasize);
+    in->data_buffer = FJ_MEM_REALLOC_ARRAY(in->data_buffer, char, datasize);
     in->buffer_size = datasize;
   }
 

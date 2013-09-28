@@ -17,7 +17,7 @@ char *StrDup(const char *src)
     return NULL;
 
   alloc_size = strlen(src) + 1;
-  dst = SI_MEM_ALLOC_ARRAY(char, alloc_size);
+  dst = FJ_MEM_ALLOC_ARRAY(char, alloc_size);
   if (dst == NULL)
     return NULL;
 
@@ -28,7 +28,7 @@ char *StrDup(const char *src)
 char *StrFree(char *s)
 {
   if (s != NULL)
-    SI_MEM_FREE(s);
+    FJ_MEM_FREE(s);
 
   return NULL;
 }

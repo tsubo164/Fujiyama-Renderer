@@ -66,7 +66,7 @@ static void *MyNew(void)
 {
   struct SplineWispsProcedure *spline;
 
-  spline = SI_MEM_ALLOC(struct SplineWispsProcedure);
+  spline = FJ_MEM_ALLOC(struct SplineWispsProcedure);
   if (spline == NULL)
     return NULL;
 
@@ -81,7 +81,7 @@ static void MyFree(void *self)
   struct SplineWispsProcedure *spline = (struct SplineWispsProcedure *) self;
   if (spline == NULL)
     return;
-  SI_MEM_FREE(spline);
+  FJ_MEM_FREE(spline);
 }
 
 static int MyRun(void *self)

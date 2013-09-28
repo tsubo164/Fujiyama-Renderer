@@ -363,7 +363,7 @@ struct LightSample *SlNewLightSamples(const struct SurfaceInput *in)
     return NULL;
   }
 
-  samples = SI_MEM_ALLOC_ARRAY(struct LightSample, nsamples);
+  samples = FJ_MEM_ALLOC_ARRAY(struct LightSample, nsamples);
   sample = samples;
   for (i = 0; i < nlights; i++) {
     const int nsmp = LgtGetSampleCount(lights[i]);
@@ -378,7 +378,7 @@ void SlFreeLightSamples(struct LightSample * samples)
 {
   if (samples == NULL)
     return;
-  SI_MEM_FREE(samples);
+  FJ_MEM_FREE(samples);
 }
 
 static int has_reached_bounce_limit(const struct TraceContext *cxt)

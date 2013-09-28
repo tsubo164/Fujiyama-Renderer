@@ -31,7 +31,7 @@ struct Table {
 struct Table *TblNew(void)
 {
   int i;
-  struct Table *table = SI_MEM_ALLOC(struct Table);
+  struct Table *table = FJ_MEM_ALLOC(struct Table);
 
   if (table == NULL)
     return NULL;
@@ -62,7 +62,7 @@ void TblFree(struct Table *table)
     }
   }
 
-  SI_MEM_FREE(table);
+  FJ_MEM_FREE(table);
 }
 
 struct TableEnt *TblLookup(struct Table *table, const char *key)
@@ -113,7 +113,7 @@ ID EntGetID(const struct TableEnt *ent)
 
 static struct TableEnt *new_entry(const char *key, ID id)
 {
-  struct TableEnt *ent = SI_MEM_ALLOC(struct TableEnt);
+  struct TableEnt *ent = FJ_MEM_ALLOC(struct TableEnt);
 
   if (ent == NULL)
     return NULL;
@@ -135,7 +135,7 @@ static void free_entry(struct TableEnt *ent)
     return;
 
   ent->key = StrFree(ent->key);
-  SI_MEM_FREE(ent);
+  FJ_MEM_FREE(ent);
 }
 
 static unsigned int hash_fn(const char *key)

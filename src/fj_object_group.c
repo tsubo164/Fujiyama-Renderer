@@ -47,7 +47,7 @@ struct ObjectGroup {
 
 struct ObjectGroup *ObjGroupNew(void)
 {
-  struct ObjectGroup *grp = SI_MEM_ALLOC(struct ObjectGroup);
+  struct ObjectGroup *grp = FJ_MEM_ALLOC(struct ObjectGroup);
   if (grp == NULL)
     return NULL;
 
@@ -94,7 +94,7 @@ void ObjGroupFree(struct ObjectGroup *grp)
   AccFree(grp->surface_acc);
   VolumeAccFree(grp->volume_acc);
 
-  SI_MEM_FREE(grp);
+  FJ_MEM_FREE(grp);
 }
 
 void ObjGroupAdd(struct ObjectGroup *grp, const struct ObjectInstance *obj)
@@ -197,7 +197,7 @@ static struct ObjectList *obj_list_new(void)
 {
   struct ObjectList *list;
 
-  list = SI_MEM_ALLOC(struct ObjectList);
+  list = FJ_MEM_ALLOC(struct ObjectList);
   if (list == NULL)
     return NULL;
 
@@ -220,7 +220,7 @@ static void obj_list_free(struct ObjectList *list)
   if (list->objects != NULL)
     ArrFree(list->objects);
 
-  SI_MEM_FREE(list);
+  FJ_MEM_FREE(list);
 }
 
 static void obj_list_add(struct ObjectList *list, const struct ObjectInstance *obj)

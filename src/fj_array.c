@@ -13,7 +13,7 @@ struct Array *ArrNew(size_t size_of_element)
   struct Array *a = NULL;
   assert(size_of_element > 0);
 
-  a = SI_MEM_ALLOC(struct Array);
+  a = FJ_MEM_ALLOC(struct Array);
   if (a == NULL)
     return NULL;
 
@@ -32,10 +32,10 @@ void ArrFree(struct Array *a)
   }
 
   if (a->nallocs > 0) {
-    SI_MEM_FREE(a->data);
+    FJ_MEM_FREE(a->data);
   }
 
-  SI_MEM_FREE(a);
+  FJ_MEM_FREE(a);
 }
 
 char *ArrPush(struct Array *a, const void *data)
@@ -67,7 +67,7 @@ char *ArrReserve(struct Array *a, size_t new_alloc)
 {
   if (a->nallocs < new_alloc) {
     const size_t new_size = a->elemsize * new_alloc;
-    a->data = SI_MEM_REALLOC_ARRAY(a->data, char, new_size);
+    a->data = FJ_MEM_REALLOC_ARRAY(a->data, char, new_size);
     a->nallocs = new_alloc;
   }
   return a->data;

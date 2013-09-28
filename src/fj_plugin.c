@@ -59,7 +59,7 @@ struct Plugin *PlgOpen(const char *filename)
     goto plugin_error;
   }
 
-  plugin = SI_MEM_ALLOC(struct Plugin);
+  plugin = FJ_MEM_ALLOC(struct Plugin);
   if (plugin == NULL) {
     set_errno(PLG_ERR_NO_MEMORY);
     goto plugin_error;
@@ -79,7 +79,7 @@ int PlgClose(struct Plugin *plugin)
 {
   const int err = OsDlclose(plugin->dso);
 
-  SI_MEM_FREE(plugin);
+  FJ_MEM_FREE(plugin);
 
   if (err) {
     set_errno(PLG_ERR_CLOSE_PLUGIN_FAIL);

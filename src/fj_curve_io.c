@@ -54,7 +54,7 @@ static void set_error(int err)
 /* curve input file interfaces */
 struct CurveInput *CrvOpenInputFile(const char *filename)
 {
-  struct CurveInput *in = SI_MEM_ALLOC(struct CurveInput);
+  struct CurveInput *in = FJ_MEM_ALLOC(struct CurveInput);
   if (in == NULL) {
     set_error(ERR_CRV_NOMEM);
     return NULL;
@@ -63,7 +63,7 @@ struct CurveInput *CrvOpenInputFile(const char *filename)
   in->file = fopen(filename, "rb");
   if (in->file == NULL) {
     set_error(ERR_CRV_NOFILE);
-    SI_MEM_FREE(in);
+    FJ_MEM_FREE(in);
     return NULL;
   }
 
@@ -90,12 +90,12 @@ void CrvCloseInputFile(struct CurveInput *in)
   for (name = in->attr_names; *name != NULL; name++) {
     *name = StrFree(*name);
   }
-  SI_MEM_FREE(in->attr_names);
+  FJ_MEM_FREE(in->attr_names);
 
   if (in->file != NULL) {
     fclose(in->file);
   }
-  SI_MEM_FREE(in);
+  FJ_MEM_FREE(in);
 }
 
 int CrvReadHeader(struct CurveInput *in)
@@ -122,7 +122,7 @@ int CrvReadHeader(struct CurveInput *in)
   nreads += fread(&in->ncurve_attrs, sizeof(int), 1, in->file);
 
   nattrs_alloc = in->nvert_attrs + in->ncurve_attrs + 1; /* for sentinel */
-  in->attr_names = SI_MEM_ALLOC_ARRAY(char *, nattrs_alloc);
+  in->attr_names = FJ_MEM_ALLOC_ARRAY(char *, nattrs_alloc);
   for (i = 0; i < nattrs_alloc; i++) {
     in->attr_names[i] = NULL;
   }
@@ -155,7 +155,7 @@ int CrvReadAttribute(struct CurveInput *in, void *data)
 /* curve output file interfaces */
 struct CurveOutput *CrvOpenOutputFile(const char *filename)
 {
-  struct CurveOutput *out = SI_MEM_ALLOC(struct CurveOutput);
+  struct CurveOutput *out = FJ_MEM_ALLOC(struct CurveOutput);
   if (out == NULL) {
     set_error(ERR_CRV_NOMEM);
     return NULL;
@@ -164,7 +164,7 @@ struct CurveOutput *CrvOpenOutputFile(const char *filename)
   out->file = fopen(filename, "wb");
   if (out->file == NULL) {
     set_error(ERR_CRV_NOFILE);
-    SI_MEM_FREE(out);
+    FJ_MEM_FREE(out);
     return NULL;
   }
 
@@ -190,7 +190,7 @@ void CrvCloseOutputFile(struct CurveOutput *out)
   if (out->file != NULL) {
     fclose(out->file);
   }
-  SI_MEM_FREE(out);
+  FJ_MEM_FREE(out);
 }
 
 void CrvWriteFile(struct CurveOutput *out)

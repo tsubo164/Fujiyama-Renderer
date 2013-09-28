@@ -81,7 +81,7 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-  struct PlasticShader *plastic = SI_MEM_ALLOC(struct PlasticShader);
+  struct PlasticShader *plastic = FJ_MEM_ALLOC(struct PlasticShader);
 
   if (plastic == NULL)
     return NULL;
@@ -108,7 +108,7 @@ static void MyFree(void *self)
   struct PlasticShader *plastic = (struct PlasticShader *) self;
   if (plastic == NULL)
     return;
-  SI_MEM_FREE(plastic);
+  FJ_MEM_FREE(plastic);
 }
 
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,

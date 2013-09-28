@@ -60,7 +60,7 @@ static void *MyNew(void)
 {
   struct ConstantShader *constant = NULL;
 
-  constant = SI_MEM_ALLOC(struct ConstantShader);
+  constant = FJ_MEM_ALLOC(struct ConstantShader);
   if (constant == NULL)
     return NULL;
 
@@ -75,7 +75,7 @@ static void MyFree(void *self)
   struct ConstantShader *constant = (struct ConstantShader *) self;
   if (constant == NULL)
     return;
-  SI_MEM_FREE(constant);
+  FJ_MEM_FREE(constant);
 }
 
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,

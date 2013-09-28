@@ -29,7 +29,7 @@ static void compute_ray_target(const struct Camera *cam,
 
 struct Camera *CamNew(const char *type)
 {
-  struct Camera *cam = SI_MEM_ALLOC(struct Camera);
+  struct Camera *cam = FJ_MEM_ALLOC(struct Camera);
   if (cam == NULL)
     return NULL;
 
@@ -49,7 +49,7 @@ void CamFree(struct Camera *cam)
 {
   if (cam == NULL)
     return;
-  SI_MEM_FREE(cam);
+  FJ_MEM_FREE(cam);
 }
 
 void CamSetAspect(struct Camera *cam, double aspect)

@@ -14,15 +14,15 @@ void VecPrint(const struct Vector *a)
 
 struct Vector *VecAlloc(long count)
 {
-  return SI_MEM_ALLOC_ARRAY(struct Vector, count);
+  return FJ_MEM_ALLOC_ARRAY(struct Vector, count);
 }
 
 struct Vector *VecRealloc(struct Vector *v, long count)
 {
-  return SI_MEM_REALLOC_ARRAY(v, struct Vector, count);
+  return FJ_MEM_REALLOC_ARRAY(v, struct Vector, count);
 }
 
 void VecFree(struct Vector *v)
 {
-  SI_MEM_FREE(v);
+  FJ_MEM_FREE(v);
 }
