@@ -6,7 +6,7 @@ See LICENSE and README
 #ifndef COMPATIBLEOPENGL_H
 #define COMPATIBLEOPENGL_H
 
-#include "Compatibility.h"
+#include "fj_compatibility.h"
 
 #if defined(SI_WINDOWS)
   #pragma comment(lib, "glew32.lib")

@@ -4,7 +4,7 @@ See LICENSE and README
 */
 
 #include "Test.h"
-#include "Vector.h"
+#include "fj_vector.h"
 #include <stdio.h>
 
 int main()

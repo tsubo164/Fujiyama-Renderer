@@ -10,12 +10,16 @@ RM = rm -f
 topdir      := ..
 target_dir  := lib
 target_name := libscene.so
-files       := Accelerator Array Box BVHAccelerator Callback Camera Color Curve CurveIO \
-	Filter FrameBuffer FrameBufferIO GridAccelerator ImportanceSampling Interval IO \
-	Light Matrix Mesh MeshIO Mipmap Noise Numeric ObjectGroup ObjectInstance OS Plugin \
-	PointCloud PointCloudIO PrimitiveSet Procedure Progress Property Random Rectangle \
-	Renderer Sampler Scene SceneInterface Shader StringFunction SL TexCoord Texture Tiler \
-	Timer Transform Triangle Turbulence Vector Volume VolumeAccelerator VolumeFilling
+files       := \
+		fj_accelerator fj_array fj_box fj_bvh_accelerator fj_callback fj_camera \
+		fj_color fj_curve fj_curve_io fj_filter fj_framebuffer fj_framebuffer_io \
+		fj_grid_accelerator fj_importance_sampling fj_interval fj_io fj_light \
+		fj_matrix fj_mesh fj_mesh_io fj_mipmap fj_noise fj_numeric fj_object_group \
+		fj_object_instance fj_os fj_plugin fj_point_cloud fj_point_cloud_io \
+		fj_primitive_set fj_procedure fj_progress fj_property fj_random fj_rectangle \
+		fj_renderer fj_sampler fj_scene fj_scene_interface fj_shader fj_string_function \
+		fj_shading fj_tex_coord fj_texture fj_tiler fj_timer fj_transform fj_triangle \
+		fj_turbulence fj_vector fj_volume fj_volume_accelerator fj_volume_filling
 
 incdir  := $(topdir)/src
 libdir  := $(topdir)/lib

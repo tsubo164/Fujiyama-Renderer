@@ -4,8 +4,8 @@ See LICENSE and README
  */
 
 #include "Test.h"
-#include "Vector.h"
-#include "IO.h"
+#include "fj_vector.h"
+#include "fj_io.h"
 #include <string.h>
 #include <stdio.h>
 

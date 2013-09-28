@@ -4,10 +4,10 @@ See LICENSE and README
 */
 
 #include "load_images.h"
-#include "FrameBufferIO.h"
-#include "FrameBuffer.h"
-#include "Mipmap.h"
-#include "Box.h"
+#include "fj_framebuffer_io.h"
+#include "fj_framebuffer.h"
+#include "fj_mipmap.h"
+#include "fj_box.h"
 
 #include <string.h>
 

@@ -4,7 +4,7 @@ See LICENSE and README
 */
 
 #include "ObjParser.h"
-#include "Memory.h"
+#include "fj_memory.h"
 
 #include <stdio.h>
 #include <string.h>

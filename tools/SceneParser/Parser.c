@@ -4,9 +4,9 @@ See LICENSE and README
 */
 
 #include "Parser.h"
-#include "SceneInterface.h"
+#include "fj_scene_interface.h"
 #include "Command.h"
-#include "Memory.h"
+#include "fj_memory.h"
 #include "Table.h"
 
 #include <string.h>
@@ -302,7 +302,7 @@ static int enum_to_num(struct CommandArgument *arg)
   return 0;
 }
 
-/* TODO should move this to SceneInterface.c? */
+/* TODO should move this to fj_scene_interface.c? */
 struct SiError {
   int number;
   const char *message;

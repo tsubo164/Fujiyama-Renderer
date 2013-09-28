@@ -3,11 +3,11 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "Shader.h"
-#include "Memory.h"
-#include "Vector.h"
-#include "Color.h"
-#include "Numeric.h"
+#include "fj_shader.h"
+#include "fj_memory.h"
+#include "fj_vector.h"
+#include "fj_color.h"
+#include "fj_numeric.h"
 
 #include <string.h>
 #include <stdio.h>

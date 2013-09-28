@@ -13,7 +13,7 @@ to compile and render this scene, run this at the top level of source tree
 
 */
 
-#include "SceneInterface.h"
+#include "fj_scene_interface.h"
 #include <stdio.h>
 
 #define USE_CUSTOM_CALLBACKS 0

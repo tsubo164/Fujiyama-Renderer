@@ -4,7 +4,7 @@ See LICENSE and README
 */
 
 #include "Test.h"
-#include "Numeric.h"
+#include "fj_numeric.h"
 #include <stdio.h>
 
 int main()

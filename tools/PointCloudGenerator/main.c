@@ -3,16 +3,16 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "PointCloudIO.h"
-#include "PointCloud.h"
-#include "Triangle.h"
-#include "Numeric.h"
-#include "Memory.h"
-#include "MeshIO.h"
-#include "Random.h"
-#include "Vector.h"
-#include "Noise.h"
-#include "Mesh.h"
+#include "fj_point_cloud_io.h"
+#include "fj_point_cloud.h"
+#include "fj_triangle.h"
+#include "fj_numeric.h"
+#include "fj_memory.h"
+#include "fj_mesh_io.h"
+#include "fj_random.h"
+#include "fj_vector.h"
+#include "fj_noise.h"
+#include "fj_mesh.h"
 
 #include <stdio.h>
 #include <ctype.h>

@@ -4,8 +4,8 @@ See LICENSE and README
 */
 
 #include "Table.h"
-#include "StringFunction.h"
-#include "Memory.h"
+#include "fj_string_function.h"
+#include "fj_memory.h"
 
 #include <string.h>
 #include <assert.h>

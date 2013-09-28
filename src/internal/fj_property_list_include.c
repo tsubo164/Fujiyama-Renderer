@@ -4,7 +4,7 @@ See LICENSE and README
 */
 
 /*
-this file is inteded to be included in SceneInterface.c 
+this file is inteded to be included in fj_scene_interface.c 
 defines all properties for builtin type and some helper functions
 */
 

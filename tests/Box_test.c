@@ -4,8 +4,8 @@ See LICENSE and README
  */
 
 #include "Test.h"
-#include "Box.h"
-#include "Vector.h"
+#include "fj_box.h"
+#include "fj_vector.h"
 #include <stdio.h>
 #include <float.h>
 

@@ -4,14 +4,14 @@ See LICENSE and README
 */
 
 #include "FrameBufferViewer.h"
-#include "StringFunction.h"
-#include "FrameBufferIO.h"
-#include "FrameBuffer.h"
-#include "Rectangle.h"
-#include "Numeric.h"
-#include "Memory.h"
-#include "Mipmap.h"
-#include "Box.h"
+#include "fj_string_function.h"
+#include "fj_framebuffer_io.h"
+#include "fj_framebuffer.h"
+#include "fj_rectangle.h"
+#include "fj_numeric.h"
+#include "fj_memory.h"
+#include "fj_mipmap.h"
+#include "fj_box.h"
 
 #include "CompatibleOpenGL.h"
 #include "glsl_shaders.h"

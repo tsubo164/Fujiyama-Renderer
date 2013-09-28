@@ -6,7 +6,7 @@ See LICENSE and README
 #ifndef TABLE_H
 #define TABLE_H
 
-#include "SceneInterface.h"
+#include "fj_scene_interface.h"
 
 #ifdef __cplusplus
 extern "C" {

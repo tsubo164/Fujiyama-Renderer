@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "FrameBufferIO.h"
-#include "FrameBuffer.h"
+#include "fj_framebuffer_io.h"
+#include "fj_framebuffer.h"
 #include <ImfChannelList.h>
 #include <ImfOutputFile.h>
 #include <ImfRgbaFile.h>

@@ -4,13 +4,13 @@ See LICENSE and README
 */
 
 #include "ObjParser.h"
-#include "TexCoord.h"
-#include "Triangle.h"
-#include "Memory.h"
-#include "MeshIO.h"
-#include "Vector.h"
-#include "Array.h"
-#include "Mesh.h"
+#include "fj_tex_coord.h"
+#include "fj_triangle.h"
+#include "fj_memory.h"
+#include "fj_mesh_io.h"
+#include "fj_vector.h"
+#include "fj_array.h"
+#include "fj_mesh.h"
 
 #include <stdio.h>
 #include <string.h>

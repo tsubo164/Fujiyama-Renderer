@@ -4,7 +4,7 @@ See LICENSE and README
 */
 
 #include "Test.h"
-#include "Array.h"
+#include "fj_array.h"
 #include <stdio.h>
 
 int main(int argc, const char **argv)

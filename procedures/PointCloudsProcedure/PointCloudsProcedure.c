@@ -3,14 +3,14 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "Procedure.h"
-#include "VolumeFilling.h"
-#include "Turbulence.h"
-#include "Progress.h"
-#include "Numeric.h"
-#include "Memory.h"
-#include "Vector.h"
-#include "Volume.h"
+#include "fj_procedure.h"
+#include "fj_volume_filling.h"
+#include "fj_turbulence.h"
+#include "fj_progress.h"
+#include "fj_numeric.h"
+#include "fj_memory.h"
+#include "fj_vector.h"
+#include "fj_volume.h"
 
 #include <string.h>
 #include <float.h>

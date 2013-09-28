@@ -3,17 +3,17 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#include "Progress.h"
-#include "Triangle.h"
-#include "CurveIO.h"
-#include "Numeric.h"
-#include "Memory.h"
-#include "MeshIO.h"
-#include "Vector.h"
-#include "Color.h"
-#include "Noise.h"
-#include "Array.h"
-#include "Mesh.h"
+#include "fj_progress.h"
+#include "fj_triangle.h"
+#include "fj_curve_io.h"
+#include "fj_numeric.h"
+#include "fj_memory.h"
+#include "fj_mesh_io.h"
+#include "fj_vector.h"
+#include "fj_color.h"
+#include "fj_noise.h"
+#include "fj_array.h"
+#include "fj_mesh.h"
 
 #include <stdio.h>
 #include <string.h>
