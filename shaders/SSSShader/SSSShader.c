@@ -98,24 +98,26 @@ static int set_single_scattering_samples(void *self, const struct PropertyValue 
 static int set_multiple_scattering_samples(void *self, const struct PropertyValue *value);
 static int set_scattering_coeff(void *self, const struct PropertyValue *value);
 static int set_absorption_coeff(void *self, const struct PropertyValue *value);
+static int set_scattering_phase(void *self, const struct PropertyValue *value);
 static int set_single_scattering_intensity(void *self, const struct PropertyValue *value);
 static int set_multiple_scattering_intensity(void *self, const struct PropertyValue *value);
 
 static const struct Property MyProperties[] = {
-  {PROP_VECTOR3, "diffuse",     {0, 0, 0, 0}, set_diffuse},
-  {PROP_VECTOR3, "specular",    {0, 0, 0, 0}, set_specular},
-  {PROP_VECTOR3, "ambient",     {0, 0, 0, 0}, set_ambient},
-  {PROP_SCALAR,  "roughness",   {0, 0, 0, 0}, set_roughness},
-  {PROP_VECTOR3, "reflect",     {0, 0, 0, 0}, set_reflect},
-  {PROP_SCALAR,  "ior",         {0, 0, 0, 0}, set_ior},
-  {PROP_SCALAR,  "opacity",     {0, 0, 0, 0}, set_opacity},
+  {PROP_VECTOR3, "diffuse",     {.8, .8, .8, 0}, set_diffuse},
+  {PROP_VECTOR3, "specular",    {1, 1, 1, 0}, set_specular},
+  {PROP_VECTOR3, "ambient",     {1, 1, 1, 0}, set_ambient},
+  {PROP_SCALAR,  "roughness",   {.05, 0, 0, 0}, set_roughness},
+  {PROP_VECTOR3, "reflect",     {1, 1, 1, 0}, set_reflect},
+  {PROP_SCALAR,  "ior",         {1.3, 0, 0, 0}, set_ior},
+  {PROP_SCALAR,  "opacity",     {1, 0, 0, 0}, set_opacity},
   {PROP_TEXTURE, "diffuse_map", {0, 0, 0, 0}, set_diffuse_map},
   {PROP_SCALAR,  "enable_single_scattering",    {0, 0, 0, 0}, set_enable_single_scattering},
   {PROP_SCALAR,  "enable_multiple_scattering",  {1, 0, 0, 0}, set_enable_multiple_scattering},
   {PROP_SCALAR,  "single_scattering_samples",   {1, 0, 0, 0}, set_single_scattering_samples},
   {PROP_SCALAR,  "multiple_scattering_samples", {1, 0, 0, 0}, set_multiple_scattering_samples},
-  {PROP_VECTOR3, "scattering_coeff", {.07, .122, .19, 0}, set_scattering_coeff},
-  {PROP_VECTOR3, "absorption_coeff", {.00014, .00025, .001420, 0}, set_absorption_coeff},
+  {PROP_VECTOR3, "scattering_coefficient", {.07, .122, .19, 0},          set_scattering_coeff},
+  {PROP_VECTOR3, "absorption_coefficient", {.00014, .00025, .001420, 0}, set_absorption_coeff},
+  {PROP_SCALAR,  "scattering_phase", {0, 0, 0, 0}, set_scattering_phase},
   {PROP_SCALAR,  "single_scattering_intensity", {1, 0, 0, 0}, set_single_scattering_intensity},
   {PROP_SCALAR,  "multiple_scattering_intensity", {.02, 0, 0, 0}, set_multiple_scattering_intensity},
   {PROP_NONE, NULL, {0, 0, 0, 0}, NULL}
@@ -147,37 +149,9 @@ static void *MyNew(void)
   if (sss == NULL)
     return NULL;
 
-  ColSet(&sss->diffuse, .7, .8, .8);
-  ColSet(&sss->specular, 1, 1, 1);
-  ColSet(&sss->ambient, 1, 1, 1);
-  sss->roughness = .05;
-
-  ColSet(&sss->reflect, 1, 1, 1);
-  sss->ior = 1.3;
-
-  sss->opacity = 1;
-
-  sss->do_reflect = 1;
-
-  sss->diffuse_map = NULL;
-
-  sss->enable_single_scattering = 0;
-  sss->enable_multiple_scattering = 1;
-
   XorInit(&sss->xr);
 
-  /* Skimmilk */
-  SET3(sss->scattering_coeff, .07 * 1000, .122 * 1000, .19 * 1000); /* 1/mm */
-  SET3(sss->absorption_coeff, .00014 * 1000, .00025 * 1000, .00142 * 1000); /* 1/mm */
-
-  sss->scattering_phase = 0;
-
-  sss->single_scattering_intensity = 1;
-  sss->multiple_scattering_intensity = .02;
-
-  sss->single_scattering_samples = 1;
-  sss->multiple_scattering_samples = 1;
-  update_sss_properties(sss);
+  PropSetAllDefaultValues(sss, MyProperties);
 
   return sss;
 }
@@ -763,6 +737,18 @@ static int set_absorption_coeff(void *self, const struct PropertyValue *value)
   return 0;
 }
 
+static int set_scattering_phase(void *self, const struct PropertyValue *value)
+{
+  struct SSSShader *sss = (struct SSSShader *) self;
+  float scattering_phase = value->vector[0];
+
+  scattering_phase = MAX(0, scattering_phase);
+
+  sss->scattering_phase = scattering_phase;
+
+  return 0;
+}
+
 static int set_single_scattering_intensity(void *self, const struct PropertyValue *value)
 {
   struct SSSShader *sss = (struct SSSShader *) self;
@@ -786,4 +772,3 @@ static int set_multiple_scattering_intensity(void *self, const struct PropertyVa
 
   return 0;
 }
-

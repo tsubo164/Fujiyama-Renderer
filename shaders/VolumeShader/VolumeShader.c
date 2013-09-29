@@ -55,13 +55,12 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-  struct VolumeShader *volume = NULL;
+  struct VolumeShader *volume = FJ_MEM_ALLOC(struct VolumeShader);
 
-  volume = FJ_MEM_ALLOC(struct VolumeShader);
   if (volume == NULL)
     return NULL;
 
-  ColSet(&volume->diffuse, 1, 1, 1);
+  PropSetAllDefaultValues(volume, MyProperties);
 
   return volume;
 }

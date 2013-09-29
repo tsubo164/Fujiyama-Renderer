@@ -64,8 +64,7 @@ static void *MyNew(void)
   if (constant == NULL)
     return NULL;
 
-  ColSet(&constant->diffuse, 1, 1, 1);
-  constant->texture = NULL;
+  PropSetAllDefaultValues(constant, MyProperties);
 
   return constant;
 }

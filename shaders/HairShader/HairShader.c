@@ -45,7 +45,7 @@ static float kajiya_specular(const struct Vector *tangent,
     const struct Vector *Ln, const struct Vector *I);
 
 static const struct Property MyProperties[] = {
-  {PROP_VECTOR3, "diffuse",   {.7, .8, .8, 0}, set_diffuse},
+  {PROP_VECTOR3, "diffuse",   {.8, .8, .8, 0}, set_diffuse},
   {PROP_VECTOR3, "specular",  {1, 1, 1, 0},    set_specular},
   {PROP_VECTOR3, "ambient",   {1, 1, 1, 0},    set_ambient},
   {PROP_SCALAR,  "roughness", {.1, 0, 0, 0},   set_roughness},
@@ -74,18 +74,12 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-  struct HairShader *hair = NULL;
+  struct HairShader *hair = FJ_MEM_ALLOC(struct HairShader);
 
-  hair = FJ_MEM_ALLOC(struct HairShader);
   if (hair == NULL)
     return NULL;
 
-  ColSet(&hair->diffuse, .7, .8, .8);
-  ColSet(&hair->specular, 1, 1, 1);
-  ColSet(&hair->ambient, 1, 1, 1);
-  hair->roughness = .1;
-
-  ColSet(&hair->reflect, 1, 1, 1);
+  PropSetAllDefaultValues(hair, MyProperties);
 
   return hair;
 }

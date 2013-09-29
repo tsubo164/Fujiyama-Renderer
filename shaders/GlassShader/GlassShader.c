@@ -81,14 +81,7 @@ static void *MyNew(void)
   if (glass == NULL)
     return NULL;
 
-  ColSet(&glass->diffuse, 0, 0, 0);
-  ColSet(&glass->specular, 1, 1, 1);
-  ColSet(&glass->ambient, 1, 1, 1);
-  ColSet(&glass->filter_color, 1, 1, 1);
-  glass->roughness = .1;
-  glass->ior = 1.4;
-
-  glass->do_color_filter = 0;
+  PropSetAllDefaultValues(glass, MyProperties);
 
   return glass;
 }
