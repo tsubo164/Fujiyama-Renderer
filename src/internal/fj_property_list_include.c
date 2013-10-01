@@ -492,28 +492,23 @@ static int get_builtin_type_by_name(const char *builtin_type_name)
   return Type_Begin;
 }
 
-static int get_property_list(const char *type_name,
-    const char ***property_types,
-    const char ***property_names,
-    int *property_count)
+static const struct Property *get_property_list(const char *type_name)
 {
-  int i;
-  const struct Property *prop = NULL;
-  const struct Property *help_props = NULL;
-  static const char *prop_types[1024] = {NULL};
-  static const char *prop_names[1024] = {NULL};
-
   /* builtin type properties */
   const int entry_type = get_builtin_type_by_name(type_name);
-  help_props = get_builtin_type_properties(entry_type);
+  const struct Property *builtin_props = get_builtin_type_properties(entry_type);
 
-  if (help_props == NULL) {
+  if (builtin_props != NULL) {
+    return builtin_props;
+  }
+
   /* plugin type properties */
+  {
     const char *plugin_name = type_name;
     struct Plugin **plugins = ScnGetPluginList(get_scene());
     struct Plugin *found = NULL;
     const int N = (int) ScnGetPluginCount(get_scene());
-    int i = 0;
+    int i;
 
     for (i = 0; i < N; i++) {
       if (strcmp(plugin_name, PlgGetName(plugins[i])) == 0) {
@@ -521,31 +516,11 @@ static int get_property_list(const char *type_name,
         break;
       }
     }
+
     if (found == NULL) {
-      set_errno(SI_ERR_FAILNEW);
-      return SI_BADID;
+      return NULL;
+    } else {
+      return PlgGetPropertyList(found);
     }
-    help_props = PlgGetPropertyList(found);
   }
-
-  if (help_props == NULL) {
-    /* TODO error handling */
-    return SI_FAIL;
-  }
-
-  for (i = 0, prop = help_props; prop->name != NULL; prop++, i++) {
-    prop_types[i] = PropTypeString(prop->type);
-    prop_names[i] = prop->name;
-  }
-
-  /* sentinels */
-  prop_types[i] = NULL;
-  prop_names[i] = NULL;
-
-  *property_types = prop_types;
-  *property_names = prop_names;
-  *property_count = i;
-
-  return SI_SUCCESS;
 }
-

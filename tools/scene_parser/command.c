@@ -4,6 +4,9 @@ See LICENSE and README
 */
 
 #include "command.h"
+#include "fj_transform.h"
+#include "fj_property.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -515,16 +518,39 @@ int CmdSuccess(const struct CommandResult *result)
   }
 }
 
+static void scalar_to_transform_order_string(char *dst, const char *prop_name, double value)
+{
+  if (strcmp(prop_name, "transform_order") == 0 || strcmp(prop_name, "rotate_order") == 0) {
+    const int order = (int) value;
+    const char *order_str = NULL;
+
+    switch (order) {
+    case ORDER_SRT: order_str = "ORDER_SRT"; break;
+    case ORDER_STR: order_str = "ORDER_STR"; break;
+    case ORDER_RST: order_str = "ORDER_RST"; break;
+    case ORDER_RTS: order_str = "ORDER_RTS"; break;
+    case ORDER_TRS: order_str = "ORDER_TRS"; break;
+    case ORDER_TSR: order_str = "ORDER_TSR"; break;
+    case ORDER_XYZ: order_str = "ORDER_XYZ"; break;
+    case ORDER_XZY: order_str = "ORDER_XZY"; break;
+    case ORDER_YXZ: order_str = "ORDER_YXZ"; break;
+    case ORDER_YZX: order_str = "ORDER_YZX"; break;
+    case ORDER_ZXY: order_str = "ORDER_ZXY"; break;
+    case ORDER_ZYX: order_str = "ORDER_ZYX"; break;
+    }
+    sprintf(dst, "(%s)", order_str);
+    return;
+  }
+
+  sprintf(dst, "%g", value);
+}
+
 static int print_property_list(const char *type_name)
 {
-  const char **prop_types = NULL;
-  const char **prop_names = NULL;
-  int nprops = 0;
-  int err = 0;
-  int i;
+  const struct Property *list = SiGetPropertyList(type_name);
+  const struct Property *prop = NULL;
 
-  err = SiGetPropertyList(type_name, &prop_types, &prop_names, &nprops);
-  if (err) {
+  if (list == NULL) {
     printf("#   No property is available for %s\n", type_name);
     printf("#   Make sure the type name is correct.\n");
     printf("#   If you requested properties for a plugin,\n");
@@ -533,11 +559,51 @@ static int print_property_list(const char *type_name)
   }
 
   printf("#   %s Properties\n", type_name);
-  printf("#   %15.15s   %-20.20s\n", "(Type)", "(Name)");
-  for (i = 0; i < nprops; i++) {
-    printf("#   %15.15s : %-20.20s\n", prop_types[i], prop_names[i]);
+  printf("#   %-15.15s   %-20.20s   %-20.20s\n", "(Type)", "(Name)", "(Default)");
+  for (prop = list; PropIsValid(prop); prop++) {
+    double default_value[4] = {0, 0, 0, 0};
+    char default_value_string[512] = {'\0'};
+
+    default_value[0] = PropDefaultValue(prop, 0);
+    default_value[1] = PropDefaultValue(prop, 1);
+    default_value[2] = PropDefaultValue(prop, 2);
+    default_value[3] = PropDefaultValue(prop, 3);
+
+    switch (PropType(prop)) {
+      case PROP_SCALAR:
+        scalar_to_transform_order_string(
+            default_value_string,
+            PropName(prop),
+            default_value[0]);
+        break;
+      case PROP_VECTOR2:
+        sprintf(default_value_string, "(%g, %g)",
+            default_value[0],
+            default_value[1]);
+        break;
+      case PROP_VECTOR3:
+        sprintf(default_value_string, "(%g, %g, %g)",
+            default_value[0],
+            default_value[1],
+            default_value[2]);
+        break;
+      case PROP_VECTOR4:
+        sprintf(default_value_string, "(%g, %g, %g, %g)",
+            default_value[0],
+            default_value[1],
+            default_value[2],
+            default_value[3]);
+        break;
+      default:
+        sprintf(default_value_string, "(null)");
+        break;
+    }
+
+    printf("#   %-15.15s : %-20.20s : %-20.20s\n",
+        PropTypeString(prop),
+        PropName(prop),
+        default_value_string);
   }
 
   return 0;
 }
-

@@ -67,8 +67,6 @@ struct Property {
   int (*SetProperty)(void *self, const struct PropertyValue *value);
 };
 
-extern const char *PropTypeString(int property_type);
-
 extern struct PropertyValue PropScalar(double v0);
 extern struct PropertyValue PropVector2(double v0, double v1);
 extern struct PropertyValue PropVector3(double v0, double v1, double v2);
@@ -82,6 +80,13 @@ extern struct PropertyValue PropVolume(struct Volume *volume);
 extern struct PropertyValue PropMesh(struct Mesh *mesh);
 
 extern struct PropertyValue InitPropValue(void);
+extern int PropIsValid(const struct Property *prop);
+
+extern const char *PropName(const struct Property *prop);
+extern const int PropType(const struct Property *prop);
+extern const double PropDefaultValue(const struct Property *prop, int index);
+extern const char *PropTypeString(const struct Property *prop);
+
 extern const struct Property *PropFind(const struct Property *list, int type, const char *name);
 extern int PropSetAllDefaultValues(void *self, const struct Property *list);
 

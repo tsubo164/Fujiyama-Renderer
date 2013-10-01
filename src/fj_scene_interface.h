@@ -107,10 +107,8 @@ extern Status SiSetStringProperty(ID id, const char *name, const char *string);
 extern Status SiSetSampleProperty3(ID id, const char *name,
     double v0, double v1, double v2, double time);
 
-extern Status SiGetPropertyList(const char *type_name,
-    const char ***property_types,
-    const char ***property_names,
-    int *property_count);
+struct Property;
+extern const struct Property *SiGetPropertyList(const char *type_name);
 
 /* Callback interfaces */
 extern Status SiSetFrameReportCallback(ID id, void *data,

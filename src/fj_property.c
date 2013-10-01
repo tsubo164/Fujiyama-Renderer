@@ -24,28 +24,9 @@ See LICENSE and README
   (dst)[3] = (1-(t)) * (a)[3] + (t) * (b)[3]; \
   } while(0)
 
-static int prop_is_valid(const struct Property *prop);
 static int compare_property_sample(const void *ptr0, const void *ptr1);
 static void push_sample(struct PropertySampleList *list, const struct PropertySample *sample);
 static void sort_by_sample_time(struct PropertySampleList *list);
-
-const char *PropTypeString(int property_type)
-{
-  switch (property_type) {
-  case PROP_SCALAR:      return "Scalar";
-  case PROP_VECTOR2:     return "Vector2";
-  case PROP_VECTOR3:     return "Vector3";
-  case PROP_VECTOR4:     return "Vector4";
-  case PROP_STRING:      return "String";
-  case PROP_OBJECTGROUP: return "ObjectGroup";
-  case PROP_TURBULENCE:  return "Turbulence";
-  case PROP_TEXTURE:     return "Texture";
-  case PROP_SHADER:      return "Shader";
-  case PROP_VOLUME:      return "Volume";
-  case PROP_MESH:        return "Mesh";
-  default:               return NULL;
-  }
-}
 
 struct PropertyValue PropScalar(double v0)
 {
@@ -159,13 +140,60 @@ struct PropertyValue InitPropValue(void)
   return value;
 }
 
+int PropIsValid(const struct Property *prop)
+{
+  if (PropType(prop) == PROP_NONE)
+    return 0;
+
+  if (PropName(prop) == NULL)
+    return 0;
+
+  return 1;
+}
+
+const char *PropName(const struct Property *prop)
+{
+  return prop->name;
+}
+
+const int PropType(const struct Property *prop)
+{
+  return prop->type;
+}
+
+const double PropDefaultValue(const struct Property *prop, int index)
+{
+  if (index < 0 || index > 3)
+    return 0;
+
+  return prop->default_value[index];
+}
+
+const char *PropTypeString(const struct Property *prop)
+{
+  switch (PropType(prop)) {
+  case PROP_SCALAR:      return "Scalar";
+  case PROP_VECTOR2:     return "Vector2";
+  case PROP_VECTOR3:     return "Vector3";
+  case PROP_VECTOR4:     return "Vector4";
+  case PROP_STRING:      return "String";
+  case PROP_OBJECTGROUP: return "ObjectGroup";
+  case PROP_TURBULENCE:  return "Turbulence";
+  case PROP_TEXTURE:     return "Texture";
+  case PROP_SHADER:      return "Shader";
+  case PROP_VOLUME:      return "Volume";
+  case PROP_MESH:        return "Mesh";
+  default:               return NULL;
+  }
+}
+
 const struct Property *PropFind(const struct Property *list, int type, const char *name)
 {
   const struct Property *prop = list;
   const struct Property *found = NULL;
 
-  while (prop_is_valid(prop)) {
-    if (prop->type == type && strcmp(prop->name, name) == 0) {
+  while (PropIsValid(prop)) {
+    if (PropType(prop) == type && strcmp(PropName(prop), name) == 0) {
       found = prop;
       break;
     }
@@ -179,28 +207,28 @@ int PropSetAllDefaultValues(void *self, const struct Property *list)
   const struct Property *prop = NULL;
   int err_count = 0;
 
-  for (prop = list; prop_is_valid(prop); prop++) {
+  for (prop = list; PropIsValid(prop); prop++) {
     struct PropertyValue value = InitPropValue();
     int err = 0;
 
-    switch (prop->type) {
+    switch (PropType(prop)) {
       case PROP_SCALAR:
-        value.vector[0] = prop->default_value[0];
+        value.vector[0] = PropDefaultValue(prop, 0);
         break;
       case PROP_VECTOR2:
-        value.vector[0] = prop->default_value[0];
-        value.vector[1] = prop->default_value[1];
+        value.vector[0] = PropDefaultValue(prop, 0);
+        value.vector[1] = PropDefaultValue(prop, 1);
         break;
       case PROP_VECTOR3:
-        value.vector[0] = prop->default_value[0];
-        value.vector[1] = prop->default_value[1];
-        value.vector[2] = prop->default_value[2];
+        value.vector[0] = PropDefaultValue(prop, 0);
+        value.vector[1] = PropDefaultValue(prop, 1);
+        value.vector[2] = PropDefaultValue(prop, 2);
         break;
       case PROP_VECTOR4:
-        value.vector[0] = prop->default_value[0];
-        value.vector[1] = prop->default_value[1];
-        value.vector[2] = prop->default_value[2];
-        value.vector[3] = prop->default_value[3];
+        value.vector[0] = PropDefaultValue(prop, 0);
+        value.vector[1] = PropDefaultValue(prop, 1);
+        value.vector[2] = PropDefaultValue(prop, 2);
+        value.vector[3] = PropDefaultValue(prop, 3);
         break;
       default:
         break;
@@ -278,17 +306,6 @@ void PropLerpSamples(const struct PropertySampleList *list, double time,
   }
 }
 
-static int prop_is_valid(const struct Property *prop)
-{
-  if (prop->type == PROP_NONE)
-    return 0;
-
-  if (prop->name == NULL)
-    return 0;
-
-  return 1;
-}
-
 static int compare_property_sample(const void *ptr0, const void *ptr1)
 {
   const struct PropertySample *sample0 = (const struct PropertySample *) ptr0;
@@ -319,4 +336,3 @@ static void sort_by_sample_time(struct PropertySampleList *list)
       sizeof(struct PropertySample),
       compare_property_sample);
 }
-

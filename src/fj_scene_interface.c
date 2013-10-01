@@ -915,12 +915,9 @@ Status SiSetTileReportCallback(ID id, void *data,
   }
 }
 
-Status SiGetPropertyList(const char *type_name,
-    const char ***property_types,
-    const char ***property_names,
-    int *property_count)
+const struct Property *SiGetPropertyList(const char *type_name)
 {
-  return get_property_list(type_name, property_types, property_names, property_count);
+  return get_property_list(type_name);
 }
 
 static int is_valid_type(int type)
