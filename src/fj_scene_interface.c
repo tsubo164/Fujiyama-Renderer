@@ -304,6 +304,7 @@ ID SiNewObjectInstance(ID primset_id)
       set_errno(SI_ERR_FAILNEW);
       return SI_BADID;
     }
+    PropSetAllDefaultValues(object, get_builtin_type_property_list(Type_ObjectInstance));
   }
   else if (entry.type == Type_Volume) {
     struct ObjectInstance *object = NULL;
@@ -327,6 +328,7 @@ ID SiNewObjectInstance(ID primset_id)
       set_errno(SI_ERR_FAILNEW);
       return SI_BADID;
     }
+    PropSetAllDefaultValues(object, get_builtin_type_property_list(Type_ObjectInstance));
   }
   else {
     set_errno(SI_ERR_BADTYPE);
@@ -405,10 +407,12 @@ ID SiNewPointCloud(const char *filename)
 
 ID SiNewTurbulence(void)
 {
-  if (ScnNewTurbulence(get_scene()) == NULL) {
+  struct Turbulence *turb = ScnNewTurbulence(get_scene());
+  if (turb == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
   }
+  PropSetAllDefaultValues(turb, get_builtin_type_property_list(Type_Turbulence));
 
   set_errno(SI_ERR_NONE);
   return encode_id(Type_Turbulence, GET_LAST_ADDED_ID(Turbulence));
@@ -442,10 +446,12 @@ ID SiNewProcedure(const char *plugin_name)
 
 ID SiNewRenderer(void)
 {
-  if (ScnNewRenderer(get_scene()) == NULL) {
+  struct Renderer *renderer = ScnNewRenderer(get_scene());
+  if (renderer == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
   }
+  PropSetAllDefaultValues(renderer, get_builtin_type_property_list(Type_Renderer));
 
   set_errno(SI_ERR_NONE);
   return encode_id(Type_Renderer, GET_LAST_ADDED_ID(Renderer));
@@ -470,10 +476,12 @@ ID SiNewTexture(const char *filename)
 
 ID SiNewCamera(const char *arg)
 {
-  if (ScnNewCamera(get_scene(), arg) == NULL) {
+  struct Camera *camera = ScnNewCamera(get_scene(), arg);
+  if (camera == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
   }
+  PropSetAllDefaultValues(camera, get_builtin_type_property_list(Type_Camera));
 
   set_errno(SI_ERR_NONE);
   return encode_id(Type_Camera, GET_LAST_ADDED_ID(Camera));
@@ -519,6 +527,8 @@ ID SiNewVolume(void)
   /* volume id should map to itself because it doesn't need accelerator */
   push_idmap_endtry(volume_id, volume_id);
 
+  PropSetAllDefaultValues(volume, get_builtin_type_property_list(Type_Volume));
+
   set_errno(SI_ERR_NONE);
   return volume_id;
 }
@@ -561,7 +571,9 @@ ID SiNewCurve(const char *filename)
 
 ID SiNewLight(int light_type)
 {
+  struct Light *light = NULL;
   int type = 0;
+
   switch (light_type) {
   case SI_POINT_LIGHT:
     type = LGT_POINT;
@@ -580,10 +592,12 @@ ID SiNewLight(int light_type)
     break;
   };
 
-  if (ScnNewLight(get_scene(), type) == NULL) {
+  light = ScnNewLight(get_scene(), type);
+  if (light == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
   }
+  PropSetAllDefaultValues(light, get_builtin_type_property_list(Type_Light));
 
   set_errno(SI_ERR_NONE);
   return encode_id(Type_Light, GET_LAST_ADDED_ID(Light));
@@ -1055,7 +1069,7 @@ static int set_property(const struct Entry *entry,
     const char *name, const struct PropertyValue *value)
 {
   const struct Property *src_props = NULL;
-  void *dst_object = NULL;
+  void *dst_entry = NULL;
 
   /* procedure and shader type properties */
   if (entry->type == Type_Procedure) {
@@ -1074,13 +1088,13 @@ static int set_property(const struct Entry *entry,
   }
 
   /* builtin type properties */
-  dst_object = get_builtin_type_entry(get_scene(), entry);
-  src_props  = get_builtin_type_properties(entry->type);
+  dst_entry = get_builtin_type_entry(get_scene(), entry);
+  src_props = get_builtin_type_property_list(entry->type);
 
   assert(src_props && "Some types are not implemented yet");
 
-  if (dst_object == NULL)
+  if (dst_entry == NULL)
     return -1;
 
-  return find_and_set_property(dst_object, src_props, name, value);
+  return find_and_set_property(dst_entry, src_props, name, value);
 }

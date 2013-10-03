@@ -171,26 +171,22 @@ void ObjSetLightList(struct ObjectInstance *obj, const struct Light **lights, in
 
 void ObjSetReflectTarget(struct ObjectInstance *obj, const struct ObjectGroup *grp)
 {
-  assert(grp != NULL);
   obj->reflection_target = grp;
 }
 
 void ObjSetRefractTarget(struct ObjectInstance *obj, const struct ObjectGroup *grp)
 {
-  assert(grp != NULL);
   obj->refraction_target = grp;
 }
 
 void ObjSetShadowTarget(struct ObjectInstance *obj, const struct ObjectGroup *grp)
 {
-  assert(grp != NULL);
   obj->shadow_target = grp;
 }
 
 /* TODO come up with better way to make self target */
 void ObjSetSelfHitTarget(struct ObjectInstance *obj, const struct ObjectGroup *grp)
 {
-  assert(grp != NULL);
   obj->self_target = grp;
 }
 
