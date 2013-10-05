@@ -180,7 +180,20 @@ Status SiCloseScene(void)
 
 Status SiRenderScene(ID renderer)
 {
+  const struct Entry entry = decode_id(renderer);
+  struct Renderer *renderer_ptr = NULL;
   int err = 0;
+
+  if (entry.type != Type_Renderer) {
+    /* TODO error handling */
+    return SI_FAIL;
+  }
+
+  renderer_ptr = ScnGetRenderer(get_scene(), entry.index);
+  if (renderer_ptr == NULL) {
+    /* TODO error handling */
+    return SI_FAIL;
+  }
 
   compute_objects_bounds();
 
@@ -190,8 +203,7 @@ Status SiRenderScene(ID renderer)
     return SI_FAIL;
   }
 
-  /* TODO fix hard-coded renderer index */
-  err = RdrRender(ScnGetRenderer(get_scene(), 0));
+  err = RdrRender(renderer_ptr);
   if (err) {
     /* TODO error handling */
     return SI_FAIL;
@@ -207,12 +219,16 @@ Status SiSaveFrameBuffer(ID framebuffer, const char *filename)
   struct FrameBuffer *framebuffer_ptr = NULL;
   int err = 0;
 
-  if (entry.type != Type_FrameBuffer)
+  if (entry.type != Type_FrameBuffer) {
+    /* TODO error handling */
     return SI_FAIL;
+  }
 
   framebuffer_ptr = ScnGetFrameBuffer(get_scene(), entry.index);
-  if (framebuffer_ptr == NULL)
+  if (framebuffer_ptr == NULL) {
+    /* TODO error handling */
     return SI_FAIL;
+  }
 
   err = FbSaveCroppedData(framebuffer_ptr, filename);
   if (err) {

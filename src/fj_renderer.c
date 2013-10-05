@@ -105,7 +105,6 @@ struct Renderer {
 
 static int prepare_render(struct Renderer *renderer);
 static int render_scene(struct Renderer *renderer);
-static int preprocess_lights(struct Renderer *renderer);
 
 struct Renderer *RdrNew(void)
 {
@@ -299,12 +298,6 @@ int RdrRender(struct Renderer *renderer)
     return -1;
   }
 
-  err = preprocess_lights(renderer);
-  if (err) {
-    /* TODO error handling */
-    return -1;
-  }
-
   err = render_scene(renderer);
   if (err) {
     /* TODO error handling */
@@ -336,27 +329,31 @@ void RdrSetTileReportCallback(struct Renderer *renderer, void *data,
       tile_done);
 }
 
-static int prepare_render(struct Renderer *renderer)
+static int preprocess_camera(const struct Renderer *renderer)
 {
-  int xres, yres;
   struct Camera *cam = renderer->camera;
-  struct FrameBuffer *fb = renderer->framebuffers;
+  int xres, yres;
 
-  if (cam == NULL) {
-    /* TODO error handling */
+  if (cam == NULL)
     return -1;
-  }
-  if (fb == NULL) {
-    /* TODO error handling */
-    return -1;
-  }
 
-  /* Preparing Camera */
   xres = renderer->resolution[0];
   yres = renderer->resolution[1];
   CamSetAspect(cam, xres/(double)yres);
 
-  /* Prepare framebuffers */
+  return 0;
+}
+
+static int preprocess_framebuffer(const struct Renderer *renderer)
+{
+  struct FrameBuffer *fb = renderer->framebuffers;
+  int xres, yres;
+
+  if (fb == NULL)
+    return -1;
+
+  xres = renderer->resolution[0];
+  yres = renderer->resolution[1];
   FbResize(fb, xres, yres, 4);
 
   return 0;
@@ -386,6 +383,31 @@ static int preprocess_lights(struct Renderer *renderer)
   elapse = TimerGetElapse(&timer);
   printf("# Preprocessing Lights Done\n");
   printf("#   %dh %dm %gs\n\n", elapse.hour, elapse.min, elapse.sec);
+
+  return 0;
+}
+
+static int prepare_render(struct Renderer *renderer)
+{
+  int err = 0;
+
+  err = preprocess_camera(renderer);
+  if (err) {
+    /* TODO error handling */
+    return -1;
+  }
+
+  err = preprocess_framebuffer(renderer);
+  if (err) {
+    /* TODO error handling */
+    return -1;
+  }
+
+  err = preprocess_lights(renderer);
+  if (err) {
+    /* TODO error handling */
+    return -1;
+  }
 
   return 0;
 }
