@@ -119,9 +119,12 @@ static int build_bvh_accel(DerivedAccelerator derived,
   struct BVHAccelerator *bvh = (struct BVHAccelerator *) derived;
   struct Primitive *prims = NULL;
   struct Primitive **primptrs = NULL;
-
   const int NPRIMS = PrmGetPrimitiveCount(primset);
   int i;
+
+  if (NPRIMS == 0) {
+    return -1;
+  }
 
   prims = FJ_MEM_ALLOC_ARRAY(struct Primitive, NPRIMS);
   if (prims == NULL)

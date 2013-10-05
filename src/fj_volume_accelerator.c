@@ -310,10 +310,12 @@ static int build_bvh_accel(struct VolumeAccelerator *acc)
   struct VolumeBVHAccelerator *bvh = (struct VolumeBVHAccelerator *) acc->derived;
   struct VolumePrimitive *volumes;
   struct VolumePrimitive **volume_ptr;
-  int NPRIMS;
+  const int NPRIMS = acc->num_volumes;
   int i;
 
-  NPRIMS = acc->num_volumes;
+  if (NPRIMS == 0) {
+    return -1;
+  }
 
   volumes = FJ_MEM_ALLOC_ARRAY(struct VolumePrimitive, NPRIMS);
   if (volumes == NULL)

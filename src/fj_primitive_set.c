@@ -4,18 +4,42 @@ See LICENSE and README
 */
 
 #include "fj_primitive_set.h"
+#include "fj_box.h"
 #include <stddef.h>
 #include <float.h>
 
+const static struct Box null_bounds = {{0, 0, 0}, {0, 0, 0}};
+
+int get_null_primitive_count(const void *primset)
+{
+  return 0;
+}
+
+void get_null_primitive_set_bounds(const void *primset, struct Box *bounds)
+{
+  *bounds = null_bounds;
+}
+
+int null_primitive_ray_intersect(const void *primset, int prim_id, double time,
+    const struct Ray *ray, struct Intersection *isect)
+{
+  return 0;
+}
+
+void get_null_primitive_bounds(const void *primset, int prim_id, struct Box *bounds)
+{
+  *bounds = null_bounds;
+}
+
 void InitPrimitiveSet(struct PrimitiveSet *primset)
 {
-  primset->name = "NullPrimitives";
-  primset->data = NULL;
-
-  primset->PrimitiveIntersect = NULL;
-  primset->PrimitiveBounds = NULL;
-  primset->PrimitiveSetBounds = NULL;
-  primset->PrimitiveCount = NULL;
+  MakePrimitiveSet(primset,
+      "NullPrimitives",
+      NULL,
+      null_primitive_ray_intersect,
+      get_null_primitive_bounds,
+      get_null_primitive_set_bounds,
+      get_null_primitive_count);
 }
 
 void MakePrimitiveSet(struct PrimitiveSet *primset,

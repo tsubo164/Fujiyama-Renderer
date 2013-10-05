@@ -4,6 +4,7 @@ See LICENSE and README
 */
 
 #include "fj_scene_interface.h"
+#include "fj_volume_accelerator.h"
 #include "fj_framebuffer_io.h"
 #include "fj_point_cloud_io.h"
 #include "fj_primitive_set.h"
@@ -106,6 +107,7 @@ static ID encode_id(int type, int index);
 static struct Entry decode_id(ID id);
 static int create_implicit_groups(void);
 static void compute_objects_bounds(void);
+static void build_accelerators(void);
 static void set_errno(int err_no);
 static Status status_of_error(int err);
 
@@ -202,6 +204,8 @@ Status SiRenderScene(ID renderer)
     /* TODO error handling */
     return SI_FAIL;
   }
+
+  build_accelerators();
 
   err = RdrRender(renderer_ptr);
   if (err) {
@@ -978,7 +982,8 @@ static int create_implicit_groups(void)
 {
   struct ObjectGroup *all_objects = NULL;
   struct Renderer *renderer = NULL;
-  size_t i;
+  int N = 0;
+  int i;
 
   all_objects = ScnNewObjectGroup(get_scene());
   if (all_objects == NULL) {
@@ -986,13 +991,15 @@ static int create_implicit_groups(void)
     return SI_FAIL;
   }
 
-  for (i = 0; i < ScnGetObjectInstanceCount(get_scene()); i++) {
+  N = ScnGetObjectInstanceCount(get_scene());
+  for (i = 0; i < N; i++) {
     struct ObjectInstance *obj = ScnGetObjectInstance(get_scene(), i);
     ObjGroupAdd(all_objects, obj);
   }
 
   /* Preparing ObjectInstance */
-  for (i = 0; i < ScnGetObjectInstanceCount(get_scene()); i++) {
+  N = ScnGetObjectInstanceCount(get_scene());
+  for (i = 0; i < N; i++) {
     struct ObjectInstance *obj = ScnGetObjectInstance(get_scene(), i);
     const struct Light **lightlist = (const struct Light **) ScnGetLightList(get_scene());
     int nlights = ScnGetLightCount(get_scene());
@@ -1050,6 +1057,38 @@ static void compute_objects_bounds(void)
   for (i = 0; i < N; i++) {
     struct ObjectGroup *grp = ScnGetObjectGroup(get_scene(), i);
     ObjGroupComputeBounds(grp);
+  }
+}
+
+static void build_accelerators(void)
+{
+  int N = 0;
+  int i;
+
+  N = ScnGetAcceleratorCount(get_scene());
+  for (i = 0; i < N; i++) {
+    struct Accelerator *acc = ScnGetAccelerator(get_scene(), i);
+    AccBuild(acc);
+  }
+
+  N = ScnGetObjectGroupCount(get_scene());
+  for (i = 0; i < N; i++) {
+    struct ObjectGroup *grp = ScnGetObjectGroup(get_scene(), i);
+    struct Accelerator *mutable_acc = NULL;
+    struct VolumeAccelerator *mutable_volume_acc = NULL;
+
+    mutable_acc = (struct Accelerator *) ObjGroupGetSurfaceAccelerator(grp);
+    mutable_volume_acc = (struct VolumeAccelerator *) ObjGroupGetVolumeAccelerator(grp);
+
+    /* TODO come up with a better way */
+    if (mutable_acc != NULL) {
+      printf("# Building surface group accelerators\n");
+      AccBuild(mutable_acc);
+    }
+    if (mutable_volume_acc != NULL) {
+      printf("# Building volume group accelerators\n");
+      VolumeAccBuild(mutable_volume_acc);
+    }
   }
 }
 
