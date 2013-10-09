@@ -19,6 +19,7 @@ extern void TexFree(struct Texture *tex);
 extern void TexLookup(struct Texture *tex, float u, float v, struct Color4 *rgba);
 extern int TexLoadFile(struct Texture *tex, const char *filename);
 
+extern void TexSetThreadCount(struct Texture *tex, int thread_count);
 extern void TexGetResolution(const struct Texture *tex, int *xres, int *yres);
 
 #ifdef __cplusplus
@@ -26,4 +27,3 @@ extern void TexGetResolution(const struct Texture *tex, int *xres, int *yres);
 #endif
 
 #endif /* FJ_XXX_H */
-

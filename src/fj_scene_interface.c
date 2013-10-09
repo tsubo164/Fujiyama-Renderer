@@ -8,6 +8,7 @@ See LICENSE and README
 #include "fj_framebuffer_io.h"
 #include "fj_point_cloud_io.h"
 #include "fj_primitive_set.h"
+#include "fj_multi_thread.h"
 #include "fj_curve_io.h"
 #include "fj_mesh_io.h"
 #include "fj_shader.h"
@@ -105,9 +106,7 @@ static int si_errno = SI_ERR_NONE;
 static int is_valid_type(int type);
 static ID encode_id(int type, int index);
 static struct Entry decode_id(ID id);
-static int create_implicit_groups(void);
-static void compute_objects_bounds(void);
-static void build_accelerators(void);
+static int prepare_render(const struct Renderer *renderer);
 static void set_errno(int err_no);
 static Status status_of_error(int err);
 
@@ -197,15 +196,11 @@ Status SiRenderScene(ID renderer)
     return SI_FAIL;
   }
 
-  compute_objects_bounds();
-
-  err = create_implicit_groups();
+  err = prepare_render(renderer_ptr);
   if (err) {
     /* TODO error handling */
     return SI_FAIL;
   }
-
-  build_accelerators();
 
   err = RdrRender(renderer_ptr);
   if (err) {
@@ -1090,6 +1085,42 @@ static void build_accelerators(void)
       VolumeAccBuild(mutable_volume_acc);
     }
   }
+}
+
+static int prepare_textures(const struct Renderer *renderer)
+{
+  const int N = ScnGetTextureCount(get_scene());
+  const int thread_count = MtGetMaxThreadCount();
+  int i;
+
+  printf("**************** thread_count: %d\n", thread_count);
+
+  for (i = 0; i < N; i++) {
+    struct Texture *texture = ScnGetTexture(get_scene(), i);
+    TexSetThreadCount(texture, thread_count);
+  }
+
+  return 0;
+}
+
+static int prepare_render(const struct Renderer *renderer)
+{
+  int err = 0;
+
+  compute_objects_bounds();
+
+  /* TODO need err? */
+  err = create_implicit_groups();
+  if (err) {
+    /* TODO error handling */
+    return SI_FAIL;
+  }
+
+  build_accelerators();
+
+  prepare_textures(renderer);
+
+  return 0;
 }
 
 static void set_errno(int err_no)

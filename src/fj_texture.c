@@ -110,6 +110,10 @@ int TexLoadFile(struct Texture *tex, const char *filename)
   return 0;
 }
 
+void TexSetThreadCount(struct Texture *tex, int thread_count)
+{
+}
+
 void TexGetResolution(const struct Texture *tex, int *xres, int *yres)
 {
   if (tex->mip == NULL) {
