@@ -193,6 +193,18 @@ static int set_Renderer_render_region(void *self, const struct PropertyValue *va
   return 0;
 }
 
+static int set_Renderer_use_max_thread(void *self, const struct PropertyValue *value)
+{
+  RdrSetUseMaxThread((struct Renderer *) self, (int) value->vector[0]);
+  return 0;
+}
+
+static int set_Renderer_thread_count(void *self, const struct PropertyValue *value)
+{
+  RdrSetThreadCount((struct Renderer *) self, (int) value->vector[0]);
+  return 0;
+}
+
 static int set_Camera_fov(void *self, const struct PropertyValue *value)
 {
   CamSetFov((struct Camera *) self, value->vector[0]);
@@ -390,6 +402,8 @@ static const struct Property Renderer_properties[] = {
   {PROP_VECTOR2, "tilesize",              {64, 64, 0, 0},    set_Renderer_tilesize},
   {PROP_VECTOR2, "filterwidth",           {2, 2, 0, 0},      set_Renderer_filterwidth},
   {PROP_VECTOR4, "render_region",         {0, 0, 320, 2400}, set_Renderer_render_region},
+  {PROP_SCALAR,  "use_max_thread",        {1, 0, 0, 0},      set_Renderer_use_max_thread},
+  {PROP_SCALAR,  "thread_count",          {8, 0, 0, 0},      set_Renderer_thread_count},
   END_OF_PROPERTY
 };
 

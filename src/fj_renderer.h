@@ -43,6 +43,11 @@ extern void RdrSetFrameBuffers(struct Renderer *renderer, struct FrameBuffer *fb
 extern void RdrSetTargetObjects(struct Renderer *renderer, struct ObjectGroup *grp);
 extern void RdrSetTargetLights(struct Renderer *renderer, struct Light **lights, int nlights);
 
+/* use max thread if use_max_thread is 1, otherwise takes account for thread_count */
+extern void RdrSetUseMaxThread(struct Renderer *renderer, int use_max_thread);
+extern void RdrSetThreadCount(struct Renderer *renderer, int thread_count);
+extern int RdrGetThreadCount(const struct Renderer *renderer);
+
 extern int RdrRender(struct Renderer *renderer);
 
 extern void RdrSetFrameReportCallback(struct Renderer *renderer, void *data,

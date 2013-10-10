@@ -4,6 +4,7 @@ See LICENSE and README
 */
 
 #include "fj_renderer.h"
+#include "fj_multi_thread.h"
 #include "fj_framebuffer.h"
 #include "fj_rectangle.h"
 #include "fj_progress.h"
@@ -97,6 +98,9 @@ struct Renderer {
   double raymarch_reflect_step;
   double raymarch_refract_step;
 
+  int use_max_thread;
+  int thread_count;
+
   struct FrameReport frame_report;
   struct TileReport tile_report;
   struct Timer frame_timer;
@@ -133,6 +137,9 @@ struct Renderer *RdrNew(void)
   RdrSetRaymarchShadowStep(renderer, .1);
   RdrSetRaymarchReflectStep(renderer, .1);
   RdrSetRaymarchRefractStep(renderer, .1);
+
+  RdrSetUseMaxThread(renderer, 1);
+  RdrSetThreadCount(renderer, 8);
 
   /* TODO TEST INTERRUPT */
   RdrSetFrameReportCallback(renderer, &renderer->frame_timer,
@@ -286,6 +293,31 @@ void RdrSetTargetLights(struct Renderer *renderer, struct Light **lights, int nl
   assert(nlights > 0);
   renderer->target_lights = lights;
   renderer->nlights = nlights;
+}
+
+void RdrSetUseMaxThread(struct Renderer *renderer, int use_max_thread)
+{
+  renderer->use_max_thread = (use_max_thread != 0);
+}
+
+void RdrSetThreadCount(struct Renderer *renderer, int thread_count)
+{
+  if (thread_count > 0) {
+    renderer->thread_count = thread_count;
+  } else {
+    renderer->thread_count = 1;
+  }
+}
+
+int RdrGetThreadCount(const struct Renderer *renderer)
+{
+  const int max_thread_count = MtGetMaxThreadCount();
+
+  if (renderer->use_max_thread) {
+    return max_thread_count;
+  } else {
+    return MIN(max_thread_count, renderer->thread_count);
+  }
 }
 
 int RdrRender(struct Renderer *renderer)

@@ -1090,10 +1090,10 @@ static void build_accelerators(void)
 static int prepare_textures(const struct Renderer *renderer)
 {
   const int N = ScnGetTextureCount(get_scene());
-  const int thread_count = MtGetMaxThreadCount();
+  const int thread_count = RdrGetThreadCount(renderer);
   int i;
 
-  printf("**************** thread_count: %d\n", thread_count);
+  printf("***************** thread_count: %d\n", thread_count);
 
   for (i = 0; i < N; i++) {
     struct Texture *texture = ScnGetTexture(get_scene(), i);

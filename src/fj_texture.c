@@ -16,6 +16,49 @@ See LICENSE and README
 
 static const struct Color4 NO_TEXTURE_COLOR = {1, .63, .63};
 
+struct TextureCache {
+  struct FrameBuffer *fb;
+  int last_xtile;
+  int last_ytile;
+};
+
+static struct TextureCache *new_cache(void)
+{
+  struct TextureCache *cache = FJ_MEM_ALLOC(struct TextureCache);
+  if (cache == NULL)
+    return NULL;
+
+  cache->fb = NULL;
+  cache->last_xtile = -1;
+  cache->last_ytile = -1;
+
+  return cache;
+}
+
+static void free_cache(struct TextureCache *cache)
+{
+  if (cache == NULL)
+    return;
+  FbFree(cache->fb);
+  FJ_MEM_FREE(cache);
+}
+
+static void free_cache_list(struct TextureCache **cache_list, int cache_count)
+{
+  int i;
+
+  if (cache_list == NULL) {
+    return;
+  }
+
+  for (i = 0; i < cache_count; i++) {
+    struct TextureCache *cache = cache_list[i];
+    free_cache(cache);
+  }
+
+  FJ_MEM_FREE(cache_list);
+}
+
 struct Texture {
   struct FrameBuffer *fb;
   int width;
@@ -24,6 +67,10 @@ struct Texture {
   struct MipInput *mip;
   int last_xtile;
   int last_ytile;
+
+  /* TODO TEST THREAD */
+  struct TextureCache **cache_list;
+  int cache_count;
 };
 
 struct Texture *TexNew(void)
@@ -37,6 +84,9 @@ struct Texture *TexNew(void)
   tex->last_xtile = -1;
   tex->last_ytile = -1;
 
+  tex->cache_list = NULL;
+  tex->cache_count = 0;
+
   return tex;
 }
 
@@ -44,6 +94,9 @@ void TexFree(struct Texture *tex)
 {
   if (tex == NULL)
     return;
+
+  /* TODO TEST THREAD */
+  free_cache_list(tex->cache_list, tex->cache_count);
 
   FbFree(tex->fb);
   MipCloseInputFile(tex->mip);
@@ -112,6 +165,25 @@ int TexLoadFile(struct Texture *tex, const char *filename)
 
 void TexSetThreadCount(struct Texture *tex, int thread_count)
 {
+  int i;
+
+  if (thread_count < 0 || thread_count > 32) {
+    /* TODO error handling */
+    return;
+  }
+
+  tex->cache_count = thread_count;
+  tex->cache_list = FJ_MEM_ALLOC_ARRAY(struct TextureCache *, tex->cache_count);
+  if (tex->cache_list == NULL) {
+    /* TODO error handling */
+    return;
+  }
+
+  for (i = 0; i < tex->cache_count; i++) {
+    struct TextureCache *cache = new_cache();
+    tex->cache_list[i] = cache;
+    printf("***************** HOGE +++++++++++++++++++++++\n");
+  }
 }
 
 void TexGetResolution(const struct Texture *tex, int *xres, int *yres)
