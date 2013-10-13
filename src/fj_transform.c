@@ -188,6 +188,7 @@ void XfmSetSampleRotateOrder(struct TransformSampleList *list, int order)
 void XfmLerpTransformSample(const struct TransformSampleList *list, double time,
     struct Transform *transform_interp)
 {
+#if 0
   if (list->last_sample_time != time) {
     struct TransformSampleList *mutable_list = (struct TransformSampleList *) list;
     struct PropertySample T = INIT_PROPERTYSAMPLE;
@@ -208,6 +209,20 @@ void XfmLerpTransformSample(const struct TransformSampleList *list, double time,
   }
 
   *transform_interp = list->last_sample_transform;
+#endif
+  struct PropertySample T = INIT_PROPERTYSAMPLE;
+  struct PropertySample R = INIT_PROPERTYSAMPLE;
+  struct PropertySample S = INIT_PROPERTYSAMPLE;
+
+  PropLerpSamples(&list->translate, time, &T);
+  PropLerpSamples(&list->rotate, time, &R);
+  PropLerpSamples(&list->scale, time, &S);
+
+  XfmSetTransform(transform_interp,
+    list->transform_order, list->rotate_order,
+    T.vector[0], T.vector[1], T.vector[2],
+    R.vector[0], R.vector[1], R.vector[2],
+    S.vector[0], S.vector[1], S.vector[2]);
 }
 
 static void update_matrix(struct Transform *transform)

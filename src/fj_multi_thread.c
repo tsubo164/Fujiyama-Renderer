@@ -27,22 +27,28 @@ void MtSetMaxThreadCount(int count)
   omp_set_num_threads(count);
 }
 
-int MtRunThread(void *data, ThreadFunction run, int start, int end)
+int MtRunThread(void *data, ThreadFunction run, int thread_count, int start, int end)
 {
-  struct ThreadContext cxt;
 	int i = 0;
 
-  cxt.thread_id = 0;
-  cxt.iteration_id = 0;
-  cxt.iteration_count = end - start;
+  MtSetMaxThreadCount(thread_count);
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
 	for (i = start; i < end; i++) {
+    struct ThreadContext cxt;
+    int err = 0;
+
     cxt.thread_count = MtGetThreadCount();
     cxt.thread_id = MtGetThreadID();
+    cxt.iteration_count = end - start;
     cxt.iteration_id = i;
 
-		run(data, &cxt);
+		err = run(data, &cxt);
+    if (err) {
+      /*
+      break;
+      */
+    }
 	}
 
   return 0;

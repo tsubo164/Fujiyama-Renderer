@@ -56,13 +56,17 @@ static Interrupt default_tile_start(void *data, const struct TileInfo *info)
 }
 static Interrupt default_sample_done(void *data)
 {
+  /*
   struct Progress *progress = (struct Progress *) data;
   PrgIncrement(progress);
+  */
   return CALLBACK_CONTINUE;
 }
 static Interrupt default_tile_done(void *data, const struct TileInfo *info)
 {
   struct Progress *progress = (struct Progress *) data;
+  /*
+  */
 
   printf(" Tile Done: %d/%d (%d %%)\n",
       info->region_id + 1,
@@ -70,6 +74,8 @@ static Interrupt default_tile_done(void *data, const struct TileInfo *info)
       (int) ((info->region_id + 1) / (double) info->total_region_count * 100));
 
   PrgDone(progress);
+  /*
+  */
   return CALLBACK_CONTINUE;
 }
 
@@ -138,10 +144,9 @@ struct Renderer *RdrNew(void)
   RdrSetRaymarchReflectStep(renderer, .1);
   RdrSetRaymarchRefractStep(renderer, .1);
 
-  RdrSetUseMaxThread(renderer, 1);
-  RdrSetThreadCount(renderer, 8);
+  RdrSetUseMaxThread(renderer, 0);
+  RdrSetThreadCount(renderer, 1);
 
-  /* TODO TEST INTERRUPT */
   RdrSetFrameReportCallback(renderer, &renderer->frame_timer,
       default_frame_start,
       default_frame_done);
@@ -157,9 +162,10 @@ struct Renderer *RdrNew(void)
 
 void RdrFree(struct Renderer *renderer)
 {
-  if (renderer == NULL)
+  if (renderer == NULL) {
     return;
-  /* TODO TEST INTERRUPT */
+  }
+
   PrgFree(renderer->progress);
   FJ_MEM_FREE(renderer);
 }
@@ -302,10 +308,14 @@ void RdrSetUseMaxThread(struct Renderer *renderer, int use_max_thread)
 
 void RdrSetThreadCount(struct Renderer *renderer, int thread_count)
 {
-  if (thread_count > 0) {
-    renderer->thread_count = thread_count;
-  } else {
+  const int max_thread_count = MtGetMaxThreadCount();
+
+  if (thread_count < 1) {
     renderer->thread_count = 1;
+  } else if (thread_count > max_thread_count) {
+    renderer->thread_count = max_thread_count;
+  } else {
+    renderer->thread_count = thread_count;
   }
 }
 
@@ -316,7 +326,7 @@ int RdrGetThreadCount(const struct Renderer *renderer)
   if (renderer->use_max_thread) {
     return max_thread_count;
   } else {
-    return MIN(max_thread_count, renderer->thread_count);
+    return renderer->thread_count;
   }
 }
 
@@ -451,7 +461,7 @@ struct Worker {
   int region_count;
   int xres, yres;
 
-  struct Camera *camera;
+  const struct Camera *camera;
   struct FrameBuffer *framebuffer;
   struct Progress *progress;
   struct Sampler *sampler;
@@ -461,11 +471,13 @@ struct Worker {
   struct TraceContext context;
   struct Rectangle tile_region;
 
-  /* TODO TEST INTERRUPT */
   struct TileReport tile_report;
+
+  const struct Tiler *tiler;
 };
 
-void init_worker(struct Worker *worker, struct Renderer *renderer)
+void init_worker(struct Worker *worker,
+    const struct Renderer *renderer, const struct Tiler *tiler)
 {
   const int xres = renderer->resolution[0];
   const int yres = renderer->resolution[1];
@@ -476,6 +488,7 @@ void init_worker(struct Worker *worker, struct Renderer *renderer)
 
   worker->camera = renderer->camera;
   worker->framebuffer = renderer->framebuffers;
+  worker->tiler = tiler;
 
   worker->region_id = -1;
   worker->region_count = -1;
@@ -533,12 +546,12 @@ void init_worker(struct Worker *worker, struct Renderer *renderer)
   worker->tile_report = renderer->tile_report;
 }
 
-void set_working_region(struct Worker *worker, struct Tiler *tiler, int region_id)
+void set_working_region(struct Worker *worker, int region_id)
 {
-  struct Tile *tile = TlrGetTile(tiler, region_id);
+  struct Tile *tile = TlrGetTile(worker->tiler, region_id);
 
   worker->region_id = region_id;
-  worker->region_count = TlrGetTileCount(tiler);
+  worker->region_count = TlrGetTileCount(worker->tiler);
   worker->tile_region.xmin = tile->xmin;
   worker->tile_region.ymin = tile->ymin;
   worker->tile_region.xmax = tile->xmax;
@@ -619,7 +632,7 @@ static void reconstruct_image(struct Worker *worker)
 static void render_frame_start(struct Renderer *renderer, const struct Tiler *tiler)
 {
   struct FrameInfo info;
-  info.worker_count = 1;
+  info.worker_count = RdrGetThreadCount(renderer);
   info.tile_count = TlrGetTileCount(tiler);
   info.frame_region = renderer->frame_region;;
   info.framebuffer = renderer->framebuffers;
@@ -630,7 +643,7 @@ static void render_frame_start(struct Renderer *renderer, const struct Tiler *ti
 static void render_frame_done(struct Renderer *renderer, const struct Tiler *tiler)
 {
   struct FrameInfo info;
-  info.worker_count = 1;
+  info.worker_count = RdrGetThreadCount(renderer);
   info.tile_count = TlrGetTileCount(tiler);
   info.frame_region = renderer->frame_region;;
   info.framebuffer = renderer->framebuffers;
@@ -700,6 +713,28 @@ static int integrate_samples(struct Worker *worker)
   return 0;
 }
 
+static int render_tile(void *data, const struct ThreadContext *context)
+{
+	struct Worker *worker_list = (struct Worker *) data;
+	struct Worker *worker = &worker_list[context->thread_id];
+  int interrupted = 0;
+
+  set_working_region(worker, context->iteration_id);
+
+  render_tile_start(worker);
+
+  interrupted = integrate_samples(worker);
+  reconstruct_image(worker);
+
+  render_tile_done(worker);
+
+  if (interrupted) {
+    return -1;
+  }
+
+	return 0;
+}
+
 static int render_scene(struct Renderer *renderer)
 {
   struct Tiler *tiler = NULL;
@@ -713,8 +748,9 @@ static int render_scene(struct Renderer *renderer)
   const int xtilesize = renderer->tilesize[0];
   const int ytilesize = renderer->tilesize[1];
 
-  struct Worker worker[1];
-  init_worker(&worker[0], renderer);
+  /* TODO TEST MULTI-THREAD */
+  const int thread_count = RdrGetThreadCount(renderer);
+  struct Worker *worker_list = NULL;
 
   /* Tiler */
   tiler = TlrNew(xres, yres, xtilesize, ytilesize);
@@ -725,13 +761,26 @@ static int render_scene(struct Renderer *renderer)
   TlrGenerateTiles(tiler, &renderer->frame_region);
   ntiles = TlrGetTileCount(tiler);
 
+  /* Worker */
+  worker_list = FJ_MEM_ALLOC_ARRAY(struct Worker, thread_count);
+  if (worker_list == NULL) {
+    render_state = -1;
+    goto cleanup_and_exit;
+  }
+  for (i = 0; i < thread_count; i++) {
+    printf(">>>>>>>>>> thread_count: %d\n", thread_count);
+    init_worker(&worker_list[i], renderer, tiler);
+  }
+
   /* Run sampling */
   render_frame_start(renderer, tiler);
 
+  MtRunThread(worker_list, render_tile, thread_count, 0, ntiles);
+#if 0
   for (i = 0; i < ntiles; i++) {
     int interrupted = 0;
 
-    set_working_region(&worker[0], tiler, i);
+    set_working_region(&worker[0], i);
 
     render_tile_start(&worker[0]);
 
@@ -744,13 +793,18 @@ static int render_scene(struct Renderer *renderer)
       break;
     }
   }
+#endif
 
   render_frame_done(renderer, tiler);
 
 cleanup_and_exit:
   TlrFree(tiler);
 
-  finish_worker(&worker[0]);
+  for (i = 0; i < thread_count; i++) {
+    printf("<<<<<<<<<< thread_count: %d\n", thread_count);
+    finish_worker(&worker_list[i]);
+  }
+  FJ_MEM_FREE(worker_list);
 
   return render_state;
 }

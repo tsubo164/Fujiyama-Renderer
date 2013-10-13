@@ -25,7 +25,7 @@ extern int MtGetThreadID(void);
 
 extern void MtSetMaxThreadCount(int count);
 
-extern int MtRunThread(void *data, ThreadFunction run, int start, int end);
+extern int MtRunThread(void *data, ThreadFunction run, int thread_count, int start, int end);
 
 #ifdef __cplusplus
 } /* extern "C" */
