@@ -5,34 +5,25 @@ See LICENSE and README
 
 #include "fj_timer.h"
 
-void TimerStart(struct Timer *t)
+void TimerStart(struct Timer *timer)
 {
-  t->start_clock = clock();
-  time(&t->start_time);
+  time(&timer->start_time);
 }
 
-struct Elapse TimerGetElapse(const struct Timer *t)
+struct Elapse TimerGetElapse(const struct Timer *timer)
 {
-  const clock_t end_clock = clock();
-  struct Elapse elapse;
+  struct Elapse elapse = {0, 0, 1};
+  double total_seconds;
   time_t end_time;
 
-  double total_seconds;
-  double diff_seconds;
-
   time(&end_time);
-  diff_seconds = difftime(end_time, t->start_time);
+  total_seconds = difftime(end_time, timer->start_time);
 
-  if (diff_seconds > 60 || end_clock == -1) {
-    total_seconds = diff_seconds;
-  } else {
-    total_seconds = (double)(end_clock - t->start_clock) / CLOCKS_PER_SEC;
+  if (total_seconds > 1) {
+    elapse.hour = (int) (total_seconds / (60*60));
+    elapse.min = (int) ((total_seconds - elapse.hour*60*60) / 60);
+    elapse.sec = total_seconds - elapse.hour*60*60 - elapse.min*60;
   }
-
-  elapse.hour = (int) (total_seconds / (60*60));
-  elapse.min = (int) ((total_seconds - elapse.hour*60*60) / 60);
-  elapse.sec = total_seconds - elapse.hour*60*60 - elapse.min*60;
 
   return elapse;
 }
-

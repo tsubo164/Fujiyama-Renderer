@@ -85,11 +85,11 @@ int PrcRun(struct Procedure *procedure)
   elapse = TimerGetElapse(&timer);
 
   if (err) {
-    printf("Error: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
+    printf("Error: %dh %dm %ds\n", elapse.hour, elapse.min, elapse.sec);
 
     return -1;
   } else {
-    printf("Done: %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
+    printf("Done: %dh %dm %ds\n", elapse.hour, elapse.min, elapse.sec);
 
     return 0;
   }

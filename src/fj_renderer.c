@@ -43,7 +43,7 @@ static Interrupt default_frame_done(void *data, const struct FrameInfo *info)
   struct Elapse elapse;
   elapse = TimerGetElapse(timer);
   printf("# Frame Done\n");
-  printf("#   %dh %dm %gs\n", elapse.hour, elapse.min, elapse.sec);
+  printf("#   %dh %dm %ds\n", elapse.hour, elapse.min, elapse.sec);
   printf("\n");
   return CALLBACK_CONTINUE;
 }
@@ -424,7 +424,7 @@ static int preprocess_lights(struct Renderer *renderer)
 
   elapse = TimerGetElapse(&timer);
   printf("# Preprocessing Lights Done\n");
-  printf("#   %dh %dm %gs\n\n", elapse.hour, elapse.min, elapse.sec);
+  printf("#   %dh %dm %ds\n\n", elapse.hour, elapse.min, elapse.sec);
 
   return 0;
 }

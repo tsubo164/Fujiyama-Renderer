@@ -74,9 +74,6 @@ struct TransformSampleList {
   struct PropertySampleList scale;
   int transform_order;
   int rotate_order;
-
-  struct Transform last_sample_transform;
-  double last_sample_time;
 };
 
 extern void XfmInitTransformSampleList(struct TransformSampleList *list);
@@ -98,4 +95,3 @@ extern void XfmSetSampleRotateOrder(struct TransformSampleList *list, int order)
 #endif
 
 #endif /* FJ_XXX_H */
-
