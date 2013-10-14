@@ -249,3 +249,13 @@ static int allocate_samples_for_region(struct Sampler *sampler, const struct Rec
 
   return 0;
 }
+
+int SmpGetSampleCountForRegion(const struct Rectangle *region,
+    int xrate, int yrate, float xfwidth, float yfwidth)
+{
+  const int xmargin = (int) ceil(((xfwidth-1) * xrate) * .5);
+  const int ymargin = (int) ceil(((yfwidth-1) * yrate) * .5);
+  const int xnsamples = xrate * SIZE_X(region) + 2 * xmargin;
+  const int ynsamples = yrate * SIZE_Y(region) + 2 * ymargin;
+  return xnsamples * ynsamples;
+}

@@ -27,6 +27,48 @@ See LICENSE and README
 #include <stdio.h>
 #include <float.h>
 
+/* TODO TEST SAMPLE COUNT */
+struct RenderProgress {
+  struct Timer timer;
+  struct Progress *progress_list[10];
+  long partial_iteration_count[10];
+  long partial_iteration[10];
+  long total_iteration_count;
+  int current_part;
+};
+static void init_render_progress(struct RenderProgress *progress, long total_iteration_count)
+{
+  const long partial_itr = (long) floor(total_iteration_count / 10.);
+  long remains = total_iteration_count - partial_itr * 10;
+  int i;
+
+  for (i = 0; i < 10; i++) {
+    const long this_itr = partial_itr + (remains > 0 ? 1 : 0);
+    progress->partial_iteration_count[i] = this_itr;
+    progress->partial_iteration[i] = 0;
+
+    if (remains > 0) {
+      remains--;
+    }
+
+    printf("progress->partial_iteration_count[%d]: %ld\n", i, this_itr);
+  }
+  for (i = 0; i < 10; i++) {
+    progress->progress_list[i] = PrgNew();
+  }
+
+  progress->total_iteration_count = total_iteration_count;
+  progress->current_part = 0;
+}
+static void finish_render_progress(struct RenderProgress *progress)
+{
+  int i;
+  for (i = 0; i < 10; i++) {
+    struct Progress *p = progress->progress_list[i];
+    PrgFree(p);
+  }
+}
+
 static Interrupt default_frame_start(void *data, const struct FrameInfo *info)
 {
   struct Timer *timer = (struct Timer *) data;
@@ -56,17 +98,15 @@ static Interrupt default_tile_start(void *data, const struct TileInfo *info)
 }
 static Interrupt default_sample_done(void *data)
 {
-  /*
   struct Progress *progress = (struct Progress *) data;
   PrgIncrement(progress);
+  /*
   */
   return CALLBACK_CONTINUE;
 }
 static Interrupt default_tile_done(void *data, const struct TileInfo *info)
 {
   struct Progress *progress = (struct Progress *) data;
-  /*
-  */
 
   printf(" Tile Done: %d/%d (%d %%)\n",
       info->region_id + 1,
@@ -74,8 +114,6 @@ static Interrupt default_tile_done(void *data, const struct TileInfo *info)
       (int) ((info->region_id + 1) / (double) info->total_region_count * 100));
 
   PrgDone(progress);
-  /*
-  */
   return CALLBACK_CONTINUE;
 }
 
@@ -770,6 +808,32 @@ static int render_scene(struct Renderer *renderer)
   for (i = 0; i < thread_count; i++) {
     printf(">>>>>>>>>> thread_count: %d\n", thread_count);
     init_worker(&worker_list[i], renderer, tiler);
+  }
+
+  /* TODO TEST SAMPLE COUNT */
+  {
+    struct RenderProgress progress;
+    int sum = 0;
+    for (i = 0; i < ntiles; i++) {
+      struct Tile *tile = TlrGetTile(tiler, i);
+      struct Rectangle region;
+      int n = 0;
+      region.xmin = tile->xmin;
+      region.ymin = tile->ymin;
+      region.xmax = tile->xmax;
+      region.ymax = tile->ymax;
+
+      n = SmpGetSampleCountForRegion(&region,
+          renderer->pixelsamples[0],
+          renderer->pixelsamples[1],
+          renderer->filterwidth[0],
+          renderer->filterwidth[1]);
+      printf("------------- %d\n", n);
+      sum += n;
+    }
+    printf("+++++++++++++ %d\n", sum);
+    init_render_progress(&progress, sum);
+    finish_render_progress(&progress);
   }
 
   /* Run sampling */

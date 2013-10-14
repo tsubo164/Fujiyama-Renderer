@@ -41,6 +41,10 @@ extern struct Sample *SmpAllocatePixelSamples(struct Sampler *sampler);
 extern int SmpGetSampleCountForPixel(const struct Sampler *sampler);
 extern void SmpFreePixelSamples(struct Sample *samples);
 
+/* TODO TEST SAMPLE COUNT */
+extern int SmpGetSampleCountForRegion(const struct Rectangle *region,
+    int xrate, int yrate, float xfwidth, float yfwidth);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

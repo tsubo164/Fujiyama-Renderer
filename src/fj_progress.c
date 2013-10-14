@@ -10,41 +10,41 @@ See LICENSE and README
 #include <assert.h>
 
 struct Progress {
-  int total_iterations;
-  int iteration;
+  Iteration total_iterations;
+  Iteration iteration;
 };
 
 struct Progress *PrgNew(void)
 {
-  struct Progress *prg;
-
-  prg = FJ_MEM_ALLOC(struct Progress);
-  if (prg == NULL)
+  struct Progress *progress = FJ_MEM_ALLOC(struct Progress);
+  if (progress == NULL) {
     return NULL;
+  }
 
-  prg->total_iterations = 0;
-  prg->iteration = 0;
+  progress->total_iterations = 0;
+  progress->iteration = 0;
 
-  return prg;
+  return progress;
 }
 
-void PrgFree(struct Progress *prg)
+void PrgFree(struct Progress *progress)
 {
-  if (prg == NULL)
+  if (progress == NULL) {
     return;
-  FJ_MEM_FREE(prg);
+  }
+  FJ_MEM_FREE(progress);
 }
 
-void PrgStart(struct Progress *prg, int total_iterations)
+void PrgStart(struct Progress *progress, Iteration total_iterations)
 {
   assert(total_iterations > 0);
 
-  prg->total_iterations = total_iterations;
-  prg->iteration = 0;
+  progress->total_iterations = total_iterations;
+  progress->iteration = 0;
   printf("....1....2....3....4....5....6....7....8....9....0\n");
 }
 
-void PrgIncrement(struct Progress *prg)
+void PrgIncrement(struct Progress *progress)
 {
   const int TOTAL_OUTPUTS = 50;
   const float OUTPUTS_DIV = 100./TOTAL_OUTPUTS;
@@ -54,14 +54,14 @@ void PrgIncrement(struct Progress *prg)
   int diff_outputs;
   int i;
 
-  if (prg->iteration >= prg->total_iterations) {
+  if (progress->iteration >= progress->total_iterations) {
     fprintf(stderr, "warning: progress incremented after reaching total iterations\n");
     fflush(stderr);
   }
 
-  prev_percent = prg->iteration / (float)prg->total_iterations * 100.;
-  prg->iteration++;
-  next_percent = prg->iteration / (float)prg->total_iterations * 100.;
+  prev_percent = progress->iteration / (float)progress->total_iterations * 100.;
+  progress->iteration++;
+  next_percent = progress->iteration / (float)progress->total_iterations * 100.;
 
   prev_outputs = (int) (prev_percent / OUTPUTS_DIV);
   next_outputs = (int) (next_percent / OUTPUTS_DIV);
@@ -73,11 +73,11 @@ void PrgIncrement(struct Progress *prg)
   }
 }
 
-void PrgDone(struct Progress *prg)
+void PrgDone(struct Progress *progress)
 {
-  if (prg->iteration != prg->total_iterations) {
+  if (progress->iteration != progress->total_iterations) {
     fprintf(stderr, "warning: progress done before reaching total iterations: "
-        "%d/%d\n", prg->iteration, prg->total_iterations);
+        "%ld/%ld\n", progress->iteration, progress->total_iterations);
     fflush(stderr);
   }
 
