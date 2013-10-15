@@ -14,13 +14,19 @@ extern "C" {
 
 typedef int64_t Iteration;
 
+typedef int ProgressStatus;
+enum {
+  PROGRESS_ONGOING = 0,
+  PROGRESS_DONE = 1
+};
+
 struct Progress {
   Iteration total_iterations;
   Iteration iteration;
 };
 
 extern void PrgStart(struct Progress *progress, Iteration total_iterations);
-extern void PrgIncrement(struct Progress *progress);
+extern ProgressStatus PrgIncrement(struct Progress *progress);
 extern void PrgDone(struct Progress *progress);
 
 #ifdef __cplusplus

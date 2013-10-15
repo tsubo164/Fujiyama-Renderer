@@ -18,7 +18,7 @@ void PrgStart(struct Progress *progress, Iteration total_iterations)
   printf("....1....2....3....4....5....6....7....8....9....0\n");
 }
 
-void PrgIncrement(struct Progress *progress)
+ProgressStatus PrgIncrement(struct Progress *progress)
 {
   const int TOTAL_OUTPUTS = 50;
   const float OUTPUTS_DIV = 100./TOTAL_OUTPUTS;
@@ -44,6 +44,12 @@ void PrgIncrement(struct Progress *progress)
   for (i = 0; i < diff_outputs; i++) {
     printf("-");
     fflush(stdout);
+  }
+
+  if (progress->iteration == progress->total_iterations) {
+    return PROGRESS_DONE;
+  } else {
+    return PROGRESS_ONGOING;
   }
 }
 

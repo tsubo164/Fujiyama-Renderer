@@ -30,6 +30,7 @@ See LICENSE and README
 /* TODO TEST SAMPLE COUNT */
 struct RenderProgress {
   struct Timer timer;
+  struct Progress progress;
   struct Progress progress_list[10];
   long partial_iteration_count[10];
   long partial_iteration[10];
@@ -59,55 +60,93 @@ static void init_render_progress(struct RenderProgress *progress, long total_ite
   progress->current_part = 0;
 }
 
-static void finish_render_progress(struct RenderProgress *progress)
-{
-}
-
 static Interrupt default_frame_start(void *data, const struct FrameInfo *info)
 {
-  struct Timer *timer = (struct Timer *) data;
-  TimerStart(timer);
+  struct RenderProgress *rp = (struct RenderProgress *) data;
+
+  TimerStart(&rp->timer);
   printf("# Rendering Frame\n");
   printf("#   Thread Count: %4d\n", info->worker_count);
   printf("#   Tile Count:   %4d\n", info->tile_count);
   printf("\n");
+
+/*
+  PrgStart(&rp->progress, rp->total_iteration_count);
+*/
+  {
+    int idx;
+    rp->current_part = 0;
+    idx = rp->current_part;
+    PrgStart(&rp->progress_list[idx], rp->partial_iteration_count[idx]);
+  }
+
   return CALLBACK_CONTINUE;
 }
 static Interrupt default_frame_done(void *data, const struct FrameInfo *info)
 {
-  struct Timer *timer = (struct Timer *) data;
+  struct RenderProgress *rp = (struct RenderProgress *) data;
   struct Elapse elapse;
-  elapse = TimerGetElapse(timer);
+
+  elapse = TimerGetElapse(&rp->timer);
   printf("# Frame Done\n");
   printf("#   %dh %dm %ds\n", elapse.hour, elapse.min, elapse.sec);
   printf("\n");
+  /*
+  PrgDone(&rp->progress);
+  */
+
   return CALLBACK_CONTINUE;
 }
 
 static Interrupt default_tile_start(void *data, const struct TileInfo *info)
 {
-  struct Progress *progress = (struct Progress *) data;
-  PrgStart(progress, info->total_sample_count);
+  /*
+  struct RenderProgress *rp = (struct RenderProgress *) data;
+  PrgStart(&rp->progress, info->total_sample_count);
+  */
   return CALLBACK_CONTINUE;
 }
 static Interrupt default_sample_done(void *data)
 {
-  struct Progress *progress = (struct Progress *) data;
-  PrgIncrement(progress);
+  struct RenderProgress *rp = (struct RenderProgress *) data;
   /*
+  const ProgressStatus status = PrgIncrement(&rp->progress);
   */
+  const ProgressStatus status = PrgIncrement(&rp->progress_list[rp->current_part]);
+
+  if (status == PROGRESS_DONE) {
+    struct Elapse elapse;
+    int idx;
+
+    rp->current_part++;
+    idx = rp->current_part;
+    elapse = TimerGetElapse(&rp->timer);
+
+    printf(" %3d%%  ", idx * 10); 
+    printf("(%dh %dm %ds)\n\n", elapse.hour, elapse.min, elapse.sec);
+    /*
+    printf("[%dh %dm %ds]\n\n", elapse.hour, elapse.min, elapse.sec);
+    */
+
+    if (idx != 10) {
+      PrgStart(&rp->progress_list[idx], rp->partial_iteration_count[idx]);
+    }
+  }
+
   return CALLBACK_CONTINUE;
 }
 static Interrupt default_tile_done(void *data, const struct TileInfo *info)
 {
-  struct Progress *progress = (struct Progress *) data;
+  /*
+  struct RenderProgress *rp = (struct RenderProgress *) data;
 
   printf(" Tile Done: %d/%d (%d %%)\n",
       info->region_id + 1,
       info->total_region_count,
       (int) ((info->region_id + 1) / (double) info->total_region_count * 100));
 
-  PrgDone(progress);
+  PrgDone(&rp->progress);
+  */
   return CALLBACK_CONTINUE;
 }
 
@@ -141,10 +180,12 @@ struct Renderer {
 
   struct FrameReport frame_report;
   struct TileReport tile_report;
+  /*
   struct Timer frame_timer;
   struct Progress progress;
+  */
+  struct RenderProgress frame_progress;
   /*
-  struct RenderProgress progress;
   */
 };
 
@@ -182,11 +223,11 @@ struct Renderer *RdrNew(void)
   RdrSetUseMaxThread(renderer, 0);
   RdrSetThreadCount(renderer, 1);
 
-  RdrSetFrameReportCallback(renderer, &renderer->frame_timer,
+  RdrSetFrameReportCallback(renderer, &renderer->frame_progress,
       default_frame_start,
       default_frame_done);
 
-  RdrSetTileReportCallback(renderer, &renderer->progress,
+  RdrSetTileReportCallback(renderer, &renderer->frame_progress,
       default_tile_start,
       default_sample_done,
       default_tile_done);
@@ -796,7 +837,6 @@ static int render_scene(struct Renderer *renderer)
 
   /* TODO TEST SAMPLE COUNT */
   {
-    struct RenderProgress progress;
     int sum = 0;
     for (i = 0; i < ntiles; i++) {
       struct Tile *tile = TlrGetTile(tiler, i);
@@ -816,8 +856,7 @@ static int render_scene(struct Renderer *renderer)
       sum += n;
     }
     printf("+++++++++++++ %d\n", sum);
-    init_render_progress(&progress, sum);
-    finish_render_progress(&progress);
+    init_render_progress(&renderer->frame_progress, sum);
   }
 
   /* Run sampling */
