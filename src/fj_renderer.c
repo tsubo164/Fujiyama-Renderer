@@ -30,12 +30,13 @@ See LICENSE and README
 /* TODO TEST SAMPLE COUNT */
 struct RenderProgress {
   struct Timer timer;
-  struct Progress *progress_list[10];
+  struct Progress progress_list[10];
   long partial_iteration_count[10];
   long partial_iteration[10];
   long total_iteration_count;
   int current_part;
 };
+
 static void init_render_progress(struct RenderProgress *progress, long total_iteration_count)
 {
   const long partial_itr = (long) floor(total_iteration_count / 10.);
@@ -53,20 +54,13 @@ static void init_render_progress(struct RenderProgress *progress, long total_ite
 
     printf("progress->partial_iteration_count[%d]: %ld\n", i, this_itr);
   }
-  for (i = 0; i < 10; i++) {
-    progress->progress_list[i] = PrgNew();
-  }
 
   progress->total_iteration_count = total_iteration_count;
   progress->current_part = 0;
 }
+
 static void finish_render_progress(struct RenderProgress *progress)
 {
-  int i;
-  for (i = 0; i < 10; i++) {
-    struct Progress *p = progress->progress_list[i];
-    PrgFree(p);
-  }
 }
 
 static Interrupt default_frame_start(void *data, const struct FrameInfo *info)
@@ -148,7 +142,10 @@ struct Renderer {
   struct FrameReport frame_report;
   struct TileReport tile_report;
   struct Timer frame_timer;
-  struct Progress *progress;
+  struct Progress progress;
+  /*
+  struct RenderProgress progress;
+  */
 };
 
 static int prepare_render(struct Renderer *renderer);
@@ -189,8 +186,7 @@ struct Renderer *RdrNew(void)
       default_frame_start,
       default_frame_done);
 
-  renderer->progress = PrgNew();
-  RdrSetTileReportCallback(renderer, renderer->progress,
+  RdrSetTileReportCallback(renderer, &renderer->progress,
       default_tile_start,
       default_sample_done,
       default_tile_done);
@@ -204,7 +200,6 @@ void RdrFree(struct Renderer *renderer)
     return;
   }
 
-  PrgFree(renderer->progress);
   FJ_MEM_FREE(renderer);
 }
 
@@ -501,7 +496,6 @@ struct Worker {
 
   const struct Camera *camera;
   struct FrameBuffer *framebuffer;
-  struct Progress *progress;
   struct Sampler *sampler;
   struct Filter *filter;
   struct Sample *pixel_samples;
@@ -532,15 +526,6 @@ void init_worker(struct Worker *worker,
   worker->region_count = -1;
   worker->xres = xres;
   worker->yres = yres;
-
-  /* Progress */
-  worker->progress = PrgNew();
-  if (worker->progress == NULL) {
-    /*
-    render_state = -1;
-    goto cleanup_and_exit;
-    */
-  }
 
   /* Sampler */
   worker->sampler = SmpNew(xres, yres, xrate, yrate, xfwidth, yfwidth);
@@ -603,7 +588,6 @@ void set_working_region(struct Worker *worker, int region_id)
 void finish_worker(struct Worker *worker)
 {
   SmpFreePixelSamples(worker->pixel_samples);
-  PrgFree(worker->progress);
   SmpFree(worker->sampler);
   FltFree(worker->filter);
 }
@@ -840,24 +824,6 @@ static int render_scene(struct Renderer *renderer)
   render_frame_start(renderer, tiler);
 
   MtRunThread(worker_list, render_tile, thread_count, 0, ntiles);
-#if 0
-  for (i = 0; i < ntiles; i++) {
-    int interrupted = 0;
-
-    set_working_region(&worker[0], i);
-
-    render_tile_start(&worker[0]);
-
-    interrupted = integrate_samples(&worker[0]);
-    reconstruct_image(&worker[0]);
-
-    render_tile_done(&worker[0]);
-
-    if (interrupted) {
-      break;
-    }
-  }
-#endif
 
   render_frame_done(renderer, tiler);
 

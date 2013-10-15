@@ -143,9 +143,7 @@ static int FillWithPointClouds(struct Volume *volume,
   double thresholdwidth = 0;
 
   /* TODO come up with the best place to put progress */
-  struct Progress *progress = PrgNew();
-  if (progress == NULL)
-    return -1;
+  struct Progress progress;
 
   VolGetResolution(volume, &xres, &yres, &zres);
   thresholdwidth = .5 * VolGetFilterSize(volume);
@@ -154,7 +152,7 @@ static int FillWithPointClouds(struct Volume *volume,
       &xmin, &ymin, &zmin,
       &xmax, &ymax, &zmax);
 
-  PrgStart(progress,
+  PrgStart(&progress,
       (xmax - xmin + 1) *
       (ymax - ymin + 1) *
       (zmax - zmin + 1));
@@ -182,7 +180,7 @@ static int FillWithPointClouds(struct Volume *volume,
         if (distance < cp->radius - thresholdwidth) {
           value = VolGetValue(volume, i, j, k);
           VolSetValue(volume, i, j, k, MAX(value, cp->density));
-          PrgIncrement(progress);
+          PrgIncrement(&progress);
           continue;
         }
 
@@ -205,12 +203,11 @@ static int FillWithPointClouds(struct Volume *volume,
         value = VolGetValue(volume, i, j, k);
         VolSetValue(volume, i, j, k, MAX(value, pyro_value));
 
-        PrgIncrement(progress);
+        PrgIncrement(&progress);
       }
     }
   }
-  PrgDone(progress);
-  PrgFree(progress);
+  PrgDone(&progress);
 
   return 0;
 }

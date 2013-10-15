@@ -9,32 +9,6 @@ See LICENSE and README
 #include <stdio.h>
 #include <assert.h>
 
-struct Progress {
-  Iteration total_iterations;
-  Iteration iteration;
-};
-
-struct Progress *PrgNew(void)
-{
-  struct Progress *progress = FJ_MEM_ALLOC(struct Progress);
-  if (progress == NULL) {
-    return NULL;
-  }
-
-  progress->total_iterations = 0;
-  progress->iteration = 0;
-
-  return progress;
-}
-
-void PrgFree(struct Progress *progress)
-{
-  if (progress == NULL) {
-    return;
-  }
-  FJ_MEM_FREE(progress);
-}
-
 void PrgStart(struct Progress *progress, Iteration total_iterations)
 {
   assert(total_iterations > 0);

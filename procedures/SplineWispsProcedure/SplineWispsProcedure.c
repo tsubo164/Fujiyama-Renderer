@@ -167,15 +167,13 @@ static int FillWithSpecksAlongLine(struct Volume *volume,
   int i = 0;
 
   /* TODO come up with the best place to put progress */
-  struct Progress *progress = PrgNew();
-  if (progress == NULL)
-    return -1;
+  struct Progress progress;
 
   XorInit(&xr);
   /* TODO should not be a point attribute? */
   NSPECKS = cp0->speck_count;
 
-  PrgStart(progress, NSPECKS);
+  PrgStart(&progress, NSPECKS);
 
   for (i = 0; i < NSPECKS; i++) {
     struct WispsControlPoint cp_t;
@@ -213,10 +211,9 @@ static int FillWithSpecksAlongLine(struct Volume *volume,
     P_speck.z += noise.x * cp_t.udir.z + noise.y * cp_t.vdir.z + noise.z * cp_t.wdir.z;
 
     FillWithSphere(volume, &P_speck, cp_t.speck_radius, cp_t.density);
-    PrgIncrement(progress);
+    PrgIncrement(&progress);
   }
-  PrgDone(progress);
-  PrgFree(progress);
+  PrgDone(&progress);
 
   return 0;
 }

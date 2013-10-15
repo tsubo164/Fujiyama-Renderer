@@ -27,7 +27,7 @@ static const char USAGE[] =
 
 int main(int argc, const char **argv)
 {
-  struct Progress *progress;
+  struct Progress progress;
 
   struct CurveOutput *out;
   struct Mesh *mesh;
@@ -63,11 +63,6 @@ int main(int argc, const char **argv)
   }
   meshfile = argv[1];
   curvefile = argv[2];
-
-  progress = PrgNew();
-  if (progress == NULL) {
-    return -1;
-  }
 
   mesh = MshNew();
   if (mesh == NULL) {
@@ -136,7 +131,7 @@ int main(int argc, const char **argv)
   sourceN = VecAlloc(total_ncurves);
 
   printf("Computing curves' posittion ...\n");
-  PrgStart(progress, total_ncurves);
+  PrgStart(&progress, total_ncurves);
 
   curve_id = 0;
   for (i = 0; i < nfaces; i++) {
@@ -183,14 +178,14 @@ int main(int argc, const char **argv)
 
       curve_id++;
 
-      PrgIncrement(progress);
+      PrgIncrement(&progress);
     }
   }
   assert(curve_id == total_ncurves);
-  PrgDone(progress);
+  PrgDone(&progress);
 
   printf("Generating curves ...\n");
-  PrgStart(progress, total_ncurves);
+  PrgStart(&progress, total_ncurves);
 
   cp_id = 0;
   curve_id = 0;
@@ -254,10 +249,10 @@ int main(int argc, const char **argv)
     indices[curve_id] = 4*i;
     curve_id++;
 
-    PrgIncrement(progress);
+    PrgIncrement(&progress);
   }
   assert(cp_id == total_ncps);
-  PrgDone(progress);
+  PrgDone(&progress);
 
   out = CrvOpenOutputFile(curvefile);
   if (out == NULL) {

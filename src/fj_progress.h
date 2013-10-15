@@ -13,10 +13,11 @@ extern "C" {
 #endif
 
 typedef int64_t Iteration;
-struct Progress;
 
-extern struct Progress *PrgNew(void);
-extern void PrgFree(struct Progress *progress);
+struct Progress {
+  Iteration total_iterations;
+  Iteration iteration;
+};
 
 extern void PrgStart(struct Progress *progress, Iteration total_iterations);
 extern void PrgIncrement(struct Progress *progress);
