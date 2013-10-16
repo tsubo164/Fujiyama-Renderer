@@ -28,125 +28,120 @@ See LICENSE and README
 #include <float.h>
 
 /* TODO TEST SAMPLE COUNT */
-struct RenderProgress {
+struct FrameProgress {
   struct Timer timer;
   struct Progress progress;
-  struct Progress progress_list[10];
-  long partial_iteration_count[10];
-  long partial_iteration[10];
-  long total_iteration_count;
-  int current_part;
+  Iteration iteration_list[10];
+  int current_segment;
 };
 
-static void init_render_progress(struct RenderProgress *progress, long total_iteration_count)
+static void init_render_progress(struct FrameProgress *progress, Iteration total_iteration_count)
 {
-  const long partial_itr = (long) floor(total_iteration_count / 10.);
-  long remains = total_iteration_count - partial_itr * 10;
+  const Iteration partial_itr = (Iteration) floor(total_iteration_count / 10.);
+  Iteration remains = total_iteration_count - partial_itr * 10;
   int i;
 
   for (i = 0; i < 10; i++) {
-    const long this_itr = partial_itr + (remains > 0 ? 1 : 0);
-    progress->partial_iteration_count[i] = this_itr;
-    progress->partial_iteration[i] = 0;
+    const Iteration this_itr = partial_itr + (remains > 0 ? 1 : 0);
+    progress->iteration_list[i] = this_itr;
 
     if (remains > 0) {
       remains--;
     }
 
-    printf("progress->partial_iteration_count[%d]: %ld\n", i, this_itr);
+    printf("progress->iteration_list[%d]: %ld\n", i, this_itr);
   }
 
-  progress->total_iteration_count = total_iteration_count;
-  progress->current_part = 0;
+  progress->current_segment = 0;
 }
 
 static Interrupt default_frame_start(void *data, const struct FrameInfo *info)
 {
-  struct RenderProgress *rp = (struct RenderProgress *) data;
+  struct FrameProgress *fp = (struct FrameProgress *) data;
 
-  TimerStart(&rp->timer);
+  TimerStart(&fp->timer);
   printf("# Rendering Frame\n");
   printf("#   Thread Count: %4d\n", info->worker_count);
   printf("#   Tile Count:   %4d\n", info->tile_count);
   printf("\n");
 
-/*
-  PrgStart(&rp->progress, rp->total_iteration_count);
-*/
   {
     int idx;
-    rp->current_part = 0;
-    idx = rp->current_part;
-    PrgStart(&rp->progress_list[idx], rp->partial_iteration_count[idx]);
+    fp->current_segment = 0;
+    idx = fp->current_segment;
+    PrgStart(&fp->progress, fp->iteration_list[idx]);
   }
 
   return CALLBACK_CONTINUE;
 }
 static Interrupt default_frame_done(void *data, const struct FrameInfo *info)
 {
-  struct RenderProgress *rp = (struct RenderProgress *) data;
+  struct FrameProgress *fp = (struct FrameProgress *) data;
   struct Elapse elapse;
 
-  elapse = TimerGetElapse(&rp->timer);
+  elapse = TimerGetElapse(&fp->timer);
   printf("# Frame Done\n");
   printf("#   %dh %dm %ds\n", elapse.hour, elapse.min, elapse.sec);
   printf("\n");
-  /*
-  PrgDone(&rp->progress);
-  */
 
   return CALLBACK_CONTINUE;
 }
 
 static Interrupt default_tile_start(void *data, const struct TileInfo *info)
 {
-  /*
-  struct RenderProgress *rp = (struct RenderProgress *) data;
-  PrgStart(&rp->progress, info->total_sample_count);
-  */
   return CALLBACK_CONTINUE;
 }
-static Interrupt default_sample_done(void *data)
+static void increment_progress(void *data)
 {
-  struct RenderProgress *rp = (struct RenderProgress *) data;
-  /*
-  const ProgressStatus status = PrgIncrement(&rp->progress);
-  */
-  const ProgressStatus status = PrgIncrement(&rp->progress_list[rp->current_part]);
+  struct FrameProgress *fp = (struct FrameProgress *) data;
+  const ProgressStatus status = PrgIncrement(&fp->progress);
 
   if (status == PROGRESS_DONE) {
     struct Elapse elapse;
     int idx;
 
-    rp->current_part++;
-    idx = rp->current_part;
-    elapse = TimerGetElapse(&rp->timer);
+    fp->current_segment++;
+    idx = fp->current_segment;
+    elapse = TimerGetElapse(&fp->timer);
 
     printf(" %3d%%  ", idx * 10); 
-    printf("(%dh %dm %ds)\n\n", elapse.hour, elapse.min, elapse.sec);
-    /*
-    printf("[%dh %dm %ds]\n\n", elapse.hour, elapse.min, elapse.sec);
-    */
+    printf("(%dh %dm %ds)\n", elapse.hour, elapse.min, elapse.sec);
+    PrgDone(&fp->progress);
 
     if (idx != 10) {
-      PrgStart(&rp->progress_list[idx], rp->partial_iteration_count[idx]);
+      PrgStart(&fp->progress, fp->iteration_list[idx]);
     }
   }
+}
+static Interrupt default_sample_done(void *data)
+{
+#if 0
+  struct FrameProgress *fp = (struct FrameProgress *) data;
+  const ProgressStatus status = PrgIncrement(&fp->progress);
+
+  if (status == PROGRESS_DONE) {
+    struct Elapse elapse;
+    int idx;
+
+    fp->current_segment++;
+    idx = fp->current_segment;
+    elapse = TimerGetElapse(&fp->timer);
+
+    printf(" %3d%%  ", idx * 10); 
+    printf("(%dh %dm %ds)\n", elapse.hour, elapse.min, elapse.sec);
+    PrgDone(&fp->progress);
+
+    if (idx != 10) {
+      PrgStart(&fp->progress, fp->iteration_list[idx]);
+    }
+  }
+#endif
+  MtCriticalSection(data, increment_progress);
 
   return CALLBACK_CONTINUE;
 }
 static Interrupt default_tile_done(void *data, const struct TileInfo *info)
 {
-  /*
-  struct RenderProgress *rp = (struct RenderProgress *) data;
-
-  printf(" Tile Done: %d/%d (%d %%)\n",
-      info->region_id + 1,
-      info->total_region_count,
-      (int) ((info->region_id + 1) / (double) info->total_region_count * 100));
-
-  PrgDone(&rp->progress);
-  */
   return CALLBACK_CONTINUE;
 }
 
@@ -180,13 +175,7 @@ struct Renderer {
 
   struct FrameReport frame_report;
   struct TileReport tile_report;
-  /*
-  struct Timer frame_timer;
-  struct Progress progress;
-  */
-  struct RenderProgress frame_progress;
-  /*
-  */
+  struct FrameProgress frame_progress;
 };
 
 static int prepare_render(struct Renderer *renderer);

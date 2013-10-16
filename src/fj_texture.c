@@ -172,7 +172,6 @@ void TexLookup(struct Texture *tex, float u, float v, struct Color4 *rgba)
     struct TextureCache *cache = new_cache();
     cache_open_mipmap(cache, tex->filename);
     tex->cache_list[thread_id] = cache;
-    printf("%d: CACHE CREATED\n", thread_id);
   }
 
   lookup_cache(tex->cache_list[thread_id], u, v, rgba);

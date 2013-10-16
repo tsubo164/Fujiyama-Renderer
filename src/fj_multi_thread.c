@@ -12,7 +12,7 @@ int MtGetMaxThreadCount(void)
   return omp_get_max_threads();
 }
 
-int MtGetThreadCount(void)
+int MtGetRunningThreadCount(void)
 {
   return omp_get_num_threads();
 }
@@ -38,7 +38,7 @@ int MtRunThread(void *data, ThreadFunction run, int thread_count, int start, int
     struct ThreadContext cxt;
     int err = 0;
 
-    cxt.thread_count = MtGetThreadCount();
+    cxt.thread_count = MtGetRunningThreadCount();
     cxt.thread_id = MtGetThreadID();
     cxt.iteration_count = end - start;
     cxt.iteration_id = i;
@@ -52,4 +52,10 @@ int MtRunThread(void *data, ThreadFunction run, int thread_count, int start, int
 	}
 
   return 0;
+}
+
+void MtCriticalSection(void *data, CriticalFunction critical)
+{
+#pragma omp critical
+  critical(data);
 }

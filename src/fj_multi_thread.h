@@ -18,14 +18,16 @@ struct ThreadContext {
 };
 
 typedef int (*ThreadFunction)(void *data, const struct ThreadContext *context);
+typedef void (*CriticalFunction)(void *data);
 
 extern int MtGetMaxThreadCount(void);
-extern int MtGetThreadCount(void);
+extern int MtGetRunningThreadCount(void);
 extern int MtGetThreadID(void);
 
 extern void MtSetMaxThreadCount(int count);
 
 extern int MtRunThread(void *data, ThreadFunction run, int thread_count, int start, int end);
+extern void MtCriticalSection(void *data, CriticalFunction critical);
 
 #ifdef __cplusplus
 } /* extern "C" */
