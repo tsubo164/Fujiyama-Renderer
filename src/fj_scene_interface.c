@@ -13,6 +13,7 @@ See LICENSE and README
 #include "fj_mesh_io.h"
 #include "fj_shader.h"
 #include "fj_scene.h"
+#include "fj_timer.h"
 #include "fj_box.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -1057,17 +1058,25 @@ static void compute_objects_bounds(void)
 
 static void build_accelerators(void)
 {
-  int N = 0;
+  struct Timer timer;
+  struct Elapse elapse;
+  int NOBJTECTS = 0;
+  int NGROUPS = 0;
   int i;
 
-  N = ScnGetAcceleratorCount(get_scene());
-  for (i = 0; i < N; i++) {
+  NOBJTECTS = ScnGetAcceleratorCount(get_scene());
+  NGROUPS = ScnGetObjectGroupCount(get_scene());
+
+  printf("# Building Accelerators\n");
+  printf("#   Accelerator Count: %d\n", NOBJTECTS + NGROUPS);
+  TimerStart(&timer);
+
+  for (i = 0; i < NOBJTECTS; i++) {
     struct Accelerator *acc = ScnGetAccelerator(get_scene(), i);
     AccBuild(acc);
   }
 
-  N = ScnGetObjectGroupCount(get_scene());
-  for (i = 0; i < N; i++) {
+  for (i = 0; i < NGROUPS; i++) {
     struct ObjectGroup *grp = ScnGetObjectGroup(get_scene(), i);
     struct Accelerator *mutable_acc = NULL;
     struct VolumeAccelerator *mutable_volume_acc = NULL;
@@ -1077,19 +1086,23 @@ static void build_accelerators(void)
 
     /* TODO come up with a better way */
     if (mutable_acc != NULL) {
-      printf("# Building surface group accelerators\n");
       AccBuild(mutable_acc);
     }
     if (mutable_volume_acc != NULL) {
-      printf("# Building volume group accelerators\n");
       VolumeAccBuild(mutable_volume_acc);
     }
   }
+
+  elapse = TimerGetElapse(&timer);
+  printf("# Building Accelerators Done\n");
+  printf("#   %dh %dm %ds\n\n", elapse.hour, elapse.min, elapse.sec);
 }
 
 static int prepare_render(const struct Renderer *renderer)
 {
   int err = 0;
+
+  printf("\n");
 
   compute_objects_bounds();
 

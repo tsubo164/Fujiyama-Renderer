@@ -13,7 +13,7 @@ void TimerStart(struct Timer *timer)
 struct Elapse TimerGetElapse(const struct Timer *timer)
 {
   struct Elapse elapse = {0, 0, 1};
-  double total_seconds;
+  double total_seconds = 0;
   time_t end_time;
 
   time(&end_time);

@@ -56,7 +56,7 @@ static int converge_bezier3(const struct Bezier3 *bezier,
 
 /* helper functions */
 static void mid_point(struct Vector *mid, const struct Vector *a, const struct Vector *b);
-static void cache_split_depth(const struct Curve *curve);
+static void cache_split_depth(struct Curve *curve);
 static int compute_split_depth_limit(const struct ControlPoint *cp, double epsilon);
 static void compute_world_to_ray_matrix(const struct Ray *ray, struct Matrix *dst);
 
@@ -181,6 +181,9 @@ void CrvComputeBounds(struct Curve *curve)
   }
 
   BOX3_EXPAND(&curve->bounds, max_radius);
+
+  /* TODO find a better place to put this */
+  cache_split_depth(curve);
 }
 
 void CrvGetPrimitiveSet(const struct Curve *curve, struct PrimitiveSet *primset)
@@ -221,9 +224,6 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
   }
 
   get_bezier3(curve, prim_id, &bezier);
-  if (curve->split_depth == NULL) {
-    cache_split_depth(curve);
-  }
   depth = curve->split_depth[prim_id];
 
   compute_world_to_ray_matrix(&nml_ray, &world_to_ray);
@@ -487,23 +487,21 @@ static void mid_point(struct Vector *mid, const struct Vector *a, const struct V
   mid->z = (a->z + b->z) * .5;
 }
 
-static void cache_split_depth(const struct Curve *curve)
+static void cache_split_depth(struct Curve *curve)
 {
   int i;
-  struct Curve *mutable_curve = (struct Curve *) curve;
-  assert(mutable_curve->split_depth == NULL);
+  assert(curve->split_depth == NULL);
 
-
-  mutable_curve->split_depth = FJ_MEM_ALLOC_ARRAY(int, mutable_curve->ncurves);
-  for (i = 0; i < mutable_curve->ncurves; i++) {
+  curve->split_depth = FJ_MEM_ALLOC_ARRAY(int, curve->ncurves);
+  for (i = 0; i < curve->ncurves; i++) {
     struct Bezier3 bezier;
     int depth;
 
-    get_bezier3(mutable_curve, i, &bezier);
+    get_bezier3(curve, i, &bezier);
     depth = compute_split_depth_limit(bezier.cp, 2*get_bezier3_max_radius(&bezier) / 20.);
     depth = CLAMP(depth, 1, 5);
 
-    mutable_curve->split_depth[i] = depth;
+    curve->split_depth[i] = depth;
   }
 }
 

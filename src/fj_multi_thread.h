@@ -17,7 +17,13 @@ struct ThreadContext {
   int thread_count;
 };
 
-typedef int (*ThreadFunction)(void *data, const struct ThreadContext *context);
+enum {
+  THREAD_LOOP_CONTINUE = 0,
+  THREAD_LOOP_CANCEL = 1
+};
+typedef int ThreadStatus;
+
+typedef ThreadStatus (*ThreadFunction)(void *data, const struct ThreadContext *context);
 typedef void (*CriticalFunction)(void *data);
 
 extern int MtGetMaxThreadCount(void);
@@ -26,7 +32,8 @@ extern int MtGetThreadID(void);
 
 extern void MtSetMaxThreadCount(int count);
 
-extern int MtRunThread(void *data, ThreadFunction run, int thread_count, int start, int end);
+extern ThreadStatus MtRunThreadLoop(void *data, ThreadFunction run_thread, int thread_count,
+    int start, int end);
 extern void MtCriticalSection(void *data, CriticalFunction critical);
 
 #ifdef __cplusplus

@@ -27,7 +27,6 @@ See LICENSE and README
 #include <stdio.h>
 #include <float.h>
 
-/* TODO TEST SAMPLE COUNT */
 struct FrameProgress {
   struct Timer timer;
   struct Progress progress;
@@ -35,7 +34,36 @@ struct FrameProgress {
   int current_segment;
 };
 
-static void init_render_progress(struct FrameProgress *progress, Iteration total_iteration_count)
+static Iteration count_total_samples(const struct Tiler *tiler,
+    int x_pixel_samples, int y_pixel_samples,
+    float x_filter_width, float y_filter_width)
+{
+  const int tile_count = TlrGetTileCount(tiler);
+  int total_sample_count = 0;
+  int i;
+
+  for (i = 0; i < tile_count; i++) {
+    struct Tile *tile = TlrGetTile(tiler, i);
+    struct Rectangle region;
+    int samples_in_tile = 0;
+
+    region.xmin = tile->xmin;
+    region.ymin = tile->ymin;
+    region.xmax = tile->xmax;
+    region.ymax = tile->ymax;
+
+    samples_in_tile = SmpGetSampleCountForRegion(&region,
+        x_pixel_samples,
+        y_pixel_samples,
+        x_filter_width,
+        y_filter_width);
+
+    total_sample_count += samples_in_tile;
+  }
+  return total_sample_count;
+}
+
+static void distribute_progress_iterations(struct FrameProgress *progress, Iteration total_iteration_count)
 {
   const Iteration partial_itr = (Iteration) floor(total_iteration_count / 10.);
   Iteration remains = total_iteration_count - partial_itr * 10;
@@ -48,11 +76,23 @@ static void init_render_progress(struct FrameProgress *progress, Iteration total
     if (remains > 0) {
       remains--;
     }
-
-    printf("progress->iteration_list[%d]: %ld\n", i, this_itr);
   }
 
   progress->current_segment = 0;
+}
+
+static void init_frame_progress(struct FrameProgress *progress, const struct Tiler *tiler,
+    int x_pixel_samples, int y_pixel_samples,
+    float x_filter_width, float y_filter_width)
+{
+  const Iteration total_iteration_count = count_total_samples(
+      tiler,
+      x_pixel_samples,
+      y_pixel_samples,
+      x_filter_width,
+      y_filter_width);
+
+  distribute_progress_iterations(progress, total_iteration_count);
 }
 
 static Interrupt default_frame_start(void *data, const struct FrameInfo *info)
@@ -517,7 +557,6 @@ static int prepare_render(struct Renderer *renderer)
   return 0;
 }
 
-/* TODO TEST */
 struct Worker {
   int id;
   int region_id;
@@ -538,7 +577,7 @@ struct Worker {
   const struct Tiler *tiler;
 };
 
-void init_worker(struct Worker *worker,
+static void init_worker(struct Worker *worker, int id,
     const struct Renderer *renderer, const struct Tiler *tiler)
 {
   const int xres = renderer->resolution[0];
@@ -551,6 +590,7 @@ void init_worker(struct Worker *worker,
   worker->camera = renderer->camera;
   worker->framebuffer = renderer->framebuffers;
   worker->tiler = tiler;
+  worker->id = id;
 
   worker->region_id = -1;
   worker->region_count = -1;
@@ -599,7 +639,24 @@ void init_worker(struct Worker *worker,
   worker->tile_report = renderer->tile_report;
 }
 
-void set_working_region(struct Worker *worker, int region_id)
+static struct Worker *new_worker_list(int worker_count,
+    const struct Renderer *renderer, const struct Tiler *tiler)
+{
+  struct Worker *worker_list = FJ_MEM_ALLOC_ARRAY(struct Worker, worker_count);
+  int i;
+
+  if (worker_list == NULL) {
+    return NULL;
+  }
+
+  for (i = 0; i < worker_count; i++) {
+    init_worker(&worker_list[i], i, renderer, tiler);
+  }
+
+  return worker_list;
+}
+
+static void set_working_region(struct Worker *worker, int region_id)
 {
   struct Tile *tile = TlrGetTile(worker->tiler, region_id);
 
@@ -615,11 +672,26 @@ void set_working_region(struct Worker *worker, int region_id)
   }
 }
 
-void finish_worker(struct Worker *worker)
+static void finish_worker(struct Worker *worker)
 {
   SmpFreePixelSamples(worker->pixel_samples);
   SmpFree(worker->sampler);
   FltFree(worker->filter);
+}
+
+static void free_worker_list(struct Worker *worker_list, int worker_count)
+{
+  int i;
+
+  if (worker_list == NULL) {
+    return;
+  }
+
+  for (i = 0; i < worker_count; i++) {
+    finish_worker(&worker_list[i]);
+  }
+
+  FJ_MEM_FREE(worker_list);
 }
 
 static struct Color4 apply_pixel_filter(struct Worker *worker, int x, int y)
@@ -759,16 +831,17 @@ static int integrate_samples(struct Worker *worker)
 
     interrupted = CbReportSampleDone(&worker->tile_report);
     if (interrupted) {
+      printf("integrate_samples CANCELED!\n");
       return -1;
     }
   }
   return 0;
 }
 
-static int render_tile(void *data, const struct ThreadContext *context)
+static ThreadStatus render_tile(void *data, const struct ThreadContext *context)
 {
-	struct Worker *worker_list = (struct Worker *) data;
-	struct Worker *worker = &worker_list[context->thread_id];
+  struct Worker *worker_list = (struct Worker *) data;
+  struct Worker *worker = &worker_list[context->thread_id];
   int interrupted = 0;
 
   set_working_region(worker, context->iteration_id);
@@ -781,28 +854,30 @@ static int render_tile(void *data, const struct ThreadContext *context)
   render_tile_done(worker);
 
   if (interrupted) {
-    return -1;
+    return THREAD_LOOP_CANCEL;
   }
 
-	return 0;
+  return THREAD_LOOP_CONTINUE;
 }
 
 static int render_scene(struct Renderer *renderer)
 {
+  struct Worker *worker_list = NULL;
   struct Tiler *tiler = NULL;
 
+  const int thread_count = RdrGetThreadCount(renderer);
   int render_state = 0;
-  int ntiles = 0;
-  int i;
+  int tile_count = 0;
 
   const int xres = renderer->resolution[0];
   const int yres = renderer->resolution[1];
   const int xtilesize = renderer->tilesize[0];
   const int ytilesize = renderer->tilesize[1];
 
-  /* TODO TEST MULTI-THREAD */
-  const int thread_count = RdrGetThreadCount(renderer);
-  struct Worker *worker_list = NULL;
+  const int xpixelsamples = renderer->pixelsamples[0];
+  const int ypixelsamples = renderer->pixelsamples[1];
+  const float xfilterwidth = renderer->filterwidth[0];
+  const float yfilterwidth = renderer->filterwidth[1];
 
   /* Tiler */
   tiler = TlrNew(xres, yres, xtilesize, ytilesize);
@@ -811,58 +886,30 @@ static int render_scene(struct Renderer *renderer)
     goto cleanup_and_exit;
   }
   TlrGenerateTiles(tiler, &renderer->frame_region);
-  ntiles = TlrGetTileCount(tiler);
+  tile_count = TlrGetTileCount(tiler);
 
   /* Worker */
-  worker_list = FJ_MEM_ALLOC_ARRAY(struct Worker, thread_count);
+  worker_list = new_worker_list(thread_count, renderer, tiler);
   if (worker_list == NULL) {
     render_state = -1;
     goto cleanup_and_exit;
   }
-  for (i = 0; i < thread_count; i++) {
-    printf(">>>>>>>>>> thread_count: %d\n", thread_count);
-    init_worker(&worker_list[i], renderer, tiler);
-  }
 
-  /* TODO TEST SAMPLE COUNT */
-  {
-    int sum = 0;
-    for (i = 0; i < ntiles; i++) {
-      struct Tile *tile = TlrGetTile(tiler, i);
-      struct Rectangle region;
-      int n = 0;
-      region.xmin = tile->xmin;
-      region.ymin = tile->ymin;
-      region.xmax = tile->xmax;
-      region.ymax = tile->ymax;
-
-      n = SmpGetSampleCountForRegion(&region,
-          renderer->pixelsamples[0],
-          renderer->pixelsamples[1],
-          renderer->filterwidth[0],
-          renderer->filterwidth[1]);
-      printf("------------- %d\n", n);
-      sum += n;
-    }
-    printf("+++++++++++++ %d\n", sum);
-    init_render_progress(&renderer->frame_progress, sum);
-  }
+  /* FrameProgress */
+  init_frame_progress(&renderer->frame_progress, tiler,
+      xpixelsamples, ypixelsamples,
+      xfilterwidth, yfilterwidth);
 
   /* Run sampling */
   render_frame_start(renderer, tiler);
 
-  MtRunThread(worker_list, render_tile, thread_count, 0, ntiles);
+  MtRunThreadLoop(worker_list, render_tile, thread_count, 0, tile_count);
 
   render_frame_done(renderer, tiler);
 
 cleanup_and_exit:
   TlrFree(tiler);
-
-  for (i = 0; i < thread_count; i++) {
-    printf("<<<<<<<<<< thread_count: %d\n", thread_count);
-    finish_worker(&worker_list[i]);
-  }
-  FJ_MEM_FREE(worker_list);
+  free_worker_list(worker_list, thread_count);
 
   return render_state;
 }

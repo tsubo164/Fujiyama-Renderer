@@ -5,6 +5,7 @@ See LICENSE and README
 
 #include "fj_multi_thread.h"
 #include <stddef.h>
+#include <assert.h>
 #include <omp.h>
 
 int MtGetMaxThreadCount(void)
@@ -27,31 +28,36 @@ void MtSetMaxThreadCount(int count)
   omp_set_num_threads(count);
 }
 
-int MtRunThread(void *data, ThreadFunction run, int thread_count, int start, int end)
+ThreadStatus MtRunThreadLoop(void *data, ThreadFunction run_thread, int thread_count,
+    int start, int end)
 {
-	int i = 0;
+  ThreadStatus global_status = THREAD_LOOP_CONTINUE;
+  int i = 0;
 
+  assert(run_thread != NULL);
   MtSetMaxThreadCount(thread_count);
 
 #pragma omp parallel for schedule(dynamic)
-	for (i = start; i < end; i++) {
+  for (i = start; i < end; i++) {
+    ThreadStatus local_status = THREAD_LOOP_CONTINUE;
     struct ThreadContext cxt;
-    int err = 0;
+
+    if (global_status == THREAD_LOOP_CANCEL) {
+      continue;
+    }
 
     cxt.thread_count = MtGetRunningThreadCount();
     cxt.thread_id = MtGetThreadID();
     cxt.iteration_count = end - start;
     cxt.iteration_id = i;
 
-		err = run(data, &cxt);
-    if (err) {
-      /*
-      break;
-      */
+    local_status = run_thread(data, &cxt);
+    if (local_status == THREAD_LOOP_CANCEL) {
+      global_status = THREAD_LOOP_CANCEL;
     }
-	}
+  }
 
-  return 0;
+  return global_status;
 }
 
 void MtCriticalSection(void *data, CriticalFunction critical)

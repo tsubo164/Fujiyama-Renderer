@@ -37,7 +37,7 @@ struct Sampler {
 
 #define SAMPLE_ARRAY(sampler) ((struct Sample *)(sampler)->samples->data)
 
-static void compute_margins(struct Sampler *sampler);
+static void count_samples_in_pixels(struct Sampler *sampler);
 static int allocate_samples_for_region(struct Sampler *sampler, const struct Rectangle *region);
 
 struct Sampler *SmpNew(int xres, int yres,
@@ -67,7 +67,7 @@ struct Sampler *SmpNew(int xres, int yres,
 
   sampler->current_index = 0;
 
-  compute_margins(sampler);
+  count_samples_in_pixels(sampler);
   return sampler;
 }
 
@@ -219,10 +219,15 @@ void SmpFreePixelSamples(struct Sample *samples)
   FJ_MEM_FREE(samples);
 }
 
-static void compute_margins(struct Sampler *sampler)
+static int get_pixel_margin(int rate, float fwidth)
 {
-  sampler->xmargin = (int) ceil(((sampler->xfwidth-1) * sampler->xrate) * .5);
-  sampler->ymargin = (int) ceil(((sampler->yfwidth-1) * sampler->yrate) * .5);
+  return (int) ceil(((fwidth - 1) * rate) * .5);
+}
+
+static void count_samples_in_pixels(struct Sampler *sampler)
+{
+  sampler->xmargin = get_pixel_margin(sampler->xrate, sampler->xfwidth);
+  sampler->ymargin = get_pixel_margin(sampler->yrate, sampler->yfwidth);;
   sampler->xnpxlsmps = sampler->xrate + 2 * sampler->xmargin;
   sampler->ynpxlsmps = sampler->yrate + 2 * sampler->ymargin;
 }
@@ -230,10 +235,17 @@ static void compute_margins(struct Sampler *sampler)
 #define SIZE_X(rect) ((rect)->xmax-(rect)->xmin)
 #define SIZE_Y(rect) ((rect)->ymax-(rect)->ymin)
 
+static int get_sample_count_for_region(int rate, int regionsize, int margin)
+{
+  return rate * regionsize + 2 * margin;
+}
+
 static int allocate_samples_for_region(struct Sampler *sampler, const struct Rectangle *region)
 {
-  const int XNSAMPLES = sampler->xrate * SIZE_X(region) + 2 * sampler->xmargin;
-  const int YNSAMPLES = sampler->yrate * SIZE_Y(region) + 2 * sampler->ymargin;
+  const int XNSAMPLES = get_sample_count_for_region(
+      sampler->xrate, SIZE_X(region), sampler->xmargin);
+  const int YNSAMPLES = get_sample_count_for_region(
+      sampler->yrate, SIZE_Y(region), sampler->ymargin);
   const int NEW_NSAMPLES = XNSAMPLES * YNSAMPLES;
   const int XPIXEL_START = region->xmin;
   const int YPIXEL_START = region->ymin;
@@ -253,9 +265,10 @@ static int allocate_samples_for_region(struct Sampler *sampler, const struct Rec
 int SmpGetSampleCountForRegion(const struct Rectangle *region,
     int xrate, int yrate, float xfwidth, float yfwidth)
 {
-  const int xmargin = (int) ceil(((xfwidth-1) * xrate) * .5);
-  const int ymargin = (int) ceil(((yfwidth-1) * yrate) * .5);
-  const int xnsamples = xrate * SIZE_X(region) + 2 * xmargin;
-  const int ynsamples = yrate * SIZE_Y(region) + 2 * ymargin;
+  const int xmargin = get_pixel_margin(xrate, xfwidth);
+  const int ymargin = get_pixel_margin(yrate, yfwidth);
+  const int xnsamples = get_sample_count_for_region(xrate, SIZE_X(region), xmargin);
+  const int ynsamples = get_sample_count_for_region(yrate, SIZE_Y(region), ymargin);
+
   return xnsamples * ynsamples;
 }
