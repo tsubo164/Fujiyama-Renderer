@@ -7,6 +7,7 @@ See LICENSE and README
 #include "fj_grid_accelerator.h"
 #include "fj_bvh_accelerator.h"
 #include "fj_primitive_set.h"
+#include "fj_multi_thread.h"
 #include "fj_memory.h"
 #include "fj_box.h"
 #include "fj_ray.h"
@@ -108,6 +109,17 @@ int AccBuild(struct Accelerator *acc)
   return 0;
 }
 
+static void build_accelerator(void *data)
+{
+  struct Accelerator *acc = (struct Accelerator *) data;
+
+  if (!acc->has_built) {
+    printf("\nbuilding %s accelerator ...\n", acc->name);
+    AccBuild(acc);
+    fflush(stdout);
+  }
+}
+
 int AccIntersect(const struct Accelerator *acc, double time,
     const struct Ray *ray, struct Intersection *isect)
 {
@@ -120,12 +132,10 @@ int AccIntersect(const struct Accelerator *acc, double time,
     return 0;
   }
 
-  if (!acc->has_built) {
+  if (0) {
     /* dynamic build */
-    struct Accelerator *mutable_acc = (struct Accelerator *) acc;
-    printf("\nbuilding %s accelerator ...\n", acc->name);
-    AccBuild(mutable_acc);
-    fflush(stdout);
+    /* now disabled. build all accelerators before rendering */
+    MtCriticalSection((void *) acc, build_accelerator);
   }
 
   return acc->IntersectDerived(acc->derived, &acc->primset, time, ray, isect);
