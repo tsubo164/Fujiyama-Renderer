@@ -16,7 +16,6 @@ EXPORTS
 	ArrReserve
 	ArrResize
 	ArrGet
-	GetBVHAcceleratorFunction
 	BoxContainsPoint
 	BoxAddPoint
 	BoxAddBox
@@ -24,6 +23,7 @@ EXPORTS
 	BoxCentroid
 	BoxDiagonal
 	BoxPrint
+	GetBVHAcceleratorFunction
 	CbReportFrameStart
 	CbReportFrameDone
 	CbReportTileStart
@@ -87,6 +87,16 @@ EXPORTS
 	FbWriteFile
 	FbSaveCroppedData
 	GetGridAcceleratorFunction
+	ImportanceSampling
+	StratifiedImportanceSampling
+	StructuredImportanceSampling
+	IntervalListNew
+	IntervalListFree
+	IntervalListPush
+	IntervalListGetCount
+	IntervalListGetMinT
+	IntervalListGetMaxT
+	IntervalListGetHead
 	ChkGetElementName
 	ChkGetElementType
 	ChkGetElementCount
@@ -111,16 +121,6 @@ EXPORTS
 	IOSetOutputInt
 	IOSetOutputDouble
 	IOSetOutputVector3
-	ImportanceSampling
-	StratifiedImportanceSampling
-	StructuredImportanceSampling
-	IntervalListNew
-	IntervalListFree
-	IntervalListPush
-	IntervalListGetCount
-	IntervalListGetMinT
-	IntervalListGetMaxT
-	IntervalListGetHead
 	LgtNew
 	LgtFree
 	LgtSetColor
@@ -185,6 +185,12 @@ EXPORTS
 	MipCloseOutputFile
 	MipGenerateFromSourceData
 	MipWriteFile
+	MtGetMaxThreadCount
+	MtGetRunningThreadCount
+	MtGetThreadID
+	MtSetMaxThreadCount
+	MtRunThreadLoop
+	MtCriticalSection
 	PerlinNoise
 	PerlinNoise3d
 	PeriodicNoise3d
@@ -192,10 +198,6 @@ EXPORTS
 	Gamma
 	Fit
 	Bilerp
-	OsDlopen
-	OsDlsym
-	OsDlerror
-	OsDlclose
 	ObjGroupNew
 	ObjGroupFree
 	ObjGroupAdd
@@ -231,6 +233,10 @@ EXPORTS
 	ObjIntersect
 	ObjVolumeIntersect
 	ObjGetVolumeSample
+	OsDlopen
+	OsDlsym
+	OsDlerror
+	OsDlclose
 	PlgOpen
 	PlgClose
 	PlgCreateInstance
@@ -276,12 +282,9 @@ EXPORTS
 	PrcRun
 	PrcGetPropertyList
 	PrcSetProperty
-	PrgNew
-	PrgFree
 	PrgStart
 	PrgIncrement
 	PrgDone
-	PropTypeString
 	PropScalar
 	PropVector2
 	PropVector3
@@ -293,7 +296,13 @@ EXPORTS
 	PropVolume
 	PropMesh
 	InitPropValue
+	PropIsValid
+	PropName
+	PropType
+	PropDefaultValue
+	PropTypeString
 	PropFind
+	PropSetAllDefaultValues
 	PropInitSampleList
 	PropPushSample
 	PropLerpSamples
@@ -328,25 +337,12 @@ EXPORTS
 	RdrSetFrameBuffers
 	RdrSetTargetObjects
 	RdrSetTargetLights
+	RdrSetUseMaxThread
+	RdrSetThreadCount
+	RdrGetThreadCount
 	RdrRender
 	RdrSetFrameReportCallback
 	RdrSetTileReportCallback
-	SlFresnel
-	SlPhong
-	SlReflect
-	SlRefract
-	SlTrace
-	SlSurfaceRayIntersect
-	SlCameraContext
-	SlReflectContext
-	SlRefractContext
-	SlShadowContext
-	SlSelfHitContext
-	SlIlluminance
-	SlGetLightCount
-	SlGetLightSampleCount
-	SlNewLightSamples
-	SlFreeLightSamples
 	SmpNew
 	SmpFree
 	SmpSetJitter
@@ -358,6 +354,7 @@ EXPORTS
 	SmpAllocatePixelSamples
 	SmpGetSampleCountForPixel
 	SmpFreePixelSamples
+	SmpGetSampleCountForRegion
 	ScnNew
 	ScnFree
 	ScnNewObjectInstance
@@ -467,6 +464,22 @@ EXPORTS
 	ShdEvaluate
 	ShdGetPropertyList
 	ShdSetProperty
+	SlFresnel
+	SlPhong
+	SlReflect
+	SlRefract
+	SlTrace
+	SlSurfaceRayIntersect
+	SlCameraContext
+	SlReflectContext
+	SlRefractContext
+	SlShadowContext
+	SlSelfHitContext
+	SlIlluminance
+	SlGetLightCount
+	SlGetLightSampleCount
+	SlNewLightSamples
+	SlFreeLightSamples
 	StrDup
 	StrFree
 	StrCopyAndTerminate

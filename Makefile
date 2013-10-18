@@ -16,32 +16,32 @@ build_dirs   += src
 install_libs += lib/libscene.so
 
 #shaders
-build_dirs   += shaders/ConstantShader
+build_dirs   += shaders/constant_shader
 install_libs += lib/ConstantShader.so
 
-build_dirs   += shaders/GlassShader
+build_dirs   += shaders/glass_shader
 install_libs += lib/GlassShader.so
 
-build_dirs   += shaders/HairShader
+build_dirs   += shaders/hair_shader
 install_libs += lib/HairShader.so
 
-build_dirs   += shaders/PlasticShader
+build_dirs   += shaders/plastic_shader
 install_libs += lib/PlasticShader.so
 
-build_dirs   += shaders/SSSShader
+build_dirs   += shaders/sss_shader
 install_libs += lib/SSSShader.so
 
-build_dirs   += shaders/VolumeShader
+build_dirs   += shaders/volume_shader
 install_libs += lib/VolumeShader.so
 
 #procedures
-build_dirs   += procedures/PointCloudsProcedure
+build_dirs   += procedures/pointclouds_procedure
 install_libs += lib/PointCloudsProcedure.so
 
-build_dirs   += procedures/SplineWispsProcedure
+build_dirs   += procedures/splinewisps_procedure
 install_libs += lib/SplineWispsProcedure.so
 
-build_dirs   += procedures/SurfaceWispsProcedure
+build_dirs   += procedures/surfacewisps_procedure
 install_libs += lib/SurfaceWispsProcedure.so
 
 #tools
