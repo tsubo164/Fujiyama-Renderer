@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="ソース ファイル">
+    <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="ヘッダー ファイル">
+    <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="リソース ファイル">
+    <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
@@ -19,348 +19,348 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\fj_accelerator.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_array.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_box.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_bvh_accelerator.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_callback.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_camera.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_color.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_curve.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_curve_io.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_filter.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_framebuffer.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_framebuffer_io.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_grid_accelerator.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_importance_sampling.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_interval.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_io.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_light.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_matrix.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_mesh.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_mesh_io.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_mipmap.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_noise.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_numeric.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_object_group.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_object_instance.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_os.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_plugin.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_point_cloud.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_point_cloud_io.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_primitive_set.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_procedure.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_progress.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_property.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_random.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_rectangle.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_renderer.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_sampler.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_scene.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_scene_interface.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_shader.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_shading.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_string_function.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_tex_coord.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_texture.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_tiler.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_timer.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_transform.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_triangle.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_turbulence.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_vector.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_volume.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_volume_accelerator.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_volume_filling.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_file_io.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fj_multi_thread.c">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\src\fj_accelerator.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_array.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_box.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_bvh_accelerator.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_callback.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_camera.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_color.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_compatibility.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_curve.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_curve_io.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_filter.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_framebuffer.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_framebuffer_io.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_grid_accelerator.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_importance_sampling.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_intersection.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_interval.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_io.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_light.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_matrix.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_memory.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_mesh.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_mesh_io.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_mipmap.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_noise.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_numeric.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_object_group.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_object_instance.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_os.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_plugin.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_point_cloud.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_point_cloud_io.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_primitive_set.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_procedure.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_progress.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_property.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_random.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_ray.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_rectangle.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_renderer.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_sampler.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_scene.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_scene_interface.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_shader.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_shading.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_string_function.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_tex_coord.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_texture.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_tiler.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_timer.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_transform.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_triangle.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_turbulence.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_vector.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_volume.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_volume_accelerator.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_volume_filling.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_file_io.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\fj_multi_thread.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
