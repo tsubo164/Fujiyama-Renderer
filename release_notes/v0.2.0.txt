@@ -1,0 +1,30 @@
+Fujiyama Renderer v0.2.0(Alpha) Release Notes
+=============================================
+
+New features since v0.1.9
+-------------------------
+ * Rendering is now mulit-threaded. A tile rendering is assigned to a thread
+   dynamically in render time.
+
+ * Due to multi-threaded rendering, dynamic construction of accelerate structures
+   is now disabled. They all are built before rendering starts.
+
+ * SiShowPropertyList now shows default values of the properties.
+
+ * Light color attribute 'diffuse' works.
+
+ * Most of source files and directory names are renamed due to conflicts.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Velocity attribute and deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Mesh primitive group
+ * Global illumination
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support

@@ -19,6 +19,11 @@ designed to handle production image rendering.
   + Linux
   + Windows (NOTE fb2exr is not ported yet)
 
+* Rendering
+  + Multi-threaded rendering - dynamic assignement of tile rendering per theread
+  + Region rendering - accelerates distribution rendering pipeline
+  + Tile based rendering
+
 * Supported Primitives
   + Triangle Mesh - Compact representation
   + Bezier Curves - Unlimited smoothness subdividing in render time 
@@ -56,7 +61,6 @@ designed to handle production image rendering.
   + Subsurface scattering - implemented in shader
 
 * Acceleratotion structure
-  + On demand construction of accelerator - avoids unnecessary construction
   + Grid accelerator - for meshes (dense distribution)
   + BVH accelerator - for object instances (sparse distribution)
   + Object instance - saves memory usage
@@ -65,10 +69,6 @@ designed to handle production image rendering.
   + Gaussian and Box pixel filters - supports filter width bigger than 1 pixel
   + Uniform grid pixel sampling
   + Jittered pixel sampling 
-
-* Rendering
-  + Region rendering - accelerates distribution rendering pipeline
-  + Tile based rendering
 
 * Extensibility
   + Rendering callbacks - 5 points to hook rendering process
