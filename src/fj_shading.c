@@ -381,6 +381,48 @@ void SlFreeLightSamples(struct LightSample * samples)
   FJ_MEM_FREE(samples);
 }
 
+void SlBumpMapping(const struct Texture *bump_map,
+    const struct Vector *dPdu, const struct Vector *dPdv,
+    const struct TexCoord *texcoord, double amplitude,
+    const struct Vector *N, struct Vector *N_bump)
+{
+  struct Color4 C_tex0 = {0, 0, 0, 1};
+  struct Color4 C_tex1 = {0, 0, 0, 1};
+  struct Vector N_dPdu = {0, 0, 0};
+  struct Vector N_dPdv = {0, 0, 0};
+  float Bu, Bv;
+  float du, dv;
+  float val0, val1;
+  int xres, yres;
+
+  TexGetResolution(bump_map, &xres, &yres);
+  du = 1. / xres;
+  dv = 1. / yres;
+
+  /* Bu = B(u - du, v) - B(v + du, v) / (2 * du) */
+  TexLookup(bump_map, texcoord->u - du, texcoord->v, &C_tex0);
+  TexLookup(bump_map, texcoord->u + du, texcoord->v, &C_tex1);
+  val0 = COL_LUMINANCE(&C_tex0);
+  val1 = COL_LUMINANCE(&C_tex1);
+  Bu = (val0 - val1) / (2 * du);
+
+  /* Bv = B(u, v - dv) - B(v, v + dv) / (2 * dv) */
+  TexLookup(bump_map, texcoord->u, texcoord->v - dv, &C_tex0);
+  TexLookup(bump_map, texcoord->u, texcoord->v + dv, &C_tex1);
+  val0 = COL_LUMINANCE(&C_tex0);
+  val1 = COL_LUMINANCE(&C_tex1);
+  Bv = (val0 - val1) / (2 * dv);
+
+  /* N ~= N + Bv(N x Pu) + Bu(N x Pv) */
+  VEC3_CROSS(&N_dPdu, N, dPdu);
+  VEC3_CROSS(&N_dPdv, N, dPdv);
+  N_bump->x += N->x + amplitude * (Bv * N_dPdu.x + Bu * N_dPdv.x);
+  N_bump->y += N->y + amplitude * (Bv * N_dPdu.y + Bu * N_dPdv.y);
+  N_bump->z += N->z + amplitude * (Bv * N_dPdu.z + Bu * N_dPdv.z);
+
+  VEC3_NORMALIZE(N_bump);
+}
+
 static int has_reached_bounce_limit(const struct TraceContext *cxt)
 {
   int current_depth = 0;
@@ -433,8 +475,8 @@ static void setup_surface_input(
   in->uv = isect->uv;
   in->I  = ray->dir;
 
-  in->dPds = isect->dPds;
-  in->dPdt = isect->dPdt;
+  in->dPdu = isect->dPdu;
+  in->dPdv = isect->dPdv;
 }
 
 static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
@@ -603,4 +645,3 @@ static int shadow_ray_has_reached_opcity_limit(const struct TraceContext *cxt, f
     return 0;
   }
 }
-

@@ -28,6 +28,8 @@ extern void ColFree(struct Color *c);
   (dst)->b = (B); \
   } while(0)
 
+#define COL_LUMINANCE(c) (.298912*(c)->r+.586611*(c)->g+.114478*(c)->b)
+
 #define COL_LERP(dst,A,B,t) do { \
   (dst)->r = (1-(t)) * (A)->r + (t) * (B)->r; \
   (dst)->g = (1-(t)) * (A)->g + (t) * (B)->g; \

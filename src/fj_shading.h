@@ -16,6 +16,7 @@ extern "C" {
 
 struct ObjectInstance;
 struct ObjectGroup;
+struct Texture;
 
 enum RayContext {
   CXT_CAMERA_RAY = 0,
@@ -53,8 +54,8 @@ struct SurfaceInput {
   struct Vector Ng;
   struct Vector I;
 
-  struct Vector dPds;
-  struct Vector dPdt;
+  struct Vector dPdu;
+  struct Vector dPdv;
 
   const struct ObjectInstance *shaded_object;
 };
@@ -71,6 +72,7 @@ struct LightOutput {
   double distance;
 };
 
+/* tracing functions */
 extern double SlFresnel(const struct Vector *I, const struct Vector *N, double ior);
 extern double SlPhong(const struct Vector *I, const struct Vector *N, const struct Vector *L,
     double roughness);
@@ -97,6 +99,7 @@ extern struct TraceContext SlShadowContext(const struct TraceContext *cxt,
 extern struct TraceContext SlSelfHitContext(const struct TraceContext *cxt,
     const struct ObjectInstance *obj);
 
+/* lighting functions */
 struct LightSample;
 
 extern int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *sample,
@@ -108,9 +111,14 @@ extern int SlGetLightSampleCount(const struct SurfaceInput *in);
 extern struct LightSample *SlNewLightSamples(const struct SurfaceInput *in);
 extern void SlFreeLightSamples(struct LightSample * samples);
 
+/* texture functions */
+extern void SlBumpMapping(const struct Texture *bump_map,
+    const struct Vector *dPdu, const struct Vector *dPdv,
+    const struct TexCoord *texcoord, double amplitude,
+    const struct Vector *N, struct Vector *N_bump);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 #endif /* FJ_XXX_H */
-

@@ -15,6 +15,7 @@ enum {
   CULL_BACKFACES = 1
 };
 
+struct TexCoord;
 struct Vector;
 struct Box;
 
@@ -36,9 +37,13 @@ extern int TriRayIntersect(
     const struct Vector *orig, const struct Vector *dir, int cull_backfaces,
     double *t, double *u, double *v);
 
+extern void TriComputeDerivatives(
+    const struct Vector *vert0, const struct Vector *vert1, const struct Vector *vert2,
+    const struct TexCoord *tex0, const struct TexCoord *tex1, const struct TexCoord *tex2,
+    struct Vector *dPdu, struct Vector *dPdv);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 #endif /* FJ_XXX_H */
-

@@ -261,8 +261,8 @@ int ObjIntersect(const struct ObjectInstance *obj, double time,
   XfmTransformVector(&transform_interp, &isect->N);
   VEC3_NORMALIZE(&isect->N);
 
-  XfmTransformVector(&transform_interp, &isect->dPds);
-  XfmTransformVector(&transform_interp, &isect->dPdt);
+  XfmTransformVector(&transform_interp, &isect->dPdu);
+  XfmTransformVector(&transform_interp, &isect->dPdv);
 
   isect->object = obj;
 

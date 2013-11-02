@@ -164,7 +164,7 @@ void TexFree(struct Texture *tex)
   FJ_MEM_FREE(tex);
 }
 
-void TexLookup(struct Texture *tex, float u, float v, struct Color4 *rgba)
+void TexLookup(const struct Texture *tex, float u, float v, struct Color4 *rgba)
 {
   const int thread_id = MtGetThreadID();
 

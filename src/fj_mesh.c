@@ -327,10 +327,18 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
     uv2 = &mesh->uv[face->i2];
     isect->uv.u = t * uv0->u + u * uv1->u + v * uv2->u;
     isect->uv.v = t * uv0->v + u * uv1->v + v * uv2->v;
+
+    TriComputeDerivatives(
+        P0, P1, P2,
+        uv0, uv1, uv2,
+        &isect->dPdu, &isect->dPdv);
   }
   else {
     isect->uv.u = 0;
     isect->uv.v = 0;
+
+    VEC3_SET(&isect->dPdu, 0, 0, 0);
+    VEC3_SET(&isect->dPdv, 0, 0, 0);
   }
 
   POINT_ON_RAY(&isect->P, &ray->orig, &ray->dir, t_hit);

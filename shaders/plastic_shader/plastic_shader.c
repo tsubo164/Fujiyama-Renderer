@@ -27,6 +27,8 @@ struct PlasticShader {
   int do_reflect;
 
   struct Texture *diffuse_map;
+  struct Texture *bump_map;
+  float bump_amplitude;
 };
 
 static void *MyNew(void);
@@ -47,6 +49,8 @@ static int set_reflect(void *self, const struct PropertyValue *value);
 static int set_ior(void *self, const struct PropertyValue *value);
 static int set_opacity(void *self, const struct PropertyValue *value);
 static int set_diffuse_map(void *self, const struct PropertyValue *value);
+static int set_bump_map(void *self, const struct PropertyValue *value);
+static int set_bump_amplitude(void *self, const struct PropertyValue *value);
 
 static const struct Property MyProperties[] = {
   {PROP_VECTOR3, "diffuse",     {.8, .8, .8, 0}, set_diffuse},
@@ -57,6 +61,8 @@ static const struct Property MyProperties[] = {
   {PROP_SCALAR,  "ior",         {1.4, 0, 0, 0},  set_ior},
   {PROP_SCALAR,  "opacity",     {1, 0, 0, 0},    set_opacity},
   {PROP_TEXTURE, "diffuse_map", {0, 0, 0, 0},    set_diffuse_map},
+  {PROP_TEXTURE, "bump_map",    {0, 0, 0, 0},    set_bump_map},
+  {PROP_SCALAR,  "bump_amplitude", {1, 0, 0, 0},    set_bump_amplitude},
   {PROP_NONE,    NULL,          {0, 0, 0, 0},    NULL}
 };
 
@@ -106,10 +112,19 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   struct Color diff = {0, 0, 0};
   struct Color spec = {0, 0, 0};
   struct Color4 diff_map = {1, 1, 1, 1};
+  struct Vector Nn = in->N;
   int i = 0;
 
   struct LightSample *samples = NULL;
   const int nsamples = SlGetLightSampleCount(in);
+
+  /* bump map */
+  if (plastic->bump_map != NULL) {
+    SlBumpMapping(plastic->bump_map,
+        &in->dPdu, &in->dPdv,
+        &in->uv, plastic->bump_amplitude,
+        &in->N, &Nn);
+  }
 
   /* allocate samples */
   samples = SlNewLightSamples(in);
@@ -117,14 +132,14 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   for (i = 0; i < nsamples; i++) {
     struct LightOutput Lout;
     float Kd = 0;
-    SlIlluminance(cxt, &samples[i], &in->P, &in->N, N_PI_2, in, &Lout);
+    SlIlluminance(cxt, &samples[i], &in->P, &Nn, N_PI_2, in, &Lout);
     /* spec */
     /*
-    Ks = SlPhong(in->I, in->N, Ln, .05);
+    Ks = SlPhong(in->I, Nn, Ln, .05);
     */
 
     /* diff */
-    Kd = VEC3_DOT(&in->N, &Lout.Ln);
+    Kd = VEC3_DOT(&Nn, &Lout.Ln);
     Kd = MAX(0, Kd);
     diff.r += Kd * Lout.Cl.r;
     diff.g += Kd * Lout.Cl.g;
@@ -153,11 +168,11 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 
     const struct TraceContext refl_cxt = SlReflectContext(cxt, in->shaded_object);
 
-    SlReflect(&in->I, &in->N, &R);
+    SlReflect(&in->I, &Nn, &R);
     VEC3_NORMALIZE(&R);
     SlTrace(&refl_cxt, &in->P, &R, .001, 1000, &C_refl, &t_hit);
 
-    Kr = SlFresnel(&in->I, &in->N, 1/plastic->ior);
+    Kr = SlFresnel(&in->I, &Nn, 1/plastic->ior);
     out->Cs.r += Kr * C_refl.r * plastic->reflect.r;
     out->Cs.g += Kr * C_refl.g * plastic->reflect.g;
     out->Cs.b += Kr * C_refl.b * plastic->reflect.b;
@@ -270,3 +285,21 @@ static int set_diffuse_map(void *self, const struct PropertyValue *value)
   return 0;
 }
 
+static int set_bump_map(void *self, const struct PropertyValue *value)
+{
+  struct PlasticShader *plastic = (struct PlasticShader *) self;
+
+  plastic->bump_map = value->texture;
+
+  return 0;
+}
+
+static int set_bump_amplitude(void *self, const struct PropertyValue *value)
+{
+  struct PlasticShader *plastic = (struct PlasticShader *) self;
+  const float amp = value->vector[0];
+
+  plastic->bump_amplitude = amp;
+
+  return 0;
+}
