@@ -393,9 +393,13 @@ void SlBumpMapping(const struct Texture *bump_map,
   float Bu, Bv;
   float du, dv;
   float val0, val1;
-  int xres, yres;
+  const int xres = TexGetWidth(bump_map);
+  const int yres = TexGetHeight(bump_map);
+  
+  if (xres == 0 || yres == 0) {
+    return;
+  }
 
-  TexGetResolution(bump_map, &xres, &yres);
   du = 1. / xres;
   dv = 1. / yres;
 

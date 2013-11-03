@@ -3,8 +3,8 @@ Copyright (c) 2011-2013 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef FJ_SL_H
-#define FJ_SL_H
+#ifndef FJ_SHADING_H
+#define FJ_SHADING_H
 
 #include "fj_tex_coord.h"
 #include "fj_vector.h"

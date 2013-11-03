@@ -25,7 +25,8 @@ extern void TexFree(struct Texture *tex);
 extern void TexLookup(const struct Texture *tex, float u, float v, struct Color4 *rgba);
 extern int TexLoadFile(struct Texture *tex, const char *filename);
 
-extern void TexGetResolution(const struct Texture *tex, int *xres, int *yres);
+extern int TexGetWidth(const struct Texture *tex);
+extern int TexGetHeight(const struct Texture *tex);
 
 #ifdef __cplusplus
 } /* extern "C" */

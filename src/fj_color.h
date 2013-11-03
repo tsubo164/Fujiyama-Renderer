@@ -11,11 +11,11 @@ extern "C" {
 #endif
 
 struct Color {
-  double r, g, b;
+  float r, g, b;
 };
 
 struct Color4 {
-  double r, g, b, a;
+  float r, g, b, a;
 };
 
 extern struct Color *ColAlloc(long count);

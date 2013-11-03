@@ -207,14 +207,18 @@ int TexLoadFile(struct Texture *tex, const char *filename)
   return 0;
 }
 
-void TexGetResolution(const struct Texture *tex, int *xres, int *yres)
+int TexGetWidth(const struct Texture *tex)
 {
   if (tex->cache_list[0] == NULL) {
-    *xres = 0;
-    *yres = 0;
-    return;
+    return 0;
   }
+  return tex->cache_list[0]->mip->width;
+}
 
-  *xres = tex->cache_list[0]->mip->width;
-  *yres = tex->cache_list[0]->mip->height;
+int TexGetHeight(const struct Texture *tex)
+{
+  if (tex->cache_list[0] == NULL) {
+    return 0;
+  }
+  return tex->cache_list[0]->mip->height;
 }

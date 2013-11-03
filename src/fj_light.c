@@ -464,7 +464,8 @@ static int dome_light_preprocess(struct Light *light)
     return 0;
   }
 
-  TexGetResolution(light->environment_map, &XRES, &YRES);
+  XRES = TexGetWidth(light->environment_map);
+  YRES = TexGetHeight(light->environment_map);
   /* TODO parameteraize */
   XRES /= 8;
   YRES /= 8;

@@ -13,6 +13,8 @@ See LICENSE and README
 #include <limits.h>
 #include <assert.h>
 
+#define INDEX(fb,x,y,z) ((y)*(fb)->width*(fb)->nchannels+(x)*(fb)->nchannels+(z))
+
 struct FrameBuffer {
   float *buf;
   int width;
@@ -96,28 +98,23 @@ float *FbResize(struct FrameBuffer *fb, int width, int height, int nchannels)
 
 int FbComputeBounds(struct FrameBuffer *fb, int *bounds)
 {
-  const float *tmp = 0;
+  int xmin =  INT_MAX;
+  int ymin =  INT_MAX;
+  int xmax = -INT_MAX;
+  int ymax = -INT_MAX;
   int x, y;
-  int xmin, ymin, xmax, ymax;
 
-  /* XXX bounds can be computed only if alpha channel exists */
+  /* bounds can be computed only if alpha channel exists */
   if (fb->nchannels != 4)
     return -1;
 
-  xmin =  INT_MAX;
-  ymin =  INT_MAX;
-  xmax = -INT_MAX;
-  ymax = -INT_MAX;
-
-  tmp = FbGetReadOnly(fb, 0, 0, 0);
-
   for (y = 0; y < fb->height; y++) {
     for (x = 0; x < fb->width; x++) {
-      const int i = y * fb->width * fb->nchannels + x * fb->nchannels;
-      if (tmp[i + 0] > 0 ||
-        tmp[i + 1] > 0 ||
-        tmp[i + 2] > 0 ||
-        tmp[i + 3] > 0) {
+      const float *rgba = FbGetReadOnly(fb, x, y, 0);
+      if (rgba[0] > 0 ||
+        rgba[1] > 0 ||
+        rgba[2] > 0 ||
+        rgba[3] > 0) {
         xmin = MIN(xmin, x);
         ymin = MIN(ymin, y);
         xmax = MAX(xmax, x + 1);
@@ -146,17 +143,17 @@ int FbIsEmpty(const struct FrameBuffer *fb)
 
 float *FbGetWritable(struct FrameBuffer *fb, int x, int y, int z)
 {
-  return fb->buf + y * fb->width * fb->nchannels + x * fb->nchannels + z;
+  return fb->buf + INDEX(fb, x, y, z);
 }
 
 const float *FbGetReadOnly(const struct FrameBuffer *fb, int x, int y, int z)
 {
-  return fb->buf + y * fb->width * fb->nchannels + x * fb->nchannels + z;
+  return fb->buf + INDEX(fb, x, y, z);
 }
 
 void FbGetColor(const struct FrameBuffer *fb, int x, int y, struct Color4 *rgba)
 {
-  const float *pixel = fb->buf + y * fb->width * fb->nchannels + x * fb->nchannels;
+  const float *pixel = FbGetReadOnly(fb, x, y, 0);
   
   if (fb->nchannels == 1) {
     rgba->r = pixel[0];
@@ -180,7 +177,7 @@ void FbGetColor(const struct FrameBuffer *fb, int x, int y, struct Color4 *rgba)
 
 void FbSetColor(struct FrameBuffer *fb, int x, int y, const struct Color4 *rgba)
 {
-  float *pixel = fb->buf + y * fb->width * fb->nchannels + x * fb->nchannels;
+  float *pixel = FbGetWritable(fb, x, y, 0);
   
   if (fb->nchannels == 1) {
     pixel[0] = rgba->r;
