@@ -420,9 +420,11 @@ void SlBumpMapping(const struct Texture *bump_map,
   /* N ~= N + Bv(N x Pu) + Bu(N x Pv) */
   VEC3_CROSS(&N_dPdu, N, dPdu);
   VEC3_CROSS(&N_dPdv, N, dPdv);
-  N_bump->x += N->x + amplitude * (Bv * N_dPdu.x + Bu * N_dPdv.x);
-  N_bump->y += N->y + amplitude * (Bv * N_dPdu.y + Bu * N_dPdv.y);
-  N_bump->z += N->z + amplitude * (Bv * N_dPdu.z + Bu * N_dPdv.z);
+  VEC3_NORMALIZE(&N_dPdu);
+  VEC3_NORMALIZE(&N_dPdv);
+  N_bump->x += N->x + amplitude * (Bv * N_dPdu.x - Bu * N_dPdv.x);
+  N_bump->y += N->y + amplitude * (Bv * N_dPdu.y - Bu * N_dPdv.y);
+  N_bump->z += N->z + amplitude * (Bv * N_dPdu.z - Bu * N_dPdv.z);
 
   VEC3_NORMALIZE(N_bump);
 }
