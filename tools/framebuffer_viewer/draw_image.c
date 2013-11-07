@@ -37,6 +37,9 @@ void setup_image_drawer(struct ImageCard *image, const float *pixels,
   image->ymax = yoffset + ysize;
 
   switch (image->channel_count) {
+  case 1:
+    format = GL_RED;
+    break;
   case 3:
     format = GL_RGB;
     break;
@@ -69,6 +72,7 @@ void draw_image(const struct ImageCard *image)
   glUseProgram(image->shader_program.program_id);
   set_uniform_int(&image->shader_program, "texture", 0);
   set_uniform_int(&image->shader_program, "display_channels", image->display_channel);
+  set_uniform_int(&image->shader_program, "channel_count",    image->channel_count);
 
   glEnable(GL_TEXTURE_2D);
   glBegin(GL_QUADS);

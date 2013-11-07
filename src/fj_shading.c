@@ -381,6 +381,11 @@ void SlFreeLightSamples(struct LightSample * samples)
   FJ_MEM_FREE(samples);
 }
 
+#define MUL(a,val) do { \
+  (a)->x *= (val); \
+  (a)->y *= (val); \
+  (a)->z *= (val); \
+  } while(0)
 void SlBumpMapping(const struct Texture *bump_map,
     const struct Vector *dPdu, const struct Vector *dPdv,
     const struct TexCoord *texcoord, double amplitude,
@@ -420,14 +425,15 @@ void SlBumpMapping(const struct Texture *bump_map,
   /* N ~= N + Bv(N x Pu) + Bu(N x Pv) */
   VEC3_CROSS(&N_dPdu, N, dPdu);
   VEC3_CROSS(&N_dPdv, N, dPdv);
-  VEC3_NORMALIZE(&N_dPdu);
-  VEC3_NORMALIZE(&N_dPdv);
+  MUL(&N_dPdu, du);
+  MUL(&N_dPdv, du);
   N_bump->x += N->x + amplitude * (Bv * N_dPdu.x - Bu * N_dPdv.x);
   N_bump->y += N->y + amplitude * (Bv * N_dPdu.y - Bu * N_dPdv.y);
   N_bump->z += N->z + amplitude * (Bv * N_dPdu.z - Bu * N_dPdv.z);
 
   VEC3_NORMALIZE(N_bump);
 }
+#undef MUL
 
 static int has_reached_bounce_limit(const struct TraceContext *cxt)
 {
