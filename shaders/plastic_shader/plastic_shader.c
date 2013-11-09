@@ -112,18 +112,20 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   struct Color diff = {0, 0, 0};
   struct Color spec = {0, 0, 0};
   struct Color4 diff_map = {1, 1, 1, 1};
-  struct Vector Nn = in->N;
+  struct Vector Nf = in->N;
   int i = 0;
 
   struct LightSample *samples = NULL;
   const int nsamples = SlGetLightSampleCount(in);
+
+  SlFaceforward(&in->I, &in->N, &Nf);
 
   /* bump map */
   if (plastic->bump_map != NULL) {
     SlBumpMapping(plastic->bump_map,
         &in->dPdu, &in->dPdv,
         &in->uv, plastic->bump_amplitude,
-        &in->N, &Nn);
+        &in->N, &Nf);
   }
 
   /* allocate samples */
@@ -132,14 +134,14 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   for (i = 0; i < nsamples; i++) {
     struct LightOutput Lout;
     float Kd = 0;
-    SlIlluminance(cxt, &samples[i], &in->P, &Nn, N_PI_2, in, &Lout);
+    SlIlluminance(cxt, &samples[i], &in->P, &Nf, N_PI_2, in, &Lout);
     /* spec */
     /*
-    Ks = SlPhong(in->I, Nn, Ln, .05);
+    Ks = SlPhong(in->I, Nf, Ln, .05);
     */
 
     /* diff */
-    Kd = VEC3_DOT(&Nn, &Lout.Ln);
+    Kd = VEC3_DOT(&Nf, &Lout.Ln);
     Kd = MAX(0, Kd);
     diff.r += Kd * Lout.Cl.r;
     diff.g += Kd * Lout.Cl.g;
@@ -168,11 +170,11 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 
     const struct TraceContext refl_cxt = SlReflectContext(cxt, in->shaded_object);
 
-    SlReflect(&in->I, &Nn, &R);
+    SlReflect(&in->I, &Nf, &R);
     VEC3_NORMALIZE(&R);
     SlTrace(&refl_cxt, &in->P, &R, .001, 1000, &C_refl, &t_hit);
 
-    Kr = SlFresnel(&in->I, &Nn, 1/plastic->ior);
+    Kr = SlFresnel(&in->I, &Nf, 1/plastic->ior);
     out->Cs.r += Kr * C_refl.r * plastic->reflect.r;
     out->Cs.g += Kr * C_refl.g * plastic->reflect.g;
     out->Cs.b += Kr * C_refl.b * plastic->reflect.b;

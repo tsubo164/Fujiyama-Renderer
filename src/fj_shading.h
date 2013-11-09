@@ -73,6 +73,7 @@ struct LightOutput {
 };
 
 /* tracing functions */
+extern void SlFaceforward(const struct Vector *I, const struct Vector *N, struct Vector *Nf);
 extern double SlFresnel(const struct Vector *I, const struct Vector *N, double ior);
 extern double SlPhong(const struct Vector *I, const struct Vector *N, const struct Vector *L,
     double roughness);

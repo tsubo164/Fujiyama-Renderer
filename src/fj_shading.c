@@ -37,6 +37,17 @@ static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
 static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray,
     struct Color4 *out_rgba);
 
+void SlFaceforward(const struct Vector *I, const struct Vector *N, struct Vector *Nf)
+{
+  if (VEC3_DOT(I, N) < 0) {
+    *Nf = *N;
+    return;
+  }
+  Nf->x = -N->x;
+  Nf->y = -N->y;
+  Nf->z = -N->z;
+}
+
 double SlFresnel(const struct Vector *I, const struct Vector *N, double ior)
 {
   double k2 = 0;
