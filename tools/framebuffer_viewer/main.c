@@ -45,6 +45,7 @@ int main(int argc, char **argv)
 {
   const int WIN_W = 256;
   const int WIN_H = 256;
+  char win_title[1024] = "FrameBuffer Viewer";
 
   if (argc == 2 && strcmp(argv[1], "--help") == 0) {
     fprintf(stderr, "%s%s", USAGE, USAGE2);
@@ -57,11 +58,17 @@ int main(int argc, char **argv)
     return -1;
   }
 
+  if (strlen(argv[1]) > 1000) {
+    fprintf(stderr, "error: too long file name.\n");
+    return -1;
+  }
+  sprintf(win_title, "%s - FrameBuffer Viewer", argv[1]);
+
   /* tipical glut settings */
   glutInit(&argc, argv);
   glutInitWindowSize(WIN_W, WIN_H);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-  glutCreateWindow("FrameBuffer Viewer");
+  glutCreateWindow(win_title);
 
   glutDisplayFunc(display);
   glutReshapeFunc(resize);
