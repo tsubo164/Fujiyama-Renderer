@@ -202,9 +202,7 @@ int TexLoadFile(struct Texture *tex, const char *filename)
   }
 
   tex->cache_list[0] = new_cache();
-  cache_open_mipmap(tex->cache_list[0], tex->filename);
-
-  return 0;
+  return cache_open_mipmap(tex->cache_list[0], tex->filename);
 }
 
 int TexGetWidth(const struct Texture *tex)
