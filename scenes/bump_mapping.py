@@ -7,7 +7,7 @@ import fujiyama
 
 si = fujiyama.SceneInterface()
 
-#plugins
+#Plugins
 si.OpenPlugin('ConstantShader')
 si.OpenPlugin('PlasticShader')
 
@@ -30,28 +30,32 @@ si.NewLight('light1', 'DomeLight')
 si.SetProperty3('light1', 'rotate', 0, rot, 0)
 # You chang the number of samples on the env map. the default is 16.
 #si.SetProperty1('light1', 'sample_count', 256)
+si.SetProperty1('light1', 'sample_count', 32)
 si.AssignTexture('light1', 'environment_map', 'env_tex1');
 
 #Shader
 si.NewShader('sphere_shader1', 'PlasticShader')
 si.AssignTexture('sphere_shader1', 'diffuse_map', 'rock_tex1')
 si.AssignTexture('sphere_shader1', 'bump_map', 'rock_tex1')
-si.SetProperty1('sphere_shader1', 'bump_amplitude', 10)
+si.SetProperty1('sphere_shader1', 'bump_amplitude', 1)
 
 si.NewShader('sphere_shader2', 'PlasticShader')
 si.AssignTexture('sphere_shader2', 'diffuse_map', 'rust_tex1')
 si.AssignTexture('sphere_shader2', 'bump_map', 'rust_tex1')
-si.SetProperty1('sphere_shader2', 'bump_amplitude', 10)
+si.SetProperty1('sphere_shader2', 'bump_amplitude', 1)
 
 si.NewShader('sphere_shader3', 'PlasticShader')
 si.AssignTexture('sphere_shader3', 'diffuse_map', 'concrete_tex1')
 si.AssignTexture('sphere_shader3', 'bump_map', 'concrete_tex1')
-si.SetProperty1('sphere_shader3', 'bump_amplitude', 10)
+si.SetProperty1('sphere_shader3', 'bump_amplitude', 1)
 
 si.NewShader('sphere_shader4', 'PlasticShader')
 si.AssignTexture('sphere_shader4', 'diffuse_map', 'pattern_tex1')
 si.AssignTexture('sphere_shader4', 'bump_map', 'pattern_tex1')
-si.SetProperty1('sphere_shader4', 'bump_amplitude', 5)
+si.SetProperty1('sphere_shader4', 'bump_amplitude', -1)
+
+si.SetProperty3('sphere_shader4', 'diffuse', .5, .5, .5)
+si.SetProperty1('sphere_shader4', 'ior', 10)
 
 si.NewShader('dome_shader', 'ConstantShader')
 si.AssignTexture('dome_shader', 'texture', 'env_tex1')
