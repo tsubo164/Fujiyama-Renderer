@@ -57,6 +57,9 @@ install_bins += bin/fbview
 build_dirs   += tools/hdr2mip
 install_bins += bin/hdr2mip
 
+build_dirs   += tools/jpg2mip
+install_bins += bin/jpg2mip
+
 build_dirs   += tools/obj2mesh
 install_bins += bin/obj2mesh
 
