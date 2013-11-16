@@ -464,6 +464,7 @@ EXPORTS
 	ShdEvaluate
 	ShdGetPropertyList
 	ShdSetProperty
+	SlFaceforward
 	SlFresnel
 	SlPhong
 	SlReflect
@@ -480,6 +481,7 @@ EXPORTS
 	SlGetLightSampleCount
 	SlNewLightSamples
 	SlFreeLightSamples
+	SlBumpMapping
 	StrDup
 	StrFree
 	StrCopyAndTerminate
@@ -490,7 +492,8 @@ EXPORTS
 	TexFree
 	TexLookup
 	TexLoadFile
-	TexGetResolution
+	TexGetWidth
+	TexGetHeight
 	TlrNew
 	TlrFree
 	TlrGetTileCount
@@ -525,6 +528,7 @@ EXPORTS
 	TriComputeFaceNormal
 	TriComputeNormal
 	TriRayIntersect
+	TriComputeDerivatives
 	TrbNew
 	TrbFree
 	TrbSetAmplitude

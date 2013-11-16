@@ -37,6 +37,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "surfacewisps_procedure", "s
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "framebuffer_viewer", "framebuffer_viewer\framebuffer_viewer.vcxproj", "{9A6D7F84-0228-428E-AF01-A7D5795AF399}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jpg2mip", "jpg2mip\jpg2mip.vcxproj", "{EA7F12AF-24DF-4254-AFCA-E2CDB47074EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -189,6 +191,14 @@ Global
 		{9A6D7F84-0228-428E-AF01-A7D5795AF399}.Release|Win32.Build.0 = Release|Win32
 		{9A6D7F84-0228-428E-AF01-A7D5795AF399}.Release|x64.ActiveCfg = Release|x64
 		{9A6D7F84-0228-428E-AF01-A7D5795AF399}.Release|x64.Build.0 = Release|x64
+		{EA7F12AF-24DF-4254-AFCA-E2CDB47074EB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EA7F12AF-24DF-4254-AFCA-E2CDB47074EB}.Debug|Win32.Build.0 = Debug|Win32
+		{EA7F12AF-24DF-4254-AFCA-E2CDB47074EB}.Debug|x64.ActiveCfg = Debug|x64
+		{EA7F12AF-24DF-4254-AFCA-E2CDB47074EB}.Debug|x64.Build.0 = Debug|x64
+		{EA7F12AF-24DF-4254-AFCA-E2CDB47074EB}.Release|Win32.ActiveCfg = Release|Win32
+		{EA7F12AF-24DF-4254-AFCA-E2CDB47074EB}.Release|Win32.Build.0 = Release|Win32
+		{EA7F12AF-24DF-4254-AFCA-E2CDB47074EB}.Release|x64.ActiveCfg = Release|x64
+		{EA7F12AF-24DF-4254-AFCA-E2CDB47074EB}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
