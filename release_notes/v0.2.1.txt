@@ -1,0 +1,27 @@
+Fujiyama Renderer v0.2.1(Alpha) Release Notes
+=============================================
+
+New features since v0.2.0
+-------------------------
+ * Implemented bump mapping.
+
+ * Added jpg2mip tool to convert jpeg images to mipmap data.
+   Textures used in sample images are available here, http://www.textureking.com/
+   To install jpeg.lib for Windows, see here
+   http://bugbeebox.com/2012/11/18/building-libjpeg-8d-with-msvc-2012/
+
+ * Added SlFaceforward to flip plygon normals to eye position.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Velocity attribute and deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Mesh primitive group
+ * Global illumination
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support

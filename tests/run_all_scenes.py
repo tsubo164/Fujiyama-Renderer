@@ -12,6 +12,7 @@ scn_list = [
 	'scenes/xyzrgb_dragon.scn']
 
 py_list = [
+	'scenes/bump_mapping.py',
 	'scenes/camera_motion_blur.py',
 	'scenes/dome_light1.py',
 	'scenes/dome_light2.py',

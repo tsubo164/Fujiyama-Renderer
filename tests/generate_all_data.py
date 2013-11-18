@@ -32,6 +32,12 @@ hdr_list = [
 	'pisa',
 	'uffizi-large']
 
+jpg_list = [
+	'rock',
+	'rust',
+	'concrete',
+	'pattern']
+
 try:
 	for name in ply_list:
 		src = '../../ply/'  + name + '.ply'
@@ -67,6 +73,13 @@ try:
 
 		print 'bin/hdr2mip', src, dst
 		return_code = subprocess.call(['bin/hdr2mip', src, dst])
+
+	for name in jpg_list:
+		src = '../../jpg/' + name + '.jpg'
+		dst = '../../mip/' + name + '.mip'
+
+		print 'bin/jpg2mip', src, dst
+		return_code = subprocess.call(['bin/jpg2mip', src, dst])
 
 except OSError, (errno, strerror):
 	print 'error: ' + strerror
