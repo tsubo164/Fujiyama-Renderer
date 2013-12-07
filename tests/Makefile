@@ -13,7 +13,7 @@ RM = rm -f
 .PHONY: all check clean
 all: check
 
-files := array box io numeric vector
+files := array box iff io numeric vector
 objects := $(addsuffix _test.o, $(files))
 targets := $(addsuffix _test, $(files))
 
@@ -39,4 +39,5 @@ clean:
 	@-$(RM) unit_test.o $(objects)
 	@-$(RM) $(targets)
 	@-$(RM) io_test_file.bin
+	@-$(RM) iff_test_file.iff
 
