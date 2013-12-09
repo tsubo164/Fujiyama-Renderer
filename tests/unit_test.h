@@ -29,6 +29,15 @@ extern "C" {
     printf("*   expected: %d\n", (b)); \
   } } while (0)
 
+#define TEST_LONG(a, b) \
+  do { if ((a)==(b)) {\
+      TestPass( #a" == "#b, __FILE__, __LINE__ ); \
+  } else { \
+      TestFail( #a" == "#b, __FILE__, __LINE__ ); \
+    printf("*   actual:   %ld\n", (a)); \
+    printf("*   expected: %ld\n", (b)); \
+  } } while (0)
+
 #define TEST_FLOAT(a, b) \
   do { if (TestFloatEq((a),(b))) {\
       TestPass( #a" == "#b, __FILE__, __LINE__ ); \

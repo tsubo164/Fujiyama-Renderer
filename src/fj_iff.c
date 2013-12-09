@@ -5,6 +5,7 @@ See LICENSE and README
 
 #include "fj_iff.h"
 #include "fj_memory.h"
+#include <stdio.h>
 #include <string.h>
 
 struct IffFile {
@@ -37,17 +38,17 @@ void IffClose(IffFile *iff)
   FJ_MEM_FREE(iff);
 }
 
-static size_t iff_read(const IffFile *iff, void *data, size_t size, size_t count)
+static DataSize iff_read(const IffFile *iff, void *data, DataSize size, DataSize count)
 {
   return fread(data, size, count, iff->file);
 }
 
-static size_t iff_write(IffFile *iff, const void *data, size_t size, size_t count)
+static DataSize iff_write(IffFile *iff, const void *data, DataSize size, DataSize count)
 {
   return fwrite(data, size, count, iff->file);
 }
 
-static long iff_tell(const IffFile *iff)
+static DataSize iff_tell(const IffFile *iff)
 {
   return ftell(iff->file);
 }
@@ -57,20 +58,20 @@ enum {
   IFF_SEEK_CUR = SEEK_CUR,
   IFF_SEEK_END = SEEK_END
 };
-static int iff_seek(IffFile *iff, long offset, int base)
+static int iff_seek(IffFile *iff, DataSize offset, int base)
 {
   return fseek(iff->file, offset, base);
 }
 
 #define DEFINE_READ_WRITE_(SUFFIX,TYPE) \
-size_t IffWrite##SUFFIX(IffFile *iff, const TYPE *data, size_t count) \
+DataSize IffWrite##SUFFIX(IffFile *iff, const TYPE *data, DataSize count) \
 { \
-  const size_t nwrotes = iff_write(iff, data, sizeof(*data), count); \
+  const DataSize nwrotes = iff_write(iff, data, sizeof(*data), count); \
   return nwrotes * sizeof(*data); \
 } \
-size_t IffRead##SUFFIX(IffFile *iff, TYPE *data, size_t count) \
+DataSize IffRead##SUFFIX(IffFile *iff, TYPE *data, DataSize count) \
 { \
-  const size_t nreads = fread(data, sizeof(*data), count, iff->file); \
+  const DataSize nreads = fread(data, sizeof(*data), count, iff->file); \
   return nreads * sizeof(*data); \
 }
 DEFINE_READ_WRITE_(Int8, int8_t)
@@ -78,19 +79,19 @@ DEFINE_READ_WRITE_(Int16, int16_t)
 DEFINE_READ_WRITE_(Int32, int32_t)
 DEFINE_READ_WRITE_(Int64, int64_t)
 
-size_t IffReadString(IffFile *iff, char *data)
+DataSize IffReadString(IffFile *iff, char *data)
 {
-  size_t data_size = 0;
-  const size_t start = iff_tell(iff);
+  DataSize data_size = 0;
+  const DataSize start = iff_tell(iff);
   iff_read(iff, &data_size, sizeof(data_size), 1);
   iff_read(iff, data,       sizeof(*data),     data_size);
   return iff_tell(iff) - start;
 }
 
-size_t IffWriteString(IffFile *iff, const char *data)
+DataSize IffWriteString(IffFile *iff, const char *data)
 {
-  const size_t data_size = sizeof(*data) * (strlen(data) + 1);
-  const size_t start = iff_tell(iff);
+  const DataSize data_size = sizeof(*data) * (strlen(data) + 1);
+  const DataSize start = iff_tell(iff);
   iff_write(iff, &data_size, sizeof(data_size), 1);
   iff_write(iff, data,       data_size,         1);
   return iff_tell(iff) - start;
@@ -104,11 +105,11 @@ static void write_chunk_id(IffFile *iff, const char *chunk_id)
 }
 
 #define DEFINE_WRITE_CHUNK_(SUFFIX,TYPE) \
-size_t IffWriteChunk##SUFFIX(IffFile *iff, const char *chunk_id, \
-    const TYPE *data, size_t count) \
+DataSize IffWriteChunk##SUFFIX(IffFile *iff, const char *chunk_id, \
+    const TYPE *data, DataSize count) \
 { \
-  const size_t data_size = count * sizeof(*data); \
-  const size_t start = iff_tell(iff); \
+  const DataSize data_size = count * sizeof(*data); \
+  const DataSize start = iff_tell(iff); \
   write_chunk_id(iff, chunk_id); \
   iff_write(iff, &data_size, sizeof(data_size), 1); \
   iff_write(iff, data,       data_size,         1); \
@@ -120,17 +121,17 @@ DEFINE_WRITE_CHUNK_(Int16, int16_t)
 DEFINE_WRITE_CHUNK_(Int32, int32_t)
 DEFINE_WRITE_CHUNK_(Int64, int64_t)
 
-void IffWriteChunkGroupBegin(IffFile *iff, const char *chunk_id, DataSize *begin_pos)
+void IffWriteChunkGroupBegin(IffFile *iff, const char *chunk_id, IffChunk *group_chunk)
 {
   const DataSize dummy_data_size = 3;
   write_chunk_id(iff, chunk_id);
   iff_write(iff, &dummy_data_size, sizeof(dummy_data_size), 1);
-  *begin_pos = iff_tell(iff);
+  group_chunk->data_head = iff_tell(iff);
 }
 
-void IffWriteChunkGroupEnd(IffFile *iff, size_t begin_pos)
+void IffWriteChunkGroupEnd(IffFile *iff, IffChunk *group_chunk)
 {
-  long bytes = iff_tell(iff) - begin_pos;
+  DataSize bytes = iff_tell(iff) - group_chunk->data_head;
 
   if (bytes % 2 == 1) {
     int8_t c = '\0';
@@ -143,8 +144,16 @@ void IffWriteChunkGroupEnd(IffFile *iff, size_t begin_pos)
   iff_seek(iff, bytes, IFF_SEEK_CUR);
 }
 
-void IffReadChunkGroupBegin(IffFile *iff, IffChunk *group_chunk)
+int IffReadChunkGroupBegin(IffFile *iff, const char *chunk_id, IffChunk *group_chunk)
 {
+  const int err = IffReadNextChunk(iff, group_chunk);
+
+  if (IffChunkMatch(group_chunk, chunk_id) == 0) {
+    /* TODO error handling */
+    return 0;
+  }
+
+  return err;
 }
 
 void IffReadChunkGroupEnd(IffFile *iff, IffChunk *group_chunk)
@@ -164,6 +173,12 @@ int IffReadNextChunk(IffFile *iff, IffChunk *chunk)
   iff_read(iff, &chunk->data_size, sizeof(chunk->data_size), 1);
   chunk->data_head = iff_tell(iff);
   return 1;
+}
+
+void IffPutBackChunk(IffFile *iff, const IffChunk *chunk)
+{
+  const DataSize chunk_head = chunk->data_head - sizeof(DataSize) - sizeof(chunk->id);
+  iff_seek(iff, chunk_head, IFF_SEEK_SET);
 }
 
 void IffSkipCurrentChunk(IffFile *iff, const IffChunk *chunk)

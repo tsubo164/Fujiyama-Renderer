@@ -13,21 +13,18 @@ int main()
 {
   const char filename[] = "iff_test_file.iff";
   {
-    const char signature[8] = {128, 'F', 'J', 'G', 'E', 'O', '.', '.'};
+    const char signature[8] = {(char)128, 'F', 'J', 'G', 'E', 'O', '.', '.'};
     const int64_t point_count = 8;
     const int64_t primitive_count = 12;
     const int32_t point_attribute_count = 2;
     const int32_t primitive_attribute_count = 1;
     {
       IffFile *iff = IffOpen(filename, "wb");
-#if n
-      IffFile *iff = iff_open(filename, "wb");
-#endif
 
       {
-        DataSize geo_chunk = 0;
-        DataSize header_chunk = 0;
-        DataSize attribute_chunk = 0;
+        IffChunk geo_chunk;
+        IffChunk header_chunk;
+        IffChunk attribute_chunk;
 
         IffWriteChunkGroupBegin(iff, signature, &geo_chunk);
         {
@@ -44,24 +41,23 @@ int main()
               IffWriteString(iff, "P");
               IffWriteString(iff, "Cd");
             }
-            IffWriteChunkGroupEnd(iff, attribute_chunk);
+            IffWriteChunkGroupEnd(iff, &attribute_chunk);
 
             IffWriteChunkGroupBegin(iff, "PRALIST", &attribute_chunk);
             {
               IffWriteString(iff, "index");
             }
-            IffWriteChunkGroupEnd(iff, attribute_chunk);
+            IffWriteChunkGroupEnd(iff, &attribute_chunk);
 
           }
-          IffWriteChunkGroupEnd(iff, header_chunk);
+          IffWriteChunkGroupEnd(iff, &header_chunk);
         }
-        IffWriteChunkGroupEnd(iff, geo_chunk);
+        IffWriteChunkGroupEnd(iff, &geo_chunk);
       }
 
       IffClose(iff);
     }
     {
-      char sig[8] = {'\0'};
       int64_t npt = 0;
       int64_t npr = 0;
       int32_t npta = 0;
@@ -70,47 +66,55 @@ int main()
       IffFile *iff = IffOpen(filename, "rb");
 
       {
-        IffChunk chunk[8];
+        IffChunk geo_chunk;
+        IffChunk header_chunk;
+        IffChunk attribute_chunk;
 
-        IffReadNextChunk(iff, &chunk[0]);
-        TEST_INT(memcmp(chunk[0].id, signature, 8),  0);
+        IffReadNextChunk(iff, &geo_chunk);
+        TEST_INT(memcmp(geo_chunk.id, signature, 8),  0);
 
-        IffReadChunkGroupBegin(iff, &chunk[0]);
+        IffPutBackChunk(iff, &geo_chunk);
+
+        IffReadChunkGroupBegin(iff, signature, &geo_chunk);
         {
 
-          IffReadNextChunk(iff, &chunk[1]);
-          TEST_STR(chunk[1].id, "HEADER");
+          IffReadNextChunk(iff, &header_chunk);
+          TEST_STR(header_chunk.id, "HEADER");
 
-          IffReadChunkGroupBegin(iff, &chunk[1]);
+          IffPutBackChunk(iff, &header_chunk);
+
+          IffReadChunkGroupBegin(iff, "HEADER", &header_chunk);
           {
-            IffReadNextChunk(iff, &chunk[2]);
-            TEST_STR(chunk[2].id, "NPT");
+            IffReadNextChunk(iff, &attribute_chunk);
+            TEST_STR(attribute_chunk.id, "NPT");
 
             IffReadInt64(iff, &npt, 1);
-            TEST_INT(npt, point_count);
+            TEST_LONG(npt, point_count);
 
-            IffReadNextChunk(iff, &chunk[2]);
-            TEST_STR(chunk[2].id, "NPR");
+            IffReadNextChunk(iff, &attribute_chunk);
+            TEST_STR(attribute_chunk.id, "NPR");
 
             IffReadInt64(iff, &npr, 1);
-            TEST_INT(npr, primitive_count);
+            TEST_LONG(npr, primitive_count);
 
-            IffReadNextChunk(iff, &chunk[2]);
-            TEST_STR(chunk[2].id, "NPTATTR");
+            IffReadNextChunk(iff, &attribute_chunk);
+            TEST_STR(attribute_chunk.id, "NPTATTR");
 
             IffReadInt32(iff, &npta, 1);
             TEST_INT(npta, point_attribute_count);
 
-            IffReadNextChunk(iff, &chunk[2]);
-            TEST_STR(chunk[2].id, "NRTATTR");
+            IffReadNextChunk(iff, &attribute_chunk);
+            TEST_STR(attribute_chunk.id, "NRTATTR");
 
             IffReadInt32(iff, &npra, 1);
             TEST_INT(npra, primitive_attribute_count);
 
-            IffReadNextChunk(iff, &chunk[2]);
-            TEST_STR(chunk[2].id, "PTALIST");
+            IffReadNextChunk(iff, &attribute_chunk);
+            TEST_STR(attribute_chunk.id, "PTALIST");
 
-            IffReadChunkGroupBegin(iff, &chunk[2]);
+            IffPutBackChunk(iff, &attribute_chunk);
+
+            IffReadChunkGroupBegin(iff, "PTALIST", &attribute_chunk);
             {
               IffReadString(iff, attr_name);
               TEST_STR(attr_name, "P");
@@ -118,33 +122,35 @@ int main()
               IffReadString(iff, attr_name);
               TEST_STR(attr_name, "Cd");
 
-              TEST_INT(IffEndOfChunk(iff, &chunk[2]), 1);
+              TEST_INT(IffEndOfChunk(iff, &attribute_chunk), 1);
             }
-            IffReadChunkGroupEnd(iff, &chunk[2]);
+            IffReadChunkGroupEnd(iff, &attribute_chunk);
 
-            IffReadNextChunk(iff, &chunk[2]);
-            TEST_STR(chunk[2].id, "PRALIST");
+            IffReadNextChunk(iff, &attribute_chunk);
+            TEST_STR(attribute_chunk.id, "PRALIST");
 
-            IffReadChunkGroupBegin(iff, &chunk[2]);
+            IffPutBackChunk(iff, &attribute_chunk);
+
+            IffReadChunkGroupBegin(iff, "PRALIST", &attribute_chunk);
             {
-              TEST_INT(IffEndOfChunk(iff, &chunk[2]), 0);
+              TEST_INT(IffEndOfChunk(iff, &attribute_chunk), 0);
 
               IffReadString(iff, attr_name);
               TEST_STR(attr_name, "index");
             }
-            IffReadChunkGroupEnd(iff, &chunk[2]);
+            IffReadChunkGroupEnd(iff, &attribute_chunk);
 
-            TEST_INT(IffEndOfChunk(iff, &chunk[2]), 1);
+            TEST_INT(IffEndOfChunk(iff, &attribute_chunk), 1);
 
           }
-          IffReadChunkGroupEnd(iff, &chunk[1]);
+          IffReadChunkGroupEnd(iff, &header_chunk);
 
-          TEST_INT(IffEndOfChunk(iff, &chunk[1]), 1);
+          TEST_INT(IffEndOfChunk(iff, &header_chunk), 1);
 
         }
-        IffReadChunkGroupEnd(iff, &chunk[0]);
+        IffReadChunkGroupEnd(iff, &geo_chunk);
 
-        TEST_INT(IffEndOfChunk(iff, &chunk[0]), 1);
+        TEST_INT(IffEndOfChunk(iff, &geo_chunk), 1);
 
       }
 
