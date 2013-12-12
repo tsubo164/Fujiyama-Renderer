@@ -123,15 +123,19 @@ DEFINE_WRITE_CHUNK_(Int64, int64_t)
 
 void IffWriteChunkGroupBegin(IffFile *iff, const char *chunk_id, IffChunk *group_chunk)
 {
-  const DataSize dummy_data_size = 3;
+  const DataSize default_data_size = 0;
   write_chunk_id(iff, chunk_id);
-  iff_write(iff, &dummy_data_size, sizeof(dummy_data_size), 1);
+  iff_write(iff, &default_data_size, sizeof(default_data_size), 1);
   group_chunk->data_head = iff_tell(iff);
 }
 
 void IffWriteChunkGroupEnd(IffFile *iff, IffChunk *group_chunk)
 {
   DataSize bytes = iff_tell(iff) - group_chunk->data_head;
+
+  if (bytes == 0) {
+    return;
+  }
 
   if (bytes % 2 == 1) {
     int8_t c = '\0';
@@ -164,6 +168,8 @@ void IffReadChunkGroupEnd(IffFile *iff, IffChunk *group_chunk)
 int IffReadNextChunk(IffFile *iff, IffChunk *chunk)
 {
   strncpy(chunk->id, "", CHUNK_ID_SIZE);
+  chunk->data_head = 0;
+  chunk->data_size = 0;
 
   iff_read(iff, chunk->id, sizeof(chunk->id), 1);
   if (IffChunkMatch(chunk, "")) {
@@ -189,7 +195,7 @@ void IffSkipCurrentChunk(IffFile *iff, const IffChunk *chunk)
 
 int IffChunkMatch(const IffChunk *chunk, const char *key)
 {
-  return strcmp(chunk->id, key) == 0 ? 1 : 0;
+  return strncmp(chunk->id, key, CHUNK_ID_SIZE) == 0 ? 1 : 0;
 }
 
 int IffEndOfChunk(const IffFile *iff, const IffChunk *chunk)
@@ -201,9 +207,5 @@ int IffEndOfChunk(const IffFile *iff, const IffChunk *chunk)
     cur_pos++;
   }
 
-  if (end_pos == cur_pos) {
-    return 1;
-  } else {
-    return 0;
-  }
+  return end_pos == cur_pos ? 1 : 0;
 }

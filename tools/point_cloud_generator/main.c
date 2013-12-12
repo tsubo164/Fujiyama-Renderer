@@ -14,6 +14,8 @@ See LICENSE and README
 #include "fj_noise.h"
 #include "fj_mesh.h"
 
+#include "fj_geo_io.h"
+
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -26,6 +28,7 @@ static const char USAGE[] =
 
 int main(int argc, const char **argv)
 {
+#if 0
   const char *in_filename = NULL;
   const char *out_filename = NULL;
 
@@ -149,5 +152,37 @@ int main(int argc, const char **argv)
   }
 
   return 0;
-}
+#endif
+  struct GeoOutputFile *geo = GeoOpenOutputFile("../test.fjgeo");
+  struct Vector P[] = {
+    {1, 0, 0},
+    {0, 1, 0},
+    {0, 0, 1}
+  };
+  double radius[] = {.01, .01, .01};
 
+  GeoSetOutputPrimitiveType(geo, "PTCLOUD");
+
+  GeoSetOutputPointCount(geo, 3);
+  GeoSetOutputPrimitiveCount(geo, 1);
+
+  GeoSetOutputPointAttributeVector3(geo, "P", P);
+  GeoSetOutputPointAttributeDouble(geo, "radius", radius);
+
+  GeoWriteFile(geo);
+
+  GeoCloseOutputFile(geo);
+
+  {
+    struct GeoInputFile *geo = GeoOpenInputFile("../test.fjgeo");
+
+    GeoReadHeader(geo);
+
+    printf("point_count: %ld\n", GeoGetInputPointCount(geo));
+    printf("primitive_count: %ld\n", GeoGetInputPrimitiveCount(geo));
+
+    GeoCloseInputFile(geo);
+  }
+
+  return 0;
+}

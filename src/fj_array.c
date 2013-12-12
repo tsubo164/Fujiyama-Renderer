@@ -84,3 +84,8 @@ char *ArrGet(const struct Array *a, int index)
 {
   return a->data + index * a->elemsize;
 }
+
+size_t ArrGetElementCount(const struct Array *a)
+{
+  return a->nelems;
+}

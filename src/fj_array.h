@@ -36,6 +36,8 @@ extern char *ArrResize(struct Array *a, size_t new_size);
 
 extern char *ArrGet(const struct Array *a, int index);
 
+extern size_t ArrGetElementCount(const struct Array *a);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

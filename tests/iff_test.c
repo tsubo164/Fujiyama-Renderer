@@ -49,6 +49,11 @@ int main()
             }
             IffWriteChunkGroupEnd(iff, &attribute_chunk);
 
+            IffWriteChunkGroupBegin(iff, "DTALIST", &attribute_chunk);
+            {
+            }
+            IffWriteChunkGroupEnd(iff, &attribute_chunk);
+
           }
           IffWriteChunkGroupEnd(iff, &header_chunk);
         }
@@ -76,41 +81,42 @@ int main()
         IffPutBackChunk(iff, &geo_chunk);
 
         IffReadChunkGroupBegin(iff, signature, &geo_chunk);
+        TEST_INT(IffChunkMatch(&geo_chunk, signature), 1);
         {
 
           IffReadNextChunk(iff, &header_chunk);
-          TEST_STR(header_chunk.id, "HEADER");
+          TEST_INT(IffChunkMatch(&header_chunk, "HEADER"), 1);
 
           IffPutBackChunk(iff, &header_chunk);
 
           IffReadChunkGroupBegin(iff, "HEADER", &header_chunk);
           {
             IffReadNextChunk(iff, &attribute_chunk);
-            TEST_STR(attribute_chunk.id, "NPT");
+            TEST_INT(IffChunkMatch(&attribute_chunk, "NPT"), 1);
 
             IffReadInt64(iff, &npt, 1);
             TEST_LONG(npt, point_count);
 
             IffReadNextChunk(iff, &attribute_chunk);
-            TEST_STR(attribute_chunk.id, "NPR");
+            TEST_INT(IffChunkMatch(&attribute_chunk, "NPR"), 1);
 
             IffReadInt64(iff, &npr, 1);
             TEST_LONG(npr, primitive_count);
 
             IffReadNextChunk(iff, &attribute_chunk);
-            TEST_STR(attribute_chunk.id, "NPTATTR");
+            TEST_INT(IffChunkMatch(&attribute_chunk, "NPTATTR"), 1);
 
             IffReadInt32(iff, &npta, 1);
             TEST_INT(npta, point_attribute_count);
 
             IffReadNextChunk(iff, &attribute_chunk);
-            TEST_STR(attribute_chunk.id, "NRTATTR");
+            TEST_INT(IffChunkMatch(&attribute_chunk, "NRTATTR"), 1);
 
             IffReadInt32(iff, &npra, 1);
             TEST_INT(npra, primitive_attribute_count);
 
             IffReadNextChunk(iff, &attribute_chunk);
-            TEST_STR(attribute_chunk.id, "PTALIST");
+            TEST_INT(IffChunkMatch(&attribute_chunk, "PTALIST"), 1);
 
             IffPutBackChunk(iff, &attribute_chunk);
 
@@ -127,7 +133,7 @@ int main()
             IffReadChunkGroupEnd(iff, &attribute_chunk);
 
             IffReadNextChunk(iff, &attribute_chunk);
-            TEST_STR(attribute_chunk.id, "PRALIST");
+            TEST_INT(IffChunkMatch(&attribute_chunk, "PRALIST"), 1);
 
             IffPutBackChunk(iff, &attribute_chunk);
 
@@ -141,6 +147,17 @@ int main()
             IffReadChunkGroupEnd(iff, &attribute_chunk);
 
             TEST_INT(IffEndOfChunk(iff, &attribute_chunk), 1);
+
+            IffReadNextChunk(iff, &attribute_chunk);
+            TEST_INT(IffChunkMatch(&attribute_chunk, "DTALIST"), 1);
+
+            IffPutBackChunk(iff, &attribute_chunk);
+
+            IffReadChunkGroupBegin(iff, "DTALIST", &attribute_chunk);
+            {
+              TEST_INT(IffEndOfChunk(iff, &attribute_chunk), 1);
+            }
+            IffReadChunkGroupEnd(iff, &attribute_chunk);
 
           }
           IffReadChunkGroupEnd(iff, &header_chunk);
