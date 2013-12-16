@@ -26,9 +26,31 @@ static const char USAGE[] =
 "  --help         Display this information\n"
 "\n";
 
+/*
+static void write_vec3_callback(const void *data, GeoSize element, int index,
+    struct AttributeComponent *value)
+{
+  const struct Vector *vec = (const struct Vector *) data;
+
+  switch (index) {
+  case 0:
+    value->real = vec[element].x;
+    break;
+  case 1:
+    value->real = vec[element].y;
+    break;
+  case 2:
+    value->real = vec[element].z;
+    break;
+  default:
+    value->real = 0.;
+    break;
+  }
+}
+*/
+
 int main(int argc, const char **argv)
 {
-#if 0
   const char *in_filename = NULL;
   const char *out_filename = NULL;
 
@@ -152,7 +174,7 @@ int main(int argc, const char **argv)
   }
 
   return 0;
-#endif
+#if 0
   struct GeoOutputFile *geo = GeoOpenOutputFile("../test.fjgeo");
   struct Vector P[] = {
     {1, 0, 0},
@@ -168,6 +190,15 @@ int main(int argc, const char **argv)
 
   GeoSetOutputPointAttributeVector3(geo, "P", P);
   GeoSetOutputPointAttributeDouble(geo, "radius", radius);
+
+  GeoSetOutputAttribute(geo,
+      "P",
+      P,
+      CLASS_POINT,
+      GEO_Double,
+      3,
+      3,
+      write_vec3_callback);
 
   GeoWriteFile(geo);
 
@@ -185,4 +216,5 @@ int main(int argc, const char **argv)
   }
 
   return 0;
+#endif
 }

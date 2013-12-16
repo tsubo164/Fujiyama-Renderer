@@ -63,6 +63,23 @@ static int iff_seek(IffFile *iff, DataSize offset, int base)
   return fseek(iff->file, offset, base);
 }
 
+DataSize IffWrite(IffFile *iff, const void *data, DataSize size, DataSize count)
+{
+  return fwrite(data, size, count, iff->file);
+}
+
+static void write_chunk_id(IffFile *iff, const char *chunk_id);
+DataSize IffWriteChunk(IffFile *iff, const char *chunk_id,
+    const void *data, DataSize size, DataSize count)
+{
+  const DataSize data_size = size * count;
+  const DataSize start = iff_tell(iff);
+  write_chunk_id(iff, chunk_id);
+  iff_write(iff, &data_size, sizeof(data_size), 1);
+  iff_write(iff, data,       data_size,         1);
+  return iff_tell(iff) - start;
+}
+
 #define DEFINE_READ_WRITE_(SUFFIX,TYPE) \
 DataSize IffWrite##SUFFIX(IffFile *iff, const TYPE *data, DataSize count) \
 { \
@@ -78,6 +95,8 @@ DEFINE_READ_WRITE_(Int8, int8_t)
 DEFINE_READ_WRITE_(Int16, int16_t)
 DEFINE_READ_WRITE_(Int32, int32_t)
 DEFINE_READ_WRITE_(Int64, int64_t)
+DEFINE_READ_WRITE_(Float, float)
+DEFINE_READ_WRITE_(Double, double)
 
 DataSize IffReadString(IffFile *iff, char *data)
 {
@@ -120,6 +139,18 @@ DEFINE_WRITE_CHUNK_(Int8, int8_t)
 DEFINE_WRITE_CHUNK_(Int16, int16_t)
 DEFINE_WRITE_CHUNK_(Int32, int32_t)
 DEFINE_WRITE_CHUNK_(Int64, int64_t)
+DEFINE_WRITE_CHUNK_(Float, float)
+DEFINE_WRITE_CHUNK_(Double, double)
+
+DataSize IffWriteChunkString(IffFile *iff, const char *chunk_id, const char *data)
+{
+  const DataSize start = iff_tell(iff);
+  IffChunk chunk;
+  IffWriteChunkGroupBegin(iff, chunk_id, &chunk);
+  IffWriteString(iff, data);
+  IffWriteChunkGroupEnd(iff, &chunk);
+  return iff_tell(iff) - start;
+}
 
 void IffWriteChunkGroupBegin(IffFile *iff, const char *chunk_id, IffChunk *group_chunk)
 {

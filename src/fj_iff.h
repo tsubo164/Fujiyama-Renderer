@@ -22,17 +22,28 @@ typedef struct IffFile IffFile;
 extern IffFile *IffOpen(const char *filename, const char *modes);
 extern void IffClose(IffFile *iff);
 
+/* TODO test generic interface */
+extern DataSize IffWrite(IffFile *iff, const void *data, DataSize size, DataSize count);
+#define FJ_IFF_WRITE(iff,data,count) IffWrite(iff, data, sizeof(*(data)), count)
+extern DataSize IffWriteChunk(IffFile *iff, const char *chunk_id,
+    const void *data, DataSize size, DataSize count);
+#define FJ_IFF_WRITE_CHUNK(iff,chunk_id,data,count) IffWriteChunk(iff, chunk_id, data, sizeof(*(data)), count)
+
 /* Read/Write functions for primitive types */
 extern DataSize IffWriteInt8(IffFile *iff, const int8_t *data, DataSize count);
 extern DataSize IffWriteInt16(IffFile *iff, const int16_t *data, DataSize count);
 extern DataSize IffWriteInt32(IffFile *iff, const int32_t *data, DataSize count);
 extern DataSize IffWriteInt64(IffFile *iff, const int64_t *data, DataSize count);
+extern DataSize IffWriteFloat(IffFile *iff, const float *data, DataSize count);
+extern DataSize IffWriteDouble(IffFile *iff, const double *data, DataSize count);
 extern DataSize IffWriteString(IffFile *iff, const char *data);
 
 extern DataSize IffReadInt8(IffFile *iff, int8_t *data, DataSize count);
 extern DataSize IffReadInt16(IffFile *iff, int16_t *data, DataSize count);
 extern DataSize IffReadInt32(IffFile *iff, int32_t *data, DataSize count);
 extern DataSize IffReadInt64(IffFile *iff, int64_t *data, DataSize count);
+extern DataSize IffReadFloat(IffFile *iff, float *data, DataSize count);
+extern DataSize IffReadDouble(IffFile *iff, double *data, DataSize count);
 extern DataSize IffReadString(IffFile *iff, char *data);
 
 /* Write functions for primitive types with chunk id */
@@ -44,6 +55,12 @@ extern DataSize IffWriteChunkInt32(IffFile *iff, const char *chunk_id,
     const int32_t *data, DataSize count);
 extern DataSize IffWriteChunkInt64(IffFile *iff, const char *chunk_id,
     const int64_t *data, DataSize count);
+extern DataSize IffWriteChunkFloat(IffFile *iff, const char *chunk_id,
+    const float *data, DataSize count);
+extern DataSize IffWriteChunkDouble(IffFile *iff, const char *chunk_id,
+    const double *data, DataSize count);
+extern DataSize IffWriteChunkString(IffFile *iff, const char *chunk_id,
+    const char *data);
 
 enum { CHUNK_ID_SIZE = 8 };
 typedef struct IffChunk {

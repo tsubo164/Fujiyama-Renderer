@@ -15,10 +15,18 @@ See LICENSE and README
 typedef const char *src_ptr;
 typedef char *dst_ptr;
 
-typedef unsigned char AttributeType;
-typedef unsigned char NameSize;
+typedef signed char AttributeType;
 
 enum { ATTRIBUTE_NAME_SIZE = 64 };
+
+#define ATTR_TYPE_LIST \
+  ATTR(Int8,    int8_t) \
+  ATTR(Int16,   int16_t) \
+  ATTR(Int32,   int32_t) \
+  ATTR(Int64,   int64_t) \
+  ATTR(Float,   float) \
+  ATTR(Double,  double) \
+  ATTR(Vector3, struct Vector)
 
 enum {
   ATTR_None = 0,
@@ -30,17 +38,46 @@ enum {
 struct GeoAttribute {
   char name[64];
   AttributeType type;
+  GeoSize data_size;
   GeoSize data_count;
 
   src_ptr src_data;
   dst_ptr dst_data;
+
+#if 0
+  GeoWriteCallback write_callback;
+#endif
 };
-#define INIT_ATTRIBUTE {{'\0'}, ATTR_None, 0, NULL, NULL}
+#define INIT_ATTRIBUTE {{'\0'}, ATTR_None, 0, 0, NULL, NULL}
+
+#if 0
+static void write_vec3_callback(const void *data, GeoSize element, int index,
+    struct AttributeComponent *value)
+{
+  const struct Vector *vec = (const struct Vector *) data;
+
+  switch (index) {
+  case 0:
+    value->real = vec[element].x;
+    break;
+  case 1:
+    value->real = vec[element].y;
+    break;
+  case 2:
+    value->real = vec[element].z;
+    break;
+  default:
+    value->real = 0.;
+    break;
+  }
+}
+#endif
 
 static struct GeoAttribute output_attribute_data(
     const void *src_data,
     const char *attr_name,
     AttributeType attr_type,
+    GeoSize data_size,
     GeoSize data_count)
 {
   const size_t len = strlen(attr_name);
@@ -51,9 +88,14 @@ static struct GeoAttribute output_attribute_data(
   }
 
   strncpy(attr.name, attr_name, ATTRIBUTE_NAME_SIZE);
-  attr.data_count = data_count;
   attr.type = attr_type;
+  attr.data_size = data_size;
+  attr.data_count = data_count;
   attr.src_data = (src_ptr) src_data;
+
+#if 0
+  attr.write_callback = write_vec3_callback;
+#endif
 
   return attr;
 }
@@ -216,7 +258,11 @@ void GeoSetOutputPrimitiveType(struct GeoOutputFile *file, const char *primitive
 }
 
 static void set_output_attribute(struct Array *attr_list,
-    const char *attr_name, const void *attr_data, AttributeType attr_type)
+    const char *attr_name,
+    const void *attr_data,
+    AttributeType attr_type,
+    GeoSize data_size,
+    GeoSize data_count)
 {
   struct GeoAttribute new_attr;
   const int attr_count = ArrGetElementCount(attr_list);
@@ -234,7 +280,8 @@ static void set_output_attribute(struct Array *attr_list,
       attr_data,
       attr_name,
       attr_type,
-      attr_count);
+      data_size,
+      data_count);
 
   ArrPush(attr_list, &new_attr);
 }
@@ -243,10 +290,137 @@ static void set_output_attribute(struct Array *attr_list,
 void GeoSetOutputPointAttribute##suffix(struct GeoOutputFile *file, \
     const char *attr_name, const type *attr_data) \
 { \
-  set_output_attribute(file->geo->point_attribute, attr_name, attr_data, ATTR_##suffix); \
+  set_output_attribute(file->geo->point_attribute, \
+  attr_name, attr_data, ATTR_##suffix, sizeof(*(attr_data)), file->geo->point_count); \
 }
 DEFINE_SET_OUTPUT_POINT_ATTRIBUTE(Double, double)
 DEFINE_SET_OUTPUT_POINT_ATTRIBUTE(Vector3, struct Vector)
+
+#if 0
+void GeoSetOutputAttribute(struct GeoOutputFile *file,
+    const char *attr_name,
+    const void *attr_data,
+    int element_type, /* point/primitive */
+    int data_type,
+    int element_count,
+    int component_count,
+    GeoWriteCallback callback)
+{
+}
+#endif
+
+static void write_attribute_info(IffFile *iff, const struct GeoAttribute *attr)
+{
+  IffChunk chunk;
+
+  IffWriteChunkGroupBegin(iff, "INFO", &chunk);
+  {
+    const char *type_name = NULL;
+    int8_t nelems = 0;
+
+    switch (attr->type) {
+    case ATTR_Double:
+      type_name = "Double";
+      nelems = 1;
+      break;
+    case ATTR_Vector3:
+      type_name = "Double";
+      nelems = 3;
+      break;
+    default:
+      break;
+    }
+
+    IffWriteChunkString(iff, "NAME", attr->name);
+    IffWriteChunkString(iff, "TYPE", type_name);
+    IffWriteChunkInt8(iff, "NELEMS", &nelems, 1);
+  }
+  IffWriteChunkGroupEnd(iff, &chunk);
+}
+
+static void write_attribute_info_list(IffFile *iff,
+    const struct GeoAttribute *attr_list, int count)
+{
+  IffChunk chunk;
+  int i;
+
+  IffWriteChunkGroupBegin(iff, "PTALIST", &chunk);
+  {
+    for (i = 0; i < count; i++) {
+      write_attribute_info(iff, &attr_list[i]);
+    }
+  }
+  IffWriteChunkGroupEnd(iff, &chunk);
+}
+
+static void write_attribute_data(IffFile *iff, const struct GeoAttribute *attr)
+{
+  IffChunk chunk;
+  IffChunk achk;
+
+  IffWriteChunkGroupBegin(iff, "ATTRDATA", &chunk);
+  {
+    const char *type_name = NULL;
+    int8_t nelems = 0;
+    int i;
+
+    switch (attr->type) {
+    case ATTR_Double:
+      type_name = "Double";
+      nelems = 1;
+      IffWriteChunkString(iff, "NAME", attr->name);
+      IffWriteChunkString(iff, "TYPE", type_name);
+      /*
+      IffWriteChunkInt8(iff, "NELEMS", &nelems, 1);
+      */
+      FJ_IFF_WRITE_CHUNK(iff, "NELEMS", &nelems, 1);
+      printf("attr->data_size:  %ld\n", attr->data_size);
+      printf("attr->data_count: %ld\n", attr->data_count);
+      printf(">>>>>>>> %ld\n", attr->data_count);
+#if n
+      IffWriteChunkDouble(iff, "DATA", (double *) attr->src_data, attr->data_count);
+#endif
+      IffWriteChunk(iff, "DATA", attr->src_data, attr->data_size, attr->data_count);
+      break;
+
+    case ATTR_Vector3:
+      type_name = "Double";
+      nelems = 3;
+      IffWriteChunkString(iff, "NAME", attr->name);
+      IffWriteChunkString(iff, "TYPE", type_name);
+      IffWriteChunkInt8(iff, "NELEMS", &nelems, 1);
+
+      IffWriteChunkGroupBegin(iff, "DATA", &achk);
+#if 0
+        for (i = 0; i < attr->data_count; i++) {
+          int j;
+          for (j = 0; j < 3; j++) {
+            struct AttributeComponent value = {0, 0};
+            attr->write_callback(attr->src_data, i, j, &value);
+            printf("%g ", value.real);
+            IffWrite(iff, &value.real, sizeof(double), 1);
+          }
+          printf("\n");
+        }
+#endif
+        for (i = 0; i < attr->data_count; i++) {
+          const struct Vector *v = (const struct Vector *) attr->src_data;
+          double d[3];
+          d[0] = v[i].x;
+          d[1] = v[i].y;
+          d[2] = v[i].z;
+          IffWriteDouble(iff, d, 3);
+        }
+      IffWriteChunkGroupEnd(iff, &achk);
+      break;
+
+    default:
+      break;
+    }
+
+  }
+  IffWriteChunkGroupEnd(iff, &chunk);
+}
 
 void GeoWriteFile(struct GeoOutputFile *file)
 {
@@ -263,8 +437,9 @@ void GeoWriteFile(struct GeoOutputFile *file)
   IffChunk file_chunk;
   IffChunk geo_chunk;
   IffChunk header_chunk;
+  /*
   IffChunk data_chunk;
-  IffChunk attribute_chunk;
+  */
 
   IffWriteChunkGroupBegin(iff, signature, &file_chunk);
   {
@@ -277,37 +452,47 @@ void GeoWriteFile(struct GeoOutputFile *file)
         IffWriteChunkInt32(iff, "NPTATTR", &point_attribute_count, 1);
         IffWriteChunkInt32(iff, "NPRATTR", &primitive_attribute_count, 1);
 
-        IffWriteChunkGroupBegin(iff, "PTALIST", &attribute_chunk);
-        {
-          int i;
-          for (i = 0; i < point_attribute_count; i++) {
-            const struct GeoAttribute *attr =
-                (const struct GeoAttribute *) ArrGet(geo->point_attribute, i);
-            IffWriteString(iff, attr->name);
-          }
-        }
-        IffWriteChunkGroupEnd(iff, &attribute_chunk);
+        write_attribute_info_list(iff,
+            (const struct GeoAttribute *) geo->point_attribute->data,
+            point_attribute_count);
 
-        IffWriteChunkGroupBegin(iff, "PRALIST", &attribute_chunk);
-        {
-          int i;
-          for (i = 0; i < primitive_attribute_count; i++) {
-            const struct GeoAttribute *attr =
-                (const struct GeoAttribute *) ArrGet(geo->primitive_attribute, i);
-            IffWriteString(iff, attr->name);
-          }
-        }
-        IffWriteChunkGroupEnd(iff, &attribute_chunk);
+        write_attribute_info_list(iff,
+            (const struct GeoAttribute *) geo->primitive_attribute->data,
+            primitive_attribute_count);
       }
       IffWriteChunkGroupEnd(iff, &header_chunk);
 
       {
         int i;
         for (i = 0; i < point_attribute_count; i++) {
+          const struct GeoAttribute *attr =
+              (const struct GeoAttribute *) ArrGet(geo->point_attribute, i);
+
+          write_attribute_data(iff, attr);
+#if 0
           IffWriteChunkGroupBegin(iff, "PTADATA", &data_chunk);
           {
+            IffWriteChunkString(iff, "PTANAME", attr->name);
+            /*
+            IffChunk chk;
+            IffWriteChunkGroupBegin(iff, "DATA", &chk);
+            {
+              int j;
+              for (j = 0; j < geo->point_count; j++) {
+                double d[3];
+                const struct Vector *v = (const struct Vector *) attr->src_data;
+                d[0] = v[j].x;
+                d[1] = v[j].y;
+                d[2] = v[j].z;
+                IffWriteDouble(iff, d, 3);
+                VecPrint(&v[j]);
+              }
+            }
+            IffWriteChunkGroupEnd(iff, &chk);
+            */
           }
           IffWriteChunkGroupEnd(iff, &data_chunk);
+#endif
         }
       }
     }

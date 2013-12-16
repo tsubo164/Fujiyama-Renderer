@@ -45,6 +45,39 @@ extern void GeoSetOutputPointAttributeVector3(struct GeoOutputFile *file,
 
 extern void GeoWriteFile(struct GeoOutputFile *file);
 
+#if 0
+struct AttributeComponent {
+  long integer;
+  double real;
+};
+
+typedef void (*GeoWriteCallback)(const void *data, GeoSize element, int index,
+    struct AttributeComponent *value);
+
+enum {
+  CLASS_POINT,
+  CLASS_PRIMITIVE
+};
+enum {
+  GEO_Double,
+  GEO_hoge
+};
+extern void GeoSetOutputAttribute(struct GeoOutputFile *file,
+    const char *attr_name,
+    const void *attr_data,
+    int element_type, /* point/primitive */
+    int data_type,
+    int element_count,
+    int component_count,
+    GeoWriteCallback callback);
+
+
+/* TODO */
+struct GeoAttribute;
+typedef void (*GeoWriteCallback)(struct GeoOutputFile *file,
+    const struct GeoAttribute *attr, GeoSize index);
+#endif
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
