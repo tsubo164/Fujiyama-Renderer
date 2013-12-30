@@ -22,13 +22,6 @@ typedef struct IffFile IffFile;
 extern IffFile *IffOpen(const char *filename, const char *modes);
 extern void IffClose(IffFile *iff);
 
-/* TODO test generic interface */
-extern DataSize IffWrite(IffFile *iff, const void *data, DataSize size, DataSize count);
-#define FJ_IFF_WRITE(iff,data,count) IffWrite(iff, data, sizeof(*(data)), count)
-extern DataSize IffWriteChunk(IffFile *iff, const char *chunk_id,
-    const void *data, DataSize size, DataSize count);
-#define FJ_IFF_WRITE_CHUNK(iff,chunk_id,data,count) IffWriteChunk(iff, chunk_id, data, sizeof(*(data)), count)
-
 /* Read/Write functions for primitive types */
 extern DataSize IffWriteInt8(IffFile *iff, const int8_t *data, DataSize count);
 extern DataSize IffWriteInt16(IffFile *iff, const int16_t *data, DataSize count);
@@ -75,6 +68,9 @@ extern void IffWriteChunkGroupEnd(IffFile *iff, IffChunk *group_chunk);
 extern int IffReadChunkGroupBegin(IffFile *iff, const char *chunk_id, IffChunk *group_chunk);
 extern void IffReadChunkGroupEnd(IffFile *iff, IffChunk *group_chunk);
 
+extern int IffPeekNextChunk(IffFile *iff, IffChunk *chunk);
+
+extern int IffReadNextChildChunk(IffFile *iff, const IffChunk *parent, IffChunk *chunk);
 extern int IffReadNextChunk(IffFile *iff, IffChunk *chunk);
 extern void IffPutBackChunk(IffFile *iff, const IffChunk *chunk);
 extern void IffSkipCurrentChunk(IffFile *iff, const IffChunk *chunk);

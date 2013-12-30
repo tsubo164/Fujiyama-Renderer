@@ -14,7 +14,7 @@ See LICENSE and README
 #include "fj_noise.h"
 #include "fj_mesh.h"
 
-#include "fj_geo_io.h"
+#include "fj_geometry.h"
 
 #include <stdio.h>
 #include <ctype.h>
@@ -69,6 +69,9 @@ int main(int argc, const char **argv)
   out_filename = argv[2];
 
   {
+    /* TODO TEST Geometry */
+    struct Geometry *geo = GeoNew();
+
     struct XorShift xr;
     struct Mesh *mesh = MshNew();
     struct PtcOutputFile *out = PtcOpenOutputFile(out_filename);
@@ -114,8 +117,15 @@ int main(int argc, const char **argv)
     }
     printf("total_point_count %d\n", total_point_count);
 
+    GeoSetPointCount(geo, total_point_count);
+    GeoSetPrimitiveCount(geo, 1);
+
+    P = GeoAddAttributeVector3(geo, "P", GEO_POINT);
+    radius = GeoAddAttributeDouble(geo, "radius", GEO_POINT);
+    /*
     P = FJ_MEM_ALLOC_ARRAY(struct Vector, total_point_count);
     radius = FJ_MEM_ALLOC_ARRAY(double, total_point_count);
+    */
 
     XorInit(&xr);
     point_id = 0;
@@ -160,6 +170,8 @@ int main(int argc, const char **argv)
       }
     }
 
+    radius = GeoGetAttributeDouble(geo, "radius", GEO_POINT);
+
     PtcSetOutputPosition(out, P, total_point_count);
     PtcSetOutputAttributeDouble(out, "radius", radius);
 
@@ -167,13 +179,32 @@ int main(int argc, const char **argv)
 
     PtcCloseOutputFile(out);
     MshFree(mesh);
+    /* TODO TEST Geometry */
+    GeoWriteFile(geo, "../test.fjgeo");
+    GeoFree(geo);
 
     FJ_MEM_FREE(point_count_list);
+    /*
     FJ_MEM_FREE(P);
     FJ_MEM_FREE(radius);
+    */
+  }
+
+  {
+    /* TODO TEST Geometry */
+    struct Geometry *geo = GeoNew();
+    int err = 0;
+
+    /* TODO TEST Geometry */
+    err = GeoReadFile(geo, "../test.fjgeo");
+    if (err) {
+      printf("error!\n");
+    }
+    GeoFree(geo);
   }
 
   return 0;
+
 #if 0
   struct GeoOutputFile *geo = GeoOpenOutputFile("../test.fjgeo");
   struct Vector P[] = {

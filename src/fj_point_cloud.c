@@ -12,6 +12,9 @@ See LICENSE and README
 #include "fj_box.h"
 #include "fj_ray.h"
 
+  /* TODO TEST Geometry */
+#include "fj_geometry.h"
+
 #include <string.h>
 #include <float.h>
 
@@ -29,6 +32,9 @@ struct PointCloud {
   double *radius;
 
   struct Box bounds;
+
+  /* TODO TEST Geometry */
+  struct Geometry *geo;
 };
 
 struct PointCloud *PtcNew(void)
@@ -44,6 +50,13 @@ struct PointCloud *PtcNew(void)
   ptc->radius = NULL;
   BOX3_SET(&ptc->bounds, 0, 0, 0, 0, 0, 0);
 
+  /* TODO TEST Geometry */
+  ptc->geo = GeoNew();
+  if (ptc->geo == NULL) {
+    PtcFree(ptc);
+    return NULL;
+  }
+
   return ptc;
 }
 
@@ -53,8 +66,13 @@ void PtcFree(struct PointCloud *ptc)
     return;
   }
 
+  /*
   VecFree(ptc->P);
   free(ptc->radius);
+  */
+
+  /* TODO TEST Geometry */
+  GeoFree(ptc->geo);
 
   FJ_MEM_FREE(ptc);
 }
@@ -71,7 +89,12 @@ void PtcAllocatePoint(struct PointCloud *ptc, int point_count)
     return;
   }
 
+#if 0
   P_tmp = VecRealloc(ptc->P, point_count);
+#endif
+  GeoSetPointCount(ptc->geo, point_count);
+  P_tmp = GeoAddAttributeVector3(ptc->geo, "P", GEO_POINT);
+
   if (P_tmp == NULL) {
     return;
   }
@@ -83,7 +106,10 @@ void PtcAllocatePoint(struct PointCloud *ptc, int point_count)
   {
     /* TODO TEST */
     int i;
+#if 0
     ptc->radius = FJ_MEM_ALLOC_ARRAY(double, point_count);
+#endif
+    ptc->radius = GeoAddAttributeDouble(ptc->geo, "radius", GEO_POINT);
     for (i = 0; i < point_count; i++) {
       ptc->radius[i] = .01 * .2;
     }

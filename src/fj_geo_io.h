@@ -43,7 +43,7 @@ extern void GeoSetOutputPointAttributeDouble(struct GeoOutputFile *file,
 extern void GeoSetOutputPointAttributeVector3(struct GeoOutputFile *file,
     const char *attr_name, const struct Vector *attr_data);
 
-extern void GeoWriteFile(struct GeoOutputFile *file);
+extern void GeoWriteFile2(struct GeoOutputFile *file);
 
 #if 0
 struct AttributeComponent {

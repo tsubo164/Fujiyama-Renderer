@@ -4,6 +4,7 @@ See LICENSE and README
 */
 
 #include "fj_geo_io.h"
+#include "fj_geometry.h"
 #include "fj_memory.h"
 #include "fj_vector.h"
 #include "fj_array.h"
@@ -19,7 +20,7 @@ typedef signed char AttributeType;
 
 enum { ATTRIBUTE_NAME_SIZE = 64 };
 
-#define ATTR_TYPE_LIST \
+#define ATTRIBTYPE_LIST \
   ATTR(Int8,    int8_t) \
   ATTR(Int16,   int16_t) \
   ATTR(Int32,   int32_t) \
@@ -29,10 +30,10 @@ enum { ATTRIBUTE_NAME_SIZE = 64 };
   ATTR(Vector3, struct Vector)
 
 enum {
-  ATTR_None = 0,
-  ATTR_Int,
-  ATTR_Double,
-  ATTR_Vector3
+  ATTRIBNone = 0,
+  ATTRIBInt,
+  ATTRIBDouble,
+  ATTRIBVector3
 };
 
 struct GeoAttribute {
@@ -48,7 +49,38 @@ struct GeoAttribute {
   GeoWriteCallback write_callback;
 #endif
 };
-#define INIT_ATTRIBUTE {{'\0'}, ATTR_None, 0, 0, NULL, NULL}
+#define INIT_ATTRIBUTE {{'\0'}, ATTRIBNone, 0, 0, NULL, NULL}
+
+/* -------------------------------------------------------------------------- */
+
+#if 0
+{
+  switch (type) {
+  case INT32:
+    for (i = 0; i < point_count; i++) {
+      double value = get_next_value(file);
+    }
+  }
+}
+
+typedef int (*AttribGetCallback)();
+typedef int (*AttribSetCallback)();
+
+struct Attrib {
+  char name[64];
+  AttributeType type;
+  GeoSize data_size;
+  GeoSize data_count;
+
+  const char *src_data;
+  char *dst_data;
+
+  AttribGetCallback Get;
+  AttribSetCallback Set;
+};
+#endif
+
+/* -------------------------------------------------------------------------- */
 
 #if 0
 static void write_vec3_callback(const void *data, GeoSize element, int index,
@@ -291,7 +323,7 @@ void GeoSetOutputPointAttribute##suffix(struct GeoOutputFile *file, \
     const char *attr_name, const type *attr_data) \
 { \
   set_output_attribute(file->geo->point_attribute, \
-  attr_name, attr_data, ATTR_##suffix, sizeof(*(attr_data)), file->geo->point_count); \
+  attr_name, attr_data, ATTRIB##suffix, sizeof(*(attr_data)), file->geo->point_count); \
 }
 DEFINE_SET_OUTPUT_POINT_ATTRIBUTE(Double, double)
 DEFINE_SET_OUTPUT_POINT_ATTRIBUTE(Vector3, struct Vector)
@@ -319,11 +351,11 @@ static void write_attribute_info(IffFile *iff, const struct GeoAttribute *attr)
     int8_t nelems = 0;
 
     switch (attr->type) {
-    case ATTR_Double:
+    case ATTRIBDouble:
       type_name = "Double";
       nelems = 1;
       break;
-    case ATTR_Vector3:
+    case ATTRIBVector3:
       type_name = "Double";
       nelems = 3;
       break;
@@ -365,25 +397,19 @@ static void write_attribute_data(IffFile *iff, const struct GeoAttribute *attr)
     int i;
 
     switch (attr->type) {
-    case ATTR_Double:
+    case ATTRIBDouble:
       type_name = "Double";
       nelems = 1;
       IffWriteChunkString(iff, "NAME", attr->name);
       IffWriteChunkString(iff, "TYPE", type_name);
-      /*
       IffWriteChunkInt8(iff, "NELEMS", &nelems, 1);
-      */
-      FJ_IFF_WRITE_CHUNK(iff, "NELEMS", &nelems, 1);
       printf("attr->data_size:  %ld\n", attr->data_size);
       printf("attr->data_count: %ld\n", attr->data_count);
       printf(">>>>>>>> %ld\n", attr->data_count);
-#if n
       IffWriteChunkDouble(iff, "DATA", (double *) attr->src_data, attr->data_count);
-#endif
-      IffWriteChunk(iff, "DATA", attr->src_data, attr->data_size, attr->data_count);
       break;
 
-    case ATTR_Vector3:
+    case ATTRIBVector3:
       type_name = "Double";
       nelems = 3;
       IffWriteChunkString(iff, "NAME", attr->name);
@@ -422,7 +448,7 @@ static void write_attribute_data(IffFile *iff, const struct GeoAttribute *attr)
   IffWriteChunkGroupEnd(iff, &chunk);
 }
 
-void GeoWriteFile(struct GeoOutputFile *file)
+void GeoWriteFile2(struct GeoOutputFile *file)
 {
   const char signature[8] = {(char)128, 'F', 'J', 'G', 'E', 'O', '.', '.'};
   struct GeoFile *geo = file->geo;

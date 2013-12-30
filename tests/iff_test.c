@@ -43,6 +43,12 @@ int main()
             }
             IffWriteChunkGroupEnd(iff, &attribute_chunk);
 
+            {
+              /* padding test */
+              int8_t c = 'f';
+              IffWriteChunkInt8(iff, "TEST", &c, 1);
+            }
+
             IffWriteChunkGroupBegin(iff, "PRALIST", &attribute_chunk);
             {
               IffWriteString(iff, "index");
@@ -132,6 +138,15 @@ int main()
             }
             IffReadChunkGroupEnd(iff, &attribute_chunk);
 
+            {
+              /* padding test */
+              int8_t c = '\0';
+              IffReadNextChunk(iff, &attribute_chunk);
+              TEST_INT(IffChunkMatch(&attribute_chunk, "TEST"), 1);
+              IffReadInt8(iff, &c, 1);
+              TEST_INT(c, 'f');
+            }
+
             IffReadNextChunk(iff, &attribute_chunk);
             TEST_INT(IffChunkMatch(&attribute_chunk, "PRALIST"), 1);
 
@@ -153,12 +168,26 @@ int main()
 
             IffPutBackChunk(iff, &attribute_chunk);
 
+            /* ------------------------- */
+            {
+              const int ret = IffReadNextChildChunk(iff, &header_chunk, &attribute_chunk);
+              TEST_INT(ret, 1);
+              IffPutBackChunk(iff, &attribute_chunk);
+            }
+            /* ------------------------- */
+
             IffReadChunkGroupBegin(iff, "DTALIST", &attribute_chunk);
             {
               TEST_INT(IffEndOfChunk(iff, &attribute_chunk), 1);
             }
             IffReadChunkGroupEnd(iff, &attribute_chunk);
 
+            /* ------------------------- */
+            {
+              const int ret = IffReadNextChildChunk(iff, &header_chunk, &attribute_chunk);
+              TEST_INT(ret, 0);
+            }
+            /* ------------------------- */
           }
           IffReadChunkGroupEnd(iff, &header_chunk);
 
