@@ -116,19 +116,17 @@ static int string_to_data_type(const char *type_name)
   return 0;
 }
 
-#if 0
 static const char *data_type_to_string(int data_type)
 {
-  int i;
-  for (i = 0; i < type_name_count; i++) {
-    if (type_name_map[i].type == data_type) {
-      return type_name_map[i].name;
-    }
+  switch (data_type) {
+#define TYPE_NAME(suffix,type) case ATTR_##suffix: return #suffix;
+VALUE_TYPE_LIST(TYPE_NAME)
+#undef TYPE_NAME
+  default:
+    assert("!error");
+    return NULL;
   }
-  assert(!"error");
-  return NULL;
 }
-#endif
 
 struct Attribute *new_attribute(const char *name, int data_type, GeoIndex data_count)
 {
@@ -342,19 +340,7 @@ static void write_attribute_info(IffFile *iff, const struct Attribute *attr)
 
   IffWriteChunkGroupBegin(iff, "ATTR", &chunk);
   {
-    const char *type_name = NULL;
-
-    switch (attr->data_type) {
-    case ATTR_Double:
-      type_name = "Double";
-      break;
-    case ATTR_Vector3:
-      type_name = "Vector3";
-      break;
-    default:
-      assert("!error");
-      break;
-    }
+    const char *type_name = data_type_to_string(attr->data_type);
 
     IffWriteChunkString(iff, "NAME", attr->name);
     IffWriteChunkString(iff, "TYPE", type_name);
@@ -436,11 +422,11 @@ static void write_attribute_data_list(IffFile *iff,
   IffWriteChunkGroupEnd(iff, &chunk);
 }
 
-int GeoWriteFile(const struct Geometry *geo, const char *filename)
+int GeoWriteFile(const struct Geometry *geo, const char *filename, const char *geo_type)
 {
   IffFile *iff = IffOpen(filename, "wb");
 
-  const char *primitive_type = "PTCLOUD";
+  const char *geometry_type = geo_type;
   const int64_t point_count = geo->point_count;
   const int64_t primitive_count = geo->primitive_count;
   const int32_t point_attribute_count = get_attribute_count(geo->point_attribute);
@@ -453,7 +439,7 @@ int GeoWriteFile(const struct Geometry *geo, const char *filename)
 
   IffWriteChunkGroupBegin(iff, SIGNATURE, &file_chunk);
   {
-    IffWriteChunkGroupBegin(iff, primitive_type, &geo_chunk);
+    IffWriteChunkGroupBegin(iff, geometry_type, &geo_chunk);
     {
       IffWriteChunkGroupBegin(iff, "HEADER", &header_chunk);
       {

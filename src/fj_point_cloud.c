@@ -116,12 +116,46 @@ void PtcAllocatePoint(struct PointCloud *ptc, int point_count)
   }
 }
 
-void PtcSetPosition(struct PointCloud *ptc, int index, const struct Vector *P)
+void PtcSetPointCount(struct PointCloud *ptc, PtcIndex count)
 {
+  GeoSetPointCount(ptc->geo, count);
+  ptc->point_count = count;
+}
+
+PtcIndex PtcGetPointCount(const struct PointCloud *ptc)
+{
+  return ptc->point_count;
+}
+
+void PtcSetPosition(struct PointCloud *ptc, const struct Vector *P)
+{
+  const int N = PtcGetPointCount(ptc);
+  int i;
+
+  ptc->P = GeoAddAttributeVector3(ptc->geo, "P", GEO_POINT);
+  for (i = 0; i < N; i++) {
+    ptc->P[i] = P[i];
+  }
+
+  {
+    /* TODO TEST */
+    int i;
+#if 0
+    ptc->radius = FJ_MEM_ALLOC_ARRAY(double, point_count);
+#endif
+    ptc->radius = GeoAddAttributeDouble(ptc->geo, "radius", GEO_POINT);
+    for (i = 0; i < N; i++) {
+      ptc->radius[i] = .01 * .2;
+    }
+  }
+
+  /* TODO TEST */
+#if 0
   if (index < 0 && index >= ptc->point_count) {
     return;
   }
   ptc->P[index] = *P;
+#endif
 }
 
 void PtcGetPosition(const struct PointCloud *ptc, int index, struct Vector *P)
@@ -171,6 +205,43 @@ void PtcGetPrimitiveSet(const struct PointCloud *ptc, struct PrimitiveSet *prims
       point_bounds,
       point_cloud_bounds,
       point_count);
+}
+
+int PtcWriteFile2(const struct PointCloud *ptc, const char *filename)
+{
+  int err = 0;
+
+  if (ptc == NULL) {
+    return -1;;
+  }
+
+  err = GeoWriteFile(ptc->geo, filename, "PTCLOUD");
+  if (err) {
+    return -1;
+  }
+
+  return 0;
+}
+
+int PtcReadFile(struct PointCloud *ptc, const char *filename)
+{
+  int err = 0;
+
+  if (ptc == NULL) {
+    return -1;;
+  }
+
+  err = GeoReadFile(ptc->geo, filename);
+  if (err) {
+    return -1;
+  }
+
+  ptc->point_count = GeoGetPointCount(ptc->geo);
+  ptc->P      = GeoGetAttributeVector3(ptc->geo, "P",      GEO_POINT);
+  ptc->radius = GeoGetAttributeDouble(ptc->geo,  "radius", GEO_POINT);
+  update_bounds(ptc);
+
+  return 0;
 }
 
 static int point_ray_intersect(const void *prim_set, int prim_id, double time,
@@ -282,4 +353,3 @@ static void update_bounds(struct PointCloud *ptc)
     BoxAddBox(&ptc->bounds, &ptbox);
   }
 }
-

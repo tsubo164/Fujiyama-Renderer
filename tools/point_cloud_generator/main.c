@@ -71,6 +71,7 @@ int main(int argc, const char **argv)
   {
     /* TODO TEST Geometry */
     struct Geometry *geo = GeoNew();
+    struct PointCloud *ptc = PtcNew();
 
     struct XorShift xr;
     struct Mesh *mesh = MshNew();
@@ -179,9 +180,16 @@ int main(int argc, const char **argv)
 
     PtcCloseOutputFile(out);
     MshFree(mesh);
+
+
+    PtcSetPointCount(ptc, total_point_count);
+    PtcSetPosition(ptc, P);
+    PtcWriteFile2(ptc, "../pointcloud.fjgeo");
+
     /* TODO TEST Geometry */
-    GeoWriteFile(geo, "../test.fjgeo");
+    GeoWriteFile(geo, "../test.fjgeo", "PTCLOUD");
     GeoFree(geo);
+    PtcFree(ptc);
 
     FJ_MEM_FREE(point_count_list);
     /*
@@ -190,6 +198,7 @@ int main(int argc, const char **argv)
     */
   }
 
+#if 0
   {
     /* TODO TEST Geometry */
     struct Geometry *geo = GeoNew();
@@ -202,6 +211,7 @@ int main(int argc, const char **argv)
     }
     GeoFree(geo);
   }
+#endif
 
   return 0;
 

@@ -30,18 +30,26 @@ extern void GeoSetPrimitiveCount(struct Geometry *geo, GeoIndex primitive_count)
 extern GeoIndex GeoGetPointCount(const struct Geometry *geo);
 extern GeoIndex GeoGetPrimitiveCount(const struct Geometry *geo);
 
-extern int GeoWriteFile(const struct Geometry *geo, const char *filename);
+/*
+ * Writes geometry to a file. geo_type should be like MESH, CURVES, PTCLOUD, etc ...
+ * This geometry module doesn't know about the rule of the types.
+ */
+extern int GeoWriteFile(const struct Geometry *geo, const char *filename, const char *geo_type);
 extern int GeoReadFile(struct Geometry *geo, const char *filename);
 
+/*
 extern float *GeoAddAttributeFloat(struct Geometry *geo,
     const char *attr_name, int attr_class);
+*/
 extern double *GeoAddAttributeDouble(struct Geometry *geo,
     const char *attr_name, int attr_class);
 extern struct Vector *GeoAddAttributeVector3(struct Geometry *geo,
     const char *attr_name, int attr_class);
 
+/*
 extern float *GeoGetAttributeFloat(struct Geometry *geo,
     const char *attr_name, int attr_class);
+*/
 extern double *GeoGetAttributeDouble(struct Geometry *geo,
     const char *attr_name, int attr_class);
 extern struct Vector *GeoGetAttributeVector3(struct Geometry *geo,
