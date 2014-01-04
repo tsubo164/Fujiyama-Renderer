@@ -50,4 +50,3 @@ extern int PtcLoadFile(struct PointCloud *ptc, const char *filename);
 #endif
 
 #endif /* FJ_XXX_H */
-

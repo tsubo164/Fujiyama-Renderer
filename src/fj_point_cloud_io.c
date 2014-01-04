@@ -136,8 +136,6 @@ void PtcWriteFile(struct PtcOutputFile *out)
 
 int PtcLoadFile(struct PointCloud *ptc, const char *filename)
 {
-  return PtcReadFile(ptc, filename);
-#if 0
   struct PtcInputFile *in = PtcOpenInputFile(filename);
   struct Vector *P = NULL;
   double *radius = NULL;
@@ -156,15 +154,6 @@ int PtcLoadFile(struct PointCloud *ptc, const char *filename)
 
   PtcSetInputPosition(in, P);
   PtcSetInputAttributeDouble(in, "radius", radius);
-  /*
-  {
-    const int N = PtcGetInputAttributeCount(in);
-    printf("================== %d\n", N);
-    int j;
-    for (j = 0; j < N; j++) {
-    }
-  }
-  */
 
   PtcReadData(in);
 
@@ -184,5 +173,4 @@ int PtcLoadFile(struct PointCloud *ptc, const char *filename)
   FJ_MEM_FREE(radius);
 
   return 0;
-#endif
 }

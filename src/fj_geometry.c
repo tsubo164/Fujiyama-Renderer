@@ -642,14 +642,6 @@ int GeoReadFile(struct Geometry *geo, const char *filename)
 {
   IffFile *iff = IffOpen(filename, "rb");
 
-  /*
-  const char *primitive_type = "PTCLOUD";
-  const int64_t point_count = geo->point_count;
-  const int64_t primitive_count = geo->primitive_count;
-  const int32_t point_attribute_count = ArrGetElementCount(geo->point_attribute);
-  const int32_t primitive_attribute_count = ArrGetElementCount(geo->primitive_attribute);
-  */
-
   IffChunk file_chunk;
   IffChunk geo_chunk;
   IffChunk header_chunk;

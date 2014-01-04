@@ -16,6 +16,7 @@ EXPORTS
 	ArrReserve
 	ArrResize
 	ArrGet
+	ArrGetElementCount
 	BoxContainsPoint
 	BoxAddPoint
 	BoxAddBox
@@ -86,7 +87,55 @@ EXPORTS
 	FbCloseOutputFile
 	FbWriteFile
 	FbSaveCroppedData
+	GeoNew
+	GeoFree
+	GeoSetPointCount
+	GeoSetPrimitiveCount
+	GeoGetPointCount
+	GeoGetPrimitiveCount
+	GeoWriteFile
+	GeoReadFile
+	GeoAddAttributeFloat
+	GeoAddAttributeDouble
+	GeoAddAttributeVector3
+	GeoGetAttributeFloat
+	GeoGetAttributeDouble
+	GeoGetAttributeVector3
 	GetGridAcceleratorFunction
+	IffOpen
+	IffClose
+	IffWriteInt8
+	IffWriteInt16
+	IffWriteInt32
+	IffWriteInt64
+	IffWriteFloat
+	IffWriteDouble
+	IffWriteString
+	IffReadInt8
+	IffReadInt16
+	IffReadInt32
+	IffReadInt64
+	IffReadFloat
+	IffReadDouble
+	IffReadString
+	IffWriteChunkInt8
+	IffWriteChunkInt16
+	IffWriteChunkInt32
+	IffWriteChunkInt64
+	IffWriteChunkFloat
+	IffWriteChunkDouble
+	IffWriteChunkString
+	IffWriteChunkGroupBegin
+	IffWriteChunkGroupEnd
+	IffReadChunkGroupBegin
+	IffReadChunkGroupEnd
+	IffPeekNextChunk
+	IffReadNextChildChunk
+	IffReadNextChunk
+	IffPutBackChunk
+	IffSkipCurrentChunk
+	IffChunkMatch
+	IffEndOfChunk
 	ImportanceSampling
 	StratifiedImportanceSampling
 	StructuredImportanceSampling

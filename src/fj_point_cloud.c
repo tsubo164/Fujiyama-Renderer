@@ -12,9 +12,6 @@ See LICENSE and README
 #include "fj_box.h"
 #include "fj_ray.h"
 
-  /* TODO TEST Geometry */
-#include "fj_geometry.h"
-
 #include <string.h>
 #include <float.h>
 
@@ -32,9 +29,6 @@ struct PointCloud {
   double *radius;
 
   struct Box bounds;
-
-  /* TODO TEST Geometry */
-  struct Geometry *geo;
 };
 
 struct PointCloud *PtcNew(void)
@@ -50,13 +44,6 @@ struct PointCloud *PtcNew(void)
   ptc->radius = NULL;
   BOX3_SET(&ptc->bounds, 0, 0, 0, 0, 0, 0);
 
-  /* TODO TEST Geometry */
-  ptc->geo = GeoNew();
-  if (ptc->geo == NULL) {
-    PtcFree(ptc);
-    return NULL;
-  }
-
   return ptc;
 }
 
@@ -66,13 +53,8 @@ void PtcFree(struct PointCloud *ptc)
     return;
   }
 
-  /*
   VecFree(ptc->P);
   free(ptc->radius);
-  */
-
-  /* TODO TEST Geometry */
-  GeoFree(ptc->geo);
 
   FJ_MEM_FREE(ptc);
 }
@@ -89,12 +71,7 @@ void PtcAllocatePoint(struct PointCloud *ptc, int point_count)
     return;
   }
 
-#if 0
   P_tmp = VecRealloc(ptc->P, point_count);
-#endif
-  GeoSetPointCount(ptc->geo, point_count);
-  P_tmp = GeoAddAttributeVector3(ptc->geo, "P", GEO_POINT);
-
   if (P_tmp == NULL) {
     return;
   }
@@ -106,56 +83,19 @@ void PtcAllocatePoint(struct PointCloud *ptc, int point_count)
   {
     /* TODO TEST */
     int i;
-#if 0
     ptc->radius = FJ_MEM_ALLOC_ARRAY(double, point_count);
-#endif
-    ptc->radius = GeoAddAttributeDouble(ptc->geo, "radius", GEO_POINT);
     for (i = 0; i < point_count; i++) {
       ptc->radius[i] = .01 * .2;
     }
   }
 }
 
-void PtcSetPointCount(struct PointCloud *ptc, PtcIndex count)
+void PtcSetPosition(struct PointCloud *ptc, int index, const struct Vector *P)
 {
-  GeoSetPointCount(ptc->geo, count);
-  ptc->point_count = count;
-}
-
-PtcIndex PtcGetPointCount(const struct PointCloud *ptc)
-{
-  return ptc->point_count;
-}
-
-void PtcSetPosition(struct PointCloud *ptc, const struct Vector *P)
-{
-  const int N = PtcGetPointCount(ptc);
-  int i;
-
-  ptc->P = GeoAddAttributeVector3(ptc->geo, "P", GEO_POINT);
-  for (i = 0; i < N; i++) {
-    ptc->P[i] = P[i];
-  }
-
-  {
-    /* TODO TEST */
-    int i;
-#if 0
-    ptc->radius = FJ_MEM_ALLOC_ARRAY(double, point_count);
-#endif
-    ptc->radius = GeoAddAttributeDouble(ptc->geo, "radius", GEO_POINT);
-    for (i = 0; i < N; i++) {
-      ptc->radius[i] = .01 * .2;
-    }
-  }
-
-  /* TODO TEST */
-#if 0
   if (index < 0 && index >= ptc->point_count) {
     return;
   }
   ptc->P[index] = *P;
-#endif
 }
 
 void PtcGetPosition(const struct PointCloud *ptc, int index, struct Vector *P)
@@ -165,31 +105,6 @@ void PtcGetPosition(const struct PointCloud *ptc, int index, struct Vector *P)
   }
   *P = ptc->P[index];
 }
-
-#if 0
-AttributeID PtcAddAttributeDouble(struct PointCloud *ptc, const char *attr_name)
-{
-  /* TODO imprement */
-  if (strcmp(attr_name, "radius") == 0) {
-    int i;
-    ptc->radius = FJ_MEM_ALLOC_ARRAY(double, ptc->point_count);
-    for (i = 0; i < ptc->point_count; i++) {
-      ptc->radius[i] = .01;
-    }
-  }
-
-  return 0;
-}
-
-void PtcSetAttributeDouble(struct PointCloud *ptc,
-    AttributeID attr_id, int index, double value)
-{
-  /* TODO imprement */
-  if (attr_id == 0) {
-    ptc->radius[index] = value;
-  }
-}
-#endif
 
 void PtcComputeBounds(struct PointCloud *ptc)
 {
@@ -205,43 +120,6 @@ void PtcGetPrimitiveSet(const struct PointCloud *ptc, struct PrimitiveSet *prims
       point_bounds,
       point_cloud_bounds,
       point_count);
-}
-
-int PtcWriteFile2(const struct PointCloud *ptc, const char *filename)
-{
-  int err = 0;
-
-  if (ptc == NULL) {
-    return -1;;
-  }
-
-  err = GeoWriteFile(ptc->geo, filename, "PTCLOUD");
-  if (err) {
-    return -1;
-  }
-
-  return 0;
-}
-
-int PtcReadFile(struct PointCloud *ptc, const char *filename)
-{
-  int err = 0;
-
-  if (ptc == NULL) {
-    return -1;;
-  }
-
-  err = GeoReadFile(ptc->geo, filename);
-  if (err) {
-    return -1;
-  }
-
-  ptc->point_count = GeoGetPointCount(ptc->geo);
-  ptc->P      = GeoGetAttributeVector3(ptc->geo, "P",      GEO_POINT);
-  ptc->radius = GeoGetAttributeDouble(ptc->geo,  "radius", GEO_POINT);
-  update_bounds(ptc);
-
-  return 0;
 }
 
 static int point_ray_intersect(const void *prim_set, int prim_id, double time,

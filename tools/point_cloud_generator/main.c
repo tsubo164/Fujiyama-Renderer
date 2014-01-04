@@ -14,8 +14,6 @@ See LICENSE and README
 #include "fj_noise.h"
 #include "fj_mesh.h"
 
-#include "fj_geometry.h"
-
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -25,29 +23,6 @@ static const char USAGE[] =
 "Options:\n"
 "  --help         Display this information\n"
 "\n";
-
-/*
-static void write_vec3_callback(const void *data, GeoSize element, int index,
-    struct AttributeComponent *value)
-{
-  const struct Vector *vec = (const struct Vector *) data;
-
-  switch (index) {
-  case 0:
-    value->real = vec[element].x;
-    break;
-  case 1:
-    value->real = vec[element].y;
-    break;
-  case 2:
-    value->real = vec[element].z;
-    break;
-  default:
-    value->real = 0.;
-    break;
-  }
-}
-*/
 
 int main(int argc, const char **argv)
 {
@@ -69,10 +44,6 @@ int main(int argc, const char **argv)
   out_filename = argv[2];
 
   {
-    /* TODO TEST Geometry */
-    struct Geometry *geo = GeoNew();
-    struct PointCloud *ptc = PtcNew();
-
     struct XorShift xr;
     struct Mesh *mesh = MshNew();
     struct PtcOutputFile *out = PtcOpenOutputFile(out_filename);
@@ -118,15 +89,8 @@ int main(int argc, const char **argv)
     }
     printf("total_point_count %d\n", total_point_count);
 
-    GeoSetPointCount(geo, total_point_count);
-    GeoSetPrimitiveCount(geo, 1);
-
-    P = GeoAddAttributeVector3(geo, "P", GEO_POINT);
-    radius = GeoAddAttributeDouble(geo, "radius", GEO_POINT);
-    /*
     P = FJ_MEM_ALLOC_ARRAY(struct Vector, total_point_count);
     radius = FJ_MEM_ALLOC_ARRAY(double, total_point_count);
-    */
 
     XorInit(&xr);
     point_id = 0;
@@ -171,8 +135,6 @@ int main(int argc, const char **argv)
       }
     }
 
-    radius = GeoGetAttributeDouble(geo, "radius", GEO_POINT);
-
     PtcSetOutputPosition(out, P, total_point_count);
     PtcSetOutputAttributeDouble(out, "radius", radius);
 
@@ -181,81 +143,10 @@ int main(int argc, const char **argv)
     PtcCloseOutputFile(out);
     MshFree(mesh);
 
-
-    PtcSetPointCount(ptc, total_point_count);
-    PtcSetPosition(ptc, P);
-    PtcWriteFile2(ptc, "../pointcloud.fjgeo");
-
-    /* TODO TEST Geometry */
-    GeoWriteFile(geo, "../test.fjgeo", "PTCLOUD");
-    GeoFree(geo);
-    PtcFree(ptc);
-
     FJ_MEM_FREE(point_count_list);
-    /*
     FJ_MEM_FREE(P);
     FJ_MEM_FREE(radius);
-    */
-  }
-
-#if 0
-  {
-    /* TODO TEST Geometry */
-    struct Geometry *geo = GeoNew();
-    int err = 0;
-
-    /* TODO TEST Geometry */
-    err = GeoReadFile(geo, "../test.fjgeo");
-    if (err) {
-      printf("error!\n");
-    }
-    GeoFree(geo);
-  }
-#endif
-
-  return 0;
-
-#if 0
-  struct GeoOutputFile *geo = GeoOpenOutputFile("../test.fjgeo");
-  struct Vector P[] = {
-    {1, 0, 0},
-    {0, 1, 0},
-    {0, 0, 1}
-  };
-  double radius[] = {.01, .01, .01};
-
-  GeoSetOutputPrimitiveType(geo, "PTCLOUD");
-
-  GeoSetOutputPointCount(geo, 3);
-  GeoSetOutputPrimitiveCount(geo, 1);
-
-  GeoSetOutputPointAttributeVector3(geo, "P", P);
-  GeoSetOutputPointAttributeDouble(geo, "radius", radius);
-
-  GeoSetOutputAttribute(geo,
-      "P",
-      P,
-      CLASS_POINT,
-      GEO_Double,
-      3,
-      3,
-      write_vec3_callback);
-
-  GeoWriteFile(geo);
-
-  GeoCloseOutputFile(geo);
-
-  {
-    struct GeoInputFile *geo = GeoOpenInputFile("../test.fjgeo");
-
-    GeoReadHeader(geo);
-
-    printf("point_count: %ld\n", GeoGetInputPointCount(geo));
-    printf("primitive_count: %ld\n", GeoGetInputPrimitiveCount(geo));
-
-    GeoCloseInputFile(geo);
   }
 
   return 0;
-#endif
 }
