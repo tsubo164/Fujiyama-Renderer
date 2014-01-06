@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # 1 pyroclastic  ball with 1 point light
-# Copyright (c) 2011-2013 Hiroshi Tsubokawa
+# Copyright (c) 2011-2014 Hiroshi Tsubokawa
 
 import fujiyama
 
