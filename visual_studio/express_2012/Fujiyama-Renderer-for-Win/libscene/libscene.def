@@ -95,10 +95,8 @@ EXPORTS
 	GeoGetPrimitiveCount
 	GeoWriteFile
 	GeoReadFile
-	GeoAddAttributeFloat
 	GeoAddAttributeDouble
 	GeoAddAttributeVector3
-	GeoGetAttributeFloat
 	GeoGetAttributeDouble
 	GeoGetAttributeVector3
 	GetGridAcceleratorFunction

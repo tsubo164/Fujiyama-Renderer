@@ -168,7 +168,9 @@
     <ClCompile Include="..\..\..\..\src\fj_filter.c" />
     <ClCompile Include="..\..\..\..\src\fj_framebuffer.c" />
     <ClCompile Include="..\..\..\..\src\fj_framebuffer_io.c" />
+    <ClCompile Include="..\..\..\..\src\fj_geometry.c" />
     <ClCompile Include="..\..\..\..\src\fj_grid_accelerator.c" />
+    <ClCompile Include="..\..\..\..\src\fj_iff.c" />
     <ClCompile Include="..\..\..\..\src\fj_importance_sampling.c" />
     <ClCompile Include="..\..\..\..\src\fj_interval.c" />
     <ClCompile Include="..\..\..\..\src\fj_io.c" />
@@ -226,7 +228,9 @@
     <ClInclude Include="..\..\..\..\src\fj_filter.h" />
     <ClInclude Include="..\..\..\..\src\fj_framebuffer.h" />
     <ClInclude Include="..\..\..\..\src\fj_framebuffer_io.h" />
+    <ClInclude Include="..\..\..\..\src\fj_geometry.h" />
     <ClInclude Include="..\..\..\..\src\fj_grid_accelerator.h" />
+    <ClInclude Include="..\..\..\..\src\fj_iff.h" />
     <ClInclude Include="..\..\..\..\src\fj_importance_sampling.h" />
     <ClInclude Include="..\..\..\..\src\fj_intersection.h" />
     <ClInclude Include="..\..\..\..\src\fj_interval.h" />

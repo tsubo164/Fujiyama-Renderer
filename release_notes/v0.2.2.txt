@@ -1,0 +1,20 @@
+Fujiyama Renderer v0.2.2(Alpha) Release Notes
+=============================================
+
+New features since v0.2.1
+-------------------------
+ * Implemented a file format interfaces based on IFF.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Velocity attribute and deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Mesh primitive group
+ * Global illumination
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support
