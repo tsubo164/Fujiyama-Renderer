@@ -8,12 +8,12 @@ See LICENSE and README
 
 #include "fj_compatibility.h"
 
-#if defined(SI_WINDOWS)
+#if defined(FJ_WINDOWS)
   #pragma comment(lib, "glew32.lib")
   #pragma comment(lib, "freeglut.lib")
   #include <GL/glew.h>
   #include <GL/glut.h>
-#elif defined(SI_MACOSX)
+#elif defined(FJ_MACOSX)
   #include <GLUT/glut.h>
 #else
   #define GL_GLEXT_PROTOTYPES

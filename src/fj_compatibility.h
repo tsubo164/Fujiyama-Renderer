@@ -7,7 +7,7 @@ See LICENSE and README
 #define FJ_COMPATIBILITY_H
 
 #if defined(_WIN32)
-  #define SI_WINDOWS
+  #define FJ_WINDOWS
   #if defined(_WIN64)
     /* 64bit Windows */
     /*
@@ -25,15 +25,18 @@ See LICENSE and README
   #endif
 #elif defined(__APPLE__) || defined(MACOSX)
     /* 64bit Mac OS X */
-    #define SI_MACOSX
+    #define FJ_MACOSX
+    #include <stdint.h>
+    /*
     typedef char               int8_t;
     typedef int                int32_t;
     typedef unsigned int       uint32_t;
     typedef long               int64_t;
     typedef unsigned long      uintptr_t;
     #define UINT32_MAX UINT_MAX
+    */
 #else
-  #define SI_LINUX
+  #define FJ_LINUX
   #if defined(__x86_64__)
     /* 64bit Linux */
     /*

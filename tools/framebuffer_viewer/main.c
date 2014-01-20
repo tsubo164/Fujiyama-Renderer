@@ -76,7 +76,7 @@ int main(int argc, char **argv)
   glutMotionFunc(motion);
   glutKeyboardFunc(keyboard);
 
-#if defined(SI_WINDOWS)
+#if defined(FJ_WINDOWS)
   {
     const GLenum err = glewInit();
     if (err != GLEW_OK) {

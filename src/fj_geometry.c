@@ -494,11 +494,15 @@ static void read_attribute_info(IffFile *iff,
 
       if (IffChunkMatch(&chunk, "NAME")) {
         IffReadString(iff, attr_name);
+        /*
         printf("NAME: [%s]\n", attr_name);
+        */
 
       } else if (IffChunkMatch(&chunk, "TYPE")) {
         IffReadString(iff, type_name);
+        /*
         printf("TYPE: [%s]\n", type_name);
+        */
 
       } else {
         IffSkipCurrentChunk(iff, &chunk);
@@ -669,13 +673,17 @@ int GeoReadFile(struct Geometry *geo, const char *filename)
             int64_t n = 0;
             IffReadInt64(iff, &n, 1);
             GeoSetPointCount(geo, n);
+            /*
             printf("NPT: %ld\n", n);
+            */
 
           } else if (IffChunkMatch(&chk, "NPR")) {
             int64_t n = 0;
             IffReadInt64(iff, &n, 1);
             GeoSetPrimitiveCount(geo, n);
+            /*
             printf("NPR: %ld\n", n);
+            */
 
           } else if (IffChunkMatch(&chk, "PTATTR")) {
             IffPutBackChunk(iff, &chk);

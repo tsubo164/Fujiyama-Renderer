@@ -7,6 +7,11 @@ CFLAGS = $(OPT) -Wall -ansi -pedantic-errors
 LDFLAGS = -lscene -lGL -lGLU -lglut
 RM = rm -f
 
+ifeq ($(shell uname),Darwin)
+CFLAGS = $(OPT) -Wall -ansi -pedantic-errors -Wno-deprecated-declarations
+LDFLAGS = -lscene -framework GLUT -framework OpenGL
+endif
+
 target_dir  := bin
 target_name := fbview
 files       := draw_image framebuffer_viewer glsl_shaders load_images main

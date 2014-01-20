@@ -56,8 +56,13 @@ ProgressStatus PrgIncrement(struct Progress *progress)
 void PrgDone(struct Progress *progress)
 {
   if (progress->iteration != progress->total_iterations) {
+#if defined(FJ_MACOSX)
+    fprintf(stderr, "warning: progress done before reaching total iterations: "
+        "%ld/%ld\n", (long) progress->iteration, (long) progress->total_iterations);
+#else
     fprintf(stderr, "warning: progress done before reaching total iterations: "
         "%ld/%ld\n", progress->iteration, progress->total_iterations);
+#endif
     fflush(stderr);
   }
 
