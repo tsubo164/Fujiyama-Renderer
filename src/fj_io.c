@@ -128,7 +128,7 @@ struct InputFile *IOOpenInputFile(const char *filename, const char *magic)
     return NULL;
   }
 
-  in->file = fopen(filename, "r");
+  in->file = fopen(filename, "rb");
   if (in->file == NULL) {
     FJ_MEM_FREE(in);
     return NULL;
