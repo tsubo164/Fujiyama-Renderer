@@ -1,0 +1,22 @@
+Fujiyama Renderer v0.2.3(Alpha) Release Notes
+=============================================
+
+New features since v0.2.2
+-------------------------
+ * Supports MaxOS X Mavericks.
+
+ * Ported fb2exr to Windows.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Velocity attribute and deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Mesh primitive group
+ * Global illumination
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support
