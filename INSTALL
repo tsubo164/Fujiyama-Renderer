@@ -11,12 +11,18 @@ For the Fujiyama core library, there is nothing necessary other than gcc.
 However, there are some external libraries to be installed for some tools
 come with Fujiyama.
 
-  * OpenGL/GLUT for fbview (FrameBuffer viewer)
-  * For Linux, freeglut needs to be installed.
-  * For windows, freeglut and GLEW need to be installed.
-    (freeglut: http://freeglut.sourceforge.net/)
-    (GLEW:     http://glew.sourceforge.net/)
+  * GNU GCC 4.2 or higher (Linux/Mac OS X)
+  * Visual Studio Express 2012 (Windows)
+  * Recent Mac OS X has llvm-gcc as default C/C++ compiler. But Fujiyama
+    needs GNU GCC because llvm-gcc doesn't support OpenMP yet.
+
   * OpenEXR for fb2exr (Converter from native image format to exr) 
+  * OpenGL/GLUT for fbview (FrameBuffer viewer)
+    + For Linux, freeglut needs to be installed.
+    + For Mac OS X, GLUT is already installed.
+    + For windows, freeglut and GLEW need to be installed.
+      (freeglut: http://freeglut.sourceforge.net/)
+      (GLEW:     http://glew.sourceforge.net/)
 
   Compile
 -----------------
@@ -27,6 +33,15 @@ you can run make like this,
 
 The core library libscene.so will be output in lib directory, and other tools
 such as scene, fbview, ply2mesh, etc .. will be in bin direcotry.
+
+  $ make check
+
+This runs check programs. If you run into errors, let me know. That should be
+bugs or something to be fixed.
+
+  $ make sample
+
+This renders sample scenes and launches framebuffer viewer.
 
   Installation
 -----------------

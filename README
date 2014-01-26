@@ -17,8 +17,8 @@ designed to handle production image rendering.
 -----------------
 * Platforms
   + Linux
-  + Mac OS X
-  + Microsoft Windows
+  + Mac OSX
+  + Windows
 
 * Rendering
   + Multi-threaded rendering - dynamic assignement of tile rendering per theread

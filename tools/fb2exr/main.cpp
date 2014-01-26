@@ -3,10 +3,6 @@ Copyright (c) 2011-2014 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#if defined(FJ_WINDOWS)
-#define OPENEXR_DLL
-#endif
-
 #include "fj_framebuffer_io.h"
 #include "fj_framebuffer.h"
 #include <ImfChannelList.h>

@@ -3,7 +3,7 @@ Fujiyama Renderer v0.2.3(Alpha) Release Notes
 
 New features since v0.2.2
 -------------------------
- * Supports MaxOS X Mavericks.
+ * Supports Mac OS X Mavericks.
 
  * Ported fb2exr to Windows.
 
