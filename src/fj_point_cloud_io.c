@@ -74,6 +74,12 @@ void PtcSetInputAttributeDouble(struct PtcInputFile *in,
   IOSetInputDouble(in->file, attr_name, attr_data, PtcGetInputPointCount(in));
 }
 
+void PtcSetInputAttributeVector3(struct PtcInputFile *in,
+    const char *attr_name, struct Vector *attr_data)
+{
+  IOSetInputVector3(in->file, attr_name, attr_data, PtcGetInputPointCount(in));
+}
+
 int PtcGetInputAttributeCount(const struct PtcInputFile *in)
 {
   return IOGetInputDataChunkCount(in->file);
@@ -128,6 +134,12 @@ void PtcSetOutputAttributeDouble(struct PtcOutputFile *out,
   IOSetOutputDouble(out->file, attr_name, attr_data, out->point_count);
 }
 
+void PtcSetOutputAttributeVector3(struct PtcOutputFile *out, 
+    const char *attr_name, const struct Vector *attr_data)
+{
+  IOSetOutputVector3(out->file, attr_name, attr_data, out->point_count);
+}
+
 void PtcWriteFile(struct PtcOutputFile *out)
 {
   IOWriteOutputHeader(out->file);
@@ -138,9 +150,9 @@ int PtcLoadFile(struct PointCloud *ptc, const char *filename)
 {
   struct PtcInputFile *in = PtcOpenInputFile(filename);
   struct Vector *P = NULL;
+  struct Vector *velocity = NULL;
   double *radius = NULL;
   int point_count = 0;
-  int i;
 
   if (in == NULL) {
     return -1;
@@ -149,28 +161,21 @@ int PtcLoadFile(struct PointCloud *ptc, const char *filename)
   /* read file */
   PtcReadHeader(in);
   point_count = PtcGetInputPointCount(in);
-  P      = FJ_MEM_ALLOC_ARRAY(struct Vector, point_count);
-  radius = FJ_MEM_ALLOC_ARRAY(double,        point_count);
+
+  /* copy data to ptc */
+  P        = PtcAllocatePoint(ptc, point_count);
+  velocity = PtcAddAttributeVector(ptc, "velocity");
+  radius   = PtcAddAttributeDouble(ptc, "radius");
 
   PtcSetInputPosition(in, P);
+  PtcSetInputAttributeVector3(in, "velocity", velocity);
   PtcSetInputAttributeDouble(in, "radius", radius);
 
   PtcReadData(in);
 
   PtcCloseInputFile(in);
 
-  /* copy data to ptc */
-  PtcAllocatePoint(ptc, point_count);
-
-  for (i = 0; i < point_count; i++) {
-    PtcSetPosition(ptc, i, &P[i]);
-  }
-
   PtcComputeBounds(ptc);
-
-  /* clean up */
-  FJ_MEM_FREE(P);
-  FJ_MEM_FREE(radius);
 
   return 0;
 }

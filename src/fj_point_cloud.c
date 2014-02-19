@@ -62,40 +62,28 @@ void PtcFree(struct PointCloud *ptc)
   FJ_MEM_FREE(ptc);
 }
 
-void PtcAllocatePoint(struct PointCloud *ptc, int point_count)
+struct Vector *PtcAllocatePoint(struct PointCloud *ptc, int point_count)
 {
   struct Vector *P_tmp = NULL;
 
   if (ptc == NULL) {
-    return;
+    return NULL;
   }
 
   if (point_count < 1) {
-    return;
+    return NULL;
   }
 
   P_tmp = VecRealloc(ptc->P, point_count);
   if (P_tmp == NULL) {
-    return;
+    return NULL;
   }
 
   /* commit */
   ptc->P = P_tmp;
   ptc->point_count = point_count;
 
-  {
-    /* TODO TEST */
-    int i;
-    ptc->velocity = VecAlloc(point_count);
-    ptc->radius = FJ_MEM_ALLOC_ARRAY(double, point_count);
-
-    for (i = 0; i < point_count; i++) {
-      struct Vector vel = {0, .05, 0};
-
-      ptc->velocity[i] = vel;
-      ptc->radius[i] = .01 * .2;
-    }
-  }
+  return ptc->P;
 }
 
 void PtcSetPosition(struct PointCloud *ptc, int index, const struct Vector *P)
@@ -112,6 +100,37 @@ void PtcGetPosition(const struct PointCloud *ptc, int index, struct Vector *P)
     return;
   }
   *P = ptc->P[index];
+}
+
+double *PtcAddAttributeDouble(struct PointCloud *ptc, const char *name)
+{
+  int i;
+
+  if (strcmp(name, "radius") == 0) {
+    ptc->radius = FJ_MEM_REALLOC_ARRAY(ptc->radius, double, ptc->point_count);
+    for (i = 0; i < ptc->point_count; i++) {
+      ptc->radius[i] = .01;
+    }
+    return ptc->radius;
+  }
+
+  return NULL;
+}
+
+struct Vector *PtcAddAttributeVector(struct PointCloud *ptc, const char *name)
+{
+  int i;
+
+  if (strcmp(name, "velocity") == 0) {
+    ptc->velocity = VecAlloc(ptc->point_count);
+    for (i = 0; i < ptc->point_count; i++) {
+      struct Vector v = {0, 0, 0};
+      ptc->velocity[i] = v;
+    }
+    return ptc->velocity;
+  }
+
+  return NULL;
 }
 
 void PtcComputeBounds(struct PointCloud *ptc)
@@ -143,19 +162,18 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
 */
   const struct PointCloud *ptc = (const struct PointCloud *) prim_set;
   const struct Vector *P = &ptc->P[prim_id];
+  const struct Vector *velocity = &ptc->velocity[prim_id];
   const double radius = ptc->radius[prim_id];
 
+  struct Vector center = {0, 0, 0};
   struct Vector orig_local = {0, 0, 0};
   double a = 0, b = 0, c = 0;
   double discriminant = 0, disc_sqrt = 0;
   double t_hit = 0, t0 = 0, t1 = 0;
 
-  /* TODO TEST */
-  const struct Vector *vel = &ptc->velocity[prim_id];
-  struct Vector center;
-  center.x = P->x + time * vel->x;
-  center.y = P->y + time * vel->y;
-  center.z = P->z + time * vel->z;
+  center.x = P->x + time * velocity->x;
+  center.y = P->y + time * velocity->y;
+  center.z = P->z + time * velocity->z;
 
   orig_local.x = ray->orig.x - center.x;
   orig_local.y = ray->orig.y - center.y;
@@ -201,33 +219,20 @@ static void point_bounds(const void *prim_set, int prim_id, struct Box *bounds)
 {
   const struct PointCloud *ptc = (const struct PointCloud *) prim_set;
   const struct Vector *P = &ptc->P[prim_id];
+  const struct Vector *velocity = &ptc->velocity[prim_id];
   const double radius = ptc->radius[prim_id];
-
-#if 0
-  BOX3_SET(bounds,
-      P->x - radius,
-      P->y - radius,
-      P->z - radius,
-      P->x + radius,
-      P->y + radius,
-      P->z + radius);
-#endif
-
-  {
   struct Vector P_close = *P;
-  const struct Vector *vel = &ptc->velocity[prim_id];
 
   BOX3_SET(bounds,
       P->x, P->y, P->z,
       P->x, P->y, P->z);
 
-  P_close.x = P->x + vel->x;
-  P_close.y = P->y + vel->y;
-  P_close.z = P->z + vel->z;
+  P_close.x = P->x + velocity->x;
+  P_close.y = P->y + velocity->y;
+  P_close.z = P->z + velocity->z;
 
   BoxAddPoint(bounds, &P_close);
   BOX3_EXPAND(bounds, radius);
-  }
 }
 
 static void point_cloud_bounds(const void *prim_set, struct Box *bounds)
@@ -249,24 +254,9 @@ static void update_bounds(struct PointCloud *ptc)
   BOX3_SET(&ptc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX); 
 
   for (i = 0; i < ptc->point_count; i++) {
-#if 0
-    const struct Vector *P = &ptc->P[i];
-    const double radius = ptc->radius[i];
-#endif
     struct Box ptbox;
 
-#if 0
-    BOX3_SET(&ptbox,
-        P->x - radius,
-        P->y - radius,
-        P->z - radius,
-        P->x + radius,
-        P->y + radius,
-        P->z + radius);
-#endif
-
     point_bounds(ptc, i, &ptbox);
-
     BoxAddBox(&ptc->bounds, &ptbox);
   }
 }

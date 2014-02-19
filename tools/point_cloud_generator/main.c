@@ -48,6 +48,7 @@ int main(int argc, const char **argv)
     struct Mesh *mesh = MshNew();
     struct PtcOutputFile *out = PtcOpenOutputFile(out_filename);
     struct Vector *P = NULL;
+    struct Vector *velocity = NULL;
     double *radius = NULL;
     int *point_count_list = 0;
     int total_point_count = 0;
@@ -89,8 +90,9 @@ int main(int argc, const char **argv)
     }
     printf("total_point_count %d\n", total_point_count);
 
-    P = FJ_MEM_ALLOC_ARRAY(struct Vector, total_point_count);
-    radius = FJ_MEM_ALLOC_ARRAY(double, total_point_count);
+    P        = VecAlloc(total_point_count);
+    velocity = VecAlloc(total_point_count);
+    radius   = FJ_MEM_ALLOC_ARRAY(double, total_point_count);
 
     XorInit(&xr);
     point_id = 0;
@@ -109,6 +111,7 @@ int main(int argc, const char **argv)
 
       for (j = 0; j < npt_on_face; j++) {
         struct Vector normal = {0, 0, 0};
+        struct Vector vel = {0, .05, 0};
         struct Vector *P_out = &P[point_id];
         double u = 0, v = 0, t = 0;
         double offset = 0;
@@ -129,7 +132,8 @@ int main(int argc, const char **argv)
         P_out->y += offset * normal.y;
         P_out->z += offset * normal.z;
 
-        radius[point_id] = .01 * .2;
+        radius[point_id] = .01 * .2 * .5;
+        velocity[point_id] = vel;
 
         point_id++;
       }
@@ -137,6 +141,7 @@ int main(int argc, const char **argv)
 
     PtcSetOutputPosition(out, P, total_point_count);
     PtcSetOutputAttributeDouble(out, "radius", radius);
+    PtcSetOutputAttributeVector3(out, "velocity", velocity);
 
     PtcWriteFile(out);
 
@@ -144,7 +149,8 @@ int main(int argc, const char **argv)
     MshFree(mesh);
 
     FJ_MEM_FREE(point_count_list);
-    FJ_MEM_FREE(P);
+    VecFree(P);
+    VecFree(velocity);
     FJ_MEM_FREE(radius);
   }
 

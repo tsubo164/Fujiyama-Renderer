@@ -24,6 +24,8 @@ extern int PtcGetInputPointCount(const struct PtcInputFile *in);
 extern void PtcSetInputPosition(struct PtcInputFile *in, struct Vector *P);
 extern void PtcSetInputAttributeDouble(struct PtcInputFile *in,
     const char *attr_name, double *attr_data);
+extern void PtcSetInputAttributeVector3(struct PtcInputFile *in,
+    const char *attr_name, struct Vector *attr_data);
 
 extern int PtcGetInputAttributeCount(const struct PtcInputFile *in);
 
@@ -37,6 +39,8 @@ extern void PtcSetOutputPosition(struct PtcOutputFile *out,
 
 extern void PtcSetOutputAttributeDouble(struct PtcOutputFile *out, 
     const char *attr_name, const double *attr_data);
+extern void PtcSetOutputAttributeVector3(struct PtcOutputFile *out, 
+    const char *attr_name, const struct Vector *attr_data);
 
 extern void PtcWriteFile(struct PtcOutputFile *out);
 

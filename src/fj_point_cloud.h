@@ -17,9 +17,12 @@ struct Vector;
 extern struct PointCloud *PtcNew(void);
 extern void PtcFree(struct PointCloud *ptc);
 
-extern void PtcAllocatePoint(struct PointCloud *ptc, int point_count);
+extern struct Vector *PtcAllocatePoint(struct PointCloud *ptc, int point_count);
 extern void PtcSetPosition(struct PointCloud *ptc, int index, const struct Vector *P);
 extern void PtcGetPosition(const struct PointCloud *ptc, int index, struct Vector *P);
+
+extern double *PtcAddAttributeDouble(struct PointCloud *ptc, const char *name);
+extern struct Vector *PtcAddAttributeVector(struct PointCloud *ptc, const char *name);
 
 extern void PtcComputeBounds(struct PointCloud *ptc);
 
