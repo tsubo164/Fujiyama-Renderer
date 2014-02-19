@@ -26,6 +26,7 @@ static void update_bounds(struct PointCloud *ptc);
 struct PointCloud {
   int point_count;
   struct Vector *P;
+  struct Vector *velocity;
   double *radius;
 
   struct Box bounds;
@@ -41,6 +42,7 @@ struct PointCloud *PtcNew(void)
 
   ptc->point_count = 0;
   ptc->P = NULL;
+  ptc->velocity = NULL;
   ptc->radius = NULL;
   BOX3_SET(&ptc->bounds, 0, 0, 0, 0, 0, 0);
 
@@ -54,6 +56,7 @@ void PtcFree(struct PointCloud *ptc)
   }
 
   VecFree(ptc->P);
+  VecFree(ptc->velocity);
   free(ptc->radius);
 
   FJ_MEM_FREE(ptc);
@@ -83,8 +86,13 @@ void PtcAllocatePoint(struct PointCloud *ptc, int point_count)
   {
     /* TODO TEST */
     int i;
+    ptc->velocity = VecAlloc(point_count);
     ptc->radius = FJ_MEM_ALLOC_ARRAY(double, point_count);
+
     for (i = 0; i < point_count; i++) {
+      struct Vector vel = {0, .05, 0};
+
+      ptc->velocity[i] = vel;
       ptc->radius[i] = .01 * .2;
     }
   }
@@ -134,7 +142,7 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
   D = {d * (o - center)}^2 - |d|^2 * (|o - center|^2 - r^2);
 */
   const struct PointCloud *ptc = (const struct PointCloud *) prim_set;
-  const struct Vector *center = &ptc->P[prim_id];
+  const struct Vector *P = &ptc->P[prim_id];
   const double radius = ptc->radius[prim_id];
 
   struct Vector orig_local = {0, 0, 0};
@@ -142,9 +150,16 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
   double discriminant = 0, disc_sqrt = 0;
   double t_hit = 0, t0 = 0, t1 = 0;
 
-  orig_local.x = ray->orig.x - center->x;
-  orig_local.y = ray->orig.y - center->y;
-  orig_local.z = ray->orig.z - center->z;
+  /* TODO TEST */
+  const struct Vector *vel = &ptc->velocity[prim_id];
+  struct Vector center;
+  center.x = P->x + time * vel->x;
+  center.y = P->y + time * vel->y;
+  center.z = P->z + time * vel->z;
+
+  orig_local.x = ray->orig.x - center.x;
+  orig_local.y = ray->orig.y - center.y;
+  orig_local.z = ray->orig.z - center.z;
 
   a = VEC3_DOT(&ray->dir, &ray->dir);
   b = VEC3_DOT(&ray->dir, &orig_local);
@@ -170,9 +185,9 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
   }
 
   POINT_ON_RAY(&isect->P, &ray->orig, &ray->dir, t_hit);
-  isect->N.x = isect->P.x - center->x;
-  isect->N.y = isect->P.y - center->y;
-  isect->N.z = isect->P.z - center->z;
+  isect->N.x = isect->P.x - center.x;
+  isect->N.y = isect->P.y - center.y;
+  isect->N.z = isect->P.z - center.z;
   VEC3_NORMALIZE(&isect->N);
 
   isect->object = NULL;
@@ -188,6 +203,7 @@ static void point_bounds(const void *prim_set, int prim_id, struct Box *bounds)
   const struct Vector *P = &ptc->P[prim_id];
   const double radius = ptc->radius[prim_id];
 
+#if 0
   BOX3_SET(bounds,
       P->x - radius,
       P->y - radius,
@@ -195,6 +211,23 @@ static void point_bounds(const void *prim_set, int prim_id, struct Box *bounds)
       P->x + radius,
       P->y + radius,
       P->z + radius);
+#endif
+
+  {
+  struct Vector P_close = *P;
+  const struct Vector *vel = &ptc->velocity[prim_id];
+
+  BOX3_SET(bounds,
+      P->x, P->y, P->z,
+      P->x, P->y, P->z);
+
+  P_close.x = P->x + vel->x;
+  P_close.y = P->y + vel->y;
+  P_close.z = P->z + vel->z;
+
+  BoxAddPoint(bounds, &P_close);
+  BOX3_EXPAND(bounds, radius);
+  }
 }
 
 static void point_cloud_bounds(const void *prim_set, struct Box *bounds)
@@ -216,10 +249,13 @@ static void update_bounds(struct PointCloud *ptc)
   BOX3_SET(&ptc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX); 
 
   for (i = 0; i < ptc->point_count; i++) {
+#if 0
     const struct Vector *P = &ptc->P[i];
     const double radius = ptc->radius[i];
+#endif
     struct Box ptbox;
 
+#if 0
     BOX3_SET(&ptbox,
         P->x - radius,
         P->y - radius,
@@ -227,6 +263,9 @@ static void update_bounds(struct PointCloud *ptc)
         P->x + radius,
         P->y + radius,
         P->z + radius);
+#endif
+
+    point_bounds(ptc, i, &ptbox);
 
     BoxAddBox(&ptc->bounds, &ptbox);
   }
