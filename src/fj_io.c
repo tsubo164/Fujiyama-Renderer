@@ -744,4 +744,3 @@ static int write_chunk_data(FILE *file, const struct ChunkData *chunk)
 
   return 0;
 }
-

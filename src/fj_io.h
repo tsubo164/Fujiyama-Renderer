@@ -88,4 +88,3 @@ extern void IOSetOutputVector3(struct OutputFile *out,
 #endif
 
 #endif /* FJ_XXX_H */
-

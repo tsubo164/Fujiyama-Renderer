@@ -22,26 +22,37 @@ static const char USAGE[] =
 "Usage: ptcgen [options] inputfile(*.mesh) outputfile(*.ptc)\n"
 "Options:\n"
 "  --help         Display this information\n"
+"  -v             Add velocity attribute\n"
 "\n";
+
+static void noise_position(struct Vector *P, const struct Vector *N, struct Vector *velocity);
 
 int main(int argc, const char **argv)
 {
   const char *in_filename = NULL;
   const char *out_filename = NULL;
+  int add_velocity = 0;
 
   if (argc == 2 && strcmp(argv[1], "--help") == 0) {
     printf("%s", USAGE);
     return 0;
   }
 
-  if (argc != 3) {
+  if (argc == 4 && strcmp(argv[1], "-v") == 0) {
+    in_filename = argv[2];
+    out_filename = argv[3];
+    add_velocity = 1;
+  }
+  else if (argc == 3) {
+    in_filename = argv[1];
+    out_filename = argv[2];
+    add_velocity = 0;
+  }
+  else {
     fprintf(stderr, "error: invalid number of arguments.\n");
     fprintf(stderr, "%s", USAGE);
     return -1;
   }
-
-  in_filename = argv[1];
-  out_filename = argv[2];
 
   {
     struct XorShift xr;
@@ -82,8 +93,13 @@ int main(int argc, const char **argv)
       noise_val = Fit(noise_val, -.2, 1, 0, 1);
 
       area = TriComputeArea(&P0, &P1, &P2);
-      area *= noise_val;
-      npt_on_face = (int) 2000000 * area;
+
+      if (add_velocity) {
+        npt_on_face = (int) 2000000 * area * .02;
+      } else {
+        area *= noise_val;
+        npt_on_face = (int) 2000000 * area;
+      }
 
       total_point_count += npt_on_face;
       point_count_list[i] = npt_on_face;
@@ -111,7 +127,6 @@ int main(int argc, const char **argv)
 
       for (j = 0; j < npt_on_face; j++) {
         struct Vector normal = {0, 0, 0};
-        struct Vector vel = {0, .05, 0};
         struct Vector *P_out = &P[point_id];
         double u = 0, v = 0, t = 0;
         double offset = 0;
@@ -132,8 +147,18 @@ int main(int argc, const char **argv)
         P_out->y += offset * normal.y;
         P_out->z += offset * normal.z;
 
-        radius[point_id] = .01 * .2 * .5;
-        velocity[point_id] = vel;
+        if (add_velocity) {
+          struct Vector vel = {0, .05 * 0, 0};
+          noise_position(NULL, P_out, &normal, &vel);
+          velocity[point_id] = vel;
+
+          radius[point_id] = .01 * .2 * 3;
+        } else {
+          struct Vector vel = {0, 0, 0};
+          velocity[point_id] = vel;
+
+          radius[point_id] = .01 * .2;
+        }
 
         point_id++;
       }
@@ -155,4 +180,32 @@ int main(int argc, const char **argv)
   }
 
   return 0;
+}
+
+static void noise_position(struct Vector *P, const struct Vector *N, struct Vector *velocity)
+{
+  struct Vector noise_vec = {0, 0, 0};
+  struct Vector P_offset = {0, 0, 0};
+  double noise_amp = 0;
+
+  PerlinNoise3d(P, 2, .5, 8, &noise_vec);
+
+  noise_vec.x += N->x;
+  noise_vec.y += N->y;
+  noise_vec.z += N->z;
+
+  P_offset.x = P->x + 1.234;
+  P_offset.y = P->y - 24.31 + .2;
+  P_offset.z = P->z + 123.4;
+
+  noise_amp = PerlinNoise(&P_offset, 2, .5, 8);
+  noise_amp = Fit(noise_amp, .2, 1, 0, 1);
+
+  P->x += noise_amp * noise_vec.x;
+  P->y += noise_amp * noise_vec.y;
+  P->z += noise_amp * noise_vec.z;
+
+  velocity->x = .2 * noise_amp * noise_vec.x;
+  velocity->y = .2 * noise_amp * noise_vec.y;
+  velocity->z = .2 * noise_amp * noise_vec.z;
 }

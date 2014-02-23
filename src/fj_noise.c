@@ -142,4 +142,3 @@ static double grad(int hash, double x, double y, double z)
 
   return ((h&1) == 0 ? u : -u) + ((h&2) == 0 ? v : -v);
 }
-

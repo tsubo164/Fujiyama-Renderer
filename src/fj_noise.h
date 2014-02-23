@@ -26,4 +26,3 @@ extern double PeriodicNoise3d(double x, double y, double z);
 #endif
 
 #endif /* FJ_XXX_H */
-
