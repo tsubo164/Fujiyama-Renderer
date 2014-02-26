@@ -4,7 +4,7 @@
 CC = gcc
 OPT = -O3
 CFLAGS = $(OPT) -Wall -ansi -pedantic-errors
-LDFLAGS = -lscene -lGL -lGLU -lglut
+LDFLAGS = -lscene -lm -lGL -lGLU -lglut
 RM = rm -f
 
 ifeq ($(shell uname),Darwin)

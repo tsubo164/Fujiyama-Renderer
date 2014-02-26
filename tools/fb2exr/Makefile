@@ -4,7 +4,7 @@
 CC = g++
 OPT = -O3
 CFLAGS = $(OPT) -Wall
-LDFLAGS = -lscene
+LDFLAGS = -lscene -lm
 RM = rm -f
 
 CFLAGS  += $(shell pkg-config --cflags OpenEXR)

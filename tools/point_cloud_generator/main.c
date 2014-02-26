@@ -149,7 +149,7 @@ int main(int argc, const char **argv)
 
         if (add_velocity) {
           struct Vector vel = {0, .05 * 0, 0};
-          noise_position(NULL, P_out, &normal, &vel);
+          noise_position(P_out, &normal, &vel);
           velocity[point_id] = vel;
 
           radius[point_id] = .01 * .2 * 3;

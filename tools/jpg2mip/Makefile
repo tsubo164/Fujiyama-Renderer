@@ -4,7 +4,7 @@
 CC = gcc
 OPT = -O3
 CFLAGS = $(OPT) -Wall -ansi -pedantic-errors
-LDFLAGS = -lscene -ljpeg
+LDFLAGS = -lscene -lm -ljpeg
 RM = rm -f
 
 topdir      := ../..
