@@ -301,6 +301,8 @@ EXPORTS
 	PtcAllocatePoint
 	PtcSetPosition
 	PtcGetPosition
+	PtcAddAttributeDouble
+	PtcAddAttributeVector
 	PtcComputeBounds
 	PtcGetPrimitiveSet
 	PtcOpenInputFile
@@ -310,11 +312,13 @@ EXPORTS
 	PtcGetInputPointCount
 	PtcSetInputPosition
 	PtcSetInputAttributeDouble
+	PtcSetInputAttributeVector3
 	PtcGetInputAttributeCount
 	PtcOpenOutputFile
 	PtcCloseOutputFile
 	PtcSetOutputPosition
 	PtcSetOutputAttributeDouble
+	PtcSetOutputAttributeVector3
 	PtcWriteFile
 	PtcLoadFile
 	MakePrimitiveSet
