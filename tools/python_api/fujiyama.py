@@ -28,7 +28,7 @@ class SceneInterface:
 			commands = commands + cmd + '\n'
 
 		try:
-			p = subprocess.Popen('bin/scene', shell=False, stdin=subprocess.PIPE)
+			p = subprocess.Popen('scene', shell=False, stdin=subprocess.PIPE)
 			p.communicate(commands)
 		except KeyboardInterrupt:
 			print ''
@@ -38,7 +38,7 @@ class SceneInterface:
 			print '===================='
 			print ''
 		except OSError, (errno, strerror):
-			print 'error: ' + 'bin/scene' + ': ' + strerror
+			print 'error: ' + 'scene' + ': ' + strerror
 
 	def Comment(self, comment):
 		"""

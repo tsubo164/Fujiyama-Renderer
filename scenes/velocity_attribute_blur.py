@@ -14,8 +14,7 @@ si.OpenPlugin('PlasticShader')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
-si.SetProperty3('cam1', 'translate', 0, .5, 3)
-si.SetProperty3('cam1', 'translate', 0, .5+1, 3+5)
+si.SetProperty3('cam1', 'translate', 0, 1.5, 8)
 si.SetProperty3('cam1', 'rotate', -1, 0, 0)
 
 #Light
@@ -37,6 +36,7 @@ si.SetProperty3('floor_shader', 'diffuse', .2, .25, .3)
 
 si.NewShader('ptc_shader1', 'PlasticShader')
 si.SetProperty3('ptc_shader1', 'reflect', .0, .0, .0)
+si.SetProperty3('ptc_shader1', 'diffuse', .9, .5, .3)
 
 si.NewShader('dome_shader', 'ConstantShader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
