@@ -73,6 +73,7 @@ build_dirs   += tools/scene_parser
 install_bins += bin/scene
 
 clean_dirs += $(build_dirs)
+clean_dirs += tools/python_api
 
 #sample
 sample_dir := scenes
