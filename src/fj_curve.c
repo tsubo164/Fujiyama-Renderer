@@ -32,6 +32,7 @@ struct ControlPoint {
 struct Bezier3 {
   struct ControlPoint cp[4];
   double width[2];
+  struct Vector velocity[4];
 };
 
 /* curve interfaces */
@@ -72,6 +73,7 @@ struct Curve *CrvNew(void)
   curve->width = NULL;
   curve->Cd = NULL;
   curve->uv = NULL;
+  curve->velocity = NULL;
   curve->indices = NULL;
   BOX3_SET(&curve->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 
@@ -92,6 +94,7 @@ void CrvFree(struct Curve *curve)
   FJ_MEM_FREE(curve->width);
   ColFree(curve->Cd);
   TexCoordFree(curve->uv);
+  VecFree(curve->velocity);
   FJ_MEM_FREE(curve->indices);
   FJ_MEM_FREE(curve->split_depth);
 
@@ -172,8 +175,14 @@ void CrvComputeBounds(struct Curve *curve)
     struct Box bezier_bounds;
     double bezier_max_radius;
 
+#if 0
     get_bezier3(curve, i, &bezier);
     get_bezier3_bounds(&bezier, &bezier_bounds);
+#endif
+    {
+      /* TODO TEST VELOCITY */
+      curve_bounds(curve, i, &bezier_bounds);
+    }
     BoxAddBox(&curve->bounds, &bezier_bounds);
 
     bezier_max_radius = get_bezier3_max_radius(&bezier);
@@ -226,6 +235,16 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
   get_bezier3(curve, prim_id, &bezier);
   depth = curve->split_depth[prim_id];
 
+  {
+    /* TODO TEST VELOCITY */
+    int i;
+    for (i = 0; i < 4; i++) {
+      bezier.cp[i].P.x += time * bezier.velocity[i].x;
+      bezier.cp[i].P.y += time * bezier.velocity[i].y;
+      bezier.cp[i].P.z += time * bezier.velocity[i].z;
+    }
+  }
+
   compute_world_to_ray_matrix(&nml_ray, &world_to_ray);
   for (i = 0; i < 4; i++) {
     MatTransformPoint(&world_to_ray, &bezier.cp[i].P);
@@ -244,6 +263,15 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
 
     /* dPdv */
     get_bezier3(curve, prim_id, &original);
+    {
+      /* TODO TEST VELOCITY */
+      int i;
+      for (i = 0; i < 4; i++) {
+        original.cp[i].P.x += time * original.velocity[i].x;
+        original.cp[i].P.y += time * original.velocity[i].y;
+        original.cp[i].P.z += time * original.velocity[i].z;
+      }
+    }
     derivative_bezier3(&isect->dPdv, original.cp, v_hit);
 
     /* Cd */
@@ -264,6 +292,19 @@ static void curve_bounds(const void *prim_set, int prim_id, struct Box *bounds)
 
   get_bezier3(curve, prim_id, &bezier);
   get_bezier3_bounds(&bezier, bounds);
+
+  {
+    /* TODO TEST VELOCITY */
+    struct Box bounds_shutter_close;
+    int i;
+    for (i = 0; i < 4; i++) {
+      bezier.cp[i].P.x += bezier.velocity[i].x;
+      bezier.cp[i].P.y += bezier.velocity[i].y;
+      bezier.cp[i].P.z += bezier.velocity[i].z;
+    }
+    get_bezier3_bounds(&bezier, &bounds_shutter_close);
+    BoxAddBox(bounds, &bounds_shutter_close);
+  }
 }
 
 static void curveset_bounds(const void *prim_set, struct Box *bounds)
@@ -564,5 +605,13 @@ static void get_bezier3(const struct Curve *curve, int prim_id, struct Bezier3 *
 
   bezier->width[0] = curve->width[4*prim_id + 0];
   bezier->width[1] = curve->width[4*prim_id + 3];
-}
 
+  {
+    /* TODO TEST VELOCITY */
+    struct Vector v = {0, .05, 0};
+    bezier->velocity[0] = v;
+    bezier->velocity[1] = v;
+    bezier->velocity[2] = v;
+    bezier->velocity[3] = v;
+  }
+}

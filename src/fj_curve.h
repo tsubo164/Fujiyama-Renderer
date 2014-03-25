@@ -26,6 +26,7 @@ struct Curve {
   double *width;
   struct Color *Cd;
   struct TexCoord *uv;
+  struct Vector *velocity;
   int *indices;
 
   int nverts;
@@ -48,4 +49,3 @@ extern void CrvGetPrimitiveSet(const struct Curve *curve, struct PrimitiveSet *p
 #endif
 
 #endif /* FJ_XXX_H */
-
