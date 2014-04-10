@@ -54,6 +54,7 @@ static void split_bezier3(const struct Bezier3 *bezier,
 static int converge_bezier3(const struct Bezier3 *bezier,
     double v0, double vn, int depth,
     double *v_hit, double *P_hit);
+static void time_sample_bezier3(struct Bezier3 *bezier, double time);
 
 /* helper functions */
 static void mid_point(struct Vector *mid, const struct Vector *a, const struct Vector *b);
@@ -175,14 +176,7 @@ void CrvComputeBounds(struct Curve *curve)
     struct Box bezier_bounds;
     double bezier_max_radius;
 
-#if 0
-    get_bezier3(curve, i, &bezier);
-    get_bezier3_bounds(&bezier, &bezier_bounds);
-#endif
-    {
-      /* TODO TEST VELOCITY */
-      curve_bounds(curve, i, &bezier_bounds);
-    }
+    curve_bounds(curve, i, &bezier_bounds);
     BoxAddBox(&curve->bounds, &bezier_bounds);
 
     bezier_max_radius = get_bezier3_max_radius(&bezier);
@@ -234,16 +228,7 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
 
   get_bezier3(curve, prim_id, &bezier);
   depth = curve->split_depth[prim_id];
-
-  {
-    /* TODO TEST VELOCITY */
-    int i;
-    for (i = 0; i < 4; i++) {
-      bezier.cp[i].P.x += time * bezier.velocity[i].x;
-      bezier.cp[i].P.y += time * bezier.velocity[i].y;
-      bezier.cp[i].P.z += time * bezier.velocity[i].z;
-    }
-  }
+  time_sample_bezier3(&bezier, time);
 
   compute_world_to_ray_matrix(&nml_ray, &world_to_ray);
   for (i = 0; i < 4; i++) {
@@ -263,15 +248,7 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
 
     /* dPdv */
     get_bezier3(curve, prim_id, &original);
-    {
-      /* TODO TEST VELOCITY */
-      int i;
-      for (i = 0; i < 4; i++) {
-        original.cp[i].P.x += time * original.velocity[i].x;
-        original.cp[i].P.y += time * original.velocity[i].y;
-        original.cp[i].P.z += time * original.velocity[i].z;
-      }
-    }
+    time_sample_bezier3(&original, time);
     derivative_bezier3(&isect->dPdv, original.cp, v_hit);
 
     /* Cd */
@@ -289,22 +266,16 @@ static void curve_bounds(const void *prim_set, int prim_id, struct Box *bounds)
 {
   const struct Curve *curve = (const struct Curve *) prim_set;
   struct Bezier3 bezier;
+  struct Box bounds_shutter_close;
 
   get_bezier3(curve, prim_id, &bezier);
   get_bezier3_bounds(&bezier, bounds);
 
-  {
-    /* TODO TEST VELOCITY */
-    struct Box bounds_shutter_close;
-    int i;
-    for (i = 0; i < 4; i++) {
-      bezier.cp[i].P.x += bezier.velocity[i].x;
-      bezier.cp[i].P.y += bezier.velocity[i].y;
-      bezier.cp[i].P.z += bezier.velocity[i].z;
-    }
-    get_bezier3_bounds(&bezier, &bounds_shutter_close);
-    BoxAddBox(bounds, &bounds_shutter_close);
-  }
+  /* TODO need to pass max time sample instead of 1. */
+  time_sample_bezier3(&bezier, 1);
+
+  get_bezier3_bounds(&bezier, &bounds_shutter_close);
+  BoxAddBox(bounds, &bounds_shutter_close);
 }
 
 static void curveset_bounds(const void *prim_set, struct Box *bounds)
@@ -463,6 +434,16 @@ static int converge_bezier3(const struct Bezier3 *bezier,
     }
 
     return hit_left || hit_right;
+  }
+}
+
+static void time_sample_bezier3(struct Bezier3 *bezier, double time)
+{
+  int i;
+  for (i = 0; i < 4; i++) {
+    bezier->cp[i].P.x += time * bezier->velocity[i].x;
+    bezier->cp[i].P.y += time * bezier->velocity[i].y;
+    bezier->cp[i].P.z += time * bezier->velocity[i].z;
   }
 }
 
