@@ -41,6 +41,8 @@ extern void CrvFree(struct Curve *curve);
 extern void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int nverts);
 extern void *CrvAllocateCurve(struct Curve *curve, const char *attr_name, int ncurves);
 
+extern struct Vector *CrvAddVeclocity(struct Curve *curve);
+
 extern void CrvComputeBounds(struct Curve *curve);
 extern void CrvGetPrimitiveSet(const struct Curve *curve, struct PrimitiveSet *primset);
 

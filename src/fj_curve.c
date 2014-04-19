@@ -102,6 +102,7 @@ void CrvFree(struct Curve *curve)
   FJ_MEM_FREE(curve);
 }
 
+/* TODO REMOVE THIS API */
 void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int nverts)
 {
   void *ret = NULL;
@@ -139,6 +140,7 @@ void *CrvAllocateVertex(struct Curve *curve, const char *attr_name, int nverts)
   return ret;
 }
 
+/* TODO REMOVE THIS API */
 void *CrvAllocateCurve(struct Curve *curve, const char *attr_name, int ncurves)
 {
   void *ret = NULL;
@@ -162,6 +164,21 @@ void *CrvAllocateCurve(struct Curve *curve, const char *attr_name, int ncurves)
 
   curve->ncurves = ncurves;
   return ret;
+}
+
+struct Vector *CrvAddVeclocity(struct Curve *curve)
+{
+  if (curve->nverts == 0) {
+    return NULL;
+  }
+
+  curve->velocity = VecRealloc(curve->velocity, curve->nverts);
+  if (curve->velocity == NULL) {
+    /* TODO error handling */
+    return NULL;
+  }
+
+  return curve->velocity;
 }
 
 void CrvComputeBounds(struct Curve *curve)
