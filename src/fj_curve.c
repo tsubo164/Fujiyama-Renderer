@@ -166,7 +166,7 @@ void *CrvAllocateCurve(struct Curve *curve, const char *attr_name, int ncurves)
   return ret;
 }
 
-struct Vector *CrvAddVeclocity(struct Curve *curve)
+struct Vector *CrvAddVelocity(struct Curve *curve)
 {
   if (curve->nverts == 0) {
     return NULL;
@@ -604,12 +604,8 @@ static void get_bezier3(const struct Curve *curve, int prim_id, struct Bezier3 *
   bezier->width[0] = curve->width[4*prim_id + 0];
   bezier->width[1] = curve->width[4*prim_id + 3];
 
-  {
-    /* TODO TEST VELOCITY */
-    struct Vector v = {0, .05, 0};
-    bezier->velocity[0] = v;
-    bezier->velocity[1] = v;
-    bezier->velocity[2] = v;
-    bezier->velocity[3] = v;
-  }
+  bezier->velocity[0] = curve->velocity[i0];
+  bezier->velocity[1] = curve->velocity[i1];
+  bezier->velocity[2] = curve->velocity[i2];
+  bezier->velocity[3] = curve->velocity[i3];
 }

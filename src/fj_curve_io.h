@@ -29,6 +29,7 @@ struct CurveInput {
   double *width;
   struct Color *Cd;
   struct TexCoord *uv;
+  struct Vector *velocity;
   int *indices;
 
   char **attr_names;
@@ -46,6 +47,7 @@ struct CurveOutput {
   double *width;
   struct Color *Cd;
   struct TexCoord *uv;
+  struct Vector *velocity;
   int *indices;
 };
 
@@ -81,4 +83,3 @@ extern int CrvLoadFile(struct Curve *curve, const char *filename);
 #endif
 
 #endif /* FJ_XXX_H */
-

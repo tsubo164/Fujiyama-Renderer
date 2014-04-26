@@ -132,9 +132,11 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   SlFreeLightSamples(samples);
 
   /* TODO fix hard-coded ambient */
+  /*
   out->Cs.r += .0;
   out->Cs.g += .025;
   out->Cs.b += .05;
+  */
 
   out->Os = 1;
 }

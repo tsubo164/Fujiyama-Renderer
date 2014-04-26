@@ -76,6 +76,7 @@ struct CurveInput *CrvOpenInputFile(const char *filename)
   in->width = NULL;
   in->Cd = NULL;
   in->uv = NULL;
+  in->velocity = NULL;
   in->indices = NULL;
 
   return in;
@@ -177,6 +178,7 @@ struct CurveOutput *CrvOpenOutputFile(const char *filename)
   out->width = NULL;
   out->Cd = NULL;
   out->uv = NULL;
+  out->velocity = NULL;
   out->indices = NULL;
 
   return out;
@@ -203,6 +205,7 @@ void CrvWriteFile(struct CurveOutput *out)
   if (out->width != NULL) out->nvert_attrs++;
   if (out->Cd != NULL) out->nvert_attrs++;
   if (out->uv != NULL) out->nvert_attrs++;
+  if (out->velocity != NULL) out->nvert_attrs++;
   out->ncurve_attrs = 0;
   if (out->indices != NULL) out->ncurve_attrs++;
 
@@ -217,12 +220,14 @@ void CrvWriteFile(struct CurveOutput *out)
   write_attriname(out, "width");
   write_attriname(out, "Cd");
   write_attriname(out, "uv");
+  write_attriname(out, "velocity");
   write_attriname(out, "indices");
 
   write_attridata(out, "P");
   write_attridata(out, "width");
   write_attridata(out, "Cd");
   write_attridata(out, "uv");
+  write_attridata(out, "velocity");
   write_attridata(out, "indices");
 }
 
@@ -263,6 +268,10 @@ int CrvLoadFile(struct Curve *curve, const char *filename)
       CrvAllocateVertex(curve, "uv", in->nverts);
       CrvReadAttribute(in, curve->uv);
     }
+    else if (strcmp(attrname, "velocity") == 0) {
+      CrvAddVelocity(curve);
+      CrvReadAttribute(in, curve->velocity);
+    }
     else if (strcmp(attrname, "indices") == 0) {
       CrvAllocateCurve(curve, "indices", in->ncurves);
       CrvReadAttribute(in, curve->indices);
@@ -290,6 +299,9 @@ static size_t write_attriname(struct CurveOutput *out, const char *name)
     return 0;
   }
   else if (strcmp(name, "uv") == 0 && out->uv == NULL) {
+    return 0;
+  }
+  else if (strcmp(name, "velocity") == 0 && out->velocity == NULL) {
     return 0;
   }
   else if (strcmp(name, "indices") == 0 && out->indices == NULL) {
@@ -338,6 +350,13 @@ static size_t write_attridata(struct CurveOutput *out, const char *name)
     fwrite(&datasize, sizeof(size_t), 1, out->file);
     fwrite(out->uv, sizeof(float), 2 * out->nverts, out->file);
   }
+  else if (strcmp(name, "velocity") == 0) {
+    if (out->velocity == NULL)
+      return 0;
+    datasize = 3 * sizeof(double) * out->nverts;
+    fwrite(&datasize, sizeof(size_t), 1, out->file);
+    fwrite(out->velocity, sizeof(double), 3 * out->nverts, out->file);
+  }
   else if (strcmp(name, "indices") == 0) {
     if (out->indices == NULL)
       return 0;
@@ -347,4 +366,3 @@ static size_t write_attridata(struct CurveOutput *out, const char *name)
   }
   return nwrotes;
 }
-
