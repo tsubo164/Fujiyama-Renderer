@@ -45,7 +45,7 @@ static float kajiya_specular(const struct Vector *tangent,
     const struct Vector *Ln, const struct Vector *I);
 
 static const struct Property MyProperties[] = {
-  {PROP_VECTOR3, "diffuse",   {.8, .8, .8, 0}, set_diffuse},
+  {PROP_VECTOR3, "diffuse",   {1, 1, 1, 0}, set_diffuse},
   {PROP_VECTOR3, "specular",  {1, 1, 1, 0},    set_specular},
   {PROP_VECTOR3, "ambient",   {1, 1, 1, 0},    set_ambient},
   {PROP_SCALAR,  "roughness", {.1, 0, 0, 0},   set_roughness},
@@ -95,10 +95,7 @@ static void MyFree(void *self)
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
-  /* TODO use hair */
-  /*
   const struct HairShader *hair = (struct HairShader *) self;
-  */
   int i = 0;
 
   struct LightSample *samples = NULL;
@@ -123,20 +120,13 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     diff = kajiya_diffuse(&tangent, &Lout.Ln);
     spec = kajiya_specular(&tangent, &Lout.Ln, &in->I);
 
-    out->Cs.r += (in->Cd.r * diff + spec) * Lout.Cl.r;
-    out->Cs.g += (in->Cd.g * diff + spec) * Lout.Cl.g;
-    out->Cs.b += (in->Cd.b * diff + spec) * Lout.Cl.b;
+    out->Cs.r += (in->Cd.r * hair->diffuse.r * diff + spec) * Lout.Cl.r;
+    out->Cs.g += (in->Cd.g * hair->diffuse.g * diff + spec) * Lout.Cl.g;
+    out->Cs.b += (in->Cd.b * hair->diffuse.b * diff + spec) * Lout.Cl.b;
   }
 
   /* FJ_MEM_FREE samples */
   SlFreeLightSamples(samples);
-
-  /* TODO fix hard-coded ambient */
-  /*
-  out->Cs.r += .0;
-  out->Cs.g += .025;
-  out->Cs.b += .05;
-  */
 
   out->Os = 1;
 }

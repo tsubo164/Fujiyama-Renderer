@@ -63,7 +63,7 @@ si.AssignShader('dome1', 'dome_shader')
 si.SetProperty3('dome1', 'rotate', 0, rot, 0)
 
 #ObjectGroup
-# Create shadow_target for sphere1.
+# Create shadow_target for some objects.
 # Since 'DomeLight' has infinite distance, we need to exclude
 # 'dome1' object which is for just background image.
 si.NewObjectGroup('group1')

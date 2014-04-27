@@ -492,9 +492,9 @@ static int gen_hair(int argc, const char **argv)
             const double w[4] = {1, .5, .2, .05};
             P[cp_id] = next_P;
 
-            Cd[cp_id].r = .8;
+            Cd[cp_id].r = .9;
             Cd[cp_id].g = .8;
-            Cd[cp_id].b = .8;
+            Cd[cp_id].b = .5;
 
             if (k == N_CURVES_PER_HAIR - 1) {
               width[cp_id] = .0005 * w[vtx];
@@ -540,7 +540,7 @@ static int gen_hair(int argc, const char **argv)
               const double amp = .01;
               const double freq = 1;
 
-              double vmult;
+              double vmult = 1;
 
               Q.x = curr_P.x * freq;
               Q.y = curr_P.y * freq + 5;
