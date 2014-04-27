@@ -55,7 +55,7 @@ designed to handle production image rendering.
 * Animation
   + Camera motion blur - sampling non-linear camera motion
   + Transform motion blur - sampling non-linear object transformation
-  + Velocity attribute motion blur (for point cloud only) - useful for point count
+  + Velocity attribute motion blur (for bezier curve and point cloud only) - useful for point count
     changing geometry
 
 * Shading and Texture

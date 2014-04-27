@@ -10,7 +10,7 @@ dllname := libscene
 .PHONY: $(target)
 
 $(target):
-	@echo '  makeing' $@
+	@echo '  making' $@
 	@echo 'LIBRARY' $(dllname) > $@
 	@echo 'EXPORTS' >> $@
 	@cat $(srcdir)/*.h \

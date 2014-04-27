@@ -41,7 +41,6 @@ si.AssignTexture('dome_shader', 'texture', 'tex1')
 #Mesh
 si.NewMesh('head_mesh', '../../mesh/head.mesh')
 si.NewMesh('dome_mesh', '../../mesh/dome.mesh')
-si.NewMesh('sphere_mesh', '../../mesh/sphere.mesh')
 
 #Curve
 si.NewCurve('hair_curve', '../../crv/hair.crv')

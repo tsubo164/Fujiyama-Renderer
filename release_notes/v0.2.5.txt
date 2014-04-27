@@ -1,0 +1,23 @@
+Fujiyama Renderer v0.2.5(Alpha) Release Notes
+=============================================
+
+New features since v0.2.4
+-------------------------
+ * Added velocity attribute motion blur for curve primitives.
+
+ * Added option to curvegen to generate hair. 'curvegen --hair in.mesh out.crv'
+   will produce hair geometry based on in.mesh.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Mesh primitive group
+ * Global illumination
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support

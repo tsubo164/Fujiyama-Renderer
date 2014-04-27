@@ -50,6 +50,7 @@ EXPORTS
 	CrvFree
 	CrvAllocateVertex
 	CrvAllocateCurve
+	CrvAddVelocity
 	CrvComputeBounds
 	CrvGetPrimitiveSet
 	CrvGetErrorNo
