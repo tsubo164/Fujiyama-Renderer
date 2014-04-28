@@ -17,6 +17,35 @@ See LICENSE and README
 #include <string.h>
 #include <float.h>
 
+#include <stdio.h>
+/* TODO TEST VELOCITY */
+void MbSampleVelocityPoint(const struct Vector *P, const struct Vector *velocity,
+    double time, double time_offset, double shutter_speed,
+    struct Vector *P_sampled)
+{
+  /*
+  time_offset = -1 : trailing blur
+  time_offset = 0  : frame center blur
+  time_offset = 1  : leading center blur
+  */
+
+  const double s[] = {-2, -1.5, -1, -.5, 0, .5, 1, 2};
+  int i;
+  printf("--------------------------------------\n");
+  for (i = 0; i < sizeof(s)/sizeof(s[0]); i++) {
+    printf("| %5.2G", s[i]);
+  }
+  printf("\n");
+  for (i = 0; i < sizeof(s)/sizeof(s[0]); i++) {
+    double t = (.5 * s[i] - .5);
+    /*
+    t = s[i] - .5;
+    */
+    printf("| %5.2G", t);
+  }
+  printf("\n");
+}
+
 static int triangle_ray_intersect(const void *prim_set, int prim_id, double time,
     const struct Ray *ray, struct Intersection *isect);
 static void triangle_bounds(const void *prim_set, int prim_id, struct Box *bounds);
@@ -31,6 +60,7 @@ struct Mesh {
   struct Vector *N;
   struct Color *Cd;
   struct TexCoord *uv;
+  struct Vector *velocity;
   struct TriIndex *indices;
 
   struct Box bounds;
@@ -64,6 +94,7 @@ void MshFree(struct Mesh *mesh)
   VecFree(mesh->N);
   ColFree(mesh->Cd);
   TexCoordFree(mesh->uv);
+  VecFree(mesh->velocity);
   FJ_MEM_FREE(mesh->indices);
 
   FJ_MEM_FREE(mesh);
@@ -79,6 +110,8 @@ void MshClear(struct Mesh *mesh)
     ColFree(mesh->Cd);
   if (mesh->uv != NULL)
     TexCoordFree(mesh->uv);
+  if (mesh->velocity != NULL)
+    VecFree(mesh->velocity);
   if (mesh->indices != NULL)
     FJ_MEM_FREE(mesh->indices);
 
@@ -90,6 +123,7 @@ void MshClear(struct Mesh *mesh)
   mesh->N = NULL;
   mesh->Cd = NULL;
   mesh->uv = NULL;
+  mesh->velocity = NULL;
   mesh->indices = NULL;
 }
 
@@ -98,8 +132,16 @@ void MshComputeBounds(struct Mesh *mesh)
   int i;
   BOX3_SET(&mesh->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 
+/*
   for (i = 0; i < mesh->nverts; i++) {
     BoxAddPoint(&mesh->bounds, &mesh->P[i]);
+  }
+*/
+  /* TODO TEST VELOCITY */
+  for (i = 0; i < mesh->nfaces; i++) {
+    struct Box bounds;
+    triangle_bounds(mesh, i, &bounds);
+    BoxAddBox(&mesh->bounds, &bounds);
   }
 }
 
@@ -178,6 +220,23 @@ void *MshAllocateVertex(struct Mesh *mesh, const char *attr_name, int nverts)
     mesh->uv = TexCoordRealloc(mesh->uv, nverts);
     ret = mesh->uv;
   }
+  else if (strcmp(attr_name, "velocity") == 0) {
+    mesh->velocity = VecRealloc(mesh->velocity, nverts);
+    ret = mesh->velocity;
+  }
+
+  /* TODO TEST VELOCITY */
+  if (mesh->velocity == NULL) {
+    int i;
+    mesh->velocity = VecRealloc(mesh->velocity, nverts);
+    for (i = 0; i < nverts; i++) {
+      struct Vector v = {0, 0.2, 0};
+      mesh->velocity[i] = v;
+    }
+  }
+  /*
+  MbSampleVelocityPoint(NULL, NULL, 0, 0, .5, NULL);
+  */
 
   mesh->nverts = nverts;
   return ret;
@@ -289,19 +348,39 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
 {
   const struct Mesh *mesh = (const struct Mesh *) prim_set;
   const struct TriIndex *face = &mesh->indices[prim_id];
-  const struct Vector *P0, *P1, *P2;
+  struct Vector P0, P1, P2;
   const struct Vector *N0, *N1, *N2;
+  const struct Vector *velocity0, *velocity1, *velocity2;
   double u, v;
   double t_hit;
   int hit;
 
   /* TODO make function */
-  P0 = &mesh->P[face->i0];
-  P1 = &mesh->P[face->i1];
-  P2 = &mesh->P[face->i2];
+  P0 = mesh->P[face->i0];
+  P1 = mesh->P[face->i1];
+  P2 = mesh->P[face->i2];
+
+  velocity0 = &mesh->velocity[face->i0];
+  velocity1 = &mesh->velocity[face->i1];
+  velocity2 = &mesh->velocity[face->i2];
+
+  /* TODO TEST VELOCITY */
+  {
+    P0.x += time * velocity0->x;
+    P0.y += time * velocity0->y;
+    P0.z += time * velocity0->z;
+
+    P1.x += time * velocity1->x;
+    P1.y += time * velocity1->y;
+    P1.z += time * velocity1->z;
+
+    P2.x += time * velocity2->x;
+    P2.y += time * velocity2->y;
+    P2.z += time * velocity2->z;
+  }
 
   hit = TriRayIntersect(
-      P0, P1, P2,
+      &P0, &P1, &P2,
       &ray->orig, &ray->dir, DO_NOT_CULL_BACKFACES,
       &t_hit, &u, &v);
 
@@ -311,6 +390,8 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
   if (isect == NULL)
     return 1;
 
+  /* we don't know N at time sampled point with velocity motion blur */
+  /* just using N from mesh data */
   /* intersect info */
   N0 = &mesh->N[face->i0];
   N1 = &mesh->N[face->i1];
@@ -329,7 +410,7 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
     isect->uv.v = t * uv0->v + u * uv1->v + v * uv2->v;
 
     TriComputeDerivatives(
-        P0, P1, P2,
+        &P0, &P1, &P2,
         uv0, uv1, uv2,
         &isect->dPdu, &isect->dPdv);
   }
@@ -354,12 +435,35 @@ static void triangle_bounds(const void *prim_set, int prim_id, struct Box *bound
   const struct Mesh *mesh = (const struct Mesh *) prim_set;
   const struct TriIndex *face = &mesh->indices[prim_id];
   const struct Vector *P0, *P1, *P2;
+  struct Vector P0_close, P1_close, P2_close;
+  const struct Vector *velocity0, *velocity1, *velocity2;
 
   P0 = &mesh->P[face->i0];
   P1 = &mesh->P[face->i1];
   P2 = &mesh->P[face->i2];
 
   TriComputeBounds(bounds, P0, P1, P2);
+
+  /* TODO TEST VELOCITY */
+  velocity0 = &mesh->velocity[face->i0];
+  velocity1 = &mesh->velocity[face->i1];
+  velocity2 = &mesh->velocity[face->i2];
+
+  P0_close.x = P0->x + velocity0->x;
+  P0_close.y = P0->y + velocity0->y;
+  P0_close.z = P0->z + velocity0->z;
+
+  P1_close.x = P1->x + velocity1->x;
+  P1_close.y = P1->y + velocity1->y;
+  P1_close.z = P1->z + velocity1->z;
+
+  P2_close.x = P2->x + velocity2->x;
+  P2_close.y = P2->y + velocity2->y;
+  P2_close.z = P2->z + velocity2->z;
+
+  BoxAddPoint(bounds, &P0_close);
+  BoxAddPoint(bounds, &P1_close);
+  BoxAddPoint(bounds, &P2_close);
 }
 
 static void triangleset_bounds(const void *prim_set, struct Box *bounds)
@@ -373,4 +477,3 @@ static int triangle_count(const void *prim_set)
   const struct Mesh *mesh = (const struct Mesh *) prim_set;
   return mesh->nfaces;
 }
-
