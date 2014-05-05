@@ -19,6 +19,7 @@ struct TriIndex {
 struct PrimitiveSet;
 struct TexCoord;
 struct Vector;
+struct Color;
 
 extern struct Mesh *MshNew(void);
 extern void MshFree(struct Mesh *mesh);
@@ -41,11 +42,16 @@ extern void MshGetFaceVertexNormal(const struct Mesh *mesh, int face_index,
 /* property setting */
 extern void MshSetVertexPosition(struct Mesh *mesh, int index, const struct Vector *P);
 extern void MshSetVertexNormal(struct Mesh *mesh, int index, const struct Vector *N);
+extern void MshSetVertexColor(struct Mesh *mesh, int index, const struct Color *Cd);
 extern void MshSetVertexTexture(struct Mesh *mesh, int index, const struct TexCoord *uv);
+extern void MshSetVertexVelocity(struct Mesh *mesh, int index, const struct Vector *velocity);
 extern void MshSetFaceVertexIndices(struct Mesh *mesh, int face_index,
     const struct TriIndex *tri_index);
 
-extern void MshGetVertexPosition(struct Mesh *mesh, int index, struct Vector *P);
+extern void MshGetVertexPosition(const struct Mesh *mesh, int index, struct Vector *P);
+extern void MshGetVertexNormal(const struct Mesh *mesh, int index, struct Vector *N);
+extern void MshGetFaceVertexIndices(const struct Mesh *mesh, int face_index,
+    struct TriIndex *tri_index);
 
 /* re-computation */
 extern void MshComputeBounds(struct Mesh *mesh);
@@ -58,4 +64,3 @@ extern void MshGetPrimitiveSet(const struct Mesh *mesh, struct PrimitiveSet *pri
 #endif
 
 #endif /* FJ_XXX_H */
-

@@ -52,6 +52,7 @@ struct MeshOutput {
   struct Vector *N;
   struct Color *Cd;
   struct TexCoord *uv;
+  struct Vector *velocity;
   struct TriIndex *indices;
 };
 
@@ -66,6 +67,7 @@ extern void MshCloseOutputFile(struct MeshOutput *out);
 extern void MshWriteFile(struct MeshOutput *out);
 
 /* high level interface for loading mesh file */
+/* TODO AUTOMATICALLY ADD AND COMPUTE N IF NOT EXIST */
 extern int MshLoadFile(struct Mesh *mesh, const char *filename);
 
 /* error no interfaces */
@@ -76,4 +78,3 @@ extern int MshGetErrorNo(void);
 #endif
 
 #endif /* FJ_XXX_H */
-

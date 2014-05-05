@@ -17,6 +17,7 @@ See LICENSE and README
 #include <string.h>
 #include <float.h>
 
+#if 0
 #include <stdio.h>
 /* TODO TEST VELOCITY */
 void MbSampleVelocityPoint(const struct Vector *P, const struct Vector *velocity,
@@ -45,6 +46,7 @@ void MbSampleVelocityPoint(const struct Vector *P, const struct Vector *velocity
   }
   printf("\n");
 }
+#endif
 
 static int triangle_ray_intersect(const void *prim_set, int prim_id, double time,
     const struct Ray *ray, struct Intersection *isect);
@@ -132,12 +134,6 @@ void MshComputeBounds(struct Mesh *mesh)
   int i;
   BOX3_SET(&mesh->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-/*
-  for (i = 0; i < mesh->nverts; i++) {
-    BoxAddPoint(&mesh->bounds, &mesh->P[i]);
-  }
-*/
-  /* TODO TEST VELOCITY */
   for (i = 0; i < mesh->nfaces; i++) {
     struct Box bounds;
     triangle_bounds(mesh, i, &bounds);
@@ -225,19 +221,6 @@ void *MshAllocateVertex(struct Mesh *mesh, const char *attr_name, int nverts)
     ret = mesh->velocity;
   }
 
-  /* TODO TEST VELOCITY */
-  if (mesh->velocity == NULL) {
-    int i;
-    mesh->velocity = VecRealloc(mesh->velocity, nverts);
-    for (i = 0; i < nverts; i++) {
-      struct Vector v = {0, 0.2, 0};
-      mesh->velocity[i] = v;
-    }
-  }
-  /*
-  MbSampleVelocityPoint(NULL, NULL, 0, 0, .5, NULL);
-  */
-
   mesh->nverts = nverts;
   return ret;
 }
@@ -296,6 +279,16 @@ void MshSetVertexNormal(struct Mesh *mesh, int index, const struct Vector *N)
   mesh->N[index] = *N;
 }
 
+void MshSetVertexColor(struct Mesh *mesh, int index, const struct Color *Cd)
+{
+  if (mesh->Cd == NULL)
+    return;
+  if (index < 0 || index >= mesh->nverts)
+    return;
+
+  mesh->Cd[index] = *Cd;
+}
+
 void MshSetVertexTexture(struct Mesh *mesh, int index, const struct TexCoord *uv)
 {
   if (mesh->uv == NULL)
@@ -304,6 +297,16 @@ void MshSetVertexTexture(struct Mesh *mesh, int index, const struct TexCoord *uv
     return;
 
   mesh->uv[index] = *uv;
+}
+
+void MshSetVertexVelocity(struct Mesh *mesh, int index, const struct Vector *velocity)
+{
+  if (mesh->velocity == NULL)
+    return;
+  if (index < 0 || index >= mesh->nverts)
+    return;
+
+  mesh->velocity[index] = *velocity;
 }
 
 void MshSetFaceVertexIndices(struct Mesh *mesh, int face_index,
@@ -317,9 +320,20 @@ void MshSetFaceVertexIndices(struct Mesh *mesh, int face_index,
   mesh->indices[face_index] = *tri_index;
 }
 
-void MshGetVertexPosition(struct Mesh *mesh, int index, struct Vector *P)
+void MshGetVertexPosition(const struct Mesh *mesh, int index, struct Vector *P)
 {
   *P = mesh->P[index];
+}
+
+void MshGetVertexNormal(const struct Mesh *mesh, int index, struct Vector *N)
+{
+  *N = mesh->N[index];
+}
+
+void MshGetFaceVertexIndices(const struct Mesh *mesh, int face_index,
+    struct TriIndex *tri_index)
+{
+  *tri_index = mesh->indices[face_index];
 }
 
 int MshGetVertexCount(const struct Mesh *mesh)
@@ -350,7 +364,6 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
   const struct TriIndex *face = &mesh->indices[prim_id];
   struct Vector P0, P1, P2;
   const struct Vector *N0, *N1, *N2;
-  const struct Vector *velocity0, *velocity1, *velocity2;
   double u, v;
   double t_hit;
   int hit;
@@ -360,12 +373,12 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
   P1 = mesh->P[face->i1];
   P2 = mesh->P[face->i2];
 
-  velocity0 = &mesh->velocity[face->i0];
-  velocity1 = &mesh->velocity[face->i1];
-  velocity2 = &mesh->velocity[face->i2];
+  if (mesh->velocity != NULL) {
+    const struct Vector *velocity0, *velocity1, *velocity2;
+    velocity0 = &mesh->velocity[face->i0];
+    velocity1 = &mesh->velocity[face->i1];
+    velocity2 = &mesh->velocity[face->i2];
 
-  /* TODO TEST VELOCITY */
-  {
     P0.x += time * velocity0->x;
     P0.y += time * velocity0->y;
     P0.z += time * velocity0->z;
@@ -435,8 +448,6 @@ static void triangle_bounds(const void *prim_set, int prim_id, struct Box *bound
   const struct Mesh *mesh = (const struct Mesh *) prim_set;
   const struct TriIndex *face = &mesh->indices[prim_id];
   const struct Vector *P0, *P1, *P2;
-  struct Vector P0_close, P1_close, P2_close;
-  const struct Vector *velocity0, *velocity1, *velocity2;
 
   P0 = &mesh->P[face->i0];
   P1 = &mesh->P[face->i1];
@@ -444,26 +455,30 @@ static void triangle_bounds(const void *prim_set, int prim_id, struct Box *bound
 
   TriComputeBounds(bounds, P0, P1, P2);
 
-  /* TODO TEST VELOCITY */
-  velocity0 = &mesh->velocity[face->i0];
-  velocity1 = &mesh->velocity[face->i1];
-  velocity2 = &mesh->velocity[face->i2];
+  if (mesh->velocity != NULL) {
+    const struct Vector *velocity0, *velocity1, *velocity2;
+    struct Vector P0_close, P1_close, P2_close;
 
-  P0_close.x = P0->x + velocity0->x;
-  P0_close.y = P0->y + velocity0->y;
-  P0_close.z = P0->z + velocity0->z;
+    velocity0 = &mesh->velocity[face->i0];
+    velocity1 = &mesh->velocity[face->i1];
+    velocity2 = &mesh->velocity[face->i2];
 
-  P1_close.x = P1->x + velocity1->x;
-  P1_close.y = P1->y + velocity1->y;
-  P1_close.z = P1->z + velocity1->z;
+    P0_close.x = P0->x + velocity0->x;
+    P0_close.y = P0->y + velocity0->y;
+    P0_close.z = P0->z + velocity0->z;
 
-  P2_close.x = P2->x + velocity2->x;
-  P2_close.y = P2->y + velocity2->y;
-  P2_close.z = P2->z + velocity2->z;
+    P1_close.x = P1->x + velocity1->x;
+    P1_close.y = P1->y + velocity1->y;
+    P1_close.z = P1->z + velocity1->z;
 
-  BoxAddPoint(bounds, &P0_close);
-  BoxAddPoint(bounds, &P1_close);
-  BoxAddPoint(bounds, &P2_close);
+    P2_close.x = P2->x + velocity2->x;
+    P2_close.y = P2->y + velocity2->y;
+    P2_close.z = P2->z + velocity2->z;
+
+    BoxAddPoint(bounds, &P0_close);
+    BoxAddPoint(bounds, &P1_close);
+    BoxAddPoint(bounds, &P2_close);
+  }
 }
 
 static void triangleset_bounds(const void *prim_set, struct Box *bounds)

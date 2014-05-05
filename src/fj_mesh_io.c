@@ -150,6 +150,7 @@ struct MeshOutput *MshOpenOutputFile(const char *filename)
   out->N = NULL;
   out->Cd = NULL;
   out->uv = NULL;
+  out->velocity = NULL;
   out->indices = NULL;
 
   return out;
@@ -176,6 +177,7 @@ void MshWriteFile(struct MeshOutput *out)
   if (out->N != NULL) out->nvert_attrs++;
   if (out->Cd != NULL) out->nvert_attrs++;
   if (out->uv != NULL) out->nvert_attrs++;
+  if (out->velocity != NULL) out->nvert_attrs++;
   out->nface_attrs = 0;
   if (out->indices != NULL) out->nface_attrs++;
 
@@ -190,12 +192,14 @@ void MshWriteFile(struct MeshOutput *out)
   write_attriname(out, "N");
   write_attriname(out, "Cd");
   write_attriname(out, "uv");
+  write_attriname(out, "velocity");
   write_attriname(out, "indices");
 
   write_attridata(out, "P");
   write_attridata(out, "N");
   write_attridata(out, "Cd");
   write_attridata(out, "uv");
+  write_attridata(out, "velocity");
   write_attridata(out, "indices");
 }
 
@@ -244,6 +248,18 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
         MshSetVertexNormal(mesh, j, &N);
       }
     }
+    else if (strcmp(attrname, "Cd") == 0) {
+      MshAllocateVertex(mesh, "Cd", in->nverts);
+      read_attridata(in);
+      for (j = 0; j < in->nverts; j++) {
+        const float *data = (const float *) in->data_buffer;
+        struct Color Cd = {0, 0, 0};
+        Cd.r = data[3*j + 0];
+        Cd.g = data[3*j + 1];
+        Cd.b = data[3*j + 2];
+        MshSetVertexColor(mesh, j, &Cd);
+      }
+    }
     else if (strcmp(attrname, "uv") == 0) {
       MshAllocateVertex(mesh, "uv", in->nverts);
       read_attridata(in);
@@ -253,6 +269,18 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
         texcoord.u = data[2*j + 0];
         texcoord.v = data[2*j + 1];
         MshSetVertexTexture(mesh, j, &texcoord);
+      }
+    }
+    else if (strcmp(attrname, "velocity") == 0) {
+      MshAllocateVertex(mesh, "velocity", in->nverts);
+      read_attridata(in);
+      for (j = 0; j < in->nverts; j++) {
+        const double *data = (const double *) in->data_buffer;
+        struct Vector velocity = {0, 0, 0};
+        velocity.x = data[3*j + 0];
+        velocity.y = data[3*j + 1];
+        velocity.z = data[3*j + 2];
+        MshSetVertexVelocity(mesh, j, &velocity);
       }
     }
     else if (strcmp(attrname, "indices") == 0) {
@@ -300,6 +328,9 @@ static size_t write_attriname(struct MeshOutput *out, const char *name)
     return 0;
   }
   else if (strcmp(name, "uv") == 0 && out->uv == NULL) {
+    return 0;
+  }
+  else if (strcmp(name, "velocity") == 0 && out->velocity == NULL) {
     return 0;
   }
   else if (strcmp(name, "indices") == 0 && out->indices == NULL) {
@@ -371,6 +402,19 @@ static size_t write_attridata(struct MeshOutput *out, const char *name)
       nwrotes += fwrite(uv, sizeof(float), 2, out->file);
     }
   }
+  else if (strcmp(name, "velocity") == 0) {
+    if (out->velocity == NULL)
+      return 0;
+    datasize = 3 * sizeof(double) * out->nverts;
+    nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
+    for (i = 0; i < out->nverts; i++) {
+      double velocity[3] = {0, 0, 0};
+      velocity[0] = out->velocity[i].x;
+      velocity[1] = out->velocity[i].y;
+      velocity[2] = out->velocity[i].z;
+      nwrotes += fwrite(velocity, sizeof(double), 3, out->file);
+    }
+  }
   else if (strcmp(name, "indices") == 0) {
     if (out->indices == NULL)
       return 0;
@@ -402,4 +446,3 @@ static size_t read_attridata(struct MeshInput *in)
 
   return nreads;
 }
-
