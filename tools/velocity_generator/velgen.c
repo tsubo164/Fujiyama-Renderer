@@ -134,9 +134,8 @@ int main(int argc, const char **argv)
 
     znml = (pos.z - zmin) / (zmax - zmin);
 
-    vscale = 1 - SmoothStep(znml, 0, 1);
-    vscale *= .3;
-    vscale = .3;
+    vscale = 1 - SmoothStep(znml, .2, .7);
+    vscale *= .2;
 
     Q.x = pos.x * freq;
     Q.y = pos.y * freq;

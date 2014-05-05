@@ -1,0 +1,3 @@
+LIBRARY VolumeShader
+EXPORTS
+	Initialize
