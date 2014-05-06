@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #Copyright (c) 2011-2014 Hiroshi Tsubokawa
-#See LICENSE and README
+#See LICENSE.txt and README.txt
 
 import os, glob, shutil, zipfile, sys
 
 readme_txt = """\
 #Copyright (c) 2011-2014 Hiroshi Tsubokawa
-#See LICENSE and README
+#See LICENSE.txt and README.txt
 
 Fujiyama Renderer for Windows 64bit
 ===================================
@@ -24,7 +24,7 @@ Convert
 
 Render
     scene.exe    teapot.scn
-    type teapot.scn | scene.exe    
+    type teapot.scn | scene.exe
     python       bump_mapping.py
 """
 
@@ -49,6 +49,7 @@ include_dir = install_dir + '/include'
 scene_dir   = install_dir + '/scenes'
 python_dir  = install_dir + '/python'
 
+# making folders
 mkdir_p(top_dir)
 mkdir_p(install_dir)
 mkdir_p(bin_dir)
@@ -57,6 +58,7 @@ mkdir_p(include_dir)
 mkdir_p(scene_dir)
 mkdir_p(python_dir)
 
+# copying binaries, libraries and scenes
 for binfile in sorted(glob.glob('./bin/*.dll')):
 	print 'copying', binfile
 	shutil.copy(binfile, bin_dir)
@@ -85,19 +87,29 @@ for scene in sorted(glob.glob('../../scenes/*.py')):
 	print 'copying', scene
 	shutil.copy(scene, scene_dir)
 
+# copying fujiyama.py
 python_api = '../../tools/python_api/fujiyama.py'
 print 'copying', python_api
 shutil.copy(python_api, python_dir)
 
-#readme = 'README.txt'
-#print 'copying', readme
-#shutil.copy(readme, top_dir)
+# making README.txt
 readme_name = top_dir + '/README.txt'
 readme_file = open(readme_name, 'w')
 print 'making', readme_name
 readme_file.write(readme_txt)
 readme_file.close()
 
+# making LICENSE.txt
+license_file_name = top_dir + '/LICENSE.txt'
+license_file = open('../../LICENSE', 'r')
+license_txt_file = open(license_file_name, 'w')
+print 'making', license_file_name
+for line in license_file.readlines():
+    license_txt_file.write(line)
+license_file.close()
+license_txt_file.close()
+
+# making zip
 z = zipfile.ZipFile(top_dir + '.zip', 'w', zipfile.ZIP_DEFLATED)
 for pth, dirs, files in os.walk(top_dir):
     for f in files:
