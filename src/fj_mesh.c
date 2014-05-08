@@ -82,6 +82,7 @@ struct Mesh *MshNew(void)
   mesh->N = NULL;
   mesh->Cd = NULL;
   mesh->uv = NULL;
+  mesh->velocity = NULL;
   mesh->indices = NULL;
 
   return mesh;

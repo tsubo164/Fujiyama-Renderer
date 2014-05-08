@@ -59,6 +59,10 @@ mkdir_p(scene_dir)
 mkdir_p(python_dir)
 
 # copying binaries, libraries and scenes
+for exe in sorted(glob.glob('./bin/*.exe')):
+	print 'copying', exe
+	shutil.copy(exe, bin_dir)
+
 for binfile in sorted(glob.glob('./bin/*.dll')):
 	print 'copying', binfile
 	shutil.copy(binfile, bin_dir)
