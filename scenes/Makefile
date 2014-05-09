@@ -10,6 +10,12 @@ LDFLAGS = -L$(topdir)lib -lscene
 
 RM = rm -f
 
+ifeq ($(shell uname),Darwin)
+ld_path_name = DYLD_LIBRARY_PATH
+else
+ld_path_name = LD_LIBRARY_PATH
+endif
+
 .PHONY: all help sample check clean cube.fb
 all: help
 
@@ -20,13 +26,13 @@ help:
 	@echo
 
 sample: cube.fb $(topdir)bin/fbview
-	env LD_LIBRARY_PATH=$(topdir)lib $(topdir)bin/fbview $<
+	env $(ld_path_name)=$(topdir)lib $(topdir)bin/fbview $<
 
 cube.fb: cube cube.mesh
-	env LD_LIBRARY_PATH=$(topdir)lib ./cube
+	env $(ld_path_name)=$(topdir)lib ./cube
 
 cube.mesh: cube.ply $(topdir)bin/ply2mesh
-	env LD_LIBRARY_PATH=$(topdir)lib $(topdir)bin/ply2mesh $< $@
+	env $(ld_path_name)=$(topdir)lib $(topdir)bin/ply2mesh $< $@
 
 cube: cube.c $(topdir)lib/libscene.so $(topdir)lib/PlasticShader.so
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
