@@ -102,8 +102,8 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   const struct GlassShader *glass = (struct GlassShader *) self;
   struct TraceContext refl_cxt;
   struct TraceContext refr_cxt;
-  struct Vector T = {0, 0, 0};
-  struct Vector R = {0, 0, 0};
+  struct Vector T;
+  struct Vector R;
   struct Color4 C_refl = {0, 0, 0, 0};
   struct Color4 C_refr = {0, 0, 0, 0};
   double Kt = 0, Kr = 0;

@@ -74,7 +74,7 @@ double SlPhong(const struct Vector *I, const struct Vector *N, const struct Vect
     double roughness)
 {
   double spec = 0;
-  struct Vector Lrefl = {0, 0, 0};
+  struct Vector Lrefl;
 
   SlReflect(L, N, &Lrefl);
 
@@ -98,7 +98,7 @@ void SlReflect(const struct Vector *I, const struct Vector *N, struct Vector *R)
 void SlRefract(const struct Vector *I, const struct Vector *N, double ior,
     struct Vector *T)
 {
-  struct Vector n = {0, 0, 0};
+  struct Vector n;
   double radicand = 0;
   double ncoeff = 0;
   double cos1 = 0;
@@ -139,7 +139,7 @@ int SlTrace(const struct TraceContext *cxt,
     const struct Vector *ray_orig, const struct Vector *ray_dir,
     double ray_tmin, double ray_tmax, struct Color4 *out_rgba, double *t_hit)
 {
-  struct Ray ray = {{0}};
+  struct Ray ray;
   struct Color4 surface_color = {0, 0, 0, 0};
   struct Color4 volume_color = {0, 0, 0, 0};
   int hit_surface = 0;
@@ -182,8 +182,8 @@ int SlSurfaceRayIntersect(const struct TraceContext *cxt,
     struct Vector *P_hit, struct Vector *N_hit, double *t_hit)
 {
   const struct Accelerator *acc = NULL;
-  struct Intersection isect = {{0}};
-  struct Ray ray = {{0}};
+  struct Intersection isect = {};
+  struct Ray ray;
   int hit = 0;
 
   setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
@@ -280,7 +280,7 @@ int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *samp
     const struct SurfaceInput *in, struct LightOutput *out)
 {
   double cosangle = 0.;
-  struct Vector nml_axis = {0, 0, 0};
+  struct Vector nml_axis;
   struct Color light_color = {0, 0, 0};
 
   out->Cl.r = 0;
@@ -404,8 +404,8 @@ void SlBumpMapping(const struct Texture *bump_map,
 {
   struct Color4 C_tex0 = {0, 0, 0, 1};
   struct Color4 C_tex1 = {0, 0, 0, 1};
-  struct Vector N_dPdu = {0, 0, 0};
-  struct Vector N_dPdv = {0, 0, 0};
+  struct Vector N_dPdu;
+  struct Vector N_dPdv;
   float Bu, Bv;
   float du, dv;
   float val0, val1;
@@ -506,7 +506,7 @@ static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
     struct Color4 *out_rgba, double *t_hit)
 {
   const struct Accelerator *acc = NULL;
-  struct Intersection isect = {{0}};
+  struct Intersection isect = {};
   int hit = 0;
 
   out_rgba->r = 0;
@@ -569,8 +569,8 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
   }
 
   {
-    struct Vector P = {0, 0, 0};
-    struct Vector ray_delta = {0, 0, 0};
+    struct Vector P;
+    struct Vector ray_delta;
     double t = 0, t_start = 0, t_delta = 0, t_limit = 0;
     const float opacity_threshold = cxt->opacity_threshold;
 

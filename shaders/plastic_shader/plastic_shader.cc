@@ -114,7 +114,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   struct Color diff = {0, 0, 0};
   struct Color spec = {0, 0, 0};
   struct Color4 diff_map = {1, 1, 1, 1};
-  struct Vector Nf = {0, 0, 0};
+  struct Vector Nf;
   int i = 0;
 
   struct LightSample *samples = NULL;
@@ -124,7 +124,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 
   /* bump map */
   if (plastic->bump_map != NULL) {
-    struct Vector N_bump = {0, 0, 0};
+    struct Vector N_bump;
     SlBumpMapping(plastic->bump_map,
         &in->dPdu, &in->dPdv,
         &in->uv, plastic->bump_amplitude,
@@ -168,7 +168,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   /* reflect */
   if (plastic->do_reflect) {
     struct Color4 C_refl = {0, 0, 0, 0};
-    struct Vector R = {0, 0, 0};
+    struct Vector R;
     double t_hit = FLT_MAX;
     double Kr = 0;
 

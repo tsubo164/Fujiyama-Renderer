@@ -110,7 +110,7 @@ static int build_grid_accel(DerivedAccelerator derived,
   int XNCELLS = 0;
   int YNCELLS = 0;
   int ZNCELLS = 0;
-  struct Box bounds = {{0}};
+  struct Box bounds;
   double cellsize[3] = {0};
   struct Cell **cells = NULL;
 

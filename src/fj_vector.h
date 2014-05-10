@@ -14,10 +14,15 @@ extern "C" {
 #endif
 
 struct Vector2 {
+  Vector2() : x(0), y(0) {}
+  Vector2(double xx, double yy) : x(xx), y(yy) {}
   double x, y;
 };
 
 struct Vector {
+  Vector() : x(0), y(0), z(0) {}
+  Vector(double xx, double yy, double zz) : x(xx), y(yy), z(zz) {}
+  ~Vector() {}
   double x, y, z;
 };
 

@@ -167,9 +167,9 @@ static int FillWithPointClouds(struct Volume *volume,
         double pyro_func = 0;
         double distance = 0;
 
-        struct Vector cell_center = {0, 0, 0};
-        struct Vector P_local_space = {0, 0, 0};
-        struct Vector P_noise_space = {0, 0, 0};
+        struct Vector cell_center;
+        struct Vector P_local_space;
+        struct Vector P_noise_space;
         float pyro_value = 0;
         float value = 0;
 

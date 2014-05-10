@@ -177,10 +177,10 @@ static int FillWithSpecksOnSurface(struct Volume *volume,
 
   for (i = 0; i < NSPECKS; i++) {
     struct WispsControlPoint cp_t;
-    struct Vector cube = {0, 0, 0};
-    struct Vector P_speck = {0, 0, 0};
-    struct Vector P_noise_space = {0, 0, 0};
-    struct Vector noise = {0, 0, 0};
+    struct Vector cube;
+    struct Vector P_speck;
+    struct Vector P_noise_space;
+    struct Vector noise;
     double s = 0;
     double t = 0;
 

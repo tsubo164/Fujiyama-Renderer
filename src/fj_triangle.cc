@@ -151,8 +151,8 @@ void TriComputeDerivatives(
     const struct TexCoord *tex0, const struct TexCoord *tex1, const struct TexCoord *tex2,
     struct Vector *dPdu, struct Vector *dPdv)
 {
-  struct Vector dP1 = {0, 0, 0};
-  struct Vector dP2 = {0, 0, 0};
+  struct Vector dP1;
+  struct Vector dP2;
   const float du1 = tex1->u - tex0->u;
   const float du2 = tex2->u - tex0->u;
   const float dv1 = tex1->v - tex0->v;
@@ -166,7 +166,7 @@ void TriComputeDerivatives(
   determinant = du1 * dv2 - dv1 * du2;
   if (determinant == 0) {
     /* TODO error handling */
-    const struct Vector zero = {0, 0, 0};
+    const struct Vector zero;
     *dPdu = zero;
     *dPdv = zero;
     return;
@@ -188,9 +188,9 @@ static void plane_equation_coeff(
     const struct Vector *v0, const struct Vector *v1, const struct Vector *v2,
     double *A, double *B, double *C, double *D)
 {
-  struct Vector e1 = {0, 0, 0};
-  struct Vector e2 = {0, 0, 0};
-  struct Vector cross = {0, 0, 0};
+  struct Vector e1;
+  struct Vector e2;
+  struct Vector cross;
 
   e1.x = v0->x - v1->x;
   e1.y = v0->y - v1->y;

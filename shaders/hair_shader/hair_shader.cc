@@ -110,7 +110,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 
   for (i = 0; i < nsamples; i++) {
     struct LightOutput Lout = {{0}};
-    struct Vector tangent = {0, 0, 0};
+    struct Vector tangent;
     float diff = 0;
     float spec = 0;
 

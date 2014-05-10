@@ -76,7 +76,7 @@ void FillWithSphere(struct Volume *volume,
   for (k = zmin; k <= zmax; k++) {
     for (j = ymin; j <= ymax; j++) {
       for (i = xmin; i <= xmax; i++) {
-        struct Vector P = {0, 0, 0};
+        struct Vector P;
         float value = 0;
 
         VolIndexToPoint(volume, i, j, k, &P);

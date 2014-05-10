@@ -169,7 +169,7 @@ void MshComputeNormals(struct Mesh *mesh)
   for (i = 0; i < nfaces; i++) {
     struct Vector *P0, *P1, *P2;
     struct Vector *N0, *N1, *N2;
-    struct Vector Ng = {0, 0, 0};
+    struct Vector Ng;
     const struct TriIndex *face = &indices[i];
 
     P0 = &P[face->i0];

@@ -135,7 +135,7 @@ static int read_vertx(
     double w)
 {
   struct ObjBuffer *buffer = (struct ObjBuffer *) interpreter;
-  struct Vector P = {0, 0, 0};
+  struct Vector P;
 
   P.x = x;
   P.y = y;
@@ -173,7 +173,7 @@ static int read_normal(
     double w)
 {
   struct ObjBuffer *buffer = (struct ObjBuffer *) interpreter;
-  struct Vector N = {0, 0, 0};
+  struct Vector N;
 
   N.x = x;
   N.y = y;
@@ -299,7 +299,7 @@ int ObjBufferComputeNormals(struct ObjBuffer *buffer)
   for (i = 0; i < nfaces; i++) {
     struct Vector *P0, *P1, *P2;
     struct Vector *N0, *N1, *N2;
-    struct Vector Ng = {0, 0, 0};
+    struct Vector Ng;
     const int i0 = indices[i].i0;
     const int i1 = indices[i].i1;
     const int i2 = indices[i].i2;

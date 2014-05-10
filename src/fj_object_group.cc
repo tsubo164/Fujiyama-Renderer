@@ -142,7 +142,7 @@ void ObjGroupComputeBounds(struct ObjectGroup *grp)
   N = grp->surface_list->objects->nelems;
   for (i = 0; i < N; i++) {
     const struct ObjectInstance *obj = get_object(grp->surface_list, i);
-    struct Box bounds = {{0}};
+    struct Box bounds;
 
     ObjGetBounds(obj, &bounds);
     BoxAddBox(&grp->surface_list->bounds, &bounds);
@@ -151,7 +151,7 @@ void ObjGroupComputeBounds(struct ObjectGroup *grp)
   N = grp->volume_list->objects->nelems;
   for (i = 0; i < N; i++) {
     const struct ObjectInstance *obj = get_object(grp->volume_list, i);
-    struct Box bounds = {{0}};
+    struct Box bounds;
 
     ObjGetBounds(obj, &bounds);
     BoxAddBox(&grp->volume_list->bounds, &bounds);
@@ -225,7 +225,7 @@ static void obj_list_free(struct ObjectList *list)
 
 static void obj_list_add(struct ObjectList *list, const struct ObjectInstance *obj)
 {
-  struct Box bounds = {{0}};
+  struct Box bounds;
 
   ObjGetBounds(obj, &bounds);
 

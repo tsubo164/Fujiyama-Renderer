@@ -229,7 +229,7 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const double *data = (const double *) in->data_buffer;
-        struct Vector P = {0, 0, 0};
+        struct Vector P;
         P.x = data[3*j + 0];
         P.y = data[3*j + 1];
         P.z = data[3*j + 2];
@@ -241,7 +241,7 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const double *data = (const double *) in->data_buffer;
-        struct Vector N = {0, 0, 0};
+        struct Vector N;
         N.x = data[3*j + 0];
         N.y = data[3*j + 1];
         N.z = data[3*j + 2];
@@ -276,7 +276,7 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const double *data = (const double *) in->data_buffer;
-        struct Vector velocity = {0, 0, 0};
+        struct Vector velocity;
         velocity.x = data[3*j + 0];
         velocity.y = data[3*j + 1];
         velocity.z = data[3*j + 2];

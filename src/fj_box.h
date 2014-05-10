@@ -13,6 +13,9 @@ extern "C" {
 #endif
 
 struct Box {
+  Box() : min(), max() {}
+  Box(double xmin, double ymin, double zmin, double xmax, double ymax, double zmax)
+    : min(xmin, ymin, zmin), max(xmax, ymax, zmax) {}
   struct Vector min;
   struct Vector max;
 };

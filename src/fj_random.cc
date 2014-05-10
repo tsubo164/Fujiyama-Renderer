@@ -121,7 +121,7 @@ void XorGaussianDiskRand(struct XorShift *xr, struct Vector2 *out_position)
 
 double XorGaussianRand(struct XorShift *xr)
 {
-  struct Vector2 P = {0, 0};
+  struct Vector2 P(0, 0);
   double dot = 0;
 
   for (;;) {

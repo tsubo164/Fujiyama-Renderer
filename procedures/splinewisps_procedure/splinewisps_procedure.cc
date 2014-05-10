@@ -179,10 +179,10 @@ static int FillWithSpecksAlongLine(struct Volume *volume,
 
   for (i = 0; i < NSPECKS; i++) {
     struct WispsControlPoint cp_t;
-    struct Vector2 disk = {0, 0};
-    struct Vector P_speck = {0, 0, 0};
-    struct Vector P_noise_space = {0, 0, 0};
-    struct Vector noise = {0, 0, 0};
+    struct Vector2 disk(0, 0);
+    struct Vector P_speck;
+    struct Vector P_noise_space;
+    struct Vector noise;
     double line_t = 0;
 
     /*

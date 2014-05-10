@@ -124,7 +124,7 @@ struct Vector *PtcAddAttributeVector(struct PointCloud *ptc, const char *name)
   if (strcmp(name, "velocity") == 0) {
     ptc->velocity = VecAlloc(ptc->point_count);
     for (i = 0; i < ptc->point_count; i++) {
-      struct Vector v = {0, 0, 0};
+      struct Vector v;
       ptc->velocity[i] = v;
     }
     return ptc->velocity;
@@ -165,8 +165,8 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
   const struct Vector *velocity = &ptc->velocity[prim_id];
   const double radius = ptc->radius[prim_id];
 
-  struct Vector center = {0, 0, 0};
-  struct Vector orig_local = {0, 0, 0};
+  struct Vector center;
+  struct Vector orig_local;
   double a = 0, b = 0, c = 0;
   double discriminant = 0, disc_sqrt = 0;
   double t_hit = 0, t0 = 0, t1 = 0;

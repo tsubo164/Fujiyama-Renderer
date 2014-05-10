@@ -109,7 +109,7 @@ int main(int argc, const char **argv)
   indices = FJ_MEM_ALLOC_ARRAY(struct TriIndex, nfaces);
 
   {
-    struct Box bounds = {{FLT_MAX, FLT_MAX, FLT_MAX}, {-FLT_MAX, -FLT_MAX, -FLT_MAX}};
+    struct Box bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
     for (i = 0; i < nverts; i++) {
       struct Vector pos;
       MshGetVertexPosition(mesh, i, &pos);
@@ -120,11 +120,11 @@ int main(int argc, const char **argv)
   }
 
   for (i = 0; i < nverts; i++) {
-    struct Vector Q = {0, 0, 0};
-    struct Vector noise_vec = {0, 0, 0};
-    struct Vector pos = {0, 0, 0};
-    struct Vector nml = {0, 0, 0};
-    struct Vector vel = {0, 0, 0};
+    struct Vector Q;
+    struct Vector noise_vec;
+    struct Vector pos;
+    struct Vector nml;
+    struct Vector vel;
     double vscale = 1;
     double freq = .2;
     double znml = 0;

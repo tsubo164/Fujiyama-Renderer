@@ -38,7 +38,7 @@ static double grad(int hash, double x, double y, double z);
 extern double PerlinNoise(const struct Vector *position,
     double lacunarity, double persistence, int octaves)
 {
-  struct Vector P = {0, 0, 0};
+  struct Vector P;
   double noise_value = 0;
   double amp = 1;
   int i;
@@ -63,7 +63,7 @@ void PerlinNoise3d(const struct Vector *position,
     double lacunarity, double persistence, int octaves,
     struct Vector *P_out)
 {
-  struct Vector P = {0, 0, 0};
+  struct Vector P;
 
   P.x = position->x;
   P.y = position->y;

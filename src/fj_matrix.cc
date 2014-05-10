@@ -231,8 +231,8 @@ void MatTransformVector(const struct Matrix *m, struct Vector *vector)
 
 void MatTransformBounds(const struct Matrix *m, struct Box *bounds)
 {
-  struct Box box = {{FLT_MAX, FLT_MAX, FLT_MAX}, {-FLT_MAX, -FLT_MAX, -FLT_MAX}};
-  struct Vector pt = {0, 0, 0};
+  struct Box box(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+  struct Vector pt;
 
 #define TRANSFORM_BOX_VERTEX(minmax0, minmax1, minmax2) do { \
   pt.x = bounds->minmax0.x; \

@@ -259,7 +259,7 @@ static int set_Volume_resolution(void *self, const struct PropertyValue *value)
 static int set_Volume_bounds_min(void *self, const struct PropertyValue *value)
 {
   struct Volume *volume = (struct Volume *) self;
-  struct Box bounds = {{0}};
+  struct Box bounds;
 
   VolGetBounds(volume, &bounds);
 
@@ -275,7 +275,7 @@ static int set_Volume_bounds_min(void *self, const struct PropertyValue *value)
 static int set_Volume_bounds_max(void *self, const struct PropertyValue *value)
 {
   struct Volume *volume = (struct Volume *) self;
-  struct Box bounds = {{0}};
+  struct Box bounds;
 
   VolGetBounds(volume, &bounds);
 

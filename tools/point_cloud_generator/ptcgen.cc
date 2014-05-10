@@ -73,10 +73,10 @@ int main(int argc, const char **argv)
     point_count_list = FJ_MEM_ALLOC_ARRAY(int, face_count);
 
     for (i = 0; i < face_count; i++) {
-      struct Vector P0 = {0, 0, 0};
-      struct Vector P1 = {0, 0, 0};
-      struct Vector P2 = {0, 0, 0};
-      struct Vector center = {0, 0, 0};
+      struct Vector P0;
+      struct Vector P1;
+      struct Vector P2;
+      struct Vector center;
       double noise_val = 0;
       double area = 0;
       int npt_on_face = 0;
@@ -113,12 +113,12 @@ int main(int argc, const char **argv)
     XorInit(&xr);
     point_id = 0;
     for (i = 0; i < face_count; i++) {
-      struct Vector P0 = {0, 0, 0};
-      struct Vector P1 = {0, 0, 0};
-      struct Vector P2 = {0, 0, 0};
-      struct Vector N0 = {0, 0, 0};
-      struct Vector N1 = {0, 0, 0};
-      struct Vector N2 = {0, 0, 0};
+      struct Vector P0;
+      struct Vector P1;
+      struct Vector P2;
+      struct Vector N0;
+      struct Vector N1;
+      struct Vector N2;
       const int npt_on_face = point_count_list[i];
       int j;
 
@@ -126,7 +126,7 @@ int main(int argc, const char **argv)
       MshGetFaceVertexNormal(mesh, i, &N0, &N1, &N2);
 
       for (j = 0; j < npt_on_face; j++) {
-        struct Vector normal = {0, 0, 0};
+        struct Vector normal;
         struct Vector *P_out = &P[point_id];
         double u = 0, v = 0, t = 0;
         double offset = 0;
@@ -148,13 +148,13 @@ int main(int argc, const char **argv)
         P_out->z += offset * normal.z;
 
         if (add_velocity) {
-          struct Vector vel = {0, .05 * 0, 0};
+          struct Vector vel(0, .05 * 0, 0);
           noise_position(P_out, &normal, &vel);
           velocity[point_id] = vel;
 
           radius[point_id] = .01 * .2 * 3;
         } else {
-          struct Vector vel = {0, 0, 0};
+          struct Vector vel;
           velocity[point_id] = vel;
 
           radius[point_id] = .01 * .2;
@@ -184,8 +184,8 @@ int main(int argc, const char **argv)
 
 static void noise_position(struct Vector *P, const struct Vector *N, struct Vector *velocity)
 {
-  struct Vector noise_vec = {0, 0, 0};
-  struct Vector P_offset = {0, 0, 0};
+  struct Vector noise_vec;
+  struct Vector P_offset;
   double noise_amp = 0;
 
   PerlinNoise3d(P, 2, .5, 8, &noise_vec);

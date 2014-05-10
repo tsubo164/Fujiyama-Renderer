@@ -8,7 +8,7 @@ See LICENSE and README
 #include <stddef.h>
 #include <float.h>
 
-const static struct Box null_bounds = {{0, 0, 0}, {0, 0, 0}};
+const static struct Box null_bounds;
 
 int get_null_primitive_count(const void *primset)
 {

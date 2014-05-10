@@ -142,8 +142,8 @@ void VolGetIndexRange(const struct Volume *volume,
     int *xmin, int *ymin, int *zmin,
     int *xmax, int *ymax, int *zmax)
 {
-  struct Vector P_min = {0, 0, 0};
-  struct Vector P_max = {0, 0, 0};
+  struct Vector P_min;
+  struct Vector P_max;
 
   P_min.x = center->x - radius;
   P_min.y = center->y - radius;
@@ -173,7 +173,7 @@ int VolGetSample(const struct Volume *volume, const struct Vector *point,
       struct VolumeSample *sample)
 {
   const int hit = BoxContainsPoint(&volume->bounds, point);
-  struct Vector P = {0, 0, 0};
+  struct Vector P;
 
   if (!hit) {
     return 0;
@@ -251,7 +251,7 @@ static void fill_voxel_buffer(struct VoxelBuffer *buffer, float value)
 
 static void compute_filter_size(struct Volume *volume)
 {
-  struct Vector voxelsize = {0, 0, 0};
+  struct Vector voxelsize;
 
   if (volume->buffer == NULL) {
     volume->filtersize = 0;

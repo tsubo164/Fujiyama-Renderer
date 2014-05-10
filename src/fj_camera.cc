@@ -105,8 +105,8 @@ void CamGetRay(const struct Camera *cam, const struct Vector2 *screen_uv,
     double time, struct Ray *ray)
 {
   struct Transform transform_interp;
-  struct Vector target = {0, 0, 0};
-  struct Vector eye = {0, 0, 0};
+  struct Vector target;
+  struct Vector eye;
 
   XfmLerpTransformSample(&cam->transform_samples, time, &transform_interp);
 

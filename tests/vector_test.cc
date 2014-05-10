@@ -10,9 +10,9 @@ See LICENSE and README
 int main()
 {
   {
-    const struct Vector a = {1, 0, 0};
-    const struct Vector b = {0, 1, 0};
-    struct Vector c = {0, 0, 0};
+    const struct Vector a(1, 0, 0);
+    const struct Vector b(0, 1, 0);
+    struct Vector c;
 
     VEC3_CROSS(&c, &a, &b);
 

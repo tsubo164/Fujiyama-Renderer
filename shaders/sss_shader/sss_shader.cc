@@ -231,7 +231,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   /* reflect */
   if (sss->do_reflect) {
     struct Color4 C_refl = {0, 0, 0};
-    struct Vector R = {0, 0, 0};
+    struct Vector R;
     double t_hit = FLT_MAX;
     double Kr = 0;
 
@@ -287,9 +287,9 @@ static void single_scattering(const struct SSSShader *sss,
     const struct LightSample *light_sample, struct Color *C_scatter)
 {
   const struct Vector *P = &in->P;
-  struct Vector Ln = {0, 0, 0};
-  struct Vector To = {0, 0, 0};
-  struct Vector Li = {0, 0, 0};
+  struct Vector Ln;
+  struct Vector To;
+  struct Vector Li;
 
   const float *sigma_s = sss->scattering_coeff;
   const float *sigma_t = sss->extinction_coeff;
@@ -325,13 +325,13 @@ static void single_scattering(const struct SSSShader *sss,
     const float sp_dist = -log(XorNextFloat01(mutable_xr));
 
     for (j = 0; j < 3; j++) {
-      struct Vector P_sample = {0, 0, 0};
-      struct Vector Pi = {0, 0, 0};
-      struct Vector Ni = {0, 0, 0};
+      struct Vector P_sample;
+      struct Vector Pi;
+      struct Vector Ni;
       double si = FLT_MAX;
       double Ln_dot_Ni = 0;
 
-      struct Vector Ti = {0, 0, 0};
+      struct Vector Ti;
       float Kri = 0;
       float Kti = 0;
 
@@ -413,12 +413,12 @@ static void diffusion_scattering(const struct SSSShader *sss,
 {
   const struct Vector *P = &in->P;
   const struct Vector *N = &in->N;
-  struct Vector Ln = {0, 0, 0};
+  struct Vector Ln;
 
-  struct Vector N_neg = {0, 0, 0};
-  struct Vector up = {0, 1, 0};
-  struct Vector base1 = {0, 0, 0};
-  struct Vector base2 = {0, 0, 0};
+  struct Vector N_neg;
+  struct Vector up(0, 1, 0);
+  struct Vector base1;
+  struct Vector base2;
   double local_dot_up = 0;
 
   const float *sigma_s_prime = sss->reduced_scattering_coeff;
@@ -466,12 +466,12 @@ static void diffusion_scattering(const struct SSSShader *sss,
       const struct TraceContext self_cxt = SlSelfHitContext(cxt, in->shaded_object);
       struct LightOutput Lout;
 
-      struct Vector P_sample = {0, 0, 0};
-      struct Vector2 disk = {0, 0};
+      struct Vector P_sample;
+      struct Vector2 disk(0, 0);
 
-      struct Vector P_Pi = {0, 0, 0};
-      struct Vector Pi = {0, 0, 0};
-      struct Vector Ni = {0, 0, 0};
+      struct Vector P_Pi;
+      struct Vector Pi;
+      struct Vector Ni;
       double Ln_dot_Ni = 0;
       double t_hit = FLT_MAX;
       int hit = 0;

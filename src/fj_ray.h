@@ -19,6 +19,7 @@ extern "C" {
   } while (0)
 
 struct Ray {
+  Ray() : orig(), dir(0, 0, 1), tmin(.001), tmax(1000) {}
   struct Vector orig;
   struct Vector dir;
 

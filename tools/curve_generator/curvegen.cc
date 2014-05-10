@@ -119,9 +119,9 @@ int main(int argc, const char **argv)
   ncurves_on_face = FJ_MEM_ALLOC_ARRAY(int, nfaces);
   total_ncurves = 0;
   for (i = 0; i < nfaces; i++) {
-    struct Vector P0 = {0, 0, 0};
-    struct Vector P1 = {0, 0, 0};
-    struct Vector P2 = {0, 0, 0};
+    struct Vector P0;
+    struct Vector P1;
+    struct Vector P2;
     double area = 0;
 
     MshGetFaceVertexPosition(mesh, i, &P0, &P1, &P2);
@@ -147,12 +147,12 @@ int main(int argc, const char **argv)
   curve_id = 0;
   for (i = 0; i < nfaces; i++) {
     int j;
-    struct Vector P0 = {0, 0, 0};
-    struct Vector P1 = {0, 0, 0};
-    struct Vector P2 = {0, 0, 0};
-    struct Vector N0 = {0, 0, 0};
-    struct Vector N1 = {0, 0, 0};
-    struct Vector N2 = {0, 0, 0};
+    struct Vector P0;
+    struct Vector P1;
+    struct Vector P2;
+    struct Vector N0;
+    struct Vector N1;
+    struct Vector N2;
 
     MshGetFaceVertexPosition(mesh, i, &P0, &P1, &P2);
     MshGetFaceVertexNormal(mesh, i, &N0, &N1, &N2);
@@ -208,7 +208,7 @@ int main(int argc, const char **argv)
       struct Vector *dst_P;
       struct Vector *src_P;
       struct Vector *src_N;
-      struct Vector noisevec = {0, 0, 0};
+      struct Vector noisevec;
       double noiseamp;
       struct Color *dst_Cd;
 
@@ -242,9 +242,9 @@ int main(int argc, const char **argv)
         double C_noise = 0;
         struct Color C_dark = {.8, .5, .3};
         struct Color C_light = {.9, .88, .85};
-        struct Vector freq = {3, 3, 3};
-        struct Vector offset = {0, 1, 0};
-        struct Vector src_Q = {0, 0, 0};
+        struct Vector freq(3, 3, 3);
+        struct Vector offset(0, 1, 0);
+        struct Vector src_Q;
 
         src_Q.x = src_P->x * freq.x + offset.x;
         src_Q.y = src_P->y * freq.y + offset.y;
@@ -375,7 +375,7 @@ static int gen_hair(int argc, const char **argv)
 
   {
     const int64_t N = MshGetVertexCount(mesh);
-    struct Box bounds = {{FLT_MAX, FLT_MAX, FLT_MAX}, {-FLT_MAX, -FLT_MAX, -FLT_MAX}};
+    struct Box bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
     int p;
     for (p = 0; p < N; p++) {
       struct Vector pt;
@@ -395,9 +395,9 @@ static int gen_hair(int argc, const char **argv)
   ncurves_on_face = FJ_MEM_ALLOC_ARRAY(int, nfaces);
   total_ncurves = 0;
   for (i = 0; i < nfaces; i++) {
-    struct Vector P0 = {0, 0, 0};
-    struct Vector P1 = {0, 0, 0};
-    struct Vector P2 = {0, 0, 0};
+    struct Vector P0;
+    struct Vector P1;
+    struct Vector P2;
     double area = 0;
 
     double ycenter, ynml;
@@ -440,12 +440,12 @@ static int gen_hair(int argc, const char **argv)
   XorInit(&xr);
   for (i = 0; i < nfaces; i++) {
     int j;
-    struct Vector P0 = {0, 0, 0};
-    struct Vector P1 = {0, 0, 0};
-    struct Vector P2 = {0, 0, 0};
-    struct Vector N0 = {0, 0, 0};
-    struct Vector N1 = {0, 0, 0};
-    struct Vector N2 = {0, 0, 0};
+    struct Vector P0;
+    struct Vector P1;
+    struct Vector P2;
+    struct Vector N0;
+    struct Vector N1;
+    struct Vector N2;
 
     MshGetFaceVertexPosition(mesh, i, &P0, &P1, &P2);
     MshGetFaceVertexNormal(mesh, i, &N0, &N1, &N2);
@@ -506,8 +506,8 @@ static int gen_hair(int argc, const char **argv)
             /* update the 'next' next_P if not the last control point */
             if (vtx != 3) {
               struct Vector curr_P = P[cp_id];
-              struct Vector noise_vec = {0, 0, 0};
-              struct Vector Q = {0, 0, 0};
+              struct Vector noise_vec;
+              struct Vector Q;
 
               const double amp = .002 * .1;
               const double freq = 100;
@@ -533,9 +533,9 @@ static int gen_hair(int argc, const char **argv)
             /* compute velocity */
             {
               struct Vector curr_P = P[cp_id];
-              struct Vector curr_v = {0, 0, 0};
-              struct Vector noise_vec = {0, 0, 0};
-              struct Vector Q = {0, 0, 0};
+              struct Vector curr_v;
+              struct Vector noise_vec;
+              struct Vector Q;
 
               const double amp = .01;
               const double freq = 1;

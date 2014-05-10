@@ -271,7 +271,7 @@ static void grid_light_get_samples(const struct Light *light,
 {
   struct Transform transform_interp;
   int nsamples = LgtGetSampleCount(light);
-  struct Vector N_sample = {0, 1, 0};
+  struct Vector N_sample(0, 1, 0);
   int i;
 
   /* TODO time sampling */
@@ -285,7 +285,7 @@ static void grid_light_get_samples(const struct Light *light,
     struct XorShift *mutable_xr = (struct XorShift *) &light->xr;
     const double x = (XorNextFloat01(mutable_xr) - .5);
     const double z = (XorNextFloat01(mutable_xr) - .5);
-    struct Vector P_sample = {0, 0, 0};
+    struct Vector P_sample;
     P_sample.x = x;
     P_sample.z = z;
 
@@ -301,7 +301,7 @@ static void grid_light_illuminate(const struct Light *light,
     const struct LightSample *sample,
     const struct Vector *Ps, struct Color *Cl)
 {
-  struct Vector Ln = {0, 0, 0};
+  struct Vector Ln;
   double dot = 0;
 
   Ln.x = Ps->x - sample->P.x;
@@ -345,8 +345,8 @@ static void sphere_light_get_samples(const struct Light *light,
   nsamples = MIN(nsamples, max_samples);
   for (i = 0; i < nsamples; i++) {
     struct XorShift *mutable_xr = (struct XorShift *) &light->xr;
-    struct Vector P_sample = {0, 0, 0};
-    struct Vector N_sample = {0, 0, 0};
+    struct Vector P_sample;
+    struct Vector N_sample;
 
     XorHollowSphereRand(mutable_xr, &P_sample);
     N_sample = P_sample;
@@ -365,7 +365,7 @@ static void sphere_light_illuminate(const struct Light *light,
     const struct LightSample *sample,
     const struct Vector *Ps, struct Color *Cl)
 {
-  struct Vector Ln = {0, 0, 0};
+  struct Vector Ln;
   double dot = 0;
 
   Ln.x = Ps->x - sample->P.x;
@@ -406,8 +406,8 @@ static void dome_light_get_samples(const struct Light *light,
   nsamples = MIN(nsamples, max_samples);
   for (i = 0; i < nsamples; i++) {
     const struct DomeSample *dome_sample = &light->dome_samples[i];
-    struct Vector P_sample = {0, 0, 0};
-    struct Vector N_sample = {0, 0, 0};
+    struct Vector P_sample;
+    struct Vector N_sample;
 
     P_sample.x = dome_sample->dir.x * FLT_MAX;
     P_sample.y = dome_sample->dir.y * FLT_MAX;

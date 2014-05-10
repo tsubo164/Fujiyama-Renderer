@@ -274,7 +274,7 @@ int ObjVolumeIntersect(const struct ObjectInstance *obj, double time,
 {
   struct Transform transform_interp;
   struct Ray ray_object_space;
-  struct Box volume_bounds = {{0}};
+  struct Box volume_bounds;
   double boxhit_tmin = 0;
   double boxhit_tmax = 0;
   int hit = 0;
@@ -313,7 +313,7 @@ int ObjGetVolumeSample(const struct ObjectInstance *obj, double time,
       const struct Vector *point, struct VolumeSample *sample)
 {
   struct Transform transform_interp;
-  struct Vector point_in_objspace = {0, 0, 0};
+  struct Vector point_in_objspace;
   int hit = 0;
 
   if (!ObjIsVolume(obj))
@@ -345,8 +345,8 @@ static void update_object_bounds(struct ObjectInstance *obj)
 
 static void merge_sampled_bounds(struct ObjectInstance *obj)
 {
-  struct Box merged_bounds = {{FLT_MAX, FLT_MAX, FLT_MAX}, {-FLT_MAX, -FLT_MAX, -FLT_MAX}};
-  struct Box original_bounds = {{FLT_MAX, FLT_MAX, FLT_MAX}, {-FLT_MAX, -FLT_MAX, -FLT_MAX}};
+  struct Box merged_bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+  struct Box original_bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
   double S[3] = {1, 1, 1};
   int i;
 
@@ -356,7 +356,7 @@ static void merge_sampled_bounds(struct ObjectInstance *obj)
   /* extend bounds when rotated to ensure object is always inside bounds */
   if (obj->transform_samples.rotate.sample_count > 1) {
     const double diagonal = BoxDiagonal(&original_bounds);
-    struct Vector centroid = {0, 0, 0};
+    struct Vector centroid;
 
     BoxCentroid(&original_bounds, &centroid);
     BOX3_SET(&original_bounds,
@@ -380,8 +380,7 @@ static void merge_sampled_bounds(struct ObjectInstance *obj)
 
   /* accumulate all bounds over sampling time */
   for (i = 0; i < obj->transform_samples.translate.sample_count; i++) {
-    struct Box sample_bounds =
-        {{FLT_MAX, FLT_MAX, FLT_MAX}, {-FLT_MAX, -FLT_MAX, -FLT_MAX}};
+    struct Box sample_bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
     const double *T = obj->transform_samples.translate.samples[i].vector;
     const double *R = obj->transform_samples.rotate.samples[i].vector;
     struct Transform transform;

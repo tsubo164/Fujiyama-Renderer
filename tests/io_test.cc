@@ -14,7 +14,7 @@ int main()
   const int format_version = 7;
   {
     struct OutputFile *out = IOOpenOutputFile("io_test_file.bin", "PTCD", format_version);
-    const struct Vector P[] = {
+    const struct Vector P[](
         {1, 2, 3},
         {2, 3, 1},
         {3, 1, 2}
@@ -38,7 +38,7 @@ int main()
   }
   {
     struct InputFile *in = IOOpenInputFile("io_test_file.bin", "PTCD");
-    struct Vector P[] = {
+    struct Vector P[](
         {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0}

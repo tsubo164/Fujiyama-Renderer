@@ -76,7 +76,7 @@ void TrbSetOctaves(struct Turbulence *turbulence, int octaves)
 
 double TrbEvaluate(const struct Turbulence *turbulence, const struct Vector *position)
 {
-  struct Vector P = {0, 0, 0};
+  struct Vector P;
   double noise_value = 0;
 
   P.x = position->x * turbulence->frequency.x + turbulence->offset.x;
@@ -94,7 +94,7 @@ double TrbEvaluate(const struct Turbulence *turbulence, const struct Vector *pos
 void TrbEvaluate3d(const struct Turbulence *turbulence, const struct Vector *position,
     struct Vector *out_noise)
 {
-  struct Vector P = {0, 0, 0};
+  struct Vector P;
 
   P.x = position->x * turbulence->frequency.x + turbulence->offset.x;
   P.y = position->y * turbulence->frequency.y + turbulence->offset.y;
