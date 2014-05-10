@@ -10,6 +10,10 @@
 
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
   int valid;            /* indicate which fields are valid */
   char programtype[16]; /* listed at beginning of file to identify it 
@@ -46,6 +50,10 @@ int RGBE_WritePixels_RLE(FILE *fp, float *data, int scanline_width,
        int num_scanlines);
 int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width,
       int num_scanlines);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _H_RGBE */
 
