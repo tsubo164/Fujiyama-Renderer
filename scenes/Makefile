@@ -3,7 +3,7 @@
 
 topdir := ../
 
-CC = gcc
+CC = g++
 OPT = -O3
 CFLAGS = -I$(topdir)src -Wall -ansi -pedantic-errors $(OPT)
 LDFLAGS = -L$(topdir)lib -lscene
@@ -34,7 +34,7 @@ cube.fb: cube cube.mesh
 cube.mesh: cube.ply $(topdir)bin/ply2mesh
 	env $(ld_path_name)=$(topdir)lib $(topdir)bin/ply2mesh $< $@
 
-cube: cube.c $(topdir)lib/libscene.so $(topdir)lib/PlasticShader.so
+cube: cube.cc $(topdir)lib/libscene.so $(topdir)lib/PlasticShader.so
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 clean:

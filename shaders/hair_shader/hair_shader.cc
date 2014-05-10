@@ -59,6 +59,7 @@ static const struct MetaInfo MyMetainfo[] = {
   {NULL, NULL}
 };
 
+extern "C" {
 int Initialize(struct PluginInfo *info)
 {
   return PlgSetupInfo(info,
@@ -71,6 +72,7 @@ int Initialize(struct PluginInfo *info)
       MyProperties,
       MyMetainfo);
 }
+} // extern "C"
 
 static void *MyNew(void)
 {

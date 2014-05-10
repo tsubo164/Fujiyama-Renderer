@@ -19,10 +19,10 @@ CFLAGS = /nologo $(opt) $(warn) $(macro) /fp:precise /MD /openmp /I..\../src /I$
 LDFLAGS = /nologo /LTCG /LIBPATH:$(out_dir) /LIBPATH:C:\local\lib /LIBPATH:$(LIBRARY_PATH)
 RM = del
 
-.c.obj:
+.cc.obj:
 	@$(CC) $(CFLAGS) /Fo$@ $<
 
-.cpp.obj:
+.ccpp.obj:
 	@$(CC) $(CFLAGS) /D "OPENEXR_DLL" /EHsc /Fo$@ $<
 
 libscene_dll = $(out_dir)\libscene.dll

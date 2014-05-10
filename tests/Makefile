@@ -3,7 +3,7 @@
 
 topdir := ../
 
-CC = gcc
+CC = g++
 OPT = -O3
 CFLAGS = -I$(topdir)src -Wall -ansi -pedantic-errors $(OPT)
 LDFLAGS = -L$(topdir)lib -lscene
@@ -17,11 +17,11 @@ files := array box iff io numeric vector
 objects := $(addsuffix _test.o, $(files))
 targets := $(addsuffix _test, $(files))
 
-unit_test.o: unit_test.c unit_test.h
+unit_test.o: unit_test.cc unit_test.h
 	@$(CC) $(CFLAGS) -c -o $@ $<
 	@echo '  compile' $<
 
-$(objects) : %.o : %.c unit_test.h
+$(objects) : %.o : %.cc unit_test.h
 	@$(CC) $(CFLAGS) -c -o $@ $<
 	@echo '  compile' $<
 
