@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_PROPERTY_H
 #define FJ_PROPERTY_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 enum PropertyType {
   PROP_NONE = 0,
@@ -112,8 +110,6 @@ extern int PropPushSample(struct PropertySampleList *list, const struct Property
 extern void PropLerpSamples(const struct PropertySampleList *list, double time,
     struct PropertySample *dst);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

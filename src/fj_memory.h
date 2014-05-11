@@ -8,10 +8,6 @@ See LICENSE and README
 
 #include <stdlib.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* force type to avoid missing sizeof mulptiplication */
 #define FJ_MEM_ALLOC_ARRAY(type,nelems) ((type*) malloc(sizeof(type) * (nelems)))
 
@@ -21,9 +17,5 @@ extern "C" {
 #define FJ_MEM_REALLOC_ARRAY(ptr,type,nelems) ((type*) realloc((ptr), sizeof(type) * (nelems)))
 
 #define FJ_MEM_FREE(ptr) (free((ptr)))
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
 
 #endif /* FJ_XXX_H */

@@ -15,6 +15,8 @@ See LICENSE and README
 #include <string.h>
 #include <errno.h>
 
+using namespace fj;
+
 static const char USAGE[] =
 "Usage: jpg2mip [options] inputfile(*.jpeg, *.jpg) outputfile(*.mip)\n"
 "Options:\n"

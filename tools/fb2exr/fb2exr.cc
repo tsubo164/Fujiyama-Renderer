@@ -17,6 +17,8 @@ See LICENSE and README
 #include <string>
 #include <cstring>
 
+using namespace fj;
+
 static const char USAGE[] =
 "Usage: fb2exr [options] inputfile(*.fb) outputfile(*.exr)\n"
 "Options:\n"
@@ -61,7 +63,7 @@ try {
   const Imath::Box2i dispwin = make_box2i(in->viewbox);
   const Imath::Box2i datawin = make_box2i(in->databox);
 
-  struct ::FrameBuffer *fb = FbNew();
+  fj::FrameBuffer *fb = FbNew();
   if (fb == NULL) {
     FbCloseInputFile(in);
     throw runtime_error("could not create FrameBuffer");

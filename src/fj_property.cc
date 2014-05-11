@@ -24,6 +24,8 @@ See LICENSE and README
   (dst)[3] = (1-(t)) * (a)[3] + (t) * (b)[3]; \
   } while(0)
 
+namespace fj {
+
 static int compare_property_sample(const void *ptr0, const void *ptr1);
 static void push_sample(struct PropertySampleList *list, const struct PropertySample *sample);
 static void sort_by_sample_time(struct PropertySampleList *list);
@@ -336,3 +338,5 @@ static void sort_by_sample_time(struct PropertySampleList *list)
       sizeof(struct PropertySample),
       compare_property_sample);
 }
+
+} // namespace xxx

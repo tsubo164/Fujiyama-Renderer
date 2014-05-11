@@ -18,6 +18,8 @@ See LICENSE and README
 #define MSH_MAGIC_SIZE 4
 #define MAX_ATTRNAME_SIZE 32
 
+namespace fj {
+
 static int error_no = MSH_ERR_NONE;
 static size_t write_attriname(struct MeshOutput *out, const char *name);
 static size_t write_attridata(struct MeshOutput *out, const char *name);
@@ -446,3 +448,5 @@ static size_t read_attridata(struct MeshInput *in)
 
   return nreads;
 }
+
+} // namespace xxx

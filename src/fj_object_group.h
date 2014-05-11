@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include "fj_transform.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct ObjectGroup;
 struct ObjectInstance;
@@ -28,9 +26,6 @@ extern const struct VolumeAccelerator *ObjGroupGetVolumeAccelerator(const struct
 
 extern void ObjGroupComputeBounds(struct ObjectGroup *grp);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

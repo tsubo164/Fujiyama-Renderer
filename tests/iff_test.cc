@@ -9,6 +9,8 @@ See LICENSE and README
 #include <string.h>
 #include <stdio.h>
 
+using namespace fj;
+
 int main()
 {
   const char filename[] = "iff_test_file.iff";

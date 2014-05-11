@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include "fj_callback.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Renderer;
 struct FrameBuffer;
@@ -59,8 +57,6 @@ extern void RdrSetTileReportCallback(struct Renderer *renderer, void *data,
     SampleDoneCallback sample_done,
     TileDoneCallback tile_done);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

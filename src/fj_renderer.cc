@@ -27,6 +27,8 @@ See LICENSE and README
 #include <stdio.h>
 #include <float.h>
 
+namespace fj {
+
 struct FrameProgress {
   struct Timer timer;
   struct Progress progress;
@@ -913,3 +915,5 @@ cleanup_and_exit:
 
   return render_state;
 }
+
+} // namespace xxx

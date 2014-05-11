@@ -9,6 +9,8 @@ See LICENSE and README
 #include <assert.h>
 #include <math.h>
 
+namespace fj {
+
 struct Filter {
   double xwidth, ywidth;
   double (*evaluate)(const struct Filter *filter, double x, double y);
@@ -76,3 +78,4 @@ static double eval_box(const struct Filter *filter, double x, double y)
   return 1;
 }
 
+} // namespace xxx

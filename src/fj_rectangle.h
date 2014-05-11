@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_RECTANGLE_H
 #define FJ_RECTANGLE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Rectangle {
   int xmin, ymin, xmax, ymax;
@@ -16,8 +14,6 @@ struct Rectangle {
 
 extern void RctPrint(const struct Rectangle *rect);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

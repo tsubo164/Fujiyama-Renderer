@@ -17,6 +17,8 @@ See LICENSE and README
 #include <string.h>
 #include <float.h>
 
+namespace fj {
+
 #if 0
 #include <stdio.h>
 /* TODO TEST VELOCITY */
@@ -493,3 +495,5 @@ static int triangle_count(const void *prim_set)
   const struct Mesh *mesh = (const struct Mesh *) prim_set;
   return mesh->nfaces;
 }
+
+} // namespace xxx

@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_ACCERALATOR_H
 #define FJ_ACCERALATOR_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 enum AcceleratorType {
   ACC_GRID = 0,
@@ -52,8 +50,6 @@ extern void AccSetDerivedFunctions(struct Accelerator *acc,
     IntersectDerivedFunction intersect_derived_function,
     GetDerivedNameFunction   get_derived_name_function);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

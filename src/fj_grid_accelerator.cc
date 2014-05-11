@@ -14,6 +14,8 @@ See LICENSE and README
 
 #include <float.h>
 
+namespace fj {
+
 static const char ACCELERATOR_NAME[] = "Uniform-Grid";
 enum { GRID_MAXCELLS = 512 };
 
@@ -433,3 +435,4 @@ static void swap_isect_ptr(struct Intersection **isect0, struct Intersection **i
   *isect1 = isect_swp;
 }
 
+} // namespace xxx

@@ -14,6 +14,8 @@ See LICENSE and README
 #include <string.h>
 #include <assert.h>
 
+namespace fj {
+
 static const char SIGNATURE[8] = {(char)128, 'F', 'J', 'G', 'E', 'O', '.', '.'};
 
 #define VALUE_TYPE_LIST(TYPE) \
@@ -732,3 +734,5 @@ int GeoReadFile(struct Geometry *geo, const char *filename)
   IffClose(iff);
   return 0;
 }
+
+} // namespace xxx

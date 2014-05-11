@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include "fj_compatibility.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Vector2;
 struct Vector;
@@ -34,9 +32,6 @@ extern void XorGaussianDiskRand(struct XorShift *xr, struct Vector2 *out_positio
 
 extern double XorGaussianRand(struct XorShift *xr);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

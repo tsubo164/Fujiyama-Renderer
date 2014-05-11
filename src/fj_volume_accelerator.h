@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_VOLUMEACCERALATOR_H
 #define FJ_VOLUMEACCERALATOR_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct VolumeAccelerator;
 struct IntervalList;
@@ -38,9 +36,6 @@ extern int VolumeAccBuild(struct VolumeAccelerator *acc);
 extern int VolumeAccIntersect(const struct VolumeAccelerator *acc, double time,
     const struct Ray *ray, struct IntervalList *intervals);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

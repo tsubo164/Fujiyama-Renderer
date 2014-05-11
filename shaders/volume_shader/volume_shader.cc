@@ -13,6 +13,8 @@ See LICENSE and README
 #include <stdio.h>
 #include <float.h>
 
+using namespace fj;
+
 struct VolumeShader {
   struct Color diffuse;
 };

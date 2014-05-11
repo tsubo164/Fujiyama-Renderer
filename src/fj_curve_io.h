@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include <stdio.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Curve;
 struct TexCoord;
@@ -78,8 +76,6 @@ extern void CrvWriteFile(struct CurveOutput *out);
 /* high level interface for loading curve file */
 extern int CrvLoadFile(struct Curve *curve, const char *filename);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

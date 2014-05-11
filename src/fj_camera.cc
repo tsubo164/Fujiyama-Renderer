@@ -12,6 +12,8 @@ See LICENSE and README
 #include <string.h>
 #include <assert.h>
 
+namespace fj {
+
 struct Camera {
   struct TransformSampleList transform_samples;
 
@@ -139,3 +141,4 @@ static void compute_ray_target(const struct Camera *cam,
   target->z = -1;
 }
 
+} // namespace xxx

@@ -7,6 +7,8 @@ See LICENSE and README
 #include "fj_vector.h"
 #include <stdio.h>
 
+using namespace fj;
+
 int main()
 {
   {

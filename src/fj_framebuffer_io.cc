@@ -18,6 +18,8 @@ See LICENSE and README
 #define FB_FILE_MAGIC "FBUF"
 #define FB_MAGIC_SIZE 4
 
+namespace fj {
+
 static void set_error(int err);
 
 static int error_no = ERR_FB_NOERR;
@@ -237,3 +239,5 @@ static void set_error(int err)
 {
   error_no = err;
 }
+
+} // namespace xxx

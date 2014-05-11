@@ -5,6 +5,8 @@ See LICENSE and README
 
 #include "fj_file_io.h"
 
+namespace fj {
+
 #define DEFINE_FILE_READ_WRITE(SUFFIX,TYPE) \
 int FjFile_Read##SUFFIX(FILE *file, TYPE *dst, size_t count) \
 { \
@@ -28,3 +30,5 @@ DEFINE_FILE_READ_WRITE(Int32,  int32_t)
 DEFINE_FILE_READ_WRITE(Int64,  int64_t)
 DEFINE_FILE_READ_WRITE(Float,  float)
 DEFINE_FILE_READ_WRITE(Double, double)
+
+} // namespace xxx

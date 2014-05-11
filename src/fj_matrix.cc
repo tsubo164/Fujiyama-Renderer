@@ -24,6 +24,8 @@ do { \
   dst->e[12]=e30; dst->e[13]=e31; dst->e[14]=e32; dst->e[15]=e33; \
 } while(0)
 
+namespace fj {
+
 void MatIdentity(struct Matrix *dst)
 {
   MAT_SET(dst,
@@ -261,3 +263,5 @@ void MatPrint(const struct Matrix *m)
     printf("%g, %g, %g, %g\n", m->e[4*i+0], m->e[4*i+1], m->e[4*i+2], m->e[4*i+3]);
   }
 }
+
+} // namespace xxx

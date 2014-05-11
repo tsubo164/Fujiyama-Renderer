@@ -23,6 +23,8 @@ See LICENSE and README
 #include <string.h>
 #include <assert.h>
 
+namespace fj {
+
 struct FrameBufferViewer {
   struct FrameBuffer *fb;
   char filename[1024];
@@ -436,3 +438,5 @@ void GlDrawTileGuide(int width, int height, int tilesize)
   }
   glEnd();
 }
+
+} // namespace xxx

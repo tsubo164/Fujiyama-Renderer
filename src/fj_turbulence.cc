@@ -11,6 +11,8 @@ See LICENSE and README
 #include <stdio.h>
 #include <assert.h>
 
+namespace fj {
+
 struct Turbulence {
   struct Vector amplitude;
   struct Vector frequency;
@@ -111,3 +113,4 @@ void TrbEvaluate3d(const struct Turbulence *turbulence, const struct Vector *pos
   out_noise->z *= turbulence->amplitude.z;
 }
 
+} // namespace xxx

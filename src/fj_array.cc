@@ -8,6 +8,8 @@ See LICENSE and README
 #include <string.h>
 #include <assert.h>
 
+namespace fj {
+
 struct Array *ArrNew(size_t size_of_element)
 {
   struct Array *a = NULL;
@@ -89,3 +91,5 @@ size_t ArrGetElementCount(const struct Array *a)
 {
   return a->nelems;
 }
+
+} // namespace xxx

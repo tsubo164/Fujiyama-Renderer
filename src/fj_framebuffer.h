@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_FRAMEBUFFER_H
 #define FJ_FRAMEBUFFER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct FrameBuffer;
 struct Color4;
@@ -48,8 +46,6 @@ extern void FbGetColor(const struct FrameBuffer *fb, int x, int y, struct Color4
  */
 extern void FbSetColor(struct FrameBuffer *fb, int x, int y, const struct Color4 *rgba);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace fj
 
 #endif /* FJ_XXX_H */

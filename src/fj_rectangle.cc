@@ -6,6 +6,8 @@ See LICENSE and README
 #include "fj_rectangle.h"
 #include <stdio.h>
 
+namespace fj {
+
 void RctPrint(const struct Rectangle *rect)
 {
   printf("(%d, %d) (%d, %d)\n",
@@ -14,3 +16,5 @@ void RctPrint(const struct Rectangle *rect)
       rect->xmax,
       rect->ymax);
 }
+
+} // namespace xxx

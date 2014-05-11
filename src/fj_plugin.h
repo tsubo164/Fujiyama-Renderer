@@ -8,9 +8,7 @@ See LICENSE and README
 
 #define PLUGIN_API_VERSION 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Plugin;
 struct PluginInfo;
@@ -72,9 +70,6 @@ extern int PlgSetupInfo(struct PluginInfo *info,
 
 extern int PlgGetErrorNo(void);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

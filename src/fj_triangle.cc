@@ -18,6 +18,8 @@ See LICENSE and README
   (dst)->z = (a)->z - (b)->z; \
   } while(0)
 
+namespace fj {
+
 double TriComputeArea(
     const struct Vector *vert0, const struct Vector *vert1, const struct Vector *vert2)
 {
@@ -272,3 +274,5 @@ void TriComputeDerivatives(
   dPdv->z = -C2 / A2;
 }
 #endif
+
+} // namespace xxx

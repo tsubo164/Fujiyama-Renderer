@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_MESH_H
 #define FJ_MESH_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 typedef int Index;
 
@@ -59,8 +57,6 @@ extern void MshComputeNormals(struct Mesh *mesh);
 
 extern void MshGetPrimitiveSet(const struct Mesh *mesh, struct PrimitiveSet *primset);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

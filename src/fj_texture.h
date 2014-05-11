@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_TEXTURE_H
 #define FJ_TEXTURE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Texture;
 struct Color4;
@@ -28,8 +26,6 @@ extern int TexLoadFile(struct Texture *tex, const char *filename);
 extern int TexGetWidth(const struct Texture *tex);
 extern int TexGetHeight(const struct Texture *tex);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

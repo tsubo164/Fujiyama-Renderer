@@ -8,6 +8,8 @@ See LICENSE and README
 #include <stdio.h>
 #include <math.h>
 
+namespace fj {
+
 int BoxContainsPoint(const struct Box *box, const struct Vector *point)
 {
   if ((point->x < box->min.x) || (point->x > box->max.x)) return 0;
@@ -117,3 +119,4 @@ void BoxPrint(const struct Box *box)
       box->max.x, box->max.y, box->max.z);
 }
 
+} // namespace xxx

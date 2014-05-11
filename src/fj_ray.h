@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include "fj_vector.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 #define POINT_ON_RAY(dst,orig,dir,t) do { \
   (dst)->x = (orig)->x + (t) * (dir)->x; \
@@ -27,8 +25,6 @@ struct Ray {
   double tmax;
 };
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

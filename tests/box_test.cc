@@ -9,10 +9,12 @@ See LICENSE and README
 #include <stdio.h>
 #include <float.h>
 
+using namespace fj;
+
 int main()
 {
   {
-    struct Box box = {{-1, -1, -1}, {1, 1, 1}};
+    struct Box box(-1, -1, -1, 1, 1, 1);
     struct Vector orig;
     struct Vector dir(0, 0, 1);
     double ray_tmin = 0;
@@ -28,7 +30,7 @@ int main()
     TEST(TestDoubleEq(hit_tmax, 1));
   }
   {
-    struct Box box = {{-1, -1, -1}, {1, 1, 1}};
+    struct Box box(-1, -1, -1, 1, 1, 1);
     struct Vector orig(0, 0, -2);
     struct Vector dir(0, 0, 1);
     double ray_tmin = 0;
@@ -44,7 +46,7 @@ int main()
     TEST(TestDoubleEq(hit_tmax, 3));
   }
   {
-    struct Box box = {{-1, -1, -1}, {1, 1, 1}};
+    struct Box box(-1, -1, -1, 1, 1, 1);
     struct Vector orig(0, 0, -2);
     struct Vector dir(0, 0, 1);
     double ray_tmin = 0;
@@ -60,7 +62,7 @@ int main()
     TEST(TestDoubleEq(hit_tmax, 3));
   }
   {
-    struct Box box = {{-1, -1, -1}, {1, 1, 1}};
+    struct Box box(-1, -1, -1, 1, 1, 1);
     struct Vector orig(0, 0, 2);
     struct Vector dir(0, 0, 1);
     double ray_tmin = 0;
@@ -76,7 +78,7 @@ int main()
     TEST(TestDoubleEq(hit_tmax, FLT_MAX));
   }
   {
-    struct Box box = {{-1, -1, -1}, {1, 1, 1}};
+    struct Box box(-1, -1, -1, 1, 1, 1);
     struct Vector orig(0, 0, -2);
     struct Vector dir(0, 0, 1);
     double ray_tmin = 0;

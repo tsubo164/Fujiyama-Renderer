@@ -6,6 +6,8 @@ See LICENSE and README
 #include "fj_numeric.h"
 #include <math.h>
 
+namespace fj {
+
 double SmoothStep(double x, double a, double b)
 {
   const double t = (x-a) / (b-a);
@@ -42,3 +44,4 @@ double Bilerp(double v00, double v10, double v01, double v11, double s, double t
   return LERP(a, b, s);
 }
 
+} // namespace xxx

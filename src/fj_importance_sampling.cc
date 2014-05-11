@@ -13,6 +13,8 @@ See LICENSE and README
 #include <stdio.h>
 #include <float.h>
 
+namespace fj {
+
 struct SamplePoint {
   int x, y;
   int label;
@@ -614,3 +616,4 @@ static int compare_sample_point(const void *ptr0, const void *ptr1)
     return 0;
 }
 
+} // namespace xxx

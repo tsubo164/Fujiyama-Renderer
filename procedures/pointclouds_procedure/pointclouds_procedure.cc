@@ -15,6 +15,8 @@ See LICENSE and README
 #include <string.h>
 #include <float.h>
 
+using namespace fj;
+
 struct CloudVolumeProcedure {
   struct Volume *volume;
   struct Turbulence *turbulence;
@@ -213,4 +215,3 @@ static int FillWithPointClouds(struct Volume *volume,
 
   return 0;
 }
-

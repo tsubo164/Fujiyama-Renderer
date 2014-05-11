@@ -11,9 +11,7 @@ See LICENSE and README
 
 #define PROCEDURE_PLUGIN_TYPE "Procedure"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Procedure;
 
@@ -38,9 +36,6 @@ extern const struct Property *PrcGetPropertyList(const struct Procedure *procedu
 extern int PrcSetProperty(struct Procedure *procedure,
     const char *prop_name, const struct PropertyValue *src_data);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

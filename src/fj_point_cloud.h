@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_POINTCLOUD_H
 #define FJ_POINTCLOUD_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct PointCloud;
 struct PrimitiveSet;
@@ -28,8 +26,6 @@ extern void PtcComputeBounds(struct PointCloud *ptc);
 
 extern void PtcGetPrimitiveSet(const struct PointCloud *ptc, struct PrimitiveSet *primset);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

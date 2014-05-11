@@ -14,6 +14,8 @@ See LICENSE and README
   (dst)->z = Bilerp((v00)->z, (v10)->z, (v01)->z, (v11)->z, (s), (t)); \
   } while(0)
 
+namespace fj {
+
 void LerpWispConstrolPoint(struct WispsControlPoint *cp,
     const struct WispsControlPoint *cp0, const struct WispsControlPoint *cp1,
     double t)
@@ -94,3 +96,4 @@ void FillWithSphere(struct Volume *volume,
   }
 }
 
+} // namespace xxx

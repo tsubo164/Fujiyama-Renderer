@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_FILTER_H
 #define FJ_FILTER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Filter;
 
@@ -22,9 +20,6 @@ extern void FltFree(struct Filter *filter);
 
 extern double FltEvaluate(const struct Filter *filter, double x, double y);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

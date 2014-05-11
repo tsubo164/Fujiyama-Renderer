@@ -45,6 +45,8 @@ struct Type *ScnGet##Type(const struct Scene *scene, int index) \
   return ScnGet##Type##List((scene))[(index)]; \
 }
 
+namespace fj {
+
 struct Scene {
   struct Array *ObjectInstanceList;
   struct Array *AcceleratorList;
@@ -253,3 +255,5 @@ static void *push_entry(struct Array *array, void *entry)
   ArrPushPointer(array, entry);
   return entry;
 }
+
+} // namespace xxx

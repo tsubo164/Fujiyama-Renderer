@@ -15,6 +15,8 @@ See LICENSE and README
 
 #define INDEX(fb,x,y,z) ((y)*(fb)->width*(fb)->nchannels+(x)*(fb)->nchannels+(z))
 
+namespace fj {
+
 struct FrameBuffer {
   float *buf;
   int width;
@@ -194,3 +196,5 @@ void FbSetColor(struct FrameBuffer *fb, int x, int y, const struct Color4 *rgba)
     pixel[3] = rgba->a;
   }
 }
+
+} // namespace xxx

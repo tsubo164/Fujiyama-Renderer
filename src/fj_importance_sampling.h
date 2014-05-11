@@ -10,9 +10,7 @@ See LICENSE and README
 #include "fj_vector.h"
 #include "fj_color.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Texture;
 
@@ -34,9 +32,6 @@ extern int StructuredImportanceSampling(struct Texture *texture, int seed,
     int sample_xres, int sample_yres,
     struct DomeSample *dome_samples, int sample_count);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

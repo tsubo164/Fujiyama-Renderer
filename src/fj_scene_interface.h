@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include "fj_callback.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 typedef long int ID;
 typedef int Status;
@@ -120,8 +118,6 @@ extern Status SiSetTileReportCallback(ID id, void *data,
     SampleDoneCallback sample_done,
     TileDoneCallback tile_done);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

@@ -10,9 +10,7 @@ See LICENSE and README
 #include "fj_vector.h"
 #include "fj_color.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct ObjectInstance;
 
@@ -31,9 +29,6 @@ struct Intersection {
   double t_hit;
 };
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

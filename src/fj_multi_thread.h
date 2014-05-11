@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_MULTI_THREAD_H
 #define FJ_MULTI_THREAD_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct ThreadContext {
   int iteration_id;
@@ -36,8 +34,6 @@ extern ThreadStatus MtRunThreadLoop(void *data, ThreadFunction run_thread, int t
     int start, int end);
 extern void MtCriticalSection(void *data, CriticalFunction critical);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

@@ -9,9 +9,7 @@ See LICENSE and README
 /* to make transform_order visible for fj_object_instance.h's users */
 #include "fj_transform.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Intersection;
 struct VolumeSample;
@@ -78,9 +76,6 @@ extern int ObjVolumeIntersect(const struct ObjectInstance *obj, double time,
 extern int ObjGetVolumeSample(const struct ObjectInstance *obj, double time,
       const struct Vector *point, struct VolumeSample *sample);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

@@ -12,6 +12,8 @@ See LICENSE and README
 #include <float.h>
 #include <stdio.h>
 
+namespace fj {
+
 struct Resolution {
   int x, y, z;
 };
@@ -341,3 +343,5 @@ static float nearest_buffer_value(const struct VoxelBuffer *buffer, const struct
 
   return get_buffer_value(buffer, x, y, z);
 }
+
+} // namespace xxx

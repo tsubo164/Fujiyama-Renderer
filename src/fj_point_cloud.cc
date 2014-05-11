@@ -15,6 +15,8 @@ See LICENSE and README
 #include <string.h>
 #include <float.h>
 
+namespace fj {
+
 static int point_ray_intersect(const void *prim_set, int prim_id, double time,
     const struct Ray *ray, struct Intersection *isect);
 static void point_bounds(const void *prim_set, int prim_id, struct Box *bounds);
@@ -260,3 +262,5 @@ static void update_bounds(struct PointCloud *ptc)
     BoxAddBox(&ptc->bounds, &ptbox);
   }
 }
+
+} // namespace xxx

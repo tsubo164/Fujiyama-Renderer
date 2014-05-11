@@ -25,6 +25,8 @@ See LICENSE and README
   (dst)->z = (a)->z - (b)->z; \
   } while(0)
 
+namespace fj {
+
 struct ControlPoint {
   struct Vector P;
 };
@@ -609,3 +611,5 @@ static void get_bezier3(const struct Curve *curve, int prim_id, struct Bezier3 *
   bezier->velocity[2] = curve->velocity[i2];
   bezier->velocity[3] = curve->velocity[i3];
 }
+
+} // namespace xxx

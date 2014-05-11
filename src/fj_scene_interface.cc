@@ -22,6 +22,8 @@ See LICENSE and README
 
 #define GET_LAST_ADDED_ID(Type) (ScnGet##Type##Count(get_scene()) - 1)
 
+namespace fj {
+
 enum { TYPE_ID_OFFSET = 10000000 };
 
 enum EntryType {
@@ -1179,3 +1181,5 @@ static int set_property(const struct Entry *entry,
 
   return find_and_set_property(dst_entry, src_props, name, value);
 }
+
+} // namespace xxx

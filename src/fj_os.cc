@@ -6,6 +6,8 @@ See LICENSE and README
 #include "fj_os.h"
 #include "fj_compatibility.h"
 
+namespace fj {
+
 #if defined(FJ_WINDOWS)
   #include "internal/fj_os_win.cc"
 #elif defined(FJ_LINUX)
@@ -14,3 +16,5 @@ See LICENSE and README
   #include "internal/fj_os_mac.cc"
 #else
 #endif
+
+} // namespace xxx

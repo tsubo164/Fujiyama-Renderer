@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include "fj_compatibility.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 typedef int64_t Iteration;
 
@@ -29,8 +27,6 @@ extern void PrgStart(struct Progress *progress, Iteration total_iterations);
 extern ProgressStatus PrgIncrement(struct Progress *progress);
 extern void PrgDone(struct Progress *progress);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

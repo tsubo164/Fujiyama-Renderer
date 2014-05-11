@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include <stdio.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct TexCoord;
 struct Vector;
@@ -73,8 +71,6 @@ extern int MshLoadFile(struct Mesh *mesh, const char *filename);
 /* error no interfaces */
 extern int MshGetErrorNo(void);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

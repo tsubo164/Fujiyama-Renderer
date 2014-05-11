@@ -10,9 +10,7 @@ See LICENSE and README
 #include "fj_vector.h"
 #include "fj_color.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 enum LightType {
   LGT_POINT = 0,
@@ -60,9 +58,6 @@ extern void LgtIlluminate(const struct LightSample *sample,
 
 extern int LgtPreprocess(struct Light *light);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace fj
 
 #endif /* FJ_XXX_H */
-

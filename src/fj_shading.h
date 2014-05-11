@@ -10,9 +10,7 @@ See LICENSE and README
 #include "fj_vector.h"
 #include "fj_color.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct ObjectInstance;
 struct ObjectGroup;
@@ -118,8 +116,6 @@ extern void SlBumpMapping(const struct Texture *bump_map,
     const struct TexCoord *texcoord, double amplitude,
     const struct Vector *N, struct Vector *N_bump);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

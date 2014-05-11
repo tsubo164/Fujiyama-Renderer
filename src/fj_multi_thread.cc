@@ -8,6 +8,8 @@ See LICENSE and README
 #include <assert.h>
 #include <omp.h>
 
+namespace fj {
+
 int MtGetMaxThreadCount(void)
 {
   return omp_get_max_threads();
@@ -65,3 +67,5 @@ void MtCriticalSection(void *data, CriticalFunction critical)
 #pragma omp critical
   critical(data);
 }
+
+} // namespace xxx

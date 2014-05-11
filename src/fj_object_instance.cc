@@ -22,6 +22,8 @@ See LICENSE and README
 #include <stdio.h>
 #include <float.h>
 
+namespace fj {
+
 struct ObjectInstance {
   /* geometric properties */
   const struct Accelerator *acc;
@@ -399,3 +401,4 @@ static void merge_sampled_bounds(struct ObjectInstance *obj)
   obj->bounds = merged_bounds;
 }
 
+} // namespace xxx

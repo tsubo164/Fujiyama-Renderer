@@ -17,6 +17,8 @@ See LICENSE and README
 #include <assert.h>
 #include <float.h>
 
+using namespace fj;
+
 static const char USAGE[] =
 "Add velocity attribute to mesh. The values are based on 3d noise.\n"
 "Usage: velgen [options] inputfile(*.mesh) outputfile(*.mesh)\n"

@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_TRIANGLE_H
 #define FJ_TRIANGLE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 enum {
   DO_NOT_CULL_BACKFACES = 0,
@@ -42,8 +40,6 @@ extern void TriComputeDerivatives(
     const struct TexCoord *tex0, const struct TexCoord *tex1, const struct TexCoord *tex2,
     struct Vector *dPdu, struct Vector *dPdv);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

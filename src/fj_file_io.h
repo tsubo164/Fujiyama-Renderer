@@ -9,9 +9,7 @@ See LICENSE and README
 #include "fj_compatibility.h"
 #include <stdio.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 int FjFile_ReadInt8    (FILE *file, int8_t  *dst, size_t count);
 int FjFile_ReadInt32   (FILE *file, int32_t *dst, size_t count);
@@ -25,8 +23,6 @@ int FjFile_WriteInt64  (FILE *file, const int64_t *src, size_t count);
 int FjFile_WriteFloat  (FILE *file, const float   *src, size_t count);
 int FjFile_WriteDouble (FILE *file, const double  *src, size_t count);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

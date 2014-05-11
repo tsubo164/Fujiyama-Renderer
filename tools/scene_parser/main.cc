@@ -62,4 +62,3 @@ cleanup_and_exit:
 
   return status;
 }
-

@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include <time.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Timer {
   time_t start_time;
@@ -25,8 +23,6 @@ struct Elapse {
 extern void TimerStart(struct Timer *timer);
 extern struct Elapse TimerGetElapse(const struct Timer *timer);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

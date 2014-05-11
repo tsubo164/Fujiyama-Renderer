@@ -7,6 +7,8 @@ See LICENSE and README
 #include "fj_vector.h"
 #include <limits.h>
 
+namespace fj {
+
 void XorInit(struct XorShift *xr)
 {
   xr->state[0] = 123456789;
@@ -138,3 +140,4 @@ double XorGaussianRand(struct XorShift *xr)
     return P.x * sqrt(-2 * log(dot) / dot);
 }
 
+} // namespace fj

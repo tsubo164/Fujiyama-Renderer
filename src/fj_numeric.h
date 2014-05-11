@@ -1,9 +1,12 @@
+/*
+Copyright (c) 2011-2014 Hiroshi Tsubokawa
+See LICENSE and README
+*/
+
 #ifndef FJ_NUMERIC_H
 #define FJ_NUMERIC_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 /* from math.h */
 #define N_E 2.7182818284590452354 /* e */
@@ -37,9 +40,6 @@ extern double Gamma(double x, double g);
 extern double Fit(double x, double src0, double src1, double dst0, double dst1);
 extern double Bilerp(double v00, double v10, double v01, double v11, double s, double t);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

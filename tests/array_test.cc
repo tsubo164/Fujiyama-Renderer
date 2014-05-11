@@ -7,6 +7,8 @@ See LICENSE and README
 #include "fj_array.h"
 #include <stdio.h>
 
+using namespace fj;
+
 int main(int argc, const char **argv)
 {
   {

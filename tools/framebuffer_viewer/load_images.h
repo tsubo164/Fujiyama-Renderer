@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef LOAD_IMAGES_H
 #define LOAD_IMAGES_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct FrameBuffer;
 
@@ -25,8 +23,6 @@ extern int load_fb(const char *filename, struct FrameBuffer *fb, struct BufferIn
 
 extern int load_mip(const char *filename, struct FrameBuffer *fb, struct BufferInfo *info);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* XXX_H */

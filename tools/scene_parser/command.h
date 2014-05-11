@@ -8,6 +8,8 @@ See LICENSE and README
 
 #include "fj_scene_interface.h"
 
+using namespace fj;
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include "fj_rectangle.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct FrameInfo {
   int worker_count;
@@ -74,8 +72,6 @@ extern void CbSetTileReport(struct TileReport *report, void *data,
     SampleDoneCallback sample_done,
     TileDoneCallback tile_done);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

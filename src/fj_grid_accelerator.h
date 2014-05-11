@@ -6,17 +6,12 @@ See LICENSE and README
 #ifndef FJ_GRIDACCELERATOR_H
 #define FJ_GRIDACCELERATOR_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Accelerator;
 
 extern void GetGridAcceleratorFunction(struct Accelerator *acc);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

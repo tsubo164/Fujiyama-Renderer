@@ -5,6 +5,8 @@ See LICENSE and README
 
 #include "fj_timer.h"
 
+namespace fj {
+
 void TimerStart(struct Timer *timer)
 {
   time(&timer->start_time);
@@ -27,3 +29,5 @@ struct Elapse TimerGetElapse(const struct Timer *timer)
 
   return elapse;
 }
+
+} // namespace xxx

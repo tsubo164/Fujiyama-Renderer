@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_INTERVAL_H
 #define FJ_INTERVAL_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct IntervalList;
 struct ObjectInstance;
@@ -30,9 +28,6 @@ extern double IntervalListGetMinT(const struct IntervalList *intervals);
 extern double IntervalListGetMaxT(const struct IntervalList *intervals);
 extern const struct Interval *IntervalListGetHead(const struct IntervalList *intervals);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

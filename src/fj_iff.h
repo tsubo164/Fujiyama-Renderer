@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include "fj_compatibility.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 typedef int64_t DataSize;
 
@@ -78,8 +76,6 @@ extern void IffSkipCurrentChunk(IffFile *iff, const IffChunk *chunk);
 extern int IffChunkMatch(const IffChunk *chunk, const char *key);
 extern int IffEndOfChunk(const IffFile *iff, const IffChunk *chunk);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

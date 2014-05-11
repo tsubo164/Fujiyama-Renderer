@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_TILER_H
 #define FJ_TILER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Tile {
   int id;
@@ -26,8 +24,6 @@ extern struct Tile *TlrGetTile(const struct Tiler *tiler, int index);
 
 extern int TlrGenerateTiles(struct Tiler *tiler, const struct Rectangle *region);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

@@ -9,6 +9,8 @@ See LICENSE and README
 #include <assert.h>
 #include <float.h>
 
+namespace fj {
+
 static int is_transform_order(int order);
 static int is_rotate_order(int order);
 static void update_matrix(struct Transform *transform);
@@ -281,3 +283,4 @@ static int is_rotate_order(int order)
   return order >= 6 && order < 12;
 }
 
+} // namespace xxx

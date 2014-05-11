@@ -25,6 +25,8 @@ See LICENSE and README
 199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93, \
 222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
 
+namespace fj {
+
 static const int perm[] = {
   PERMUTAION,
   /* repeat */
@@ -142,3 +144,5 @@ static double grad(int hash, double x, double y, double z)
 
   return ((h&1) == 0 ? u : -u) + ((h&2) == 0 ? v : -v);
 }
+
+} // namespace xxx

@@ -8,6 +8,8 @@ See LICENSE and README
 #include <stddef.h>
 #include <float.h>
 
+namespace fj {
+
 const static struct Box null_bounds;
 
 int get_null_primitive_count(const void *primset)
@@ -86,3 +88,4 @@ void PrmGetPrimitiveBounds(const struct PrimitiveSet *primset,
   primset->PrimitiveBounds(primset->data, prim_id, bounds);
 }
 
+} // namespace xxx

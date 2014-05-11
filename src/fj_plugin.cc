@@ -11,6 +11,8 @@ See LICENSE and README
 #include <stdio.h>
 #include <string.h>
 
+namespace fj {
+
 static int error_no = PLG_ERR_NONE;
 static void clear_pluginfo(struct PluginInfo *info);
 static int is_valid_pluginfo(const struct PluginInfo *info);
@@ -192,3 +194,4 @@ static int is_valid_pluginfo(const struct PluginInfo *info)
     return 1;
 }
 
+} // namespace fj

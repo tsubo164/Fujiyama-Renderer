@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include "fj_transform.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Camera;
 struct Vector2;
@@ -32,9 +30,6 @@ extern void CamSetRotateOrder(struct Camera *cam, int order);
 extern void CamGetRay(const struct Camera *cam, const struct Vector2 *screen_uv,
     double time, struct Ray *ray);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

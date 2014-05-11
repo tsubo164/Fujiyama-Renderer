@@ -9,9 +9,7 @@ See LICENSE and README
 #include "fj_compatibility.h"
 #include <stdio.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct FrameBuffer;
 
@@ -64,8 +62,6 @@ extern void FbWriteFile(struct FbOutput *out);
 /* high level interface for saving framebuffer file */
 extern int FbSaveCroppedData(struct FrameBuffer *fb, const char *filename);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

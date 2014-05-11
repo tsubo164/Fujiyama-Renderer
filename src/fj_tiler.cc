@@ -11,6 +11,8 @@ See LICENSE and README
 #include <math.h>
 #include <assert.h>
 
+namespace fj {
+
 struct Tiler {
   int total_ntiles;
   int xntiles, yntiles;
@@ -134,3 +136,5 @@ int TlrGenerateTiles(struct Tiler *tiler, const struct Rectangle *region)
 
   return 0;
 }
+
+} // namespace xxx

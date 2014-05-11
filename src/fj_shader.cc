@@ -9,6 +9,8 @@ See LICENSE and README
 #include <string.h>
 #include <assert.h>
 
+namespace fj {
+
 static int error_no = SHD_ERR_NOERR;
 static const struct Color NO_SHADER_COLOR = {.5, 1., 0.};
 
@@ -105,3 +107,4 @@ static void set_error(int err)
   error_no = err;
 }
 
+} // namespace xxx

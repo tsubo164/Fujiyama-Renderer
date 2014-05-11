@@ -23,6 +23,8 @@ See LICENSE and README
 #include <assert.h>
 #include <float.h>
 
+using namespace fj;
+
 static const char USAGE[] =
 "Usage: curvegen [options] inputfile(*.mesh) outputfile(*.crv)\n"
 "Options:\n"

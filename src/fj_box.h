@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include "fj_vector.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Box {
   Box() : min(), max() {}
@@ -87,8 +85,6 @@ extern double BoxDiagonal(const struct Box *box);
 
 extern void BoxPrint(const struct Box *box);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

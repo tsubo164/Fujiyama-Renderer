@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FRAMEBUFFERVIEWER_H
 #define FRAMEBUFFERVIEWER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 typedef enum MouseButton {
   MB_NONE = 0,
@@ -33,8 +31,6 @@ extern int FbvLoadImage(struct FrameBufferViewer *v, const char *filename);
 extern void FbvGetImageSize(const struct FrameBufferViewer *v,
     int databox[4], int viewbox[4], int *nchannels);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* XXX_H */

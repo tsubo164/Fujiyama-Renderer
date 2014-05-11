@@ -6,6 +6,8 @@ See LICENSE and README
 #include "fj_callback.h"
 #include <stddef.h>
 
+namespace fj {
+
 static Interrupt no_frame_report(void *data, const struct FrameInfo *info)
 {
   return CALLBACK_CONTINUE;
@@ -64,3 +66,5 @@ void CbSetTileReport(struct TileReport *report, void *data,
   report->done  = (tile_done  == NULL) ? no_tile_report : tile_done;
   report->sample_done  = (sample_done  == NULL) ? no_sample_report : sample_done;
 }
+
+} // namespace xxx

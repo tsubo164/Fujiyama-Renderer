@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_VOLUME_H
 #define FJ_VOLUME_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Volume;
 struct Vector;
@@ -44,9 +42,6 @@ extern float VolGetValue(const struct Volume *volume, int x, int y, int z);
 extern int VolGetSample(const struct Volume *volume, const struct Vector *point,
       struct VolumeSample *sample);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

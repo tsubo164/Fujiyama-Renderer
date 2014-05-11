@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include <stddef.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Array {
   size_t elemsize;
@@ -38,8 +36,6 @@ extern char *ArrGet(const struct Array *a, int index);
 
 extern size_t ArrGetElementCount(const struct Array *a);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

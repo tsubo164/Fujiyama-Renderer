@@ -12,6 +12,8 @@ See LICENSE and README
 #include <string.h>
 #include <stdio.h>
 
+using namespace fj;
+
 static void *MyNew(void);
 static void MyFree(void *self);
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,

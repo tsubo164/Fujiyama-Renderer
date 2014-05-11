@@ -23,9 +23,7 @@ See LICENSE and README
 #include "fj_light.h"
 #include "fj_mesh.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Scene;
 
@@ -128,8 +126,6 @@ extern struct Mesh **ScnGetMeshList(const struct Scene *scene);
 extern struct Mesh *ScnGetMesh(const struct Scene *scene, int index);
 extern size_t ScnGetMeshCount(const struct Scene *scene);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

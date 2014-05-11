@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include <stdio.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct FrameBuffer;
 
@@ -67,9 +65,6 @@ extern int MipGenerateFromSourceData(struct MipOutput *out,
     const float *pixels, int width, int height, int nchannels);
 extern void MipWriteFile(struct MipOutput *out);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

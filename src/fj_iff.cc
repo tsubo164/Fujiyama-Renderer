@@ -8,6 +8,8 @@ See LICENSE and README
 #include <stdio.h>
 #include <string.h>
 
+namespace fj {
+
 struct IffFile {
   FILE *file;
 };
@@ -266,3 +268,5 @@ int IffEndOfChunk(const IffFile *iff, const IffChunk *chunk)
 
   return end_pos == cur_pos ? 1 : 0;
 }
+
+} // namespace xxx

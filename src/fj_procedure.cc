@@ -11,6 +11,8 @@ See LICENSE and README
 #include <string.h>
 #include <assert.h>
 
+namespace fj {
+
 static int error_no = PRC_ERR_NOERR;
 
 struct Procedure {
@@ -120,3 +122,4 @@ static void set_error(int err)
   error_no = err;
 }
 
+} // namespace xxx

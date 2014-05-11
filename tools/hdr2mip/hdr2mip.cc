@@ -12,6 +12,8 @@ See LICENSE and README
 #include <string.h>
 #include <errno.h>
 
+using namespace fj;
+
 static const char USAGE[] =
 "Usage: hdr2mip [options] inputfile(*.hdr, *.rgbe) outputfile(*.mip)\n"
 "Options:\n"

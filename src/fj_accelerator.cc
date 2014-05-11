@@ -16,6 +16,8 @@ See LICENSE and README
 #include <float.h>
 #include <stdio.h>
 
+namespace fj {
+
 static const double PADDING = .0001;
 
 struct Accelerator {
@@ -160,3 +162,5 @@ void AccSetDerivedFunctions(struct Accelerator *acc,
   acc->IntersectDerived = intersect_derived_function;
   acc->GetDerivedName = get_derived_name_function;
 }
+
+} // namespace xxx

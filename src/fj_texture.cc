@@ -16,6 +16,8 @@ See LICENSE and README
 #include "fj_box.h"
 #include <stdlib.h>
 
+namespace fj {
+
 static const struct Color4 NO_TEXTURE_COLOR = {1, .63, .63};
 
 struct TextureCache {
@@ -220,3 +222,5 @@ int TexGetHeight(const struct Texture *tex)
   }
   return tex->cache_list[0]->mip->height;
 }
+
+} // namespace xxx

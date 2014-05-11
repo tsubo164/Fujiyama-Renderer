@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_MATRIX_H
 #define FJ_MATRIX_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Matrix {
   /* row-major */
@@ -40,8 +38,6 @@ extern void MatTransformBounds(const struct Matrix *m, struct Box *bounds);
 
 extern void MatPrint(const struct Matrix *m);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

@@ -22,6 +22,8 @@ See LICENSE and README
 #include <float.h>
 #include <math.h>
 
+namespace fj {
+
 static int has_reached_bounce_limit(const struct TraceContext *cxt);
 static int shadow_ray_has_reached_opcity_limit(const struct TraceContext *cxt, float opac);
 static void setup_ray(const struct Vector *ray_orig, const struct Vector *ray_dir,
@@ -668,3 +670,5 @@ static int shadow_ray_has_reached_opcity_limit(const struct TraceContext *cxt, f
     return 0;
   }
 }
+
+} // namespace xxx

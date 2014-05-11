@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include "fj_vector.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Volume;
 
@@ -53,9 +51,6 @@ extern void BilerpWispConstrolPoint(struct WispsControlPoint *cp,
 extern void FillWithSphere(struct Volume *volume,
     const struct Vector *center, double radius, float density);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

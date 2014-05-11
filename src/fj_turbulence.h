@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_TURBULENCE_H
 #define FJ_TURBULENCE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Turbulence;
 struct Vector;
@@ -27,9 +25,6 @@ extern double TrbEvaluate(const struct Turbulence *turbulence, const struct Vect
 extern void TrbEvaluate3d(const struct Turbulence *turbulence, const struct Vector *position,
     struct Vector *out_noise);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

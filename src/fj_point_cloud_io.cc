@@ -12,6 +12,8 @@ See LICENSE and README
 #define PTC_FILE_VERSION 1
 #define PTC_FILE_MAGIC "PTCD"
 
+namespace fj {
+
 struct PtcInputFile {
   struct InputFile *file;
 
@@ -179,3 +181,5 @@ int PtcLoadFile(struct PointCloud *ptc, const char *filename)
 
   return 0;
 }
+
+} // namespace fj

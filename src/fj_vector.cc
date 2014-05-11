@@ -7,6 +7,8 @@ See LICENSE and README
 #include "fj_memory.h"
 #include <stdio.h>
 
+namespace fj {
+
 void VecPrint(const struct Vector *a)
 {
   printf("(%g, %g, %g)\n", a->x, a->y, a->z);
@@ -26,3 +28,5 @@ void VecFree(struct Vector *v)
 {
   FJ_MEM_FREE(v);
 }
+
+} // namespace xxx

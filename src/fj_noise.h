@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_NOISE_H
 #define FJ_NOISE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace  fj {
 
 struct Vector;
 
@@ -21,8 +19,6 @@ extern void PerlinNoise3d(const struct Vector *position,
 
 extern double PeriodicNoise3d(double x, double y, double z);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

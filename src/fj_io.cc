@@ -11,6 +11,8 @@ See LICENSE and README
 #include <stdio.h>
 #include <string.h>
 
+namespace fj {
+
 typedef const char *src_ptr;
 typedef char *dst_ptr;
 
@@ -744,3 +746,5 @@ static int write_chunk_data(FILE *file, const struct ChunkData *chunk)
 
   return 0;
 }
+
+} // namespace xxx

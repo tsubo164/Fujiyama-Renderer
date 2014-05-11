@@ -15,6 +15,8 @@ See LICENSE and README
 
 #include <float.h>
 
+namespace fj {
+
 struct Light {
   struct Color color;
   float intensity;
@@ -493,3 +495,4 @@ static int no_preprocess(struct Light *light)
   return 0;
 }
 
+} // namespace xxx

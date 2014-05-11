@@ -8,9 +8,7 @@ See LICENSE and README
 
 #define NO_NAME NULL
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct InputFile;
 struct OutputFile;
@@ -83,8 +81,6 @@ extern void IOSetOutputVector3(struct OutputFile *out,
     const struct Vector *src_data,
     int element_count);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

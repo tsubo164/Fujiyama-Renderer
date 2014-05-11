@@ -16,6 +16,8 @@ See LICENSE and README
 #include <stdlib.h>
 #include <string.h>
 
+using namespace fj;
+
 static const char USAGE[] =
 "Usage: ply2mesh [options] inputfile(*.ply) outputfile(*.mesh)\n"
 "Property names in ply file should be the below\n"

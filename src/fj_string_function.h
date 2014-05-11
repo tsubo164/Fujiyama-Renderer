@@ -8,17 +8,13 @@ See LICENSE and README
 
 #include <stddef.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 extern char *StrDup(const char *src);
 extern char *StrFree(char *s);
 
 extern char *StrCopyAndTerminate(char *dst, const char *src, size_t nchars);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

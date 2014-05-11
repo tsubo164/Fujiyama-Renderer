@@ -9,6 +9,8 @@ See LICENSE and README
 
 #include <float.h>
 
+namespace fj {
+
 struct IntervalList {
   struct Interval root;
   int num_nodes;
@@ -133,3 +135,4 @@ static void free_interval(struct Interval *interval)
   FJ_MEM_FREE(interval);
 }
 
+} // namespace xxx

@@ -15,6 +15,8 @@ See LICENSE and README
 #define CRV_MAGIC_SIZE 4
 #define MAX_ATTRNAME_SIZE 32
 
+namespace fj {
+
 static size_t write_attriname(struct CurveOutput *out, const char *name);
 static size_t write_attridata(struct CurveOutput *out, const char *name);
 static void set_error(int err);
@@ -366,3 +368,5 @@ static size_t write_attridata(struct CurveOutput *out, const char *name)
   }
   return nwrotes;
 }
+
+} // namespace xxx

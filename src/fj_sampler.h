@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include "fj_vector.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Sample {
   struct Vector2 uv;
@@ -44,8 +42,6 @@ extern void SmpFreePixelSamples(struct Sample *samples);
 extern int SmpGetSampleCountForRegion(const struct Rectangle *region,
     int xrate, int yrate, float xfwidth, float yfwidth);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

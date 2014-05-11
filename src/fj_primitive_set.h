@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_PRIMITIVESET_H
 #define FJ_PRIMITIVESET_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Intersection;
 struct Box;
@@ -50,9 +48,6 @@ extern int PrmRayIntersect(const struct PrimitiveSet *primset, int prim_id, doub
 extern void PrmGetPrimitiveBounds(const struct PrimitiveSet *primset,
     int prim_id, struct Box *bounds);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */
-

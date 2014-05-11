@@ -9,15 +9,17 @@ See LICENSE and README
 #include <string.h>
 #include <stdio.h>
 
+using namespace fj;
+
 int main()
 {
   const int format_version = 7;
   {
     struct OutputFile *out = IOOpenOutputFile("io_test_file.bin", "PTCD", format_version);
-    const struct Vector P[](
-        {1, 2, 3},
-        {2, 3, 1},
-        {3, 1, 2}
+    const struct Vector P[] = {
+        Vector(1, 2, 3),
+        Vector(2, 3, 1),
+        Vector(3, 1, 2)
         };
     const double radius[] = {
         1.24,
@@ -38,10 +40,10 @@ int main()
   }
   {
     struct InputFile *in = IOOpenInputFile("io_test_file.bin", "PTCD");
-    struct Vector P[](
-        {0, 0, 0},
-        {0, 0, 0},
-        {0, 0, 0}
+    struct Vector P[] = {
+        Vector(0, 0, 0),
+        Vector(0, 0, 0),
+        Vector(0, 0, 0)
         };
     double radius[] = {
         0,

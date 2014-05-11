@@ -14,6 +14,8 @@ See LICENSE and README
 #include <assert.h>
 #include <math.h>
 
+namespace fj {
+
 struct Sampler {
   int xres, yres;
   int xrate, yrate;
@@ -272,3 +274,5 @@ int SmpGetSampleCountForRegion(const struct Rectangle *region,
 
   return xnsamples * ynsamples;
 }
+
+} // namespace xxx

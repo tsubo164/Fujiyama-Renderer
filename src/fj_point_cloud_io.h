@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_POINTCLOUDIO_H
 #define FJ_POINTCLOUDIO_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Vector;
 
@@ -49,8 +47,6 @@ extern void PtcWriteFile(struct PtcOutputFile *out);
 struct PointCloud;
 extern int PtcLoadFile(struct PointCloud *ptc, const char *filename);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

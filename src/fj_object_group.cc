@@ -19,6 +19,8 @@ See LICENSE and README
 #include <stdio.h>
 #include <float.h>
 
+namespace fj {
+
 struct ObjectList {
   struct Array *objects;
   struct Box bounds;
@@ -240,3 +242,4 @@ static const struct ObjectInstance *get_object(const struct ObjectList *list, in
   return objects[index];
 }
 
+} // namespace xxx

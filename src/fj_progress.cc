@@ -9,6 +9,8 @@ See LICENSE and README
 #include <stdio.h>
 #include <assert.h>
 
+namespace fj {
+
 void PrgStart(struct Progress *progress, Iteration total_iterations)
 {
   assert(total_iterations > 0);
@@ -68,3 +70,5 @@ void PrgDone(struct Progress *progress)
 
   printf("\n");
 }
+
+} // namespace xxx

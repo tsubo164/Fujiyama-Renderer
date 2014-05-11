@@ -89,4 +89,3 @@ extern int TestFloatEq(float a, float b);
 #endif
 
 #endif /* XXX_H */
-

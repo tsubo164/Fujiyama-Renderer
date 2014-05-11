@@ -15,6 +15,8 @@ See LICENSE and README
 #include <assert.h>
 #include <float.h>
 
+namespace fj {
+
 static const char ACCELERATOR_NAME[] = "BVH";
 
 enum { BVH_STACKSIZE = 64 };
@@ -487,3 +489,4 @@ static void swap_isect_ptr(struct Intersection **isect0, struct Intersection **i
   *isect1 = isect_swp;
 }
 
+} // namespace xxx

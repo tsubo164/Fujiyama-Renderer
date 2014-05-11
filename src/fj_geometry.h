@@ -9,9 +9,7 @@ See LICENSE and README
 #include "fj_compatibility.h"
 #include <stdio.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Geometry;
 typedef int64_t GeoIndex;
@@ -47,8 +45,6 @@ extern double *GeoGetAttributeDouble(struct Geometry *geo,
 extern struct Vector *GeoGetAttributeVector3(struct Geometry *geo,
     const char *attr_name, int attr_class);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

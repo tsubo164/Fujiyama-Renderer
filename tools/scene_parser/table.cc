@@ -10,6 +10,8 @@ See LICENSE and README
 #include <string.h>
 #include <assert.h>
 
+using namespace fj;
+
 enum { HASH_SIZE = 1237 }; /* a prime number */
 enum { MULTIPLIER = 31 };
 

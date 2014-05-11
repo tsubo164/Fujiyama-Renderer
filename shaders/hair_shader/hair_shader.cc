@@ -14,6 +14,8 @@ See LICENSE and README
 #include <stdio.h>
 #include <float.h>
 
+using namespace fj;
+
 struct HairShader {
   struct Color diffuse;
   struct Color specular;

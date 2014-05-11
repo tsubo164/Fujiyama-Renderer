@@ -15,9 +15,7 @@ See LICENSE and README
 
 #define SHADER_PLUGIN_TYPE "Shader"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Shader;
 
@@ -44,9 +42,6 @@ extern const struct Property *ShdGetPropertyList(const struct Shader *shader);
 extern int ShdSetProperty(struct Shader *shader,
     const char *prop_name, const struct PropertyValue *src_data);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace fj
 
 #endif /* FJ_XXX_H */
-

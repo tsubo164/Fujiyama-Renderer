@@ -16,6 +16,8 @@ See LICENSE and README
 #include <string.h>
 #include <float.h>
 
+using namespace fj;
+
 struct SplineWispsProcedure {
   struct Volume *volume;
   const struct Turbulence *turbulence;

@@ -10,9 +10,7 @@ See LICENSE and README
 #include "fj_matrix.h"
 #include "fj_vector.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 enum TransformOrder {
   ORDER_SRT = 0,
@@ -90,8 +88,6 @@ extern void XfmPushScaleSample(struct TransformSampleList *list,
 extern void XfmSetSampleTransformOrder(struct TransformSampleList *list, int order);
 extern void XfmSetSampleRotateOrder(struct TransformSampleList *list, int order);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

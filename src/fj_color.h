@@ -6,9 +6,7 @@ See LICENSE and README
 #ifndef FJ_COLOR_H
 #define FJ_COLOR_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Color {
   float r, g, b;
@@ -36,8 +34,6 @@ extern void ColFree(struct Color *c);
   (dst)->b = (1-(t)) * (A)->b + (t) * (B)->b; \
   } while(0)
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

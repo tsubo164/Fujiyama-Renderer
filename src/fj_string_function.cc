@@ -8,6 +8,8 @@ See LICENSE and README
 #include "fj_memory.h"
 #include <string.h>
 
+namespace fj {
+
 char *StrDup(const char *src)
 {
   size_t alloc_size;
@@ -45,3 +47,4 @@ char *StrCopyAndTerminate(char *dst, const char *src, size_t nchars)
   return dst;
 }
 
+} // namespace xxx

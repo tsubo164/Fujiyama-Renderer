@@ -18,6 +18,8 @@ See LICENSE and README
 #include <ctype.h>
 #include <string.h>
 
+using namespace fj;
+
 static const char USAGE[] =
 "Usage: ptcgen [options] inputfile(*.mesh) outputfile(*.ptc)\n"
 "Options:\n"

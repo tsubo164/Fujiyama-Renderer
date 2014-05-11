@@ -9,6 +9,8 @@ See LICENSE and README
 #include <stdlib.h>
 #include <string.h>
 
+using namespace fj;
+
 static const char USAGE[] =
 "Usage: fbview [options] file(*.fb, *.mip)\n"
 "Options:\n"

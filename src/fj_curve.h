@@ -8,9 +8,7 @@ See LICENSE and README
 
 #include "fj_box.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct Curve;
 struct PrimitiveSet;
@@ -46,8 +44,6 @@ extern struct Vector *CrvAddVelocity(struct Curve *curve);
 extern void CrvComputeBounds(struct Curve *curve);
 extern void CrvGetPrimitiveSet(const struct Curve *curve, struct PrimitiveSet *primset);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
 #endif /* FJ_XXX_H */

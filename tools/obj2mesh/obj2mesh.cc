@@ -15,6 +15,8 @@ See LICENSE and README
 #include <stdio.h>
 #include <string.h>
 
+using namespace fj;
+
 static const char USAGE[] =
 "Usage: obj2mesh [options] inputfile(*.obj) outputfile(*.mesh)\n"
 "Options:\n"

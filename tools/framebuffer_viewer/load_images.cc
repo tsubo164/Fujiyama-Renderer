@@ -11,6 +11,8 @@ See LICENSE and README
 
 #include <string.h>
 
+namespace fj {
+
 const char *file_extension(const char *filename)
 {
   const char *s = strrchr(filename, '.');
@@ -101,3 +103,5 @@ int load_mip(const char *filename, struct FrameBuffer *fb, struct BufferInfo *in
 
   return 0;
 }
+
+} // namespace xxx

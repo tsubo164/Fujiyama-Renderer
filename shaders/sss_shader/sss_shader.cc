@@ -26,6 +26,8 @@ See LICENSE and README
   (dst)[2] = (src)[2]; \
   } while(0)
 
+using namespace fj;
+
 struct SSSShader {
   struct Color diffuse;
   struct Color specular;

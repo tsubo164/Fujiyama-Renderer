@@ -23,6 +23,8 @@ See LICENSE and README
 
 #define ROUND(x_) (floor((x_)+.5))
 
+namespace fj {
+
 static int error_no = ERR_MIP_NOERR;
 static int pow2[POW2_SIZE] = {
   1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768
@@ -358,3 +360,4 @@ static void scale_and_copy_image(const float *src_pxls, int sw, int sh,
   }
 }
 
+} // namespace xxx

@@ -18,6 +18,8 @@ See LICENSE and README
 #define EXPAND .0001
 #define HALF_EXPAND (.5*EXPAND)
 
+namespace fj {
+
 struct VolumeAccelerator {
   const char *name;
   struct Box bounds;
@@ -682,3 +684,4 @@ static const struct VolumeBVHNode *pop_node(struct VolumeBVHNodeStack *stack)
 }
 #endif
 
+} // namespace xxx
