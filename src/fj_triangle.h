@@ -17,28 +17,26 @@ struct TexCoord;
 struct Vector;
 struct Box;
 
-extern double TriComputeArea(
-    const struct Vector *vert0, const struct Vector *vert1, const struct Vector *vert2);
+extern double TriComputeArea(const Vector &vert0, const Vector &vert1, const Vector &vert2);
 
-extern void TriComputeBounds(struct Box *box,
-    const struct Vector *vert0, const struct Vector *vert1, const struct Vector *vert2);
+extern void TriComputeBounds(const Vector &vert0, const Vector &vert1, const Vector &vert2,
+    Box *box);
 
-extern void TriComputeFaceNormal(struct Vector *N,
-    const struct Vector *vert0, const struct Vector *vert1, const struct Vector *vert2);
+extern Vector TriComputeFaceNormal(
+    const Vector &vert0, const Vector &vert1, const Vector &vert2);
 
-extern void TriComputeNormal(struct Vector *N,
-    const struct Vector *N0, const struct Vector *N1, const struct Vector *N2,
+extern Vector TriComputeNormal( const Vector &N0, const Vector &N1, const Vector &N2,
     double u, double v);
 
 extern int TriRayIntersect(
-    const struct Vector *vert0, const struct Vector *vert1, const struct Vector *vert2,
-    const struct Vector *orig, const struct Vector *dir, int cull_backfaces,
+    const Vector &vert0, const Vector &vert1, const Vector &vert2,
+    const Vector &orig, const Vector &dir, int cull_backfaces,
     double *t, double *u, double *v);
 
 extern void TriComputeDerivatives(
-    const struct Vector *vert0, const struct Vector *vert1, const struct Vector *vert2,
-    const struct TexCoord *tex0, const struct TexCoord *tex1, const struct TexCoord *tex2,
-    struct Vector *dPdu, struct Vector *dPdv);
+    const Vector &vert0, const Vector &vert1, const Vector &vert2,
+    const TexCoord &tex0, const TexCoord &tex1, const TexCoord &tex2,
+    Vector *dPdu, Vector *dPdv);
 
 } // namespace xxx
 

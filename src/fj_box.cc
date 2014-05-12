@@ -8,7 +8,17 @@ See LICENSE and README
 #include <stdio.h>
 #include <math.h>
 
+// TODO TEST REVERSE INFINITE
+#include <cfloat>
+
 namespace fj {
+
+// TODO TEST REVERSE INFINITE
+void BoxReverseInfinite(Box *box)
+{
+  box->min = Vector( FLT_MAX,  FLT_MAX,  FLT_MAX);
+  box->max = Vector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+}
 
 int BoxContainsPoint(const struct Box *box, const struct Vector *point)
 {

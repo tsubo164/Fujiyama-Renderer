@@ -127,7 +127,7 @@ int main(int argc, const char **argv)
     double area = 0;
 
     MshGetFaceVertexPosition(mesh, i, &P0, &P1, &P2);
-    area = TriComputeArea(&P0, &P1, &P2);
+    area = TriComputeArea(P0, P1, P2);
 
     ncurves_on_face[i] = 100000 * area;
     total_ncurves += ncurves_on_face[i];
@@ -406,7 +406,7 @@ static int gen_hair(int argc, const char **argv)
     double zcenter, znml;
 
     MshGetFaceVertexPosition(mesh, i, &P0, &P1, &P2);
-    area = TriComputeArea(&P0, &P1, &P2);
+    area = TriComputeArea(P0, P1, P2);
 
     ycenter = (P0.y + P1.y + P2.y) / 3.;
     ynml = (ycenter - ymin) / (ymax - ymin);

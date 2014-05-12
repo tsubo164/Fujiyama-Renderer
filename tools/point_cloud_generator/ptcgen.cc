@@ -94,7 +94,7 @@ int main(int argc, const char **argv)
       noise_val = PerlinNoise(&center, 2, .5, 8);
       noise_val = Fit(noise_val, -.2, 1, 0, 1);
 
-      area = TriComputeArea(&P0, &P1, &P2);
+      area = TriComputeArea(P0, P1, P2);
 
       if (add_velocity) {
         npt_on_face = (int) 2000000 * area * .02;
@@ -136,7 +136,7 @@ int main(int argc, const char **argv)
         u = XorNextFloat01(&xr);
         v = (1 - u) * XorNextFloat01(&xr);
 
-        TriComputeNormal(&normal, &N0, &N1, &N2, u, v);
+        normal = TriComputeNormal(N0, N1, N2, u, v);
 
         t = 1 - u - v;
         P_out->x = t * P0.x + u * P1.x + v * P2.x;

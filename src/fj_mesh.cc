@@ -181,7 +181,7 @@ void MshComputeNormals(struct Mesh *mesh)
     N1 = &N[face->i1];
     N2 = &N[face->i2];
 
-    TriComputeFaceNormal(&Ng, P0, P1, P2);
+    Ng = TriComputeFaceNormal(*P0, *P1, *P2);
 
     N0->x += Ng.x;
     N0->y += Ng.y;
@@ -396,8 +396,8 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
   }
 
   hit = TriRayIntersect(
-      &P0, &P1, &P2,
-      &ray->orig, &ray->dir, DO_NOT_CULL_BACKFACES,
+      P0, P1, P2,
+      ray->orig, ray->dir, DO_NOT_CULL_BACKFACES,
       &t_hit, &u, &v);
 
   if (!hit)
@@ -412,7 +412,7 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
   N0 = &mesh->N[face->i0];
   N1 = &mesh->N[face->i1];
   N2 = &mesh->N[face->i2];
-  TriComputeNormal(&isect->N, N0, N1, N2, u, v);
+  isect->N = TriComputeNormal(*N0, *N1, *N2, u, v);
 
   /* TODO TMP uv handling */
   /* UV = (1-u-v) * UV0 + u * UV1 + v * UV2 */
@@ -426,8 +426,8 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
     isect->uv.v = t * uv0->v + u * uv1->v + v * uv2->v;
 
     TriComputeDerivatives(
-        &P0, &P1, &P2,
-        uv0, uv1, uv2,
+        P0, P1, P2,
+        *uv0, *uv1, *uv2,
         &isect->dPdu, &isect->dPdv);
   }
   else {
@@ -456,7 +456,7 @@ static void triangle_bounds(const void *prim_set, int prim_id, struct Box *bound
   P1 = &mesh->P[face->i1];
   P2 = &mesh->P[face->i2];
 
-  TriComputeBounds(bounds, P0, P1, P2);
+  TriComputeBounds(*P0, *P1, *P2, bounds);
 
   if (mesh->velocity != NULL) {
     const struct Vector *velocity0, *velocity1, *velocity2;

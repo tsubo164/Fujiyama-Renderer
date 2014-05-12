@@ -313,7 +313,7 @@ int ObjBufferComputeNormals(struct ObjBuffer *buffer)
     N1 = &N[i1];
     N2 = &N[i2];
 
-    TriComputeFaceNormal(&Ng, P0, P1, P2);
+    Ng = TriComputeFaceNormal(*P0, *P1, *P2);
 
     N0->x += Ng.x;
     N0->y += Ng.y;

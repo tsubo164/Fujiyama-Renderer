@@ -71,6 +71,9 @@ struct Box {
   (dst)->max.z += (a); \
   } while(0)
 
+// TODO TEST REVERSE INFINITE
+extern void BoxReverseInfinite(Box *box);
+
 extern int BoxContainsPoint(const struct Box *box, const struct Vector *point);
 extern void BoxAddPoint(struct Box *box, const struct Vector *point);
 extern void BoxAddBox(struct Box *box, const struct Box *otherbox);
