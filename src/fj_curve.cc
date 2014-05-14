@@ -263,7 +263,7 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
 
     /* P */
     isect->t_hit = ttmp / ray_scale;
-    POINT_ON_RAY(&isect->P, &ray->orig, &ray->dir, isect->t_hit);
+    isect->P = ray->PointAt(isect->t_hit);
 
     /* dPdv */
     get_bezier3(curve, prim_id, &original);

@@ -605,7 +605,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
       t_start = t_start - fmod(t_start, t_delta) + t_delta;
     }
 
-    POINT_ON_RAY(&P, &ray->orig, &ray->dir, t_start);
+    P = ray->PointAt(t_start);
     ray_delta.x = t_delta * ray->dir.x;
     ray_delta.y = t_delta * ray->dir.y;
     ray_delta.z = t_delta * ray->dir.z;

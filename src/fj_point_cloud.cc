@@ -204,7 +204,7 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
     t_hit = t0;
   }
 
-  POINT_ON_RAY(&isect->P, &ray->orig, &ray->dir, t_hit);
+  isect->P = ray->PointAt(t_hit);
   isect->N.x = isect->P.x - center.x;
   isect->N.y = isect->P.y - center.y;
   isect->N.z = isect->P.z - center.z;

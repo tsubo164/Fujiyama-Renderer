@@ -354,7 +354,7 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
     isect->dPdv = Vector(0, 0, 0);
   }
 
-  POINT_ON_RAY(&isect->P, &ray->orig, &ray->dir, t_hit);
+  isect->P = ray->PointAt(t_hit);
   isect->object = NULL;
   isect->prim_id = prim_id;
   isect->t_hit = t_hit;

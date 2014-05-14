@@ -323,7 +323,7 @@ static int intersect_grid_accel(DerivedAccelerator derived,
       cellbox.max.x = cellbox.min.x + grid->cellsize[0];
       cellbox.max.y = cellbox.min.y + grid->cellsize[1];
       cellbox.max.z = cellbox.min.z + grid->cellsize[2];
-      POINT_ON_RAY(&P_hit, &ray->orig, &ray->dir, isect_tmp->t_hit);
+      P_hit = ray->PointAt(isect_tmp->t_hit);
       inside_cell = BoxContainsPoint(&cellbox, &P_hit);
 
       if (!inside_cell)

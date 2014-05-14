@@ -7,23 +7,26 @@ See LICENSE and README
 #define FJ_RAY_H
 
 #include "fj_vector.h"
+#include "fj_types.h"
 
 namespace fj {
 
-#define POINT_ON_RAY(dst,orig,dir,t) do { \
-  (dst)->x = (orig)->x + (t) * (dir)->x; \
-  (dst)->y = (orig)->y + (t) * (dir)->y; \
-  (dst)->z = (orig)->z + (t) * (dir)->z; \
-  } while (0)
-
 struct Ray {
   Ray() : orig(), dir(0, 0, 1), tmin(.001), tmax(1000) {}
-  struct Vector orig;
-  struct Vector dir;
 
-  double tmin;
-  double tmax;
+  Vector orig;
+  Vector dir;
+
+  Real tmin;
+  Real tmax;
+
+  Vector PointAt(Real t) const;
 };
+
+inline Vector Ray::PointAt(Real t) const
+{
+  return orig + t * dir;
+}
 
 } // namespace xxx
 
