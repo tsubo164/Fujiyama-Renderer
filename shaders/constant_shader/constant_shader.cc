@@ -112,9 +112,9 @@ static int set_diffuse(void *self, const struct PropertyValue *value)
   struct ConstantShader *constant = (struct ConstantShader *) self;
   struct Color diffuse = {0, 0, 0};
 
-  diffuse.r = MAX(0, value->vector[0]);
-  diffuse.g = MAX(0, value->vector[1]);
-  diffuse.b = MAX(0, value->vector[2]);
+  diffuse.r = Max(0, value->vector[0]);
+  diffuse.g = Max(0, value->vector[1]);
+  diffuse.b = Max(0, value->vector[2]);
   constant->diffuse = diffuse;
 
   return 0;

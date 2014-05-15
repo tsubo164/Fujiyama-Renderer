@@ -6,25 +6,26 @@ See LICENSE and README
 #ifndef FJ_VECTOR_H
 #define FJ_VECTOR_H
 
+#include "fj_types.h"
+#include <cstdlib>
 #include <cmath>
-#include <stdlib.h>
 
 namespace fj {
 
-typedef double real;
-
 struct Vector2 {
   Vector2() : x(0), y(0) {}
-  Vector2(real xx, real yy) : x(xx), y(yy) {}
-  real x, y;
+  Vector2(Real xx, Real yy) : x(xx), y(yy) {}
+  ~Vector2() {}
+
+  Real x, y;
 };
 
 struct Vector {
   Vector() : x(0), y(0), z(0) {}
-  Vector(real xx, real yy, real zz) : x(xx), y(yy), z(zz) {}
+  Vector(Real xx, Real yy, Real zz) : x(xx), y(yy), z(zz) {}
   ~Vector() {}
 
-  const real &operator[](int i) const
+  const Real &operator[](int i) const
   {
     switch(i) {
     case 0: return x;
@@ -33,7 +34,7 @@ struct Vector {
     default: return x; // TODO ERROR HANDLING
     }
   }
-  real &operator[](int i)
+  Real &operator[](int i)
   {
     switch(i) {
     case 0: return x;
@@ -57,7 +58,7 @@ struct Vector {
     z -= a.z;
     return *this;
   }
-  const Vector &operator*=(real scalar)
+  const Vector &operator*=(Real scalar)
   {
     x *= scalar;
     y *= scalar;
@@ -84,7 +85,7 @@ inline Vector operator-(const Vector &a, const Vector &b)
     a.z - b.z);
 }
 
-inline Vector operator*(const Vector &a, real scalar)
+inline Vector operator*(const Vector &a, Real scalar)
 {
   return Vector(
     a.x * scalar,
@@ -92,15 +93,15 @@ inline Vector operator*(const Vector &a, real scalar)
     a.z * scalar);
 }
 
-inline Vector operator*(real scalar, const Vector &a)
+inline Vector operator*(Real scalar, const Vector &a)
 {
   return a * scalar;
 }
 
-inline Vector operator/(const Vector &a, real scalar)
+inline Vector operator/(const Vector &a, Real scalar)
 {
   // no checking zero division
-  const real inv = 1./scalar;
+  const Real inv = 1./scalar;
   return Vector(
     a.x * inv,
     a.y * inv,
@@ -115,7 +116,7 @@ inline Vector operator-(const Vector &a)
     -a.z);
 }
 
-inline real Length(const Vector &a)
+inline Real Length(const Vector &a)
 {
   return std::sqrt(
     a.x * a.x +
@@ -125,13 +126,13 @@ inline real Length(const Vector &a)
 
 inline Vector Normalize(const Vector &a)
 {
-  const real len = Length(a);
+  const Real len = Length(a);
   if (len == 0)
     return a;
   return a / len;
 }
 
-inline real Dot(const Vector &a, const Vector &b)
+inline Real Dot(const Vector &a, const Vector &b)
 {
   return
     a.x * b.x +

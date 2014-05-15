@@ -72,7 +72,7 @@ static DerivedAccelerator new_grid_accel(void)
   grid->cellsize[0] = 0;
   grid->cellsize[1] = 0;
   grid->cellsize[2] = 0;
-  BOX3_SET(&grid->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+  BoxReverseInfinite(&grid->bounds);
 
   return (DerivedAccelerator) grid;
 }
@@ -122,7 +122,7 @@ static int build_grid_accel(DerivedAccelerator derived,
   const double HALF_PADDING = .5 * PADDING;
 
   PrmGetBounds(primset, &bounds);
-  BOX3_EXPAND(&bounds, PADDING);
+  BoxExpand(&bounds, PADDING);
 
   NPRIMS = PrmGetPrimitiveCount(primset);
   compute_grid_cellsizes(NPRIMS, 
@@ -149,7 +149,7 @@ static int build_grid_accel(DerivedAccelerator derived,
     struct Box primbbox;
 
     PrmGetPrimitiveBounds(primset, primid, &primbbox);
-    BOX3_EXPAND(&primbbox, HALF_PADDING);
+    BoxExpand(&primbbox, HALF_PADDING);
 
     /* compute the ranges of cell indices. e.g. [X0 .. X1) */
     X0 = (int) floor((primbbox.min.x - bounds.min.x) / cellsize[0]);
@@ -229,13 +229,13 @@ static int intersect_grid_accel(DerivedAccelerator derived,
 
   /* check intersection with overall bounds */
   /* to get boxhit_tmin and boxhit_tmax */
-  if (!BoxRayIntersect(&grid->bounds, &ray->orig, &ray->dir, ray->tmin, ray->tmax,
+  if (!BoxRayIntersect(grid->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
         &boxhit_tmin, &boxhit_tmax)) {
     return 0;
   }
 
   /* check if the ray shot from inside bounds */
-  if (BoxContainsPoint(&grid->bounds, &ray->orig)) {
+  if (BoxContainsPoint(grid->bounds, ray->orig)) {
     start[0] = ray->orig.x;
     start[1] = ray->orig.y;
     start[2] = ray->orig.z;
@@ -248,7 +248,7 @@ static int intersect_grid_accel(DerivedAccelerator derived,
     start[1] = ray->orig.y + ray->dir.y * t_start;
     start[2] = ray->orig.z + ray->dir.z * t_start;
   }
-  t_end = MIN(t_end, ray->tmax);
+  t_end = Min(t_end, ray->tmax);
 
   NCELLS[0] = grid->ncells[0];
   NCELLS[1] = grid->ncells[1];
@@ -323,8 +323,8 @@ static int intersect_grid_accel(DerivedAccelerator derived,
       cellbox.max.x = cellbox.min.x + grid->cellsize[0];
       cellbox.max.y = cellbox.min.y + grid->cellsize[1];
       cellbox.max.z = cellbox.min.z + grid->cellsize[2];
-      P_hit = ray->PointAt(isect_tmp->t_hit);
-      inside_cell = BoxContainsPoint(&cellbox, &P_hit);
+      P_hit = RayPointAt(*ray, isect_tmp->t_hit);
+      inside_cell = BoxContainsPoint(cellbox, P_hit);
 
       if (!inside_cell)
         continue;

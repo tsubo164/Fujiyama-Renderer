@@ -241,7 +241,7 @@ void MatTransformBounds(const struct Matrix *m, struct Box *bounds)
   pt.y = bounds->minmax1.y; \
   pt.z = bounds->minmax2.z; \
   MatTransformPoint(m, &pt); \
-  BoxAddPoint(&box, &pt); \
+  BoxAddPoint(&box, pt); \
 } while (0)
   TRANSFORM_BOX_VERTEX  (min, min, min);
   TRANSFORM_BOX_VERTEX  (max, min, min);

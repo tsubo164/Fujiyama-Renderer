@@ -6,6 +6,8 @@ See LICENSE and README
 #ifndef FJ_NUMERIC_H
 #define FJ_NUMERIC_H
 
+#include "fj_types.h"
+
 namespace fj {
 
 /* from math.h */
@@ -28,12 +30,22 @@ namespace fj {
 #define N_180_PI 57.2957795130823208768 /* 180/pi */
 
 #define ABS(x) (((x)<0)?-(x):(x))
-#define MIN(x,y) ((x)<(y)?(x):(y))
-#define MAX(x,y) ((x)>(y)?(x):(y))
+//#define MIN(x,y) ((x)<(y)?(x):(y))
+//#define MAX(x,y) ((x)>(y)?(x):(y))
 #define CLAMP(x,a,b) ((x)<(a)?(a):((x)>(b)?(b):(x)))
 #define RADIAN(deg) ((deg)*N_PI_180)
 
 #define LERP(a,b,t) (((1-(t))*(a))+((b)*(t)))
+
+inline Real Min(Real x, Real y)
+{
+  return x < y ? x : y;
+}
+
+inline Real Max(Real x, Real y)
+{
+  return x > y ? x : y;
+}
 
 extern double SmoothStep(double x, double a, double b);
 extern double Gamma(double x, double g);

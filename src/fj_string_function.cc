@@ -40,7 +40,7 @@ char *StrCopyAndTerminate(char *dst, const char *src, size_t nchars)
   size_t len;
 
   len = strlen(src);
-  len = MIN(len, nchars);
+  len = Min(len, nchars);
   strncpy(dst, src, len);
   dst[len] = '\0';
 

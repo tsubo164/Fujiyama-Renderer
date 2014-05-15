@@ -7,7 +7,6 @@ See LICENSE and README
 #include "fj_intersection.h"
 #include "fj_primitive_set.h"
 #include "fj_triangle.h"
-#include "fj_tex_coord.h"
 #include "fj_memory.h"
 #include "fj_ray.h"
 
@@ -107,7 +106,7 @@ void Mesh::ComputeBounds()
   for (int i = 0; i < GetFaceCount(); i++) {
     Box tri_bounds;
     triangle_bounds(this, i, &tri_bounds);
-    BoxAddBox(&bounds, &tri_bounds);
+    BoxAddBox(&bounds, tri_bounds);
   }
 }
 
@@ -354,7 +353,7 @@ static int triangle_ray_intersect(const void *prim_set, int prim_id, double time
     isect->dPdv = Vector(0, 0, 0);
   }
 
-  isect->P = ray->PointAt(t_hit);
+  isect->P = RayPointAt(*ray, t_hit);
   isect->object = NULL;
   isect->prim_id = prim_id;
   isect->t_hit = t_hit;
@@ -382,9 +381,9 @@ static void triangle_bounds(const void *prim_set, int prim_id, Box *bounds)
     const Vector P1_close = P1 + velocity1;
     const Vector P2_close = P2 + velocity2;
 
-    BoxAddPoint(bounds, &P0_close);
-    BoxAddPoint(bounds, &P1_close);
-    BoxAddPoint(bounds, &P2_close);
+    BoxAddPoint(bounds, P0_close);
+    BoxAddPoint(bounds, P1_close);
+    BoxAddPoint(bounds, P2_close);
   }
 }
 

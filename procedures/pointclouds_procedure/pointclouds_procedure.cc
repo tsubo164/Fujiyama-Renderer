@@ -183,7 +183,7 @@ static int FillWithPointClouds(struct Volume *volume,
 
         if (distance < cp->radius - thresholdwidth) {
           value = VolGetValue(volume, i, j, k);
-          VolSetValue(volume, i, j, k, MAX(value, cp->density));
+          VolSetValue(volume, i, j, k, Max(value, cp->density));
           PrgIncrement(&progress);
           continue;
         }
@@ -205,7 +205,7 @@ static int FillWithPointClouds(struct Volume *volume,
         pyro_value *= cp->density;
 
         value = VolGetValue(volume, i, j, k);
-        VolSetValue(volume, i, j, k, MAX(value, pyro_value));
+        VolSetValue(volume, i, j, k, Max(value, pyro_value));
 
         PrgIncrement(&progress);
       }

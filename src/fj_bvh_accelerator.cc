@@ -181,8 +181,8 @@ static int intersect_bvh_recursive(const struct PrimitiveSet *primset,
   double boxhit_tmax;
   int hit_left, hit_right;
 
-  const int hit = BoxRayIntersect(&node->bounds,
-      &ray->orig, &ray->dir, ray->tmin, ray->tmax,
+  const bool hit = BoxRayIntersect(node->bounds,
+      ray->orig, ray->dir, ray->tmin, ray->tmax,
       &boxhit_tmin, &boxhit_tmax);
 
   if (!hit) {
@@ -219,7 +219,7 @@ static int intersect_bvh_loop(const struct PrimitiveSet *primset,
   int hit = 0;
   int hittmp = 0;
   int whichhit;
-  int hit_left, hit_right;
+  bool hit_left, hit_right;
   double boxhit_tmin, boxhit_tmax;
   struct Intersection isect_candidates[2];
   struct Intersection *isect_min, *isect_tmp;
@@ -245,12 +245,12 @@ static int intersect_bvh_loop(const struct PrimitiveSet *primset,
       continue;
     }
 
-    hit_left = BoxRayIntersect(&node->left->bounds,
-        &ray->orig, &ray->dir, ray->tmin, ray->tmax,
+    hit_left = BoxRayIntersect(node->left->bounds,
+        ray->orig, ray->dir, ray->tmin, ray->tmax,
         &boxhit_tmin, &boxhit_tmax);
 
-    hit_right = BoxRayIntersect(&node->right->bounds,
-        &ray->orig, &ray->dir, ray->tmin, ray->tmax,
+    hit_right = BoxRayIntersect(node->right->bounds,
+        ray->orig, ray->dir, ray->tmin, ray->tmax,
         &boxhit_tmin, &boxhit_tmax);
 
     whichhit = HIT_NONE;
@@ -338,7 +338,7 @@ static struct BVHNode *build_bvh(struct Primitive **primptrs, int begin, int end
     return NULL;
 
   node->bounds = node->left->bounds;
-  BoxAddBox(&node->bounds, &node->right->bounds);
+  BoxAddBox(&node->bounds, node->right->bounds);
 
   return node;
 }
@@ -353,7 +353,7 @@ static struct BVHNode *new_bvhnode(void)
   node->left = NULL;
   node->right = NULL;
   node->prim_id = -1;
-  BOX3_SET(&node->bounds, 0, 0, 0, 0, 0, 0);
+  node->bounds = Box();
 
   return node;
 }

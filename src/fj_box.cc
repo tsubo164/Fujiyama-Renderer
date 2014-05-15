@@ -5,72 +5,74 @@ See LICENSE and README
 
 #include "fj_box.h"
 #include "fj_numeric.h"
-#include <stdio.h>
-#include <math.h>
 
-// TODO TEST REVERSE INFINITE
+#include <cstdio>
 #include <cfloat>
 
 namespace fj {
 
-// TODO TEST REVERSE INFINITE
+void BoxExpand(Box *box, Real delta)
+{
+  box->min -= Vector(delta, delta, delta);
+  box->max += Vector(delta, delta, delta);
+}
+
 void BoxReverseInfinite(Box *box)
 {
   box->min = Vector( FLT_MAX,  FLT_MAX,  FLT_MAX);
   box->max = Vector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 }
 
-int BoxContainsPoint(const struct Box *box, const struct Vector *point)
+bool BoxContainsPoint(const Box &box, const Vector &point)
 {
-  if ((point->x < box->min.x) || (point->x > box->max.x)) return 0;
-  if ((point->y < box->min.y) || (point->y > box->max.y)) return 0;
-  if ((point->z < box->min.z) || (point->z > box->max.z)) return 0;
+  if ((point.x < box.min.x) || (point.x > box.max.x)) return false;
+  if ((point.y < box.min.y) || (point.y > box.max.y)) return false;
+  if ((point.z < box.min.z) || (point.z > box.max.z)) return false;
 
-  return 1;
+  return true;
 }
 
-void BoxAddPoint(struct Box *box, const struct Vector *point)
+void BoxAddPoint(Box *box, const Vector &point)
 {
-  box->min.x = MIN(box->min.x, point->x);
-  box->min.y = MIN(box->min.y, point->y);
-  box->min.z = MIN(box->min.z, point->z);
-  box->max.x = MAX(box->max.x, point->x);
-  box->max.y = MAX(box->max.y, point->y);
-  box->max.z = MAX(box->max.z, point->z);
+  box->min.x = Min(box->min.x, point.x);
+  box->min.y = Min(box->min.y, point.y);
+  box->min.z = Min(box->min.z, point.z);
+  box->max.x = Max(box->max.x, point.x);
+  box->max.y = Max(box->max.y, point.y);
+  box->max.z = Max(box->max.z, point.z);
 }
 
-void BoxAddBox(struct Box *box, const struct Box *otherbox)
+void BoxAddBox(Box *box, const Box &otherbox)
 {
-  box->min.x = MIN(box->min.x, otherbox->min.x);
-  box->min.y = MIN(box->min.y, otherbox->min.y);
-  box->min.z = MIN(box->min.z, otherbox->min.z);
-  box->max.x = MAX(box->max.x, otherbox->max.x);
-  box->max.y = MAX(box->max.y, otherbox->max.y);
-  box->max.z = MAX(box->max.z, otherbox->max.z);
+  box->min.x = Min(box->min.x, otherbox.min.x);
+  box->min.y = Min(box->min.y, otherbox.min.y);
+  box->min.z = Min(box->min.z, otherbox.min.z);
+  box->max.x = Max(box->max.x, otherbox.max.x);
+  box->max.y = Max(box->max.y, otherbox.max.y);
+  box->max.z = Max(box->max.z, otherbox.max.z);
 }
 
-int BoxRayIntersect(const struct Box *box,
-    const struct Vector *rayorig, const struct Vector *raydir,
-    double ray_tmin, double ray_tmax,
-    double *hit_tmin, double *hit_tmax)
+bool BoxRayIntersect(const Box &box,
+    const Vector &rayorig, const Vector &raydir,
+    Real ray_tmin, Real ray_tmax,
+    Real *hit_tmin, Real *hit_tmax)
 {
-  int hit;
-  double tmin, tmax, tymin, tymax, tzmin, tzmax;
+  Real tmin, tmax, tymin, tymax, tzmin, tzmax;
 
-  if (raydir->x >= 0) {
-    tmin = (box->min.x - rayorig->x) / raydir->x;
-    tmax = (box->max.x - rayorig->x) / raydir->x;
+  if (raydir.x >= 0) {
+    tmin = (box.min.x - rayorig.x) / raydir.x;
+    tmax = (box.max.x - rayorig.x) / raydir.x;
   } else {
-    tmin = (box->max.x - rayorig->x) / raydir->x;
-    tmax = (box->min.x - rayorig->x) / raydir->x;
+    tmin = (box.max.x - rayorig.x) / raydir.x;
+    tmax = (box.min.x - rayorig.x) / raydir.x;
   }
 
-  if (raydir->y >= 0) {
-    tymin = (box->min.y - rayorig->y) / raydir->y;
-    tymax = (box->max.y - rayorig->y) / raydir->y;
+  if (raydir.y >= 0) {
+    tymin = (box.min.y - rayorig.y) / raydir.y;
+    tymax = (box.max.y - rayorig.y) / raydir.y;
   } else {
-    tymin = (box->max.y - rayorig->y) / raydir->y;
-    tymax = (box->min.y - rayorig->y) / raydir->y;
+    tymin = (box.max.y - rayorig.y) / raydir.y;
+    tymax = (box.min.y - rayorig.y) / raydir.y;
   }
 
   if ((tmin > tymax) || (tymin > tmax))
@@ -81,12 +83,12 @@ int BoxRayIntersect(const struct Box *box,
   if (tymax < tmax)
     tmax = tymax;
 
-  if (raydir->z >= 0) {
-    tzmin = (box->min.z - rayorig->z) / raydir->z;
-    tzmax = (box->max.z - rayorig->z) / raydir->z;
+  if (raydir.z >= 0) {
+    tzmin = (box.min.z - rayorig.z) / raydir.z;
+    tzmax = (box.max.z - rayorig.z) / raydir.z;
   } else {
-    tzmin = (box->max.z - rayorig->z) / raydir->z;
-    tzmax = (box->min.z - rayorig->z) / raydir->z;
+    tzmin = (box.max.z - rayorig.z) / raydir.z;
+    tzmax = (box.min.z - rayorig.z) / raydir.z;
   }
 
   if ((tmin > tzmax) || (tzmin > tmax))
@@ -97,7 +99,7 @@ int BoxRayIntersect(const struct Box *box,
   if (tzmax < tmax)
     tmax = tzmax;
 
-  hit = ((tmin < ray_tmax) && (tmax > ray_tmin));
+  const bool hit = ((tmin < ray_tmax) && (tmax > ray_tmin));
   if (hit) {
     *hit_tmin = tmin;
     *hit_tmax = tmax;
@@ -106,27 +108,27 @@ int BoxRayIntersect(const struct Box *box,
   return hit;
 }
 
-void BoxCentroid(const struct Box *box, struct Vector *centroid)
+Vector BoxSize(const Box &box)
 {
-  centroid->x = .5 * (box->min.x + box->max.x);
-  centroid->y = .5 * (box->min.y + box->max.y);
-  centroid->z = .5 * (box->min.z + box->max.z);
+  return box.max - box.min;
 }
 
-double BoxDiagonal(const struct Box *box)
+Vector BoxCentroid(const Box &box)
 {
-  const double xsize = BOX3_XSIZE(box);
-  const double ysize = BOX3_YSIZE(box);
-  const double zsize = BOX3_ZSIZE(box);
-
-  return .5 * sqrt(xsize * xsize + ysize * ysize + zsize * zsize);
+  return .5 * (box.min + box.max);
 }
 
-void BoxPrint(const struct Box *box)
+Real BoxDiagonal(const Box &box)
+{
+  const Vector size = BoxSize(box);
+  return .5 * Length(size);
+}
+
+void BoxPrint(const Box &box)
 {
   printf("(%g, %g, %g) (%g, %g, %g)\n",
-      box->min.x, box->min.y, box->min.z,
-      box->max.x, box->max.y, box->max.z);
+      box.min.x, box.min.y, box.min.z,
+      box.max.x, box.max.y, box.max.z);
 }
 
 } // namespace xxx

@@ -115,7 +115,7 @@ int main(int argc, const char **argv)
     for (i = 0; i < nverts; i++) {
       struct Vector pos;
       MshGetVertexPosition(mesh, i, &pos);
-      BoxAddPoint(&bounds, &pos);
+      BoxAddPoint(&bounds, pos);
     }
     zmin = bounds.min.z;
     zmax = bounds.max.z;

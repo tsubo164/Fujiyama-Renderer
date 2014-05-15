@@ -6,6 +6,7 @@ See LICENSE and README
 #ifndef FJ_MESH_H
 #define FJ_MESH_H
 
+#include "fj_tex_coord.h"
 #include "fj_vector.h"
 #include "fj_color.h"
 #include "fj_box.h"

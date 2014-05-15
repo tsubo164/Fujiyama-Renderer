@@ -81,8 +81,8 @@ double SlPhong(const struct Vector *I, const struct Vector *N, const struct Vect
   SlReflect(L, N, &Lrefl);
 
   spec = VEC3_DOT(I, &Lrefl);
-  spec = MAX(0, spec);
-  spec = pow(spec, 1/MAX(.001, roughness));
+  spec = Max(0., spec);
+  spec = pow(spec, 1/Max(.001, roughness));
 
   return spec;
 }
@@ -595,7 +595,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
       break;
     }
     t_limit = IntervalListGetMaxT(intervals);
-    t_limit = MIN(t_limit, ray->tmax);
+    t_limit = Min(t_limit, ray->tmax);
 
     t_start = IntervalListGetMinT(intervals);
     if (t_start < 0) {
@@ -605,7 +605,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
       t_start = t_start - fmod(t_start, t_delta) + t_delta;
     }
 
-    P = ray->PointAt(t_start);
+    P = RayPointAt(*ray, t_start);
     ray_delta.x = t_delta * ray->dir.x;
     ray_delta.y = t_delta * ray->dir.y;
     ray_delta.z = t_delta * ray->dir.z;
@@ -623,7 +623,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
         ObjGetVolumeSample(interval->object, cxt->time, &P, &sample);
 
         /* merge volume with max density */
-        opacity = MAX(opacity, t_delta * sample.density);
+        opacity = Max(opacity, t_delta * sample.density);
 
         if (cxt->ray_context != CXT_SHADOW_RAY) {
           struct SurfaceInput in;

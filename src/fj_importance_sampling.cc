@@ -573,7 +573,7 @@ static void generate_dome_samples(int sample_xres, int sample_yres,
             const double xx = Xq->x - Yp->x;
             const double yy = Xq->y - Yp->y;
             const double d = xx * xx + yy * yy;
-            d_min = MIN(d_min, d);
+            d_min = Min(d_min, d);
           }
           if (d_max < d_min) {
             d_max = d_min;

@@ -7,28 +7,30 @@ See LICENSE and README
 #include "fj_numeric.h"
 #include <stdio.h>
 
+using namespace fj;
+
 int main()
 {
   {
     const int x = 2;
     const int y = 122;
 
-    TEST(MIN(x, y) == x);
-    TEST(MAX(x, y) == y);
+    TEST(Min(x, y) == x);
+    TEST(Max(x, y) == y);
   }
   {
     const float x = 12.35;
     const float y = 389.93;
 
-    TEST(MIN(x, y) == x);
-    TEST(MAX(x, y) == y);
+    TEST(Min(x, y) == x);
+    TEST(Max(x, y) == y);
   }
   {
     const double x = 12.35;
     const double y = 389.93;
 
-    TEST(MIN(x, y) == x);
-    TEST(MAX(x, y) == y);
+    TEST(Min(x, y) == x);
+    TEST(Max(x, y) == y);
   }
   {
     const int x = 2;

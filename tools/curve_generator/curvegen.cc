@@ -382,7 +382,7 @@ static int gen_hair(int argc, const char **argv)
     for (p = 0; p < N; p++) {
       struct Vector pt;
       MshGetVertexPosition(mesh, p, &pt);
-      BoxAddPoint(&bounds, &pt);
+      BoxAddPoint(&bounds, pt);
     }
     ymin = bounds.min.y;
     ymax = bounds.max.y;
@@ -472,7 +472,7 @@ static int gen_hair(int argc, const char **argv)
 
       VEC3_NORMALIZE(&src_N);
 
-      src_N.y = MIN(src_N.y, .1);
+      src_N.y = Min(src_N.y, .1);
       if (src_N.x < .1 && src_N.z < .1) {
         src_N.x /= src_N.x;
         src_N.z /= src_N.z;

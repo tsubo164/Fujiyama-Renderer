@@ -70,8 +70,8 @@ void IntervalListPush(struct IntervalList *intervals, const struct Interval *int
     }
   }
   intervals->num_nodes++;
-  intervals->tmin = MIN(intervals->tmin, interval->tmin);
-  intervals->tmax = MAX(intervals->tmax, interval->tmax);
+  intervals->tmin = Min(intervals->tmin, interval->tmin);
+  intervals->tmax = Max(intervals->tmax, interval->tmax);
 }
 
 int IntervalListGetCount(const struct IntervalList *intervals)

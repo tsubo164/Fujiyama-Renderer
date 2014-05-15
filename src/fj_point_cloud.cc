@@ -46,7 +46,7 @@ struct PointCloud *PtcNew(void)
   ptc->P = NULL;
   ptc->velocity = NULL;
   ptc->radius = NULL;
-  BOX3_SET(&ptc->bounds, 0, 0, 0, 0, 0, 0);
+  ptc->bounds = Box();
 
   return ptc;
 }
@@ -204,7 +204,7 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
     t_hit = t0;
   }
 
-  isect->P = ray->PointAt(t_hit);
+  isect->P = RayPointAt(*ray, t_hit);
   isect->N.x = isect->P.x - center.x;
   isect->N.y = isect->P.y - center.y;
   isect->N.z = isect->P.z - center.z;
@@ -225,7 +225,7 @@ static void point_bounds(const void *prim_set, int prim_id, struct Box *bounds)
   const double radius = ptc->radius[prim_id];
   struct Vector P_close = *P;
 
-  BOX3_SET(bounds,
+  *bounds = Box(
       P->x, P->y, P->z,
       P->x, P->y, P->z);
 
@@ -233,8 +233,8 @@ static void point_bounds(const void *prim_set, int prim_id, struct Box *bounds)
   P_close.y = P->y + velocity->y;
   P_close.z = P->z + velocity->z;
 
-  BoxAddPoint(bounds, &P_close);
-  BOX3_EXPAND(bounds, radius);
+  BoxAddPoint(bounds, P_close);
+  BoxExpand(bounds, radius);
 }
 
 static void point_cloud_bounds(const void *prim_set, struct Box *bounds)
@@ -253,13 +253,13 @@ static void update_bounds(struct PointCloud *ptc)
 {
   int i;
 
-  BOX3_SET(&ptc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX); 
+  BoxReverseInfinite(&ptc->bounds); 
 
   for (i = 0; i < ptc->point_count; i++) {
     struct Box ptbox;
 
     point_bounds(ptc, i, &ptbox);
-    BoxAddBox(&ptc->bounds, &ptbox);
+    BoxAddBox(&ptc->bounds, ptbox);
   }
 }
 

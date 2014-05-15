@@ -64,7 +64,7 @@ struct Accelerator *AccNew(int accelerator_type)
   acc->has_built = 0;
 
   InitPrimitiveSet(&acc->primset);
-  BOX3_SET(&acc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+  BoxReverseInfinite(&acc->bounds);
 
   return acc;
 }
@@ -93,7 +93,7 @@ void AccGetBounds(const struct Accelerator *acc, struct Box *bounds)
 void AccComputeBounds(struct Accelerator *acc)
 {
   PrmGetBounds(&acc->primset, &acc->bounds);
-  BOX3_EXPAND(&acc->bounds, AccGetBoundsPadding());
+  BoxExpand(&acc->bounds, AccGetBoundsPadding());
 }
 
 int AccBuild(struct Accelerator *acc)
@@ -129,7 +129,7 @@ int AccIntersect(const struct Accelerator *acc, double time,
   double boxhit_tmax = 0;
 
   /* check intersection with overall bounds */
-  if (!BoxRayIntersect(&acc->bounds, &ray->orig, &ray->dir, ray->tmin, ray->tmax,
+  if (!BoxRayIntersect(acc->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
         &boxhit_tmin, &boxhit_tmax)) {
     return 0;
   }

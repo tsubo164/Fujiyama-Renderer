@@ -151,9 +151,9 @@ static int set_diffuse(void *self, const struct PropertyValue *value)
   struct GlassShader *glass = (struct GlassShader *) self;
   struct Color diffuse = {0, 0, 0};
 
-  diffuse.r = MAX(0, value->vector[0]);
-  diffuse.g = MAX(0, value->vector[1]);
-  diffuse.b = MAX(0, value->vector[2]);
+  diffuse.r = Max(0, value->vector[0]);
+  diffuse.g = Max(0, value->vector[1]);
+  diffuse.b = Max(0, value->vector[2]);
   glass->diffuse = diffuse;
 
   return 0;
@@ -164,9 +164,9 @@ static int set_specular(void *self, const struct PropertyValue *value)
   struct GlassShader *glass = (struct GlassShader *) self;
   struct Color specular = {0, 0, 0};
 
-  specular.r = MAX(0, value->vector[0]);
-  specular.g = MAX(0, value->vector[1]);
-  specular.b = MAX(0, value->vector[2]);
+  specular.r = Max(0, value->vector[0]);
+  specular.g = Max(0, value->vector[1]);
+  specular.b = Max(0, value->vector[2]);
   glass->specular = specular;
 
   return 0;
@@ -177,9 +177,9 @@ static int set_ambient(void *self, const struct PropertyValue *value)
   struct GlassShader *glass = (struct GlassShader *) self;
   struct Color ambient = {0, 0, 0};
 
-  ambient.r = MAX(0, value->vector[0]);
-  ambient.g = MAX(0, value->vector[1]);
-  ambient.b = MAX(0, value->vector[2]);
+  ambient.r = Max(0, value->vector[0]);
+  ambient.g = Max(0, value->vector[1]);
+  ambient.b = Max(0, value->vector[2]);
   glass->ambient = ambient;
 
   return 0;
@@ -190,9 +190,9 @@ static int set_filter_color(void *self, const struct PropertyValue *value)
   struct GlassShader *glass = (struct GlassShader *) self;
   struct Color filter_color = {0, 0, 0};
 
-  filter_color.r = MAX(.001, value->vector[0]);
-  filter_color.g = MAX(.001, value->vector[1]);
-  filter_color.b = MAX(.001, value->vector[2]);
+  filter_color.r = Max(.001, value->vector[0]);
+  filter_color.g = Max(.001, value->vector[1]);
+  filter_color.b = Max(.001, value->vector[2]);
   glass->filter_color = filter_color;
 
   if (glass->filter_color.r == 1 &&
@@ -212,7 +212,7 @@ static int set_roughness(void *self, const struct PropertyValue *value)
   struct GlassShader *glass = (struct GlassShader *) self;
   float roughness = value->vector[0];
 
-  roughness = MAX(0, roughness);
+  roughness = Max(0, roughness);
   glass->roughness = roughness;
 
   return 0;
@@ -223,7 +223,7 @@ static int set_ior(void *self, const struct PropertyValue *value)
   struct GlassShader *glass = (struct GlassShader *) self;
   float ior = value->vector[0];
 
-  ior = MAX(0, ior);
+  ior = Max(0, ior);
   glass->ior = ior;
 
   return 0;

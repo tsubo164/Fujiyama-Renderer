@@ -117,10 +117,10 @@ int FbComputeBounds(struct FrameBuffer *fb, int *bounds)
         rgba[1] > 0 ||
         rgba[2] > 0 ||
         rgba[3] > 0) {
-        xmin = MIN(xmin, x);
-        ymin = MIN(ymin, y);
-        xmax = MAX(xmax, x + 1);
-        ymax = MAX(ymax, y + 1);
+        xmin = Min(xmin, x);
+        ymin = Min(ymin, y);
+        xmax = Max(xmax, x + 1);
+        ymax = Max(ymax, y + 1);
       }
     }
   }

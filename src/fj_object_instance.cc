@@ -293,9 +293,9 @@ int ObjVolumeIntersect(const struct ObjectInstance *obj, double time,
   XfmTransformPointInverse(&transform_interp, &ray_object_space.orig);
   XfmTransformVectorInverse(&transform_interp, &ray_object_space.dir);
 
-  hit = BoxRayIntersect(&volume_bounds,
-      &ray_object_space.orig,
-      &ray_object_space.dir,
+  hit = BoxRayIntersect(volume_bounds,
+      ray_object_space.orig,
+      ray_object_space.dir,
       ray_object_space.tmin,
       ray_object_space.tmax,
       &boxhit_tmin, &boxhit_tmax);
@@ -340,7 +340,7 @@ static void update_object_bounds(struct ObjectInstance *obj)
     VolGetBounds(obj->volume, &obj->bounds);
   }
   else {
-    BOX3_SET(&obj->bounds, 0, 0, 0, 0, 0, 0);
+    obj->bounds = Box();
   }
   merge_sampled_bounds(obj);
 }
@@ -357,11 +357,10 @@ static void merge_sampled_bounds(struct ObjectInstance *obj)
 
   /* extend bounds when rotated to ensure object is always inside bounds */
   if (obj->transform_samples.rotate.sample_count > 1) {
-    const double diagonal = BoxDiagonal(&original_bounds);
-    struct Vector centroid;
+    const double diagonal = BoxDiagonal(original_bounds);
+    const Vector centroid = BoxCentroid(original_bounds);
 
-    BoxCentroid(&original_bounds, &centroid);
-    BOX3_SET(&original_bounds,
+    original_bounds = Box(
         centroid.x - diagonal,
         centroid.y - diagonal,
         centroid.z - diagonal,
@@ -375,9 +374,9 @@ static void merge_sampled_bounds(struct ObjectInstance *obj)
   S[1] = obj->transform_samples.scale.samples[0].vector[1];
   S[2] = obj->transform_samples.scale.samples[0].vector[2];
   for (i = 1; i < obj->transform_samples.scale.sample_count; i++) {
-    S[0] = MAX(S[0], obj->transform_samples.scale.samples[i].vector[0]);
-    S[1] = MAX(S[1], obj->transform_samples.scale.samples[i].vector[1]);
-    S[2] = MAX(S[2], obj->transform_samples.scale.samples[i].vector[2]);
+    S[0] = Max(S[0], obj->transform_samples.scale.samples[i].vector[0]);
+    S[1] = Max(S[1], obj->transform_samples.scale.samples[i].vector[1]);
+    S[2] = Max(S[2], obj->transform_samples.scale.samples[i].vector[2]);
   }
 
   /* accumulate all bounds over sampling time */
@@ -395,7 +394,7 @@ static void merge_sampled_bounds(struct ObjectInstance *obj)
 
     sample_bounds = original_bounds;
     XfmTransformBounds(&transform, &sample_bounds);
-    BoxAddBox(&merged_bounds, &sample_bounds);
+    BoxAddBox(&merged_bounds, sample_bounds);
   }
 
   obj->bounds = merged_bounds;

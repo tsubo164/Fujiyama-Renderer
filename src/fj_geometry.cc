@@ -224,7 +224,7 @@ struct Geometry *GeoNew(void)
   GeoSetPointCount(geo, 0);
   GeoSetPrimitiveCount(geo, 0);
 
-  BOX3_SET(&geo->bounds, 0, 0, 0, 0, 0, 0);
+  geo->bounds = Box();
 
   geo->point_attribute = new_attribute_list();
   geo->primitive_attribute = new_attribute_list();

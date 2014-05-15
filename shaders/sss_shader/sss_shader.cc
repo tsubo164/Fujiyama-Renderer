@@ -525,7 +525,7 @@ static void diffusion_scattering(const struct SSSShader *sss,
          (sigma_tr_dv + 1) * exp(-sigma_tr_dv) * zr / pow(dv, 3);
 
       Ln_dot_Ni = VEC3_DOT(&Ln, &Ni);
-      Ln_dot_Ni = MAX(0, Ln_dot_Ni);
+      Ln_dot_Ni = Max(0, Ln_dot_Ni);
 
       scat = sigma_tr[j] * sigma_tr[j] * exp(-sigma_tr[j] * r);
       if (scat != 0) {
@@ -563,9 +563,9 @@ static int set_diffuse(void *self, const struct PropertyValue *value)
   struct SSSShader *sss = (struct SSSShader *) self;
   struct Color diffuse = {0, 0, 0};
 
-  diffuse.r = MAX(0, value->vector[0]);
-  diffuse.g = MAX(0, value->vector[1]);
-  diffuse.b = MAX(0, value->vector[2]);
+  diffuse.r = Max(0, value->vector[0]);
+  diffuse.g = Max(0, value->vector[1]);
+  diffuse.b = Max(0, value->vector[2]);
   sss->diffuse = diffuse;
 
   return 0;
@@ -576,9 +576,9 @@ static int set_specular(void *self, const struct PropertyValue *value)
   struct SSSShader *sss = (struct SSSShader *) self;
   struct Color specular = {0, 0, 0};
 
-  specular.r = MAX(0, value->vector[0]);
-  specular.g = MAX(0, value->vector[1]);
-  specular.b = MAX(0, value->vector[2]);
+  specular.r = Max(0, value->vector[0]);
+  specular.g = Max(0, value->vector[1]);
+  specular.b = Max(0, value->vector[2]);
   sss->specular = specular;
 
   return 0;
@@ -589,9 +589,9 @@ static int set_ambient(void *self, const struct PropertyValue *value)
   struct SSSShader *sss = (struct SSSShader *) self;
   struct Color ambient = {0, 0, 0};
 
-  ambient.r = MAX(0, value->vector[0]);
-  ambient.g = MAX(0, value->vector[1]);
-  ambient.b = MAX(0, value->vector[2]);
+  ambient.r = Max(0, value->vector[0]);
+  ambient.g = Max(0, value->vector[1]);
+  ambient.b = Max(0, value->vector[2]);
   sss->ambient = ambient;
 
   return 0;
@@ -602,7 +602,7 @@ static int set_roughness(void *self, const struct PropertyValue *value)
   struct SSSShader *sss = (struct SSSShader *) self;
   float roughness = value->vector[0];
 
-  roughness = MAX(0, roughness);
+  roughness = Max(0, roughness);
   sss->roughness = roughness;
 
   return 0;
@@ -613,9 +613,9 @@ static int set_reflect(void *self, const struct PropertyValue *value)
   struct SSSShader *sss = (struct SSSShader *) self;
   struct Color reflect = {0, 0, 0};
 
-  reflect.r = MAX(0, value->vector[0]);
-  reflect.g = MAX(0, value->vector[1]);
-  reflect.b = MAX(0, value->vector[2]);
+  reflect.r = Max(0, value->vector[0]);
+  reflect.g = Max(0, value->vector[1]);
+  reflect.b = Max(0, value->vector[2]);
   sss->reflect = reflect;
 
   if (sss->reflect.r > 0 ||
@@ -635,7 +635,7 @@ static int set_ior(void *self, const struct PropertyValue *value)
   struct SSSShader *sss = (struct SSSShader *) self;
   float ior = value->vector[0];
 
-  ior = MAX(.001, ior);
+  ior = Max(.001, ior);
   sss->ior = ior;
 
   return 0;
@@ -686,7 +686,7 @@ static int set_single_scattering_samples(void *self, const struct PropertyValue 
   struct SSSShader *sss = (struct SSSShader *) self;
   int nsamples = (int) value->vector[0];
 
-  nsamples = MAX(1, nsamples);
+  nsamples = Max(1, nsamples);
 
   sss->single_scattering_samples = nsamples;
 
@@ -698,7 +698,7 @@ static int set_multiple_scattering_samples(void *self, const struct PropertyValu
   struct SSSShader *sss = (struct SSSShader *) self;
   int nsamples = (int) value->vector[0];
 
-  nsamples = MAX(1, nsamples);
+  nsamples = Max(1, nsamples);
 
   sss->multiple_scattering_samples = nsamples;
 
@@ -710,9 +710,9 @@ static int set_scattering_coeff(void *self, const struct PropertyValue *value)
   struct SSSShader *sss = (struct SSSShader *) self;
   float scattering_coeff[3] = {0, 0, 0};
 
-  scattering_coeff[0] = MAX(0, value->vector[0]);
-  scattering_coeff[1] = MAX(0, value->vector[1]);
-  scattering_coeff[2] = MAX(0, value->vector[2]);
+  scattering_coeff[0] = Max(0, value->vector[0]);
+  scattering_coeff[1] = Max(0, value->vector[1]);
+  scattering_coeff[2] = Max(0, value->vector[2]);
   scattering_coeff[0] *= 1000; /* 1/mm */
   scattering_coeff[1] *= 1000; /* 1/mm */
   scattering_coeff[2] *= 1000; /* 1/mm */
@@ -728,9 +728,9 @@ static int set_absorption_coeff(void *self, const struct PropertyValue *value)
   struct SSSShader *sss = (struct SSSShader *) self;
   float absorption_coeff[3] = {0, 0, 0};
 
-  absorption_coeff[0] = MAX(0, value->vector[0]);
-  absorption_coeff[1] = MAX(0, value->vector[1]);
-  absorption_coeff[2] = MAX(0, value->vector[2]);
+  absorption_coeff[0] = Max(0, value->vector[0]);
+  absorption_coeff[1] = Max(0, value->vector[1]);
+  absorption_coeff[2] = Max(0, value->vector[2]);
   absorption_coeff[0] *= 1000; /* 1/mm */
   absorption_coeff[1] *= 1000; /* 1/mm */
   absorption_coeff[2] *= 1000; /* 1/mm */
@@ -746,7 +746,7 @@ static int set_scattering_phase(void *self, const struct PropertyValue *value)
   struct SSSShader *sss = (struct SSSShader *) self;
   float scattering_phase = value->vector[0];
 
-  scattering_phase = MAX(0, scattering_phase);
+  scattering_phase = Max(0, scattering_phase);
 
   sss->scattering_phase = scattering_phase;
 
@@ -758,7 +758,7 @@ static int set_single_scattering_intensity(void *self, const struct PropertyValu
   struct SSSShader *sss = (struct SSSShader *) self;
   float intensity = value->vector[0];
 
-  intensity = MAX(0, intensity);
+  intensity = Max(0, intensity);
 
   sss->single_scattering_intensity = intensity;
 
@@ -770,7 +770,7 @@ static int set_multiple_scattering_intensity(void *self, const struct PropertyVa
   struct SSSShader *sss = (struct SSSShader *) self;
   float intensity = value->vector[0];
 
-  intensity = MAX(0, intensity);
+  intensity = Max(0, intensity);
 
   sss->multiple_scattering_intensity = intensity;
 

@@ -148,7 +148,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 
     /* diff */
     Kd = VEC3_DOT(&Nf, &Lout.Ln);
-    Kd = MAX(0, Kd);
+    Kd = Max(0, Kd);
     diff.r += Kd * Lout.Cl.r;
     diff.g += Kd * Lout.Cl.g;
     diff.b += Kd * Lout.Cl.b;
@@ -195,9 +195,9 @@ static int set_diffuse(void *self, const struct PropertyValue *value)
   struct PlasticShader *plastic = (struct PlasticShader *) self;
   struct Color diffuse;
 
-  diffuse.r = MAX(0, value->vector[0]);
-  diffuse.g = MAX(0, value->vector[1]);
-  diffuse.b = MAX(0, value->vector[2]);
+  diffuse.r = Max(0, value->vector[0]);
+  diffuse.g = Max(0, value->vector[1]);
+  diffuse.b = Max(0, value->vector[2]);
   plastic->diffuse = diffuse;
 
   return 0;
@@ -208,9 +208,9 @@ static int set_specular(void *self, const struct PropertyValue *value)
   struct PlasticShader *plastic = (struct PlasticShader *) self;
   struct Color specular;
 
-  specular.r = MAX(0, value->vector[0]);
-  specular.g = MAX(0, value->vector[1]);
-  specular.b = MAX(0, value->vector[2]);
+  specular.r = Max(0, value->vector[0]);
+  specular.g = Max(0, value->vector[1]);
+  specular.b = Max(0, value->vector[2]);
   plastic->specular = specular;
 
   return 0;
@@ -221,9 +221,9 @@ static int set_ambient(void *self, const struct PropertyValue *value)
   struct PlasticShader *plastic = (struct PlasticShader *) self;
   struct Color ambient;
 
-  ambient.r = MAX(0, value->vector[0]);
-  ambient.g = MAX(0, value->vector[1]);
-  ambient.b = MAX(0, value->vector[2]);
+  ambient.r = Max(0, value->vector[0]);
+  ambient.g = Max(0, value->vector[1]);
+  ambient.b = Max(0, value->vector[2]);
   plastic->ambient = ambient;
 
   return 0;
@@ -234,7 +234,7 @@ static int set_roughness(void *self, const struct PropertyValue *value)
   struct PlasticShader *plastic = (struct PlasticShader *) self;
   float roughness = value->vector[0];
 
-  roughness = MAX(0, roughness);
+  roughness = Max(0, roughness);
   plastic->roughness = roughness;
 
   return 0;
@@ -245,9 +245,9 @@ static int set_reflect(void *self, const struct PropertyValue *value)
   struct PlasticShader *plastic = (struct PlasticShader *) self;
   struct Color reflect;
 
-  reflect.r = MAX(0, value->vector[0]);
-  reflect.g = MAX(0, value->vector[1]);
-  reflect.b = MAX(0, value->vector[2]);
+  reflect.r = Max(0, value->vector[0]);
+  reflect.g = Max(0, value->vector[1]);
+  reflect.b = Max(0, value->vector[2]);
   plastic->reflect = reflect;
 
   if (plastic->reflect.r > 0 ||
@@ -267,7 +267,7 @@ static int set_ior(void *self, const struct PropertyValue *value)
   struct PlasticShader *plastic = (struct PlasticShader *) self;
   float ior = value->vector[0];
 
-  ior = MAX(.001, ior);
+  ior = Max(.001, ior);
   plastic->ior = ior;
 
   return 0;

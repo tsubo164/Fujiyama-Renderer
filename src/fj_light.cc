@@ -164,7 +164,7 @@ void LgtSetIntensity(struct Light *light, double intensity)
 
 void LgtSetSampleCount(struct Light *light, int sample_count)
 {
-  light->sample_count = MAX(sample_count, 1);
+  light->sample_count = Max(sample_count, 1);
   /* TODO temp */
   light->sample_intensity = light->intensity / light->sample_count;
 }
@@ -282,7 +282,7 @@ static void grid_light_get_samples(const struct Light *light,
   XfmTransformVector(&transform_interp, &N_sample);
   VEC3_NORMALIZE(&N_sample);
 
-  nsamples = MIN(nsamples, max_samples);
+  nsamples = Min(nsamples, max_samples);
   for (i = 0; i < nsamples; i++) {
     struct XorShift *mutable_xr = (struct XorShift *) &light->xr;
     const double x = (XorNextFloat01(mutable_xr) - .5);
@@ -316,7 +316,7 @@ static void grid_light_illuminate(const struct Light *light,
   if (light->double_sided) {
     dot = ABS(dot);
   } else {
-    dot = MAX(dot, 0);
+    dot = Max(dot, 0.);
   }
 
   Cl->r = light->sample_intensity * light->color.r;
@@ -344,7 +344,7 @@ static void sphere_light_get_samples(const struct Light *light,
   /* TODO time sampling */
   XfmLerpTransformSample(&light->transform_samples, 0, &transform_interp);
 
-  nsamples = MIN(nsamples, max_samples);
+  nsamples = Min(nsamples, max_samples);
   for (i = 0; i < nsamples; i++) {
     struct XorShift *mutable_xr = (struct XorShift *) &light->xr;
     struct Vector P_sample;
@@ -405,7 +405,7 @@ static void dome_light_get_samples(const struct Light *light,
   /* TODO time sampling */
   XfmLerpTransformSample(&light->transform_samples, 0, &transform_interp);
 
-  nsamples = MIN(nsamples, max_samples);
+  nsamples = Min(nsamples, max_samples);
   for (i = 0; i < nsamples; i++) {
     const struct DomeSample *dome_sample = &light->dome_samples[i];
     struct Vector P_sample;

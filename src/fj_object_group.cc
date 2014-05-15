@@ -147,7 +147,7 @@ void ObjGroupComputeBounds(struct ObjectGroup *grp)
     struct Box bounds;
 
     ObjGetBounds(obj, &bounds);
-    BoxAddBox(&grp->surface_list->bounds, &bounds);
+    BoxAddBox(&grp->surface_list->bounds, bounds);
   }
 
   N = grp->volume_list->objects->nelems;
@@ -156,7 +156,7 @@ void ObjGroupComputeBounds(struct ObjectGroup *grp)
     struct Box bounds;
 
     ObjGetBounds(obj, &bounds);
-    BoxAddBox(&grp->volume_list->bounds, &bounds);
+    BoxAddBox(&grp->volume_list->bounds, bounds);
   }
 }
 
@@ -209,7 +209,7 @@ static struct ObjectList *obj_list_new(void)
     return NULL;
   }
 
-  BOX3_SET(&list->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+  BoxReverseInfinite(&list->bounds);
 
   return list;
 }
@@ -232,7 +232,7 @@ static void obj_list_add(struct ObjectList *list, const struct ObjectInstance *o
   ObjGetBounds(obj, &bounds);
 
   ArrPushPointer(list->objects, obj);
-  BoxAddBox(&list->bounds, &bounds);
+  BoxAddBox(&list->bounds, bounds);
 }
 
 static const struct ObjectInstance *get_object(const struct ObjectList *list, int index)

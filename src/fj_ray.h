@@ -13,19 +13,18 @@ namespace fj {
 
 struct Ray {
   Ray() : orig(), dir(0, 0, 1), tmin(.001), tmax(1000) {}
+  ~Ray() {}
 
   Vector orig;
   Vector dir;
 
   Real tmin;
   Real tmax;
-
-  Vector PointAt(Real t) const;
 };
 
-inline Vector Ray::PointAt(Real t) const
+inline Vector RayPointAt(const Ray &ray, Real t)
 {
-  return orig + t * dir;
+  return ray.orig + t * ray.dir;
 }
 
 } // namespace xxx

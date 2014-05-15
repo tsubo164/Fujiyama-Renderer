@@ -359,25 +359,25 @@ void RdrSetMaxRefractDepth(struct Renderer *renderer, int max_depth)
 void RdrSetRaymarchStep(struct Renderer *renderer, double step)
 {
   assert(step > 0);
-  renderer->raymarch_step = MAX(step, .001);
+  renderer->raymarch_step = Max(step, .001);
 }
 
 void RdrSetRaymarchShadowStep(struct Renderer *renderer, double step)
 {
   assert(step > 0);
-  renderer->raymarch_shadow_step = MAX(step, .001);
+  renderer->raymarch_shadow_step = Max(step, .001);
 }
 
 void RdrSetRaymarchReflectStep(struct Renderer *renderer, double step)
 {
   assert(step > 0);
-  renderer->raymarch_reflect_step = MAX(step, .001);
+  renderer->raymarch_reflect_step = Max(step, .001);
 }
 
 void RdrSetRaymarchRefractStep(struct Renderer *renderer, double step)
 {
   assert(step > 0);
-  renderer->raymarch_refract_step = MAX(step, .001);
+  renderer->raymarch_refract_step = Max(step, .001);
 }
 
 void RdrSetCamera(struct Renderer *renderer, struct Camera *cam)

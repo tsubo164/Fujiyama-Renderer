@@ -23,7 +23,7 @@ int main()
     double hit_tmax = FLT_MAX;
     int hit;
 
-    hit = BoxRayIntersect(&box, &orig, &dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
+    hit = BoxRayIntersect(box, orig, dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
 
     TEST(hit == 1);
     TEST(TestDoubleEq(hit_tmin, -1));
@@ -39,7 +39,7 @@ int main()
     double hit_tmax = FLT_MAX;
     int hit;
 
-    hit = BoxRayIntersect(&box, &orig, &dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
+    hit = BoxRayIntersect(box, orig, dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
 
     TEST(hit == 1);
     TEST(TestDoubleEq(hit_tmin, 1));
@@ -55,7 +55,7 @@ int main()
     double hit_tmax = FLT_MAX;
     int hit;
 
-    hit = BoxRayIntersect(&box, &orig, &dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
+    hit = BoxRayIntersect(box, orig, dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
 
     TEST(hit == 1);
     TEST(TestDoubleEq(hit_tmin, 1));
@@ -71,7 +71,7 @@ int main()
     double hit_tmax = FLT_MAX;
     int hit;
 
-    hit = BoxRayIntersect(&box, &orig, &dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
+    hit = BoxRayIntersect(box, orig, dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
 
     TEST(hit == 0);
     TEST(TestDoubleEq(hit_tmin, -FLT_MAX));
@@ -87,7 +87,7 @@ int main()
     double hit_tmax = FLT_MAX;
     int hit;
 
-    hit = BoxRayIntersect(&box, &orig, &dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
+    hit = BoxRayIntersect(box, orig, dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
 
     TEST(hit == 0);
     TEST(TestDoubleEq(hit_tmin, -FLT_MAX));
@@ -103,7 +103,7 @@ int main()
     double hit_tmax = FLT_MAX;
     int hit;
 
-    hit = BoxRayIntersect(&box, &orig, &dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
+    hit = BoxRayIntersect(box, orig, dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
 
     TEST(hit == 0);
     TEST(TestDoubleEq(hit_tmin, -FLT_MAX));

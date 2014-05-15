@@ -7,86 +7,41 @@ See LICENSE and README
 #define FJ_BOX_H
 
 #include "fj_vector.h"
+#include "fj_types.h"
 
 namespace fj {
 
 struct Box {
   Box() : min(), max() {}
-  Box(double xmin, double ymin, double zmin, double xmax, double ymax, double zmax)
+  Box(Real xmin, Real ymin, Real zmin, Real xmax, Real ymax, Real zmax)
     : min(xmin, ymin, zmin), max(xmax, ymax, zmax) {}
-  struct Vector min;
-  struct Vector max;
+  ~Box() {}
+
+  Vector min;
+  Vector max;
 };
 
-/* TODO delete BOX2 */
-/* BOX2 */
-/* BOX2[4] {min{0, 0}, max{0, 0}} */
-#define BOX2_XSIZE(box) ((box)[2]-(box)[0])
-#define BOX2_YSIZE(box) ((box)[3]-(box)[1])
-
-#define BOX2_SET(dst,xmin,ymin,xmax,ymax) do { \
-  (dst)[0] = (xmin); \
-  (dst)[1] = (ymin); \
-  (dst)[2] = (xmax); \
-  (dst)[3] = (ymax); \
-  } while(0)
-
-#define BOX2_COPY(dst,a) do { \
-  (dst)[0] = (a)[0]; \
-  (dst)[1] = (a)[1]; \
-  (dst)[2] = (a)[2]; \
-  (dst)[3] = (a)[3]; \
-  } while(0)
-
-/* BOX3 */
-/* double box3[6] {min{0, 0, 0}, max{0, 0, 0}} */
-#define BOX3_XSIZE(box) ((box)->max.x - (box)->min.x)
-#define BOX3_YSIZE(box) ((box)->max.y - (box)->min.y)
-#define BOX3_ZSIZE(box) ((box)->max.z - (box)->min.z)
-
-#define BOX3_SET(dst,xmin,ymin,zmin,xmax,ymax,zmax) do { \
-  (dst)->min.x = (xmin); \
-  (dst)->min.y = (ymin); \
-  (dst)->min.z = (zmin); \
-  (dst)->max.x = (xmax); \
-  (dst)->max.y = (ymax); \
-  (dst)->max.z = (zmax); \
-  } while(0)
-
-#define BOX3_COPY(dst,a) do { \
-  (dst)[0] = (a)[0]; \
-  (dst)[1] = (a)[1]; \
-  (dst)[2] = (a)[2]; \
-  (dst)[3] = (a)[3]; \
-  (dst)[4] = (a)[4]; \
-  (dst)[5] = (a)[5]; \
-  } while(0)
-
-#define BOX3_EXPAND(dst,a) do { \
-  (dst)->min.x -= (a); \
-  (dst)->min.y -= (a); \
-  (dst)->min.z -= (a); \
-  (dst)->max.x += (a); \
-  (dst)->max.y += (a); \
-  (dst)->max.z += (a); \
-  } while(0)
-
-// TODO TEST REVERSE INFINITE
+// edit
+extern void BoxExpand(Box *box, Real delta);
 extern void BoxReverseInfinite(Box *box);
 
-extern int BoxContainsPoint(const struct Box *box, const struct Vector *point);
-extern void BoxAddPoint(struct Box *box, const struct Vector *point);
-extern void BoxAddBox(struct Box *box, const struct Box *otherbox);
+// test
+extern bool BoxContainsPoint(const Box &box, const Vector &point);
+extern void BoxAddPoint(Box *box, const Vector &point);
+extern void BoxAddBox(Box *box, const Box &otherbox);
 
-extern int BoxRayIntersect(const struct Box *box,
-    const struct Vector *rayorig, const struct Vector *raydir,
-    double ray_tmin, double ray_tmax,
-    double *hit_tmin, double *hit_tmax);
+extern bool BoxRayIntersect(const Box &box,
+    const Vector &rayorig, const Vector &raydir,
+    Real ray_tmin, Real ray_tmax,
+    Real *hit_tmin, Real *hit_tmax);
 
-extern void BoxCentroid(const struct Box *box, struct Vector *centroid);
-extern double BoxDiagonal(const struct Box *box);
+// property
+extern Vector BoxSize(const Box &box);
+extern Vector BoxCentroid(const Box &box);
+extern Real BoxDiagonal(const Box &box);
 
-extern void BoxPrint(const struct Box *box);
+// print
+extern void BoxPrint(const Box &box);
 
 } // namespace xxx
 

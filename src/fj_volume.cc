@@ -52,8 +52,8 @@ struct Volume *VolNew(void)
   volume->buffer = NULL;
 
   /* this makes empty volume valid */
-  BOX3_SET(&volume->bounds, 0, 0, 0, 0, 0, 0);
-  VEC3_SET(&volume->size, 0, 0, 0);
+  volume->bounds = Box();
+  volume->size = Vector();
 
   compute_filter_size(volume);
 
@@ -91,10 +91,7 @@ void VolResize(struct Volume *volume, int xres, int yres, int zres)
 void VolSetBounds(struct Volume *volume, struct Box *bounds)
 {
   volume->bounds = *bounds;
-
-  volume->size.x = BOX3_XSIZE(&volume->bounds);
-  volume->size.y = BOX3_YSIZE(&volume->bounds);
-  volume->size.z = BOX3_ZSIZE(&volume->bounds);
+  volume->size = BoxSize(volume->bounds);
 
   compute_filter_size(volume);
 }
@@ -174,7 +171,7 @@ float VolGetValue(const struct Volume *volume, int x, int y, int z)
 int VolGetSample(const struct Volume *volume, const struct Vector *point,
       struct VolumeSample *sample)
 {
-  const int hit = BoxContainsPoint(&volume->bounds, point);
+  const int hit = BoxContainsPoint(volume->bounds, *point);
   struct Vector P;
 
   if (!hit) {

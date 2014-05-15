@@ -226,8 +226,8 @@ int MipGenerateFromSourceData(struct MipOutput *out,
   scale_and_copy_image(pixels, width, height,
       FbGetWritable(out->fb, 0, 0, 0), out->width, out->height, out->nchannels);
 
-  out->tilesize = MIN(64, out->width);
-  out->tilesize = MIN(out->tilesize, out->height);
+  out->tilesize = Min(64, out->width);
+  out->tilesize = Min(out->tilesize, out->height);
 
   return 0;
 }

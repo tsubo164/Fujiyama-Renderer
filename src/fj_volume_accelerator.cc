@@ -169,8 +169,10 @@ struct VolumeAccelerator *VolumeAccNew(int accelerator_type)
   acc->VolumeIntersect = NULL;
   acc->VolumeBounds = NULL;
 
-  BOX3_SET(&acc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-  BOX3_SET(&acc->volume_set_bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+  //BOX3_SET(&acc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+  BoxReverseInfinite(&acc->bounds);
+  //BOX3_SET(&acc->volume_set_bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+  BoxReverseInfinite(&acc->volume_set_bounds);
 
   return acc;
 }
@@ -213,7 +215,7 @@ int VolumeAccIntersect(const struct VolumeAccelerator *acc, double time,
   double boxhit_tmax;
 
   /* check intersection with overall bounds */
-  if (!BoxRayIntersect(&acc->bounds, &ray->orig, &ray->dir, ray->tmin, ray->tmax,
+  if (!BoxRayIntersect(acc->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
         &boxhit_tmin, &boxhit_tmax)) {
     return 0;
   }
@@ -241,7 +243,7 @@ void VolumeAccSetTargetGeometry(struct VolumeAccelerator *acc,
 
   /* accelerator's bounds */
   acc->bounds = *volume_set_bounds;
-  BOX3_EXPAND(&acc->bounds, EXPAND);
+  BoxExpand(&acc->bounds, EXPAND);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -374,8 +376,8 @@ static int intersect_bvh_recursive(const struct VolumeAccelerator *acc,
   int hit_left, hit_right;
   int hit;
 
-  hit = BoxRayIntersect(&node->bounds,
-      &ray->orig, &ray->dir, ray->tmin, ray->tmax,
+  hit = BoxRayIntersect(node->bounds,
+      ray->orig, ray->dir, ray->tmin, ray->tmax,
       &boxhit_tmin, &boxhit_tmax);
   if (!hit) {
     return 0;
@@ -521,7 +523,7 @@ static struct VolumeBVHNode *build_bvh(struct VolumePrimitive **volume_ptr, int 
     return NULL;
 
   node->bounds = node->left->bounds;
-  BoxAddBox(&node->bounds, &node->right->bounds);
+  BoxAddBox(&node->bounds, node->right->bounds);
 
   return node;
 }
@@ -535,7 +537,7 @@ static struct VolumeBVHNode *new_bvhnode(void)
   node->left = NULL;
   node->right = NULL;
   node->volume_id = -1;
-  BOX3_SET(&node->bounds, 0, 0, 0, 0, 0, 0);
+  node->bounds = Box();
 
   return node;
 }

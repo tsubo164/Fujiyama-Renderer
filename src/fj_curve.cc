@@ -78,7 +78,7 @@ struct Curve *CrvNew(void)
   curve->uv = NULL;
   curve->velocity = NULL;
   curve->indices = NULL;
-  BOX3_SET(&curve->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+  BoxReverseInfinite(&curve->bounds);
 
   curve->nverts = 0;
   curve->ncurves = 0;
@@ -188,7 +188,7 @@ void CrvComputeBounds(struct Curve *curve)
   int i;
   double max_radius = 0;
 
-  BOX3_SET(&curve->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+  BoxReverseInfinite(&curve->bounds);
 
   for (i = 0; i < curve->ncurves; i++) {
     struct Bezier3 bezier;
@@ -196,13 +196,13 @@ void CrvComputeBounds(struct Curve *curve)
     double bezier_max_radius;
 
     curve_bounds(curve, i, &bezier_bounds);
-    BoxAddBox(&curve->bounds, &bezier_bounds);
+    BoxAddBox(&curve->bounds, bezier_bounds);
 
     bezier_max_radius = get_bezier3_max_radius(&bezier);
-    max_radius = MAX(max_radius, bezier_max_radius);
+    max_radius = Max(max_radius, bezier_max_radius);
   }
 
-  BOX3_EXPAND(&curve->bounds, max_radius);
+  BoxExpand(&curve->bounds, max_radius);
 
   /* TODO find a better place to put this */
   cache_split_depth(curve);
@@ -263,7 +263,7 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
 
     /* P */
     isect->t_hit = ttmp / ray_scale;
-    isect->P = ray->PointAt(isect->t_hit);
+    isect->P = RayPointAt(*ray, isect->t_hit);
 
     /* dPdv */
     get_bezier3(curve, prim_id, &original);
@@ -294,7 +294,7 @@ static void curve_bounds(const void *prim_set, int prim_id, struct Box *bounds)
   time_sample_bezier3(&bezier, 1);
 
   get_bezier3_bounds(&bezier, &bounds_shutter_close);
-  BoxAddBox(bounds, &bounds_shutter_close);
+  BoxAddBox(bounds, bounds_shutter_close);
 }
 
 static void curveset_bounds(const void *prim_set, struct Box *bounds)
@@ -557,8 +557,8 @@ static int compute_split_depth_limit(const struct ControlPoint *cp, double epsil
   for (i = 0; i < N-2; i++) {
     const double x_val = fabs(cp[i].P.x - 2 * cp[i+1].P.x + cp[i+2].P.x);
     const double y_val = fabs(cp[i].P.y - 2 * cp[i+1].P.y + cp[i+2].P.y);
-    const double max_val = MAX(x_val, y_val);
-    L0 = MAX(L0, max_val);
+    const double max_val = Max(x_val, y_val);
+    L0 = Max(L0, max_val);
   }
 
   r0 = (int) (log(sqrt(2.) * N * (N-1) * L0 / (8. * epsilon)) / log(4.));
@@ -567,7 +567,7 @@ static int compute_split_depth_limit(const struct ControlPoint *cp, double epsil
 
 static double get_bezier3_max_radius(const struct Bezier3 *bezier)
 {
-  return .5 * MAX(bezier->width[0], bezier->width[1]);
+  return .5 * Max(bezier->width[0], bezier->width[1]);
 }
 
 static double get_bezier3_width(const struct Bezier3 *bezier, double t)
@@ -580,13 +580,13 @@ static void get_bezier3_bounds(const struct Bezier3 *bezier, struct Box *bounds)
   int i;
   double max_radius;
 
-  BOX3_SET(bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+  BoxReverseInfinite(bounds);
   for (i = 0; i < 4; i++) {
-    BoxAddPoint(bounds, &bezier->cp[i].P);
+    BoxAddPoint(bounds, bezier->cp[i].P);
   }
 
   max_radius = get_bezier3_max_radius(bezier);
-  BOX3_EXPAND(bounds, max_radius);
+  BoxExpand(bounds, max_radius);
 }
 
 static void get_bezier3(const struct Curve *curve, int prim_id, struct Bezier3 *bezier)

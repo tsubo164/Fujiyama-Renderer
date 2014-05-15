@@ -87,10 +87,10 @@ int TlrGenerateTiles(struct Tiler *tiler, const struct Rectangle *region)
   const int xmax = region->xmax;
   const int ymax = region->ymax;
 
-  const int XMIN = (int) floor(MAX(0, xmin) / (double) xtile_size);
-  const int YMIN = (int) floor(MAX(0, ymin) / (double) ytile_size);
-  const int XMAX = (int) ceil(MIN(xres, xmax) / (double) xtile_size);
-  const int YMAX = (int) ceil(MIN(yres, ymax) / (double) ytile_size);
+  const int XMIN = (int) floor(Max(0, xmin) / (double) xtile_size);
+  const int YMIN = (int) floor(Max(0, ymin) / (double) ytile_size);
+  const int XMAX = (int) ceil(Min(xres, xmax) / (double) xtile_size);
+  const int YMAX = (int) ceil(Min(yres, ymax) / (double) ytile_size);
 
   const int xntiles = XMAX - XMIN;
   const int yntiles = YMAX - YMIN;
@@ -116,14 +116,14 @@ int TlrGenerateTiles(struct Tiler *tiler, const struct Rectangle *region)
       tile->xmin = x * xtile_size;
       tile->ymin = y * ytile_size;
 
-      tile->xmin = MAX(tile->xmin, xmin);
-      tile->ymin = MAX(tile->ymin, ymin);
+      tile->xmin = Max(tile->xmin, xmin);
+      tile->ymin = Max(tile->ymin, ymin);
 
       tile->xmax = (x + 1) * xtile_size;
       tile->ymax = (y + 1) * ytile_size;
 
-      tile->xmax = MIN(tile->xmax, xmax);
-      tile->ymax = MIN(tile->ymax, ymax);
+      tile->xmax = Min(tile->xmax, xmax);
+      tile->ymax = Min(tile->ymax, ymax);
       tile++;
       id++;
     }
