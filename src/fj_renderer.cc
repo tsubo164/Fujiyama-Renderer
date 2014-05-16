@@ -30,7 +30,7 @@ See LICENSE and README
 namespace fj {
 
 struct FrameProgress {
-  struct Timer timer;
+  Timer timer;
   struct Progress progress;
   Iteration iteration_list[10];
   int current_segment;
@@ -101,7 +101,7 @@ static Interrupt default_frame_start(void *data, const struct FrameInfo *info)
 {
   struct FrameProgress *fp = (struct FrameProgress *) data;
 
-  TimerStart(&fp->timer);
+  fp->timer.Start();
   printf("# Rendering Frame\n");
   printf("#   Thread Count: %4d\n", info->worker_count);
   printf("#   Tile Count:   %4d\n", info->tile_count);
@@ -119,9 +119,9 @@ static Interrupt default_frame_start(void *data, const struct FrameInfo *info)
 static Interrupt default_frame_done(void *data, const struct FrameInfo *info)
 {
   struct FrameProgress *fp = (struct FrameProgress *) data;
-  struct Elapse elapse;
+  Elapse elapse;
 
-  elapse = TimerGetElapse(&fp->timer);
+  elapse = fp->timer.GetElapse();
   printf("# Frame Done\n");
   printf("#   %dh %dm %ds\n", elapse.hour, elapse.min, elapse.sec);
   printf("\n");
@@ -139,12 +139,12 @@ static void increment_progress(void *data)
   const ProgressStatus status = PrgIncrement(&fp->progress);
 
   if (status == PROGRESS_DONE) {
-    struct Elapse elapse;
+    Elapse elapse;
     int idx;
 
     fp->current_segment++;
     idx = fp->current_segment;
-    elapse = TimerGetElapse(&fp->timer);
+    elapse = fp->timer.GetElapse();
 
     printf(" %3d%%  ", idx * 10); 
     printf("(%dh %dm %ds)\n", elapse.hour, elapse.min, elapse.sec);
@@ -157,27 +157,6 @@ static void increment_progress(void *data)
 }
 static Interrupt default_sample_done(void *data)
 {
-#if 0
-  struct FrameProgress *fp = (struct FrameProgress *) data;
-  const ProgressStatus status = PrgIncrement(&fp->progress);
-
-  if (status == PROGRESS_DONE) {
-    struct Elapse elapse;
-    int idx;
-
-    fp->current_segment++;
-    idx = fp->current_segment;
-    elapse = TimerGetElapse(&fp->timer);
-
-    printf(" %3d%%  ", idx * 10); 
-    printf("(%dh %dm %ds)\n", elapse.hour, elapse.min, elapse.sec);
-    PrgDone(&fp->progress);
-
-    if (idx != 10) {
-      PrgStart(&fp->progress, fp->iteration_list[idx]);
-    }
-  }
-#endif
   MtCriticalSection(data, increment_progress);
 
   return CALLBACK_CONTINUE;
@@ -508,14 +487,14 @@ static int preprocess_framebuffer(const struct Renderer *renderer)
 
 static int preprocess_lights(struct Renderer *renderer)
 {
-  struct Timer timer;
-  struct Elapse elapse;
+  Timer timer;
+  Elapse elapse;
   const int NLIGHTS = renderer->nlights;
   int i;
 
   printf("# Preprocessing Lights\n");
   printf("#   Light Count: %d\n", NLIGHTS);
-  TimerStart(&timer);
+  timer.Start();
 
   for (i = 0; i < NLIGHTS; i++) {
     struct Light *light = renderer->target_lights[i];
@@ -527,7 +506,7 @@ static int preprocess_lights(struct Renderer *renderer)
     }
   }
 
-  elapse = TimerGetElapse(&timer);
+  elapse = timer.GetElapse();
   printf("# Preprocessing Lights Done\n");
   printf("#   %dh %dm %ds\n\n", elapse.hour, elapse.min, elapse.sec);
 

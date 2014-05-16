@@ -1060,8 +1060,8 @@ static void compute_objects_bounds(void)
 
 static void build_accelerators(void)
 {
-  struct Timer timer;
-  struct Elapse elapse;
+  Timer timer;
+  Elapse elapse;
   int NOBJTECTS = 0;
   int NGROUPS = 0;
   int i;
@@ -1071,7 +1071,7 @@ static void build_accelerators(void)
 
   printf("# Building Accelerators\n");
   printf("#   Accelerator Count: %d\n", NOBJTECTS + NGROUPS);
-  TimerStart(&timer);
+  timer.Start();
 
   for (i = 0; i < NOBJTECTS; i++) {
     struct Accelerator *acc = ScnGetAccelerator(get_scene(), i);
@@ -1095,7 +1095,7 @@ static void build_accelerators(void)
     }
   }
 
-  elapse = TimerGetElapse(&timer);
+  elapse = timer.GetElapse();
   printf("# Building Accelerators Done\n");
   printf("#   %dh %dm %ds\n\n", elapse.hour, elapse.min, elapse.sec);
 }

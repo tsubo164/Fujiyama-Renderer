@@ -30,4 +30,10 @@ See LICENSE and README
   #endif
 #endif
 
+#if defined(FJ_WINDOWS)
+  #define FJ_API __declspec(dllexport)
+#else
+  #define FJ_API
+#endif
+
 #endif /* FJ_XXX_H */

@@ -74,17 +74,17 @@ void PrcFree(struct Procedure *procedure)
 
 int PrcRun(struct Procedure *procedure)
 {
-  struct Timer timer;
-  struct Elapse elapse;
+  Timer timer;
+  Elapse elapse;
   int err = 0;
 
-  TimerStart(&timer);
+  timer.Start();
   /* TODO come up with the best place to put message */
   printf("Running Procedure ...\n");
 
   err = procedure->vptr->MyRun(procedure->self);
 
-  elapse = TimerGetElapse(&timer);
+  elapse = timer.GetElapse();
 
   if (err) {
     printf("Error: %dh %dm %ds\n", elapse.hour, elapse.min, elapse.sec);

@@ -6,22 +6,28 @@ See LICENSE and README
 #ifndef FJ_TIMER_H
 #define FJ_TIMER_H
 
-#include <time.h>
+#include "fj_compatibility.h"
+#include <ctime>
 
 namespace fj {
 
-struct Timer {
-  time_t start_time;
-};
-
-struct Elapse {
+struct FJ_API Elapse {
   int hour;
   int min;
   int sec;
 };
 
-extern void TimerStart(struct Timer *timer);
-extern struct Elapse TimerGetElapse(const struct Timer *timer);
+class FJ_API Timer {
+public:
+  Timer() : start_time_(0) {}
+  ~Timer() {}
+
+  void Start();
+  Elapse GetElapse() const;
+
+private:
+  time_t start_time_;
+};
 
 } // namespace xxx
 

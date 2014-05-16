@@ -11,7 +11,7 @@ See LICENSE and README
 
 namespace fj {
 
-struct Box {
+struct FJ_API Box {
   Box() : min(), max() {}
   Box(Real xmin, Real ymin, Real zmin, Real xmax, Real ymax, Real zmax)
     : min(xmin, ymin, zmin), max(xmax, ymax, zmax) {}
@@ -22,26 +22,26 @@ struct Box {
 };
 
 // edit
-extern void BoxExpand(Box *box, Real delta);
-extern void BoxReverseInfinite(Box *box);
+FJ_API void BoxExpand(Box *box, Real delta);
+FJ_API void BoxReverseInfinite(Box *box);
 
 // test
-extern bool BoxContainsPoint(const Box &box, const Vector &point);
-extern void BoxAddPoint(Box *box, const Vector &point);
-extern void BoxAddBox(Box *box, const Box &otherbox);
+FJ_API bool BoxContainsPoint(const Box &box, const Vector &point);
+FJ_API void BoxAddPoint(Box *box, const Vector &point);
+FJ_API void BoxAddBox(Box *box, const Box &otherbox);
 
-extern bool BoxRayIntersect(const Box &box,
+FJ_API bool BoxRayIntersect(const Box &box,
     const Vector &rayorig, const Vector &raydir,
     Real ray_tmin, Real ray_tmax,
     Real *hit_tmin, Real *hit_tmax);
 
 // property
-extern Vector BoxSize(const Box &box);
-extern Vector BoxCentroid(const Box &box);
-extern Real BoxDiagonal(const Box &box);
+FJ_API Vector BoxSize(const Box &box);
+FJ_API Vector BoxCentroid(const Box &box);
+FJ_API Real BoxDiagonal(const Box &box);
 
 // print
-extern void BoxPrint(const Box &box);
+FJ_API void BoxPrint(const Box &box);
 
 } // namespace xxx
 

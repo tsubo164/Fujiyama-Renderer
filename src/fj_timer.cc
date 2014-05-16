@@ -7,23 +7,22 @@ See LICENSE and README
 
 namespace fj {
 
-void TimerStart(struct Timer *timer)
+void Timer::Start()
 {
-  time(&timer->start_time);
+  time(&start_time_);
 }
 
-struct Elapse TimerGetElapse(const struct Timer *timer)
+Elapse Timer::GetElapse() const
 {
-  struct Elapse elapse = {0, 0, 1};
-  double total_seconds = 0;
   time_t end_time;
-
   time(&end_time);
-  total_seconds = difftime(end_time, timer->start_time);
 
-  if (total_seconds > 1) {
-    elapse.hour = (int) (total_seconds / (60*60));
-    elapse.min = (int) ((total_seconds - elapse.hour*60*60) / 60);
+  const double total_seconds = difftime(end_time, start_time_);
+  Elapse elapse = {0, 0, 1};
+
+  if (total_seconds > 1.) {
+    elapse.hour = static_cast<int>(total_seconds / (60*60));
+    elapse.min = static_cast<int>((total_seconds - elapse.hour*60*60) / 60);
     elapse.sec = total_seconds - elapse.hour*60*60 - elapse.min*60;
   }
 
