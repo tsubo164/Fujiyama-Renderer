@@ -29,12 +29,12 @@ void LerpWispConstrolPoint(struct WispsControlPoint *cp,
   VEC3_NORMALIZE(&cp->vdir);
   VEC3_NORMALIZE(&cp->wdir);
 
-  cp->density = LERP(cp0->density, cp1->density, t);
-  cp->radius = LERP(cp0->radius, cp1->radius, t);
-  cp->noise_amplitude = LERP(cp0->noise_amplitude, cp1->noise_amplitude, t);
+  cp->density = Lerp(cp0->density, cp1->density, t);
+  cp->radius = Lerp(cp0->radius, cp1->radius, t);
+  cp->noise_amplitude = Lerp(cp0->noise_amplitude, cp1->noise_amplitude, t);
   /* TODO should not point attribute? */
-  cp->speck_count = LERP(cp0->speck_count, cp1->speck_count, t);
-  cp->speck_radius = LERP(cp0->speck_radius, cp1->speck_radius, t);
+  cp->speck_count = Lerp(cp0->speck_count, cp1->speck_count, t);
+  cp->speck_radius = Lerp(cp0->speck_radius, cp1->speck_radius, t);
 }
 
 extern void BilerpWispConstrolPoint(struct WispsControlPoint *cp,

@@ -532,7 +532,7 @@ static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
     setup_surface_input(&isect, ray, &in);
     ShdEvaluate(ObjGetShader(isect.object), cxt, &in, &out);
 
-    out.Os = CLAMP(out.Os, 0, 1);
+    out.Os = Clamp(out.Os, 0, 1);
     out_rgba->r = out.Cs.r;
     out_rgba->g = out.Cs.g;
     out_rgba->b = out.Cs.b;
@@ -644,7 +644,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
       out_rgba->r = out_rgba->r + color.r * (1-out_rgba->a);
       out_rgba->g = out_rgba->g + color.g * (1-out_rgba->a);
       out_rgba->b = out_rgba->b + color.b * (1-out_rgba->a);
-      out_rgba->a = out_rgba->a + CLAMP(opacity, 0, 1) * (1-out_rgba->a);
+      out_rgba->a = out_rgba->a + Clamp(opacity, 0, 1) * (1-out_rgba->a);
 
       /* advance sample point */
       P.x += ray_delta.x;
@@ -656,7 +656,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
       out_rgba->a = 1;
     }
   }
-  out_rgba->a = CLAMP(out_rgba->a, 0, 1);
+  out_rgba->a = Clamp(out_rgba->a, 0, 1);
 
   IntervalListFree(intervals);
   return hit;

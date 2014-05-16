@@ -7,35 +7,16 @@ See LICENSE and README
 #define FJ_NUMERIC_H
 
 #include "fj_types.h"
+#include <cmath>
 
 namespace fj {
 
-/* from math.h */
-#define N_E 2.7182818284590452354 /* e */
-#define N_LOG2E 1.4426950408889634074 /* log_2 e */
-#define N_LOG10E 0.43429448190325182765 /* log_10 e */
-#define N_LN2 0.69314718055994530942 /* log_e 2 */
-#define N_LN10 2.30258509299404568402 /* log_e 10 */
-#define N_PI 3.14159265358979323846 /* pi */
-#define N_PI_2 1.57079632679489661923 /* pi/2 */
-#define N_PI_4 0.78539816339744830962 /* pi/4 */
-#define N_1_PI 0.31830988618379067154 /* 1/pi */
-#define N_2_PI 0.63661977236758134308 /* 2/pi */
-#define N_2_SQRTPI 1.12837916709551257390 /* 2/sqrt(pi) */
-#define N_SQRT2 1.41421356237309504880 /* sqrt(2) */
-#define N_SQRT1_2 0.70710678118654752440 /* 1/sqrt(2) */
+const Real PI = 3.14159265358979323846;
 
-/* more constants */
-#define N_PI_180 0.01745329251994329577 /* pi/180 */
-#define N_180_PI 57.2957795130823208768 /* 180/pi */
-
-#define ABS(x) (((x)<0)?-(x):(x))
-//#define MIN(x,y) ((x)<(y)?(x):(y))
-//#define MAX(x,y) ((x)>(y)?(x):(y))
-#define CLAMP(x,a,b) ((x)<(a)?(a):((x)>(b)?(b):(x)))
-#define RADIAN(deg) ((deg)*N_PI_180)
-
-#define LERP(a,b,t) (((1-(t))*(a))+((b)*(t)))
+inline Real Abs(Real x)
+{
+  return x < 0 ? -x : x;
+}
 
 inline Real Min(Real x, Real y)
 {
@@ -47,10 +28,56 @@ inline Real Max(Real x, Real y)
   return x > y ? x : y;
 }
 
-extern double SmoothStep(double x, double a, double b);
-extern double Gamma(double x, double g);
-extern double Fit(double x, double src0, double src1, double dst0, double dst1);
-extern double Bilerp(double v00, double v10, double v01, double v11, double s, double t);
+inline Real Clamp(Real x, Real a, Real b)
+{
+  return x < a ? a : (x > b ? b : x);
+}
+
+inline Real Radian(Real deg)
+{
+  return deg * PI / 180.;
+}
+
+inline Real Lerp(Real a, Real b, Real t)
+{
+  return (1 - t) * a + t * b;
+}
+
+inline Real SmoothStep(Real x, Real a, Real b)
+{
+  const Real t = (x-a) / (b-a);
+
+  if (t <= 0)
+    return 0;
+
+  if (t >= 1)
+    return 1;
+
+  return t * t * (3 - 2 * t);
+}
+
+inline Real Gamma(Real x, Real g)
+{
+  return std::pow(x, g);
+}
+
+inline Real Fit(Real x, Real src0, Real src1, Real dst0, Real dst1)
+{
+  if (x <= src0)
+    return dst0;
+
+  if (x >= src1)
+    return dst1;
+
+  return dst0 + (dst1 - dst0) * ((x - src0) / (src1 - src0));
+}
+
+inline Real Bilerp(Real v00, Real v10, Real v01, Real v11, Real s, Real t)
+{
+  const Real a = Lerp(v00, v01, t);
+  const Real b = Lerp(v10, v11, t);
+  return Lerp(a, b, s);
+}
 
 } // namespace xxx
 

@@ -284,8 +284,8 @@ static void xy_to_uv(int xres, int yres, int x, int y, struct TexCoord *uv)
 
 static void uv_to_dir(float u, float v, struct Vector *dir)
 {
-  const double phi = 2 * N_PI * u;
-  const double theta = N_PI * (v - .5);
+  const double phi = 2 * PI * u;
+  const double theta = PI * (v - .5);
   const double r = cos(theta);
 
   dir->x = r * sin(phi);
@@ -456,7 +456,7 @@ static void compute_connected_sample_count(const double *illum_values, int nvalu
   }
 
   /* Gamma_{4 Pi} = L * dOmega_{0}^{1/4} */
-  dOmega0 = 1 * pow(4 * N_PI / nvalues, 1./4);
+  dOmega0 = 1 * pow(4 * PI / nvalues, 1./4);
   for (i = 0; i < nvalues; i++) {
     const int label = connected_label[i];
     connected_domega[label] = dOmega0;

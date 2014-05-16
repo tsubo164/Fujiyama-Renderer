@@ -399,11 +399,11 @@ static int converge_bezier3(const struct Bezier3 *bezier,
 
     /* compute w on the line segment */
     w = dir.x * dir.x + dir.y * dir.y;
-    if (ABS(w) < 1e-6) {
+    if (Abs(w) < 1e-6) {
       return 0;
     }
     w = -(cp[0].P.x * dir.x + cp[0].P.y * dir.y) / w;
-    w = CLAMP(w, 0, 1);
+    w = Clamp(w, 0, 1);
 
     /* compute v on the curve segment */
     v = v0 * (1-w) + vn * w;
@@ -540,7 +540,7 @@ static void cache_split_depth(struct Curve *curve)
 
     get_bezier3(curve, i, &bezier);
     depth = compute_split_depth_limit(bezier.cp, 2*get_bezier3_max_radius(&bezier) / 20.);
-    depth = CLAMP(depth, 1, 5);
+    depth = Clamp(depth, 1, 5);
 
     curve->split_depth[i] = depth;
   }
@@ -572,7 +572,7 @@ static double get_bezier3_max_radius(const struct Bezier3 *bezier)
 
 static double get_bezier3_width(const struct Bezier3 *bezier, double t)
 {
-  return LERP(bezier->width[0], bezier->width[1], t);
+  return Lerp(bezier->width[0], bezier->width[1], t);
 }
 
 static void get_bezier3_bounds(const struct Bezier3 *bezier, struct Box *bounds)

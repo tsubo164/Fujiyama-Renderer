@@ -140,7 +140,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   for (i = 0; i < nsamples; i++) {
     struct LightOutput Lout;
     float Kd = 0;
-    SlIlluminance(cxt, &samples[i], &in->P, &Nf, N_PI_2, in, &Lout);
+    SlIlluminance(cxt, &samples[i], &in->P, &Nf, PI / 2., in, &Lout);
     /* spec */
     /*
     Ks = SlPhong(in->I, Nf, Ln, .05);
@@ -278,7 +278,7 @@ static int set_opacity(void *self, const struct PropertyValue *value)
   struct PlasticShader *plastic = (struct PlasticShader *) self;
   float opacity = value->vector[0];
 
-  opacity = CLAMP(opacity, 0, 1);
+  opacity = Clamp(opacity, 0, 1);
   plastic->opacity = opacity;
 
   return 0;

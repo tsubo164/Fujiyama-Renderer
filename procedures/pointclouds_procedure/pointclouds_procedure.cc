@@ -195,7 +195,7 @@ static int FillWithPointClouds(struct Volume *volume,
         P_noise_space.z += cp->noise_space.z;
 
         noise_func = TrbEvaluate(turbulence, &P_noise_space);
-        noise_func = ABS(noise_func);
+        noise_func = Abs(noise_func);
         noise_func = Gamma(noise_func, .5);
         noise_func *= cp->noise_amplitude;
 

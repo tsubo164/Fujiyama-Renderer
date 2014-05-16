@@ -68,8 +68,8 @@ void MatScale(struct Matrix *dst, double sx, double sy, double sz )
 
 void MatRotateX(struct Matrix *dst, double angle)
 {
-  const double sint = sin(RADIAN(angle));
-  const double cost = cos(RADIAN(angle));
+  const double sint = sin(Radian(angle));
+  const double cost = cos(Radian(angle));
 
   MAT_SET(dst,
       1.,   0.,    0., 0.,
@@ -80,8 +80,8 @@ void MatRotateX(struct Matrix *dst, double angle)
 
 void MatRotateY(struct Matrix *dst, double angle)
 {
-  const double sint = sin(RADIAN(angle));
-  const double cost = cos(RADIAN(angle));
+  const double sint = sin(Radian(angle));
+  const double cost = cos(Radian(angle));
 
   MAT_SET(dst,
        cost, 0.,  sint,  0.,
@@ -92,8 +92,8 @@ void MatRotateY(struct Matrix *dst, double angle)
 
 void MatRotateZ(struct Matrix *dst, double angle)
 {
-  const double sint = sin(RADIAN(angle));
-  const double cost = cos(RADIAN(angle));
+  const double sint = sin(Radian(angle));
+  const double cost = cos(Radian(angle));
 
   MAT_SET(dst,
       cost, -sint, 0., 0.,

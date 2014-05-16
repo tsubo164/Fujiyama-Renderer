@@ -314,7 +314,7 @@ static void grid_light_illuminate(const struct Light *light,
 
   dot = VEC3_DOT(&Ln, &sample->N);
   if (light->double_sided) {
-    dot = ABS(dot);
+    dot = Abs(dot);
   } else {
     dot = Max(dot, 0.);
   }

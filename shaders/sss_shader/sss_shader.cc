@@ -190,7 +190,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     struct Color single_scatter = {0, 0, 0};
     struct Color diffusion_scatter = {0, 0, 0};
 
-    SlIlluminance(cxt, &samples[i], &in->P, &in->N, N_PI_2, in, &Lout);
+    SlIlluminance(cxt, &samples[i], &in->P, &in->N, PI / 2., in, &Lout);
     /* spec */
     Ks = SlPhong(&in->I, &in->N, &Lout.Ln, sss->roughness);
     spec.r += Ks * sss->specular.r;
@@ -379,9 +379,9 @@ static void single_scattering(const struct SSSShader *sss,
 
       Ni_dot_To = VEC3_DOT(&Ni, &To);
       Ni_dot_Ti = VEC3_DOT(&Ni, &Ti);
-      G = ABS(Ni_dot_To) / ABS(Ni_dot_Ti);
+      G = Abs(Ni_dot_To) / Abs(Ni_dot_Ti);
 
-      SlIlluminance(cxt, light_sample, &Pi, &Ni, N_PI_2, in, &Lout);
+      SlIlluminance(cxt, light_sample, &Pi, &Ni, PI / 2., in, &Lout);
 
       sigma_tc = sigma_t[j] + G * sigma_t[j];
 
@@ -400,9 +400,9 @@ static void single_scattering(const struct SSSShader *sss,
       }
     }
   }
-  scatter.r *= N_PI * sigma_s[0] / nsamples;
-  scatter.g *= N_PI * sigma_s[1] / nsamples;
-  scatter.b *= N_PI * sigma_s[2] / nsamples;
+  scatter.r *= PI * sigma_s[0] / nsamples;
+  scatter.g *= PI * sigma_s[1] / nsamples;
+  scatter.b *= PI * sigma_s[2] / nsamples;
 
   C_scatter->r += scatter.r;
   C_scatter->g += scatter.g;
@@ -450,7 +450,7 @@ static void diffusion_scattering(const struct SSSShader *sss,
   N_neg.z = -N->z;
 
   local_dot_up = VEC3_DOT(N, &up);
-  if (ABS(local_dot_up) > .9) {
+  if (Abs(local_dot_up) > .9) {
     up.x = 1;
     up.y = 0;
     up.z = 0;
@@ -512,7 +512,7 @@ static void diffusion_scattering(const struct SSSShader *sss,
       P_Pi.y = Pi.y - P->y;
       P_Pi.z = Pi.z - P->z;
 
-      SlIlluminance(cxt, light_sample, &Pi, &Ni, N_PI_2, in, &Lout);
+      SlIlluminance(cxt, light_sample, &Pi, &Ni, PI / 2., in, &Lout);
 
       r = VEC3_LEN(&P_Pi);
       zr = sqrt(3 * (1 - alpha_prime[j])) / sigma_tr[j];
@@ -646,7 +646,7 @@ static int set_opacity(void *self, const struct PropertyValue *value)
   struct SSSShader *sss = (struct SSSShader *) self;
   float opacity = value->vector[0];
 
-  opacity = CLAMP(opacity, 0, 1);
+  opacity = Clamp(opacity, 0, 1);
   sss->opacity = opacity;
 
   return 0;

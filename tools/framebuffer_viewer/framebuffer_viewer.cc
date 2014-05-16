@@ -276,7 +276,7 @@ void FbvMoveMouse(struct FrameBufferViewer *v, int x, int y)
     v->exponent = v->lockexponent + .01f * (float)(
           (posx - v->xpresspos) -
           (posy - v->ypresspos));
-    v->exponent = CLAMP(v->exponent, -5.f, 10.f);
+    v->exponent = Clamp(v->exponent, -5.f, 10.f);
     v->scale = pow(2, v->exponent);
     break;
   default:

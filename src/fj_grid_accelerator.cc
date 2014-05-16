@@ -158,12 +158,12 @@ static int build_grid_accel(DerivedAccelerator derived,
     Y1 = (int) floor((primbbox.max.y - bounds.min.y) / cellsize[1]) + 1;
     Z0 = (int) floor((primbbox.min.z - bounds.min.z) / cellsize[2]);
     Z1 = (int) floor((primbbox.max.z - bounds.min.z) / cellsize[2]) + 1;
-    X0 = CLAMP(X0, 0, XNCELLS);
-    X1 = CLAMP(X1, 0, XNCELLS);
-    Y0 = CLAMP(Y0, 0, YNCELLS);
-    Y1 = CLAMP(Y1, 0, YNCELLS);
-    Z0 = CLAMP(Z0, 0, ZNCELLS);
-    Z1 = CLAMP(Z1, 0, ZNCELLS);
+    X0 = Clamp(X0, 0, XNCELLS);
+    X1 = Clamp(X1, 0, XNCELLS);
+    Y0 = Clamp(Y0, 0, YNCELLS);
+    Y1 = Clamp(Y1, 0, YNCELLS);
+    Z0 = Clamp(Z0, 0, ZNCELLS);
+    Z1 = Clamp(Z1, 0, ZNCELLS);
 
     /* add cell list which holds face id inside the cell */
     for (z = Z0; z < Z1; z++) {
@@ -265,7 +265,7 @@ static int intersect_grid_accel(DerivedAccelerator derived,
   /* setup 3D DDA */
   for (i = 0; i < 3; i++) {
     cell_id[i] = (int) floor((start[i] - grid_min[i]) / grid->cellsize[i]);
-    cell_id[i] = CLAMP(cell_id[i], 0, NCELLS[i]-1);
+    cell_id[i] = Clamp(cell_id[i], 0, NCELLS[i]-1);
 
     if (dir[i] > 0) {
       t_next[i] = t_start +
@@ -396,9 +396,9 @@ static void compute_grid_cellsizes(int nprimitives,
   XNCELLS = (int) floor(xwidth * ncells_per_unit_dist + .5);
   YNCELLS = (int) floor(ywidth * ncells_per_unit_dist + .5);
   ZNCELLS = (int) floor(zwidth * ncells_per_unit_dist + .5);
-  XNCELLS = CLAMP(XNCELLS, 1, GRID_MAXCELLS);
-  YNCELLS = CLAMP(YNCELLS, 1, GRID_MAXCELLS);
-  ZNCELLS = CLAMP(ZNCELLS, 1, GRID_MAXCELLS);
+  XNCELLS = Clamp(XNCELLS, 1, GRID_MAXCELLS);
+  YNCELLS = Clamp(YNCELLS, 1, GRID_MAXCELLS);
+  ZNCELLS = Clamp(ZNCELLS, 1, GRID_MAXCELLS);
 
   *xncells = XNCELLS;
   *yncells = YNCELLS;

@@ -146,8 +146,8 @@ int MipReadTile(struct MipInput *in, int xtile, int ytile)
   int x, y;
 
   /* TODO TEMP out of border handling */
-  x = CLAMP(xtile, 0, XNTILES-1);
-  y = CLAMP(ytile, 0, YNTILES-1);
+  x = Clamp(xtile, 0, XNTILES-1);
+  y = Clamp(ytile, 0, YNTILES-1);
   tile_index = y * XNTILES + x;
 
   fseek(in->file, in->offset_of_header + sizeof(float) * tile_index * TILE_PXLS , SEEK_SET);
@@ -334,8 +334,8 @@ static void scale_and_copy_image(const float *src_pxls, int sw, int sh,
       src_pix[2].y = (int) ctr_pos.y;
       src_pix[3].y = (int) ctr_pos.y;
       for (i = 0; i < 4; i++) {
-        src_pix[i].x = CLAMP(src_pix[i].x, 0, SRC_W-1);
-        src_pix[i].y = CLAMP(src_pix[i].y, 0, SRC_H-1);
+        src_pix[i].x = Clamp(src_pix[i].x, 0, SRC_W-1);
+        src_pix[i].y = Clamp(src_pix[i].y, 0, SRC_H-1);
         src_idx[i] = src_pix[i].y * SRC_W * NCHANS + src_pix[i].x * NCHANS;
       }
 

@@ -129,7 +129,7 @@ void CamGetRay(const struct Camera *cam, const struct Vector2 *screen_uv,
 
 static void compute_uv_size(struct Camera *cam)
 {
-  cam->uv_size.y = 2 * tan(RADIAN(cam->fov/2));
+  cam->uv_size.y = 2 * tan(Radian(cam->fov / 2.));
   cam->uv_size.x = cam->uv_size.y * cam->aspect;
 }
 

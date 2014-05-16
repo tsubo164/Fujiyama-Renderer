@@ -94,7 +94,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   for (i = 0; i < nsamples; i++) {
     struct LightOutput Lout;
 
-    SlIlluminance(cxt, &samples[i], &in->P, &in->N, N_PI, in, &Lout);
+    SlIlluminance(cxt, &samples[i], &in->P, &in->N, PI, in, &Lout);
 
     /* diff */
     diff.r += Lout.Cl.r;
