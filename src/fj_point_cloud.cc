@@ -8,11 +8,8 @@ See LICENSE and README
 #include "fj_primitive_set.h"
 #include "fj_numeric.h"
 #include "fj_memory.h"
-#include "fj_vector.h"
-#include "fj_box.h"
 #include "fj_ray.h"
 
-#include <vector>
 #include <cstring>
 #include <cfloat>
 
@@ -24,44 +21,12 @@ See LICENSE and README
 namespace fj {
 
 static int point_ray_intersect(const void *prim_set, int prim_id, double time,
-    const struct Ray *ray, struct Intersection *isect);
-static void point_bounds(const void *prim_set, int prim_id, struct Box *bounds);
-static void point_cloud_bounds(const void *prim_set, struct Box *bounds);
+    const Ray *ray, Intersection *isect);
+static void point_bounds(const void *prim_set, int prim_id, Box *bounds);
+static void point_cloud_bounds(const void *prim_set, Box *bounds);
 static int point_count(const void *prim_set);
 
-static void update_bounds(struct PointCloud *ptc);
-
-struct PointCloud {
-public:
-  PointCloud();
-  ~PointCloud();
-
-  int GetPointCount() const;
-  void SetPointCount(int point_count);
-
-  void AddPointPosition();
-  void AddPointVelocity();
-  void AddPointRadius();
-
-  Vector   GetPointPosition(int idx) const;
-  Vector   GetPointVelocity(int idx) const;
-  Real     GetPointRadius(int idx) const;
-
-  void SetPointPosition(int idx, const Vector &value);
-  void SetPointVelocity(int idx, const Vector &value);
-  void SetPointRadius(int idx, const Real &value);
-
-  bool HasPointPosition() const;
-  bool HasPointVelocity() const;
-  bool HasPointRadius() const;
-
-public:
-  int point_count_;
-  std::vector<Vector> P;
-  std::vector<Vector> velocity;
-  std::vector<Real> radius;
-  Box bounds;
-};
+static void update_bounds(PointCloud *ptc);
 
 PointCloud::PointCloud() : point_count_(0)
 {
@@ -79,6 +44,22 @@ int PointCloud::GetPointCount() const
 void PointCloud::SetPointCount(int point_count)
 {
   point_count_ = point_count;
+}
+
+const Box &PointCloud::GetBounds() const
+{
+  return bounds;
+}
+
+void PointCloud::ComputeBounds()
+{
+  BoxReverseInfinite(&bounds); 
+
+  for (int i = 0; i < GetPointCount(); i++) {
+    Box ptbox;
+    point_bounds(this, i, &ptbox);
+    BoxAddBox(&bounds, ptbox);
+  }
 }
 
 #define ATTR(Class, Type, Name, Label) \
@@ -106,17 +87,17 @@ bool PointCloud::Has##Class##Label() const \
   ATTRIBUTE_LIST(ATTR)
 #undef ATTR
 
-struct PointCloud *PtcNew(void)
+PointCloud *PtcNew(void)
 {
   return new PointCloud();
 }
 
-void PtcFree(struct PointCloud *ptc)
+void PtcFree(PointCloud *ptc)
 {
   delete ptc;
 }
 
-struct Vector *PtcAllocatePoint(struct PointCloud *ptc, int point_count)
+Vector *PtcAllocatePoint(PointCloud *ptc, int point_count)
 {
   ptc->SetPointCount(point_count);
 
@@ -125,17 +106,17 @@ struct Vector *PtcAllocatePoint(struct PointCloud *ptc, int point_count)
   return &ptc->P[0];
 }
 
-void PtcSetPosition(struct PointCloud *ptc, int index, const struct Vector *P)
+void PtcSetPosition(PointCloud *ptc, int index, const Vector *P)
 {
   ptc->SetPointPosition(index, *P);
 }
 
-void PtcGetPosition(const struct PointCloud *ptc, int index, struct Vector *P)
+void PtcGetPosition(const PointCloud *ptc, int index, Vector *P)
 {
   *P = ptc->GetPointPosition(index);
 }
 
-double *PtcAddAttributeDouble(struct PointCloud *ptc, const char *name)
+double *PtcAddAttributeDouble(PointCloud *ptc, const char *name)
 {
   if (strcmp(name, "radius") == 0) {
     ptc->AddPointRadius();
@@ -144,7 +125,7 @@ double *PtcAddAttributeDouble(struct PointCloud *ptc, const char *name)
   return NULL;
 }
 
-struct Vector *PtcAddAttributeVector(struct PointCloud *ptc, const char *name)
+Vector *PtcAddAttributeVector(PointCloud *ptc, const char *name)
 {
   if (strcmp(name, "velocity") == 0) {
     ptc->AddPointVelocity();
@@ -154,12 +135,12 @@ struct Vector *PtcAddAttributeVector(struct PointCloud *ptc, const char *name)
   return NULL;
 }
 
-void PtcComputeBounds(struct PointCloud *ptc)
+void PtcComputeBounds(PointCloud *ptc)
 {
   update_bounds(ptc);
 }
 
-void PtcGetPrimitiveSet(const struct PointCloud *ptc, struct PrimitiveSet *primset)
+void PtcGetPrimitiveSet(const PointCloud *ptc, PrimitiveSet *primset)
 {
   MakePrimitiveSet(primset,
       "PointCloud",
@@ -171,7 +152,7 @@ void PtcGetPrimitiveSet(const struct PointCloud *ptc, struct PrimitiveSet *prims
 }
 
 static int point_ray_intersect(const void *prim_set, int prim_id, double time,
-    const struct Ray *ray, struct Intersection *isect)
+    const Ray *ray, Intersection *isect)
 {
 /*
   X = o + t * d;
@@ -181,105 +162,76 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
   t = (-d * (o - center) +- sqrt(D)) / |d|^2;
   D = {d * (o - center)}^2 - |d|^2 * (|o - center|^2 - r^2);
 */
-  const struct PointCloud *ptc = (const struct PointCloud *) prim_set;
-  const struct Vector *P = &ptc->P[prim_id];
-  const struct Vector *velocity = &ptc->velocity[prim_id];
-  const double radius = ptc->radius[prim_id];
+  const PointCloud *ptc = (const PointCloud *) prim_set;
+  const Vector P = ptc->GetPointPosition(prim_id);
+  const Vector velocity = ptc->GetPointVelocity(prim_id);
+  const double radius = ptc->GetPointRadius(prim_id);
 
-  struct Vector center;
-  struct Vector orig_local;
-  double a = 0, b = 0, c = 0;
-  double discriminant = 0, disc_sqrt = 0;
-  double t_hit = 0, t0 = 0, t1 = 0;
+  const Vector center = ptc->HasPointVelocity() ? P + time * velocity : P;
+  const Vector orig_local = ray->orig - center;
 
-  center.x = P->x + time * velocity->x;
-  center.y = P->y + time * velocity->y;
-  center.z = P->z + time * velocity->z;
+  const Real a = Dot(ray->dir, ray->dir);
+  const Real b = Dot(ray->dir, orig_local);
+  const Real c = Dot(orig_local, orig_local) - radius * radius;
 
-  orig_local.x = ray->orig.x - center.x;
-  orig_local.y = ray->orig.y - center.y;
-  orig_local.z = ray->orig.z - center.z;
-
-  a = VEC3_DOT(&ray->dir, &ray->dir);
-  b = VEC3_DOT(&ray->dir, &orig_local);
-  c = VEC3_DOT(&orig_local, &orig_local) - radius * radius;
-
-  discriminant = b * b - a * c;
-  if (discriminant < 0) {
-    return 0;
+  const Real discriminant = b * b - a * c;
+  if (discriminant < 0.) {
+    return false;
   }
 
-  disc_sqrt = sqrt(discriminant);
-  t0 = -b - disc_sqrt;
-  t1 = -b + disc_sqrt;
+  const Real disc_sqrt = sqrt(discriminant);
+  const Real t0 = -b - disc_sqrt;
+  const Real t1 = -b + disc_sqrt;
 
-  if (t1 <= 0) {
-    return 0;
+  if (t1 <= 0.) {
+    return false;
   }
-  /* TODO handle case with ray->t_min */
-  if (t0 <= 0) {
-    t_hit = t1;
-  } else {
-    t_hit = t0;
-  }
+  const Real t_hit = (t1 <= 0.) ? t1 : t0;
 
   isect->P = RayPointAt(*ray, t_hit);
-  isect->N.x = isect->P.x - center.x;
-  isect->N.y = isect->P.y - center.y;
-  isect->N.z = isect->P.z - center.z;
-  VEC3_NORMALIZE(&isect->N);
+  isect->N = Normalize(isect->P - center);
 
   isect->object = NULL;
   isect->prim_id = prim_id;
   isect->t_hit = t_hit;
 
-  return 1;
+  return true;
 }
 
-static void point_bounds(const void *prim_set, int prim_id, struct Box *bounds)
+static void point_bounds(const void *prim_set, int prim_id, Box *bounds)
 {
-  const struct PointCloud *ptc = (const struct PointCloud *) prim_set;
-  const struct Vector *P = &ptc->P[prim_id];
-  const struct Vector *velocity = &ptc->velocity[prim_id];
-  const double radius = ptc->radius[prim_id];
-  struct Vector P_close = *P;
+  const PointCloud *ptc = (const PointCloud *) prim_set;
+  const Vector P = ptc->GetPointPosition(prim_id);
+  const Vector velocity = ptc->GetPointVelocity(prim_id);
+  const Real radius = ptc->GetPointRadius(prim_id);
 
   *bounds = Box(
-      P->x, P->y, P->z,
-      P->x, P->y, P->z);
+      P.x, P.y, P.z,
+      P.x, P.y, P.z);
 
-  P_close.x = P->x + velocity->x;
-  P_close.y = P->y + velocity->y;
-  P_close.z = P->z + velocity->z;
+  if (ptc->HasPointVelocity()) {
+    const Vector P_close = P + velocity;
+    BoxAddPoint(bounds, P_close);
+  }
 
-  BoxAddPoint(bounds, P_close);
   BoxExpand(bounds, radius);
 }
 
-static void point_cloud_bounds(const void *prim_set, struct Box *bounds)
+static void point_cloud_bounds(const void *prim_set, Box *bounds)
 {
-  const struct PointCloud *ptc = (const struct PointCloud *) prim_set;
-  *bounds = ptc->bounds;
+  const PointCloud *ptc = (const PointCloud *) prim_set;
+  *bounds = ptc->GetBounds();
 }
 
 static int point_count(const void *prim_set)
 {
-  const struct PointCloud *ptc = (const struct PointCloud *) prim_set;
-  return ptc->point_count_;
+  const PointCloud *ptc = (const PointCloud *) prim_set;
+  return ptc->GetPointCount();
 }
 
-static void update_bounds(struct PointCloud *ptc)
+static void update_bounds(PointCloud *ptc)
 {
-  int i;
-
-  BoxReverseInfinite(&ptc->bounds); 
-
-  for (i = 0; i < ptc->point_count_; i++) {
-    struct Box ptbox;
-
-    point_bounds(ptc, i, &ptbox);
-    BoxAddBox(&ptc->bounds, ptbox);
-  }
+  ptc->ComputeBounds();
 }
 
 } // namespace xxx

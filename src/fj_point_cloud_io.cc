@@ -9,6 +9,8 @@ See LICENSE and README
 #include "fj_vector.h"
 #include "fj_io.h"
 
+#include <vector>
+
 #define PTC_FILE_VERSION 1
 #define PTC_FILE_MAGIC "PTCD"
 
@@ -151,9 +153,6 @@ void PtcWriteFile(struct PtcOutputFile *out)
 int PtcLoadFile(struct PointCloud *ptc, const char *filename)
 {
   struct PtcInputFile *in = PtcOpenInputFile(filename);
-  struct Vector *P = NULL;
-  struct Vector *velocity = NULL;
-  double *radius = NULL;
   int point_count = 0;
 
   if (in == NULL) {
@@ -165,17 +164,32 @@ int PtcLoadFile(struct PointCloud *ptc, const char *filename)
   point_count = PtcGetInputPointCount(in);
 
   /* copy data to ptc */
-  P        = PtcAllocatePoint(ptc, point_count);
-  velocity = PtcAddAttributeVector(ptc, "velocity");
-  radius   = PtcAddAttributeDouble(ptc, "radius");
+  /*
+  Vector *P        = PtcAllocatePoint(ptc, point_count);
+  Vector *velocity = PtcAddAttributeVector(ptc, "velocity");
+  double *radius   = PtcAddAttributeDouble(ptc, "radius");
+  */
+std::vector<Vector> P(point_count);
+std::vector<Vector> velocity(point_count);
+std::vector<double> radius(point_count);
 
-  PtcSetInputPosition(in, P);
-  PtcSetInputAttributeVector3(in, "velocity", velocity);
-  PtcSetInputAttributeDouble(in, "radius", radius);
+  PtcSetInputPosition(in, &P[0]);
+  PtcSetInputAttributeVector3(in, "velocity", &velocity[0]);
+  PtcSetInputAttributeDouble(in, "radius", &radius[0]);
 
   PtcReadData(in);
 
   PtcCloseInputFile(in);
+
+PtcAllocatePoint(ptc, point_count);
+PtcAddAttributeVector(ptc, "velocity");
+PtcAddAttributeDouble(ptc, "radius");
+
+  for (int i = 0; i < ptc->GetPointCount(); i++) {
+    ptc->SetPointPosition(i, P[i]);
+    ptc->SetPointVelocity(i, velocity[i]);
+    ptc->SetPointRadius(i, radius[i]);
+  }
 
   PtcComputeBounds(ptc);
 
