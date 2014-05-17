@@ -6,25 +6,28 @@ See LICENSE and README
 #ifndef FJ_POINTCLOUD_H
 #define FJ_POINTCLOUD_H
 
+#include "fj_compatibility.h"
+#include "fj_types.h"
+
 namespace fj {
 
 struct PointCloud;
 struct PrimitiveSet;
 struct Vector;
 
-extern struct PointCloud *PtcNew(void);
-extern void PtcFree(struct PointCloud *ptc);
+FJ_API PointCloud *PtcNew(void);
+FJ_API void PtcFree(PointCloud *ptc);
 
-extern struct Vector *PtcAllocatePoint(struct PointCloud *ptc, int point_count);
-extern void PtcSetPosition(struct PointCloud *ptc, int index, const struct Vector *P);
-extern void PtcGetPosition(const struct PointCloud *ptc, int index, struct Vector *P);
+FJ_API Vector *PtcAllocatePoint(PointCloud *ptc, int point_count);
+FJ_API void PtcSetPosition(PointCloud *ptc, int index, const Vector *P);
+FJ_API void PtcGetPosition(const PointCloud *ptc, int index, Vector *P);
 
-extern double *PtcAddAttributeDouble(struct PointCloud *ptc, const char *name);
-extern struct Vector *PtcAddAttributeVector(struct PointCloud *ptc, const char *name);
+FJ_API Real *PtcAddAttributeDouble(PointCloud *ptc, const char *name);
+FJ_API Vector *PtcAddAttributeVector(PointCloud *ptc, const char *name);
 
-extern void PtcComputeBounds(struct PointCloud *ptc);
+FJ_API void PtcComputeBounds(PointCloud *ptc);
 
-extern void PtcGetPrimitiveSet(const struct PointCloud *ptc, struct PrimitiveSet *primset);
+FJ_API void PtcGetPrimitiveSet(const PointCloud *ptc, PrimitiveSet *primset);
 
 } // namespace xxx
 

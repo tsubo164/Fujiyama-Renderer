@@ -12,8 +12,14 @@ See LICENSE and README
 #include "fj_box.h"
 #include "fj_ray.h"
 
-#include <string.h>
-#include <float.h>
+#include <vector>
+#include <cstring>
+#include <cfloat>
+
+#define ATTRIBUTE_LIST(ATTR) \
+  ATTR(Point, Vector,   P,        Position) \
+  ATTR(Point, Vector,   velocity, Velocity) \
+  ATTR(Point, Real,     radius,   Radius)
 
 namespace fj {
 
@@ -26,110 +32,123 @@ static int point_count(const void *prim_set);
 static void update_bounds(struct PointCloud *ptc);
 
 struct PointCloud {
-  int point_count;
-  struct Vector *P;
-  struct Vector *velocity;
-  double *radius;
+public:
+  PointCloud();
+  ~PointCloud();
 
-  struct Box bounds;
+  int GetPointCount() const;
+  void SetPointCount(int point_count);
+
+  void AddPointPosition();
+  void AddPointVelocity();
+  void AddPointRadius();
+
+  Vector   GetPointPosition(int idx) const;
+  Vector   GetPointVelocity(int idx) const;
+  Real     GetPointRadius(int idx) const;
+
+  void SetPointPosition(int idx, const Vector &value);
+  void SetPointVelocity(int idx, const Vector &value);
+  void SetPointRadius(int idx, const Real &value);
+
+  bool HasPointPosition() const;
+  bool HasPointVelocity() const;
+  bool HasPointRadius() const;
+
+public:
+  int point_count_;
+  std::vector<Vector> P;
+  std::vector<Vector> velocity;
+  std::vector<Real> radius;
+  Box bounds;
 };
+
+PointCloud::PointCloud() : point_count_(0)
+{
+}
+
+PointCloud::~PointCloud()
+{
+}
+
+int PointCloud::GetPointCount() const
+{
+  return point_count_;
+}
+
+void PointCloud::SetPointCount(int point_count)
+{
+  point_count_ = point_count;
+}
+
+#define ATTR(Class, Type, Name, Label) \
+void PointCloud::Add##Class##Label() \
+{ \
+  Name.resize(Get##Class##Count()); \
+} \
+Type PointCloud::Get##Class##Label(int idx) const \
+{ \
+  if (idx < 0 || idx >= static_cast<int>(this->Name.size())) { \
+    return Type(); \
+  } \
+  return this->Name[idx]; \
+} \
+void PointCloud::Set##Class##Label(int idx, const Type &value) \
+{ \
+  if (idx < 0 || idx >= static_cast<int>(this->Name.size())) \
+    return; \
+  this->Name[idx] = value; \
+} \
+bool PointCloud::Has##Class##Label() const \
+{ \
+  return this->Name.size() > 0; \
+}
+  ATTRIBUTE_LIST(ATTR)
+#undef ATTR
 
 struct PointCloud *PtcNew(void)
 {
-  struct PointCloud *ptc = FJ_MEM_ALLOC(struct PointCloud);
-
-  if (ptc == NULL) {
-    return NULL;
-  }
-
-  ptc->point_count = 0;
-  ptc->P = NULL;
-  ptc->velocity = NULL;
-  ptc->radius = NULL;
-  ptc->bounds = Box();
-
-  return ptc;
+  return new PointCloud();
 }
 
 void PtcFree(struct PointCloud *ptc)
 {
-  if (ptc == NULL) {
-    return;
-  }
-
-  VecFree(ptc->P);
-  VecFree(ptc->velocity);
-  free(ptc->radius);
-
-  FJ_MEM_FREE(ptc);
+  delete ptc;
 }
 
 struct Vector *PtcAllocatePoint(struct PointCloud *ptc, int point_count)
 {
-  struct Vector *P_tmp = NULL;
+  ptc->SetPointCount(point_count);
 
-  if (ptc == NULL) {
-    return NULL;
-  }
-
-  if (point_count < 1) {
-    return NULL;
-  }
-
-  P_tmp = VecRealloc(ptc->P, point_count);
-  if (P_tmp == NULL) {
-    return NULL;
-  }
-
-  /* commit */
-  ptc->P = P_tmp;
-  ptc->point_count = point_count;
-
-  return ptc->P;
+  ptc->AddPointPosition();
+  // TODO REMOVE THIS;
+  return &ptc->P[0];
 }
 
 void PtcSetPosition(struct PointCloud *ptc, int index, const struct Vector *P)
 {
-  if (index < 0 && index >= ptc->point_count) {
-    return;
-  }
-  ptc->P[index] = *P;
+  ptc->SetPointPosition(index, *P);
 }
 
 void PtcGetPosition(const struct PointCloud *ptc, int index, struct Vector *P)
 {
-  if (index < 0 && index >= ptc->point_count) {
-    return;
-  }
-  *P = ptc->P[index];
+  *P = ptc->GetPointPosition(index);
 }
 
 double *PtcAddAttributeDouble(struct PointCloud *ptc, const char *name)
 {
-  int i;
-
   if (strcmp(name, "radius") == 0) {
-    ptc->radius = FJ_MEM_REALLOC_ARRAY(ptc->radius, double, ptc->point_count);
-    for (i = 0; i < ptc->point_count; i++) {
-      ptc->radius[i] = .01;
-    }
-    return ptc->radius;
+    ptc->AddPointRadius();
+    return &ptc->radius[0];
   }
-
   return NULL;
 }
 
 struct Vector *PtcAddAttributeVector(struct PointCloud *ptc, const char *name)
 {
-  int i;
-
   if (strcmp(name, "velocity") == 0) {
-    ptc->velocity = VecAlloc(ptc->point_count);
-    for (i = 0; i < ptc->point_count; i++) {
-      struct Vector v;
-      ptc->velocity[i] = v;
-    }
-    return ptc->velocity;
+    ptc->AddPointVelocity();
+    return &ptc->velocity[0];
   }
 
   return NULL;
@@ -246,7 +265,7 @@ static void point_cloud_bounds(const void *prim_set, struct Box *bounds)
 static int point_count(const void *prim_set)
 {
   const struct PointCloud *ptc = (const struct PointCloud *) prim_set;
-  return ptc->point_count;
+  return ptc->point_count_;
 }
 
 static void update_bounds(struct PointCloud *ptc)
@@ -255,7 +274,7 @@ static void update_bounds(struct PointCloud *ptc)
 
   BoxReverseInfinite(&ptc->bounds); 
 
-  for (i = 0; i < ptc->point_count; i++) {
+  for (i = 0; i < ptc->point_count_; i++) {
     struct Box ptbox;
 
     point_bounds(ptc, i, &ptbox);
