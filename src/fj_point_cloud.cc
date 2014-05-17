@@ -14,9 +14,9 @@ See LICENSE and README
 #include <cfloat>
 
 #define ATTRIBUTE_LIST(ATTR) \
-  ATTR(Point, Vector,   P,        Position) \
-  ATTR(Point, Vector,   velocity, Velocity) \
-  ATTR(Point, Real,     radius,   Radius)
+  ATTR(Point, Vector,   P_,        Position) \
+  ATTR(Point, Vector,   velocity_, Velocity) \
+  ATTR(Point, Real,     radius_,   Radius)
 
 namespace fj {
 
@@ -25,8 +25,6 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
 static void point_bounds(const void *prim_set, int prim_id, Box *bounds);
 static void point_cloud_bounds(const void *prim_set, Box *bounds);
 static int point_count(const void *prim_set);
-
-static void update_bounds(PointCloud *ptc);
 
 PointCloud::PointCloud() : point_count_(0)
 {
@@ -48,17 +46,17 @@ void PointCloud::SetPointCount(int point_count)
 
 const Box &PointCloud::GetBounds() const
 {
-  return bounds;
+  return bounds_;
 }
 
 void PointCloud::ComputeBounds()
 {
-  BoxReverseInfinite(&bounds); 
+  BoxReverseInfinite(&bounds_); 
 
   for (int i = 0; i < GetPointCount(); i++) {
     Box ptbox;
     point_bounds(this, i, &ptbox);
-    BoxAddBox(&bounds, ptbox);
+    BoxAddBox(&bounds_, ptbox);
   }
 }
 
@@ -95,49 +93,6 @@ PointCloud *PtcNew(void)
 void PtcFree(PointCloud *ptc)
 {
   delete ptc;
-}
-
-Vector *PtcAllocatePoint(PointCloud *ptc, int point_count)
-{
-  ptc->SetPointCount(point_count);
-
-  ptc->AddPointPosition();
-  // TODO REMOVE THIS;
-  return &ptc->P[0];
-}
-
-void PtcSetPosition(PointCloud *ptc, int index, const Vector *P)
-{
-  ptc->SetPointPosition(index, *P);
-}
-
-void PtcGetPosition(const PointCloud *ptc, int index, Vector *P)
-{
-  *P = ptc->GetPointPosition(index);
-}
-
-double *PtcAddAttributeDouble(PointCloud *ptc, const char *name)
-{
-  if (strcmp(name, "radius") == 0) {
-    ptc->AddPointRadius();
-    return &ptc->radius[0];
-  }
-  return NULL;
-}
-
-Vector *PtcAddAttributeVector(PointCloud *ptc, const char *name)
-{
-  if (strcmp(name, "velocity") == 0) {
-    ptc->AddPointVelocity();
-    return &ptc->velocity[0];
-  }
-
-  return NULL;
-}
-
-void PtcComputeBounds(PointCloud *ptc)
-{
-  update_bounds(ptc);
 }
 
 void PtcGetPrimitiveSet(const PointCloud *ptc, PrimitiveSet *primset)
@@ -227,11 +182,6 @@ static int point_count(const void *prim_set)
 {
   const PointCloud *ptc = (const PointCloud *) prim_set;
   return ptc->GetPointCount();
-}
-
-static void update_bounds(PointCloud *ptc)
-{
-  ptc->ComputeBounds();
 }
 
 } // namespace xxx

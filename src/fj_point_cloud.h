@@ -14,25 +14,7 @@ See LICENSE and README
 
 namespace fj {
 
-struct PointCloud;
-struct PrimitiveSet;
-struct Vector;
-
-FJ_API PointCloud *PtcNew(void);
-FJ_API void PtcFree(PointCloud *ptc);
-
-FJ_API Vector *PtcAllocatePoint(PointCloud *ptc, int point_count);
-FJ_API void PtcSetPosition(PointCloud *ptc, int index, const Vector *P);
-FJ_API void PtcGetPosition(const PointCloud *ptc, int index, Vector *P);
-
-FJ_API Real *PtcAddAttributeDouble(PointCloud *ptc, const char *name);
-FJ_API Vector *PtcAddAttributeVector(PointCloud *ptc, const char *name);
-
-FJ_API void PtcComputeBounds(PointCloud *ptc);
-
-FJ_API void PtcGetPrimitiveSet(const PointCloud *ptc, PrimitiveSet *primset);
-
-struct PointCloud {
+class FJ_API PointCloud {
 public:
   PointCloud();
   ~PointCloud();
@@ -59,13 +41,19 @@ public:
 
   void ComputeBounds();
 
-public:
+private:
   int point_count_;
-  std::vector<Vector> P;
-  std::vector<Vector> velocity;
-  std::vector<Real> radius;
-  Box bounds;
+  std::vector<Vector> P_;
+  std::vector<Vector> velocity_;
+  std::vector<Real> radius_;
+  Box bounds_;
 };
+
+FJ_API PointCloud *PtcNew(void);
+FJ_API void PtcFree(PointCloud *ptc);
+
+struct PrimitiveSet;
+FJ_API void PtcGetPrimitiveSet(const PointCloud *ptc, PrimitiveSet *primset);
 
 } // namespace xxx
 

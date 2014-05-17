@@ -153,7 +153,6 @@ void PtcWriteFile(struct PtcOutputFile *out)
 int PtcLoadFile(struct PointCloud *ptc, const char *filename)
 {
   struct PtcInputFile *in = PtcOpenInputFile(filename);
-  int point_count = 0;
 
   if (in == NULL) {
     return -1;
@@ -161,17 +160,11 @@ int PtcLoadFile(struct PointCloud *ptc, const char *filename)
 
   /* read file */
   PtcReadHeader(in);
-  point_count = PtcGetInputPointCount(in);
+  const int point_count = PtcGetInputPointCount(in);
 
-  /* copy data to ptc */
-  /*
-  Vector *P        = PtcAllocatePoint(ptc, point_count);
-  Vector *velocity = PtcAddAttributeVector(ptc, "velocity");
-  double *radius   = PtcAddAttributeDouble(ptc, "radius");
-  */
-std::vector<Vector> P(point_count);
-std::vector<Vector> velocity(point_count);
-std::vector<double> radius(point_count);
+  std::vector<Vector> P(point_count);
+  std::vector<Vector> velocity(point_count);
+  std::vector<double> radius(point_count);
 
   PtcSetInputPosition(in, &P[0]);
   PtcSetInputAttributeVector3(in, "velocity", &velocity[0]);
@@ -181,9 +174,11 @@ std::vector<double> radius(point_count);
 
   PtcCloseInputFile(in);
 
-PtcAllocatePoint(ptc, point_count);
-PtcAddAttributeVector(ptc, "velocity");
-PtcAddAttributeDouble(ptc, "radius");
+  /* copy data to ptc */
+  ptc->SetPointCount(point_count);
+  ptc->AddPointPosition();
+  ptc->AddPointVelocity();
+  ptc->AddPointRadius();
 
   for (int i = 0; i < ptc->GetPointCount(); i++) {
     ptc->SetPointPosition(i, P[i]);
@@ -191,7 +186,7 @@ PtcAddAttributeDouble(ptc, "radius");
     ptc->SetPointRadius(i, radius[i]);
   }
 
-  PtcComputeBounds(ptc);
+  ptc->ComputeBounds();
 
   return 0;
 }
