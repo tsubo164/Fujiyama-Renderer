@@ -36,32 +36,32 @@ void XfmReset(struct Transform *transform)
 
 void XfmTransformPoint(const struct Transform *transform, struct Vector *point)
 {
-  MatTransformPoint(&transform->matrix, point);
+  MatTransformPoint(transform->matrix, point);
 }
 
 void XfmTransformVector(const struct Transform *transform, struct Vector *vector)
 {
-  MatTransformVector(&transform->matrix, vector);
+  MatTransformVector(transform->matrix, vector);
 }
 
 void XfmTransformBounds(const struct Transform *transform, struct Box *bounds)
 {
-  MatTransformBounds(&transform->matrix, bounds);
+  MatTransformBounds(transform->matrix, bounds);
 }
 
 void XfmTransformPointInverse(const struct Transform *transform, struct Vector *point)
 {
-  MatTransformPoint(&transform->inverse, point);
+  MatTransformPoint(transform->inverse, point);
 }
 
 void XfmTransformVectorInverse(const struct Transform *transform, struct Vector *vector)
 {
-  MatTransformVector(&transform->inverse, vector);
+  MatTransformVector(transform->inverse, vector);
 }
 
 void XfmTransformBoundsInverse(const struct Transform *transform, struct Box *bounds)
 {
-  MatTransformBounds(&transform->inverse, bounds);
+  MatTransformBounds(transform->inverse, bounds);
 }
 
 void XfmSetTranslate(struct Transform *transform, double tx, double ty, double tz)
@@ -212,7 +212,7 @@ static void update_matrix(struct Transform *transform)
       transform->scale.x,     transform->scale.y,     transform->scale.z,
       &transform->matrix);
 
-  MatInverse(&transform->inverse, &transform->matrix);
+  MatInverse(&transform->inverse, transform->matrix);
 }
 
 static void make_transform_matrix(
@@ -252,7 +252,7 @@ static void make_transform_matrix(
 
   MatIdentity(&R);
   for (i = 0; i < 3; i++)
-    MatMultiply(&R, queue[i], &R);
+    MatMultiply(&R, *queue[i], R);
 
   switch (transform_order) {
   case ORDER_SRT: QUEUE_SET(queue, &S, &R, &T); break;
@@ -268,7 +268,7 @@ static void make_transform_matrix(
 
   MatIdentity(transform);
   for (i = 0; i < 3; i++)
-    MatMultiply(transform, queue[i], transform);
+    MatMultiply(transform, *queue[i], *transform);
 
 #undef QUEUE_SET
 }

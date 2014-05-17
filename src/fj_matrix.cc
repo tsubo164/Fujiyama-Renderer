@@ -7,133 +7,131 @@ See LICENSE and README
 #include "fj_numeric.h"
 #include "fj_vector.h"
 #include "fj_box.h"
-#include <stdio.h>
-#include <float.h>
-#include <string.h>
-#include <math.h>
-
-#define MAT_SET(dst, \
-     e00, e01, e02, e03, \
-     e10, e11, e12, e13, \
-     e20, e21, e22, e23, \
-     e30, e31, e32, e33) \
-do { \
-  dst->e[0]=e00;  dst->e[1]=e01;  dst->e[2]=e02;  dst->e[3]=e03; \
-  dst->e[4]=e10;  dst->e[5]=e11;  dst->e[6]=e12;  dst->e[7]=e13; \
-  dst->e[8]=e20;  dst->e[9]=e21;  dst->e[10]=e22; dst->e[11]=e23; \
-  dst->e[12]=e30; dst->e[13]=e31; dst->e[14]=e32; dst->e[15]=e33; \
-} while(0)
+#include <cstdio>
+#include <cfloat>
+#include <cmath>
 
 namespace fj {
 
-void MatIdentity(struct Matrix *dst)
+static inline void set_matrix(Matrix *dst,
+     Real e00, Real e01, Real e02, Real e03,
+     Real e10, Real e11, Real e12, Real e13,
+     Real e20, Real e21, Real e22, Real e23,
+     Real e30, Real e31, Real e32, Real e33)
 {
-  MAT_SET(dst,
+  dst->e[0]=e00;  dst->e[1]=e01;  dst->e[2]=e02;  dst->e[3]=e03;
+  dst->e[4]=e10;  dst->e[5]=e11;  dst->e[6]=e12;  dst->e[7]=e13;
+  dst->e[8]=e20;  dst->e[9]=e21;  dst->e[10]=e22; dst->e[11]=e23;
+  dst->e[12]=e30; dst->e[13]=e31; dst->e[14]=e32; dst->e[15]=e33;
+}
+
+void MatIdentity(Matrix *dst)
+{
+  set_matrix(dst,
       1., 0., 0., 0.,
       0., 1., 0., 0.,
       0., 0., 1., 0.,
       0., 0., 0., 1.);
 }
 
-void MatSet(struct Matrix *dst,
-    double e00, double e01, double e02, double e03,
-    double e10, double e11, double e12, double e13,
-    double e20, double e21, double e22, double e23,
-    double e30, double e31, double e32, double e33)
+void MatSet(Matrix *dst,
+    Real e00, Real e01, Real e02, Real e03,
+    Real e10, Real e11, Real e12, Real e13,
+    Real e20, Real e21, Real e22, Real e23,
+    Real e30, Real e31, Real e32, Real e33)
 {
-  MAT_SET(dst,
+  set_matrix(dst,
       e00, e01, e02, e03,
       e10, e11, e12, e13,
       e20, e21, e22, e23,
       e30, e31, e32, e33);
 }
 
-void MatTranslate(struct Matrix *dst, double tx, double ty, double tz )
+void MatTranslate(Matrix *dst, Real tx, Real ty, Real tz )
 {
-  MAT_SET(dst,
+  set_matrix(dst,
       1., 0., 0., tx,
       0., 1., 0., ty,
       0., 0., 1., tz,
       0., 0., 0., 1.);
 }
 
-void MatScale(struct Matrix *dst, double sx, double sy, double sz )
+void MatScale(Matrix *dst, Real sx, Real sy, Real sz )
 {
-  MAT_SET(dst,
+  set_matrix(dst,
       sx, 0., 0., 0.,
       0., sy, 0., 0.,
       0., 0., sz, 0.,
       0., 0., 0., 1.);
 }
 
-void MatRotateX(struct Matrix *dst, double angle)
+void MatRotateX(Matrix *dst, Real angle)
 {
-  const double sint = sin(Radian(angle));
-  const double cost = cos(Radian(angle));
+  const Real sint = sin(Radian(angle));
+  const Real cost = cos(Radian(angle));
 
-  MAT_SET(dst,
+  set_matrix(dst,
       1.,   0.,    0., 0.,
       0., cost, -sint, 0.,
       0., sint,  cost, 0.,
       0.,   0.,    0., 1.);
 }
 
-void MatRotateY(struct Matrix *dst, double angle)
+void MatRotateY(Matrix *dst, Real angle)
 {
-  const double sint = sin(Radian(angle));
-  const double cost = cos(Radian(angle));
+  const Real sint = sin(Radian(angle));
+  const Real cost = cos(Radian(angle));
 
-  MAT_SET(dst,
+  set_matrix(dst,
        cost, 0.,  sint,  0.,
          0., 1.,    0.,  0.,
       -sint, 0.,  cost,  0.,
          0., 0.,    0.,  1.);
 }
 
-void MatRotateZ(struct Matrix *dst, double angle)
+void MatRotateZ(Matrix *dst, Real angle)
 {
-  const double sint = sin(Radian(angle));
-  const double cost = cos(Radian(angle));
+  const Real sint = sin(Radian(angle));
+  const Real cost = cos(Radian(angle));
 
-  MAT_SET(dst,
+  set_matrix(dst,
       cost, -sint, 0., 0.,
       sint,  cost, 0., 0.,
         0.,    0., 1., 0.,
         0.,    0., 0., 1.);
 }
 
-void MatMultiply(struct Matrix *dst, const struct Matrix *a, const struct Matrix *b)
+void MatMultiply(Matrix *dst, const Matrix &a, const Matrix &b)
 {
-  int i, j, k;
-  struct Matrix aa = *a;
-  struct Matrix bb = *b;
+  Matrix c;
 
-  for (j = 0; j < 4; j++) {
-    for (i = 0; i < 4; i++) {
-      dst->e[4*j+i] = 0.;
-      for (k = 0; k < 4; k++) {
-        dst->e[4*j+i] += aa.e[4*j+k] * bb.e[4*k+i];
+  for (int j = 0; j < 4; j++) {
+    for (int i = 0; i < 4; i++) {
+      c.e[4*j+i] = 0.;
+      for (int k = 0; k < 4; k++) {
+        c.e[4*j+i] += a.e[4*j+k] * b.e[4*k+i];
       }
     }
   }
+  *dst = c;
 }
 
-void MatInverse(struct Matrix *dst, const struct Matrix *a)
+void MatInverse(Matrix *dst, const Matrix &a)
 {
   /* 4x4-matrix inversion with Cramer's Rule.
      codes from intel web site's pdf */
 
   int i, j;
-  double tmp[12]; /* temp array for pairs */
-  double src[16]; /* array of transpose source matrix */
-  double det; /* determinant */
+  Real tmp[12]; /* temp array for pairs */
+  Real src[16]; /* array of transpose source matrix */
+  Real det; /* determinant */
 
   /* transpose matrix */
   for (i = 0; i < 4; i++) {
-    src[i]      = a->e[i*4];
-    src[i +  4] = a->e[i*4 + 1];
-    src[i +  8] = a->e[i*4 + 2];
-    src[i + 12] = a->e[i*4 + 3];
+    src[i]      = a.e[i*4];
+    src[i +  4] = a.e[i*4 + 1];
+    src[i +  8] = a.e[i*4 + 2];
+    src[i + 12] = a.e[i*4 + 3];
   }
 
   /* calculate pairs for first 8 elements (cofactors) */
@@ -209,32 +207,28 @@ void MatInverse(struct Matrix *dst, const struct Matrix *a)
     dst->e[j] *= det;
 }
 
-void MatTransformPoint(const struct Matrix *m, struct Vector *point)
+void MatTransformPoint(const Matrix &m, Vector *point)
 {
-  struct Vector tmp;
-
-  tmp.x = m->e[0]*point->x + m->e[1]*point->y + m->e[2] *point->z + m->e[3];
-  tmp.y = m->e[4]*point->x + m->e[5]*point->y + m->e[6] *point->z + m->e[7];
-  tmp.z = m->e[8]*point->x + m->e[9]*point->y + m->e[10]*point->z + m->e[11];
-
-  *point = tmp;
+  *point = Vector(
+      m.e[0]*point->x + m.e[1]*point->y + m.e[2] *point->z + m.e[3],
+      m.e[4]*point->x + m.e[5]*point->y + m.e[6] *point->z + m.e[7],
+      m.e[8]*point->x + m.e[9]*point->y + m.e[10]*point->z + m.e[11]);
 }
 
-void MatTransformVector(const struct Matrix *m, struct Vector *vector)
+void MatTransformVector(const Matrix &m, Vector *vector)
 {
-  struct Vector tmp;
-
-  tmp.x = m->e[0]*vector->x + m->e[1]*vector->y + m->e[2] *vector->z;
-  tmp.y = m->e[4]*vector->x + m->e[5]*vector->y + m->e[6] *vector->z;
-  tmp.z = m->e[8]*vector->x + m->e[9]*vector->y + m->e[10]*vector->z;
-
-  *vector = tmp;
+  *vector = Vector(
+      m.e[0]*vector->x + m.e[1]*vector->y + m.e[2] *vector->z,
+      m.e[4]*vector->x + m.e[5]*vector->y + m.e[6] *vector->z,
+      m.e[8]*vector->x + m.e[9]*vector->y + m.e[10]*vector->z);
 }
 
-void MatTransformBounds(const struct Matrix *m, struct Box *bounds)
+void MatTransformBounds(const Matrix &m, Box *bounds)
 {
-  struct Box box(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-  struct Vector pt;
+  Vector pt;
+  Box box;
+
+  BoxReverseInfinite(&box);
 
 #define TRANSFORM_BOX_VERTEX(minmax0, minmax1, minmax2) do { \
   pt.x = bounds->minmax0.x; \
@@ -256,11 +250,10 @@ void MatTransformBounds(const struct Matrix *m, struct Box *bounds)
   *bounds = box;
 }
 
-void MatPrint(const struct Matrix *m)
+void MatPrint(const Matrix &m)
 {
-  int i;
-  for (i = 0; i < 4; i++) {
-    printf("%g, %g, %g, %g\n", m->e[4*i+0], m->e[4*i+1], m->e[4*i+2], m->e[4*i+3]);
+  for (int i = 0; i < 4; i++) {
+    printf("%g, %g, %g, %g\n", m.e[4*i+0], m.e[4*i+1], m.e[4*i+2], m.e[4*i+3]);
   }
 }
 

@@ -251,7 +251,7 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
 
   compute_world_to_ray_matrix(&nml_ray, &world_to_ray);
   for (i = 0; i < 4; i++) {
-    MatTransformPoint(&world_to_ray, &bezier.cp[i].P);
+    MatTransformPoint(world_to_ray, &bezier.cp[i].P);
   }
 
   hit = converge_bezier3(&bezier, 0, 1, depth, &v_hit, &ttmp);
@@ -338,7 +338,7 @@ static void compute_world_to_ray_matrix(const struct Ray *ray, struct Matrix *ds
       lx, ly, lz, 0,
       0, 0, 0, 1);
 
-  MatMultiply(dst, &rotate, &translate);
+  MatMultiply(dst, rotate, translate);
 }
 
 /* Based on this algorithm:
