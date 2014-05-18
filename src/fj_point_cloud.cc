@@ -10,9 +10,6 @@ See LICENSE and README
 #include "fj_memory.h"
 #include "fj_ray.h"
 
-#include <cstring>
-#include <cfloat>
-
 #define ATTRIBUTE_LIST(ATTR) \
   ATTR(Point, Vector,   P_,        Position) \
   ATTR(Point, Vector,   velocity_, Velocity) \
@@ -67,20 +64,20 @@ void PointCloud::Add##Class##Label() \
 } \
 Type PointCloud::Get##Class##Label(int idx) const \
 { \
-  if (idx < 0 || idx >= static_cast<int>(this->Name.size())) { \
+  if (idx < 0 || idx >= static_cast<int>(Name.size())) { \
     return Type(); \
   } \
-  return this->Name[idx]; \
+  return Name[idx]; \
 } \
 void PointCloud::Set##Class##Label(int idx, const Type &value) \
 { \
-  if (idx < 0 || idx >= static_cast<int>(this->Name.size())) \
+  if (idx < 0 || idx >= static_cast<int>(Name.size())) \
     return; \
-  this->Name[idx] = value; \
+  Name[idx] = value; \
 } \
 bool PointCloud::Has##Class##Label() const \
 { \
-  return this->Name.size() > 0; \
+  return !Name.empty(); \
 }
   ATTRIBUTE_LIST(ATTR)
 #undef ATTR

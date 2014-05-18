@@ -64,7 +64,7 @@ const Box &Mesh::GetBounds() const
 
 void Mesh::ComputeNormals()
 {
-  if (P.size() == 0 || indices.size() == 0)
+  if (P.empty() || indices.empty())
     return;
 
   const int nverts = GetVertexCount();
@@ -128,20 +128,20 @@ void Mesh::Add##Class##Label() \
 } \
 Type Mesh::Get##Class##Label(int idx) const \
 { \
-  if (idx < 0 || idx >= static_cast<int>(this->Name.size())) { \
+  if (idx < 0 || idx >= static_cast<int>(Name.size())) { \
     return Type(); \
   } \
-  return this->Name[idx]; \
+  return Name[idx]; \
 } \
 void Mesh::Set##Class##Label(int idx, const Type &value) \
 { \
-  if (idx < 0 || idx >= static_cast<int>(this->Name.size())) \
+  if (idx < 0 || idx >= static_cast<int>(Name.size())) \
     return; \
-  this->Name[idx] = value; \
+  Name[idx] = value; \
 } \
 bool Mesh::Has##Class##Label() const \
 { \
-  return this->Name.size() > 0; \
+  return !Name.empty(); \
 }
   ATTRIBUTE_LIST(ATTR)
 #undef ATTR

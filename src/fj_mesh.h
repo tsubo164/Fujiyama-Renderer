@@ -6,6 +6,7 @@ See LICENSE and README
 #ifndef FJ_MESH_H
 #define FJ_MESH_H
 
+#include "fj_compatibility.h"
 #include "fj_tex_coord.h"
 #include "fj_vector.h"
 #include "fj_color.h"
@@ -21,9 +22,6 @@ struct TriIndex {
 };
 
 struct PrimitiveSet;
-struct TexCoord;
-struct Vector;
-struct Color;
 
 struct Mesh;
 
@@ -65,7 +63,7 @@ extern void MshComputeNormals(Mesh *mesh);
 
 extern void MshGetPrimitiveSet(const Mesh *mesh, PrimitiveSet *primset);
 
-struct Mesh {
+class FJ_API Mesh {
 public:
   Mesh();
   ~Mesh();

@@ -256,27 +256,27 @@ int CrvLoadFile(struct Curve *curve, const char *filename)
     attrname = in->attr_names[i];
     if (strcmp(attrname, "P") == 0) {
       CrvAllocateVertex(curve, "P", in->nverts);
-      CrvReadAttribute(in, curve->P);
+      CrvReadAttribute(in, &curve->P[0]);
     }
     else if (strcmp(attrname, "width") == 0) {
       CrvAllocateVertex(curve, "width", in->nverts);
-      CrvReadAttribute(in, curve->width);
+      CrvReadAttribute(in, &curve->width[0]);
     }
     else if (strcmp(attrname, "Cd") == 0) {
       CrvAllocateVertex(curve, "Cd", in->nverts);
-      CrvReadAttribute(in, curve->Cd);
+      CrvReadAttribute(in, &curve->Cd[0]);
     }
     else if (strcmp(attrname, "uv") == 0) {
       CrvAllocateVertex(curve, "uv", in->nverts);
-      CrvReadAttribute(in, curve->uv);
+      CrvReadAttribute(in, &curve->uv[0]);
     }
     else if (strcmp(attrname, "velocity") == 0) {
       CrvAddVelocity(curve);
-      CrvReadAttribute(in, curve->velocity);
+      CrvReadAttribute(in, &curve->velocity[0]);
     }
     else if (strcmp(attrname, "indices") == 0) {
       CrvAllocateCurve(curve, "indices", in->ncurves);
-      CrvReadAttribute(in, curve->indices);
+      CrvReadAttribute(in, &curve->indices[0]);
     }
   }
 
