@@ -65,6 +65,12 @@ struct Vector {
     z *= scalar;
     return *this;
   }
+  const Vector &operator/=(Real scalar)
+  {
+    // no checking zero division
+    const Real inv = 1./scalar;
+    return *this *= inv;
+  }
 
   double x, y, z;
 };

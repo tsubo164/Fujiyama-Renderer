@@ -19,6 +19,17 @@ struct FJ_API Matrix {
     e[8]=0.;  e[9]=0.;  e[10]=1.; e[11]=0.;
     e[12]=0.; e[13]=0.; e[14]=0.; e[15]=1.;
   }
+  Matrix(
+    Real e00, Real e01, Real e02, Real e03,
+    Real e10, Real e11, Real e12, Real e13,
+    Real e20, Real e21, Real e22, Real e23,
+    Real e30, Real e31, Real e32, Real e33)
+  {
+    e[0]=e00;  e[1]=e01;  e[2]=e02;  e[3]=e03;
+    e[4]=e10;  e[5]=e11;  e[6]=e12;  e[7]=e13;
+    e[8]=e20;  e[9]=e21;  e[10]=e22; e[11]=e23;
+    e[12]=e30; e[13]=e31; e[14]=e32; e[15]=e33;
+  }
   ~Matrix() {}
 
   // row-major

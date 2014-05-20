@@ -24,14 +24,8 @@ See LICENSE and README
   ATTR(Vertex, Color,    Cd,       Color) \
   ATTR(Vertex, TexCoord, uv,       Texture) \
   ATTR(Vertex, Vector,   velocity, Velocity) \
-  ATTR(Vertex, double,   width,    Width) \
+  ATTR(Vertex, Real,   width,    Width) \
   ATTR(Curve,  int,      indices,  Indices)
-
-#define VEC_SUB(dst,a,b) do { \
-  (dst)->x = (a)->x - (b)->x; \
-  (dst)->y = (a)->y - (b)->y; \
-  (dst)->z = (a)->z - (b)->z; \
-  } while(0)
 
 namespace fj {
 
@@ -41,36 +35,44 @@ struct ControlPoint {
 
 struct Bezier3 {
   ControlPoint cp[4];
-  double width[2];
+  Real width[2];
   Vector velocity[4];
 };
 
 /* curve interfaces */
-static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
+static int curve_ray_intersect(const void *prim_set, int prim_id, Real time,
     const Ray *ray, Intersection *isect);
 static void curve_bounds(const void *prim_set, int prim_id, Box *bounds);
 static void curveset_bounds(const void *prim_set, Box *bounds);
 static int curve_count(const void *prim_set);
 
 /* bezier curve interfaces */
-static double get_bezier3_max_radius(const Bezier3 *bezier);
-static double get_bezier3_width(const Bezier3 *bezier, double t);
-static void get_bezier3_bounds(const Bezier3 *bezier, Box *bounds);
+static Real get_bezier3_max_radius(const Bezier3 &bezier);
+static Real get_bezier3_width(const Bezier3 &bezier, Real t);
+static void get_bezier3_bounds(const Bezier3 &bezier, Box *bounds);
 static void get_bezier3(const Curve *curve, int prim_id, Bezier3 *bezier);
-static void eval_bezier3(Vector *evalP, const ControlPoint *cp, double t);
-static void derivative_bezier3(Vector *deriv, const ControlPoint *cp, double t);
-static void split_bezier3(const Bezier3 *bezier,
+static Vector eval_bezier3(const ControlPoint *cp, Real t);
+static Vector derivative_bezier3(const ControlPoint *cp, Real t);
+static void split_bezier3(const Bezier3 &bezier,
     Bezier3 *left, Bezier3 *right);
-static int converge_bezier3(const Bezier3 *bezier,
-    double v0, double vn, int depth,
-    double *v_hit, double *P_hit);
-static void time_sample_bezier3(Bezier3 *bezier, double time);
+static int converge_bezier3(const Bezier3 &bezier,
+    Real v0, Real vn, int depth,
+    Real *v_hit, Real *P_hit);
+static void time_sample_bezier3(Bezier3 *bezier, Real time);
 
 /* helper functions */
-static void mid_point(Vector *mid, const Vector *a, const Vector *b);
-static void cache_split_depth(Curve *curve);
-static int compute_split_depth_limit(const ControlPoint *cp, double epsilon);
-static void compute_world_to_ray_matrix(const Ray *ray, Matrix *dst);
+static inline Vector mid_point(const Vector &a, const Vector &b)
+{
+  return (a + b) * .5;
+}
+
+static int compute_split_depth_limit(const ControlPoint *cp, Real epsilon);
+static void compute_world_to_ray_matrix(const Ray &ray, Matrix *dst);
+
+static inline Real dot_xy(const Vector &a, const Vector &b)
+{
+  return a.x * b.x + a.y * b.y;
+}
 
 Curve::Curve() : nverts(0), ncurves(0)
 {
@@ -105,6 +107,31 @@ const Box &Curve::GetBounds() const
   return bounds;
 }
 
+void Curve::ComputeBounds()
+{
+  Real max_radius = 0;
+
+  BoxReverseInfinite(&bounds);
+
+  for (int i = 0; i < GetCurveCount(); i++) {
+    Box bezier_bounds;
+
+    curve_bounds(this, i, &bezier_bounds);
+    BoxAddBox(&bounds, bezier_bounds);
+
+    Bezier3 bezier;
+    get_bezier3(this, i, &bezier);
+
+    const Real bezier_max_radius = get_bezier3_max_radius(bezier);
+    max_radius = Max(max_radius, bezier_max_radius);
+  }
+
+  BoxExpand(&bounds, max_radius);
+
+  /* TODO find a better place to put this */
+  cache_split_depth();
+}
+
 #define ATTR(Class, Type, Name, Label) \
 void Curve::Add##Class##Label() \
 { \
@@ -130,6 +157,25 @@ bool Curve::Has##Class##Label() const \
   ATTRIBUTE_LIST(ATTR)
 #undef ATTR
 
+void Curve::cache_split_depth()
+{
+  assert(split_depth_.empty());
+
+  const int NCURVES = GetCurveCount();
+
+  split_depth_.resize(NCURVES);
+  for (int i = 0; i < NCURVES; i++) {
+    Bezier3 bezier;
+    // TODO REMOVE 'this' POINTER
+    get_bezier3(this, i, &bezier);
+
+    int depth = compute_split_depth_limit(bezier.cp, 2*get_bezier3_max_radius(bezier) / 20.);
+    depth = Clamp(depth, 1, 5);
+
+    split_depth_[i] = depth;
+  }
+}
+
 Curve *CrvNew(void)
 {
   return new Curve();
@@ -141,10 +187,8 @@ void CrvFree(Curve *curve)
 }
 
 /* TODO REMOVE THIS API */
-void *CrvAllocateVertex(Curve *curve, const char *attr_name, int nverts)
+void CrvAllocateVertex(Curve *curve, const char *attr_name, int nverts)
 {
-  void *ret = NULL;
-
   if (curve->GetVertexCount() != 0 && curve->GetVertexCount() != nverts) {
     /* TODO error handling */
 #if 0
@@ -156,34 +200,21 @@ void *CrvAllocateVertex(Curve *curve, const char *attr_name, int nverts)
 
   if (strcmp(attr_name, "P") == 0) {
     curve->AddVertexPosition();
-    ret = &curve->P[0];
   }
   else if (strcmp(attr_name, "width") == 0) {
     curve->AddVertexWidth();
-    ret = &curve->width[0];
   }
   else if (strcmp(attr_name, "Cd") == 0) {
     curve->AddVertexColor();
-    ret = &curve->Cd[0];
   }
   else if (strcmp(attr_name, "uv") == 0) {
     curve->AddVertexTexture();
-    ret = &curve->uv[0];
   }
-
-  if (ret == NULL) {
-    curve->SetVertexCount(0);
-    return NULL;
-  }
-
-  return ret;
 }
 
 /* TODO REMOVE THIS API */
-void *CrvAllocateCurve(Curve *curve, const char *attr_name, int ncurves)
+void CrvAllocateCurve(Curve *curve, const char *attr_name, int ncurves)
 {
-  void *ret = NULL;
-
   if (curve->GetCurveCount() != 0 && curve->GetCurveCount() != ncurves) {
     /* TODO error handling */
 #if 0
@@ -195,51 +226,21 @@ void *CrvAllocateCurve(Curve *curve, const char *attr_name, int ncurves)
 
   if (strcmp(attr_name, "indices") == 0) {
     curve->AddCurveIndices();
-    ret = &curve->indices[0];
   }
-
-  if (ret == NULL) {
-    curve->SetCurveCount(0);
-    return NULL;
-  }
-
-  return ret;
 }
 
-Vector *CrvAddVelocity(Curve *curve)
+void CrvAddVelocity(Curve *curve)
 {
   if (curve->GetVertexCount() == 0) {
-    return NULL;
+    return;
   }
 
   curve->AddVertexVelocity();
-
-  return &curve->velocity[0];
 }
 
 void CrvComputeBounds(Curve *curve)
 {
-  int i;
-  double max_radius = 0;
-
-  BoxReverseInfinite(&curve->bounds);
-
-  for (i = 0; i < curve->GetCurveCount(); i++) {
-    Bezier3 bezier;
-    Box bezier_bounds;
-    double bezier_max_radius;
-
-    curve_bounds(curve, i, &bezier_bounds);
-    BoxAddBox(&curve->bounds, bezier_bounds);
-
-    bezier_max_radius = get_bezier3_max_radius(&bezier);
-    max_radius = Max(max_radius, bezier_max_radius);
-  }
-
-  BoxExpand(&curve->bounds, max_radius);
-
-  /* TODO find a better place to put this */
-  cache_split_depth(curve);
+  curve->ComputeBounds();
 }
 
 void CrvGetPrimitiveSet(const Curve *curve, PrimitiveSet *primset)
@@ -253,63 +254,51 @@ void CrvGetPrimitiveSet(const Curve *curve, PrimitiveSet *primset)
       curve_count);
 }
 
-static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
+// TODO MAKE PRIVATE FUNCTION AS SOON AS ADD INTERFACE CLASS
+static int curve_ray_intersect(const void *prim_set, int prim_id, Real time,
     const Ray *ray, Intersection *isect)
 {
   const Curve *curve = (const Curve *) prim_set;
-  Bezier3 bezier;
+
   Matrix world_to_ray;
-
-  /* for scaled ray */
+  Bezier3 bezier;
   Ray nml_ray;
-  double ray_scale;
 
-  double ttmp = FLT_MAX;
-  double v_hit;
-  int depth;
-  int hit;
-  int i;
-
+  // for scaled ray
+  const Real ray_scale = Length(ray->dir);
   nml_ray = *ray;
-  ray_scale = VEC3_LEN(&nml_ray.dir);
-  {
-    const double inv_dist = 1. / ray_scale;
-    nml_ray.dir.x *= inv_dist;
-    nml_ray.dir.y *= inv_dist;
-    nml_ray.dir.z *= inv_dist;
-  }
+  nml_ray.dir /= ray_scale;
 
   get_bezier3(curve, prim_id, &bezier);
-  depth = curve->split_depth[prim_id];
+  const int depth = curve->split_depth_[prim_id];
   time_sample_bezier3(&bezier, time);
 
-  compute_world_to_ray_matrix(&nml_ray, &world_to_ray);
-  for (i = 0; i < 4; i++) {
+  compute_world_to_ray_matrix(nml_ray, &world_to_ray);
+  for (int i = 0; i < 4; i++) {
     MatTransformPoint(world_to_ray, &bezier.cp[i].P);
   }
 
-  hit = converge_bezier3(&bezier, 0, 1, depth, &v_hit, &ttmp);
-  if (hit) {
-    Bezier3 original;
-    const Color *Cd_curve0;
-    const Color *Cd_curve1;
-    int i0, i1;
+  Real ttmp = FLT_MAX;
+  Real v_hit = FLT_MAX;
 
-    /* P */
+  const bool hit = converge_bezier3(bezier, 0, 1, depth, &v_hit, &ttmp);
+  if (hit) {
+    // P
     isect->t_hit = ttmp / ray_scale;
     isect->P = RayPointAt(*ray, isect->t_hit);
 
-    /* dPdv */
+    // dPdv
+    Bezier3 original;
     get_bezier3(curve, prim_id, &original);
     time_sample_bezier3(&original, time);
-    derivative_bezier3(&isect->dPdv, original.cp, v_hit);
+    isect->dPdv = derivative_bezier3(original.cp, v_hit);
 
-    /* Cd */
-    i0 = curve->indices[prim_id];
-    i1 = curve->indices[prim_id] + 2;
-    Cd_curve0 = &curve->Cd[i0];
-    Cd_curve1 = &curve->Cd[i1];
-    COL_LERP(&isect->Cd, Cd_curve0, Cd_curve1, v_hit);
+    // Cd
+    const int i0 = curve->GetCurveIndices(prim_id);
+    const int i1 = curve->GetCurveIndices(prim_id) + 2;
+    const Color Cd_curve0 = curve->GetVertexColor(i0);
+    const Color Cd_curve1 = curve->GetVertexColor(i1);
+    ColLerp(&isect->Cd, Cd_curve0, Cd_curve1, v_hit);
   }
 
   return hit;
@@ -318,23 +307,23 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, double time,
 static void curve_bounds(const void *prim_set, int prim_id, Box *bounds)
 {
   const Curve *curve = (const Curve *) prim_set;
-  Bezier3 bezier;
-  Box bounds_shutter_close;
 
+  Bezier3 bezier;
   get_bezier3(curve, prim_id, &bezier);
-  get_bezier3_bounds(&bezier, bounds);
+  get_bezier3_bounds(bezier, bounds);
 
   /* TODO need to pass max time sample instead of 1. */
   time_sample_bezier3(&bezier, 1);
 
-  get_bezier3_bounds(&bezier, &bounds_shutter_close);
+  Box bounds_shutter_close;
+  get_bezier3_bounds(bezier, &bounds_shutter_close);
   BoxAddBox(bounds, bounds_shutter_close);
 }
 
 static void curveset_bounds(const void *prim_set, Box *bounds)
 {
   const Curve *curve = (const Curve *) prim_set;
-  *bounds = curve->bounds;
+  *bounds = curve->GetBounds();
 }
 
 static int curve_count(const void *prim_set)
@@ -343,30 +332,27 @@ static int curve_count(const void *prim_set)
   return curve->GetCurveCount();
 }
 
-static void compute_world_to_ray_matrix(const Ray *ray, Matrix *dst)
+static void compute_world_to_ray_matrix(const Ray &ray, Matrix *dst)
 {
-  Matrix translate, rotate;
-  double d, d_inv;
+  const Real ox = ray.orig.x;
+  const Real oy = ray.orig.y;
+  const Real oz = ray.orig.z;
+  const Real lx = ray.dir.x;
+  const Real ly = ray.dir.y;
+  const Real lz = ray.dir.z;
 
-  const double ox = ray->orig.x;
-  const double oy = ray->orig.y;
-  const double oz = ray->orig.z;
-  const double lx = ray->dir.x;
-  const double ly = ray->dir.y;
-  const double lz = ray->dir.z;
-
-  d = sqrt(lx*lx + lz*lz);
+  const Real d = sqrt(lx*lx + lz*lz);
   if (d == 0) {
     /* TODO handle d == 0 */
   }
-  d_inv = 1. / d;
+  const Real d_inv = 1. / d;
 
-  MatSet(&translate,
+  const Matrix translate(
       1, 0, 0, -ox,
       0, 1, 0, -oy,
       0, 0, 1, -oz,
       0, 0, 0, 1);
-  MatSet(&rotate,
+  const Matrix rotate(
       lz*d_inv, 0, -lx*d_inv, 0,
       -lx*ly*d_inv, d, -ly*lz*d_inv, 0,
       lx, ly, lz, 0,
@@ -378,12 +364,12 @@ static void compute_world_to_ray_matrix(const Ray *ray, Matrix *dst)
 /* Based on this algorithm:
    Koji Nakamaru and Yoshio Ono, RAY TRACING FOR CURVES PRIMITIVE, WSCG 2002.
    */
-static int converge_bezier3(const Bezier3 *bezier,
-    double v0, double vn, int depth,
-    double *v_hit, double *P_hit)
+static int converge_bezier3(const Bezier3 &bezier,
+    Real v0, Real vn, int depth,
+    Real *v_hit, Real *P_hit)
 {
-  const ControlPoint *cp = bezier->cp;
-  const double radius = get_bezier3_max_radius(bezier);
+  const ControlPoint *cp = bezier.cp;
+  const Real radius = get_bezier3_max_radius(bezier);
   Box bounds;
 
   get_bezier3_bounds(bezier, &bounds);
@@ -395,261 +381,191 @@ static int converge_bezier3(const Bezier3 *bezier,
   }
 
   if (depth == 0) {
-    Vector dir;
-    Vector dP0;
-    Vector dPn;
-    Vector vP;
-    double v, w;
-    double radius_w;
+    const Vector dir = cp[3].P - cp[0].P;
+    Vector dP0 = cp[1].P - cp[0].P;
 
-    VEC_SUB(&dir, &cp[3].P, &cp[0].P);
-    VEC_SUB(&dP0, &cp[1].P, &cp[0].P);
-
-#define DOT_XY(a,b) ((a)->x * (b)->x + (a)->y * (b)->y)
-    /* not VEC3_DOT */
-    if (DOT_XY(&dir, &dP0) < 0) {
-      dP0.x *= -1;
-      dP0.y *= -1;
-      dP0.z *= -1;
+    if (dot_xy(dir, dP0) < 0) {
+      dP0 *= -1;
     }
-    /* not VEC3_DOT */
-    if (-1 * DOT_XY(&dP0, &cp[0].P) < 0) {
+    if (-1 * dot_xy(dP0, cp[0].P) < 0) {
       return 0;
     }
 
-    VEC_SUB(&dPn, &cp[3].P, &cp[2].P);
+    Vector dPn = cp[3].P - cp[2].P;
 
-    /* not VEC3_DOT */
-    if (DOT_XY(&dir, &dPn) < 0) {
-      dPn.x *= -1;
-      dPn.y *= -1;
-      dPn.z *= -1;
+    if (dot_xy(dir, dPn) < 0) {
+      dPn *= -1;
     }
-    /* not VEC3_DOT */
-    if (DOT_XY(&dPn, &cp[3].P) < 0) {
+    if (dot_xy(dPn, cp[3].P) < 0) {
       return 0;
     }
-#undef DOT_XY
 
-    /* compute w on the line segment */
-    w = dir.x * dir.x + dir.y * dir.y;
+    // compute w on the line segment
+    Real w = dir.x * dir.x + dir.y * dir.y;
     if (Abs(w) < 1e-6) {
       return 0;
     }
     w = -(cp[0].P.x * dir.x + cp[0].P.y * dir.y) / w;
     w = Clamp(w, 0, 1);
 
-    /* compute v on the curve segment */
-    v = v0 * (1-w) + vn * w;
+    // compute v on the curve segment
+    const Real v = v0 * (1-w) + vn * w;
 
-    radius_w = .5 * get_bezier3_width(bezier, w);
-    /* compare x-y distance */
-    eval_bezier3(&vP, cp, w);
+    const Real radius_w = .5 * get_bezier3_width(bezier, w);
+    // compare x-y distance
+    const Vector vP = eval_bezier3(cp, w);
     if (vP.x * vP.x + vP.y * vP.y >= radius_w * radius_w) {
       return 0;
     }
 
-    /* compare z distance */
+    // compare z distance
     if (vP.z <= 1e-6 || *P_hit < vP.z) {
       return 0;
     }
 
-    /* we found a new intersection */
+    // we found a new intersection
     *P_hit = vP.z;
     *v_hit = v;
 
     return 1;
   }
 
-  {
-    const double vm = (v0 + vn) * .5;
-    Bezier3 bezier_left;
-    Bezier3 bezier_right;
-    int hit_left, hit_right;
-    double t_left, t_right;
-    double v_left, v_right;
+  const Real vm = (v0 + vn) * .5;
+  Bezier3 bezier_left;
+  Bezier3 bezier_right;
 
-    split_bezier3(bezier, &bezier_left, &bezier_right);
+  split_bezier3(bezier, &bezier_left, &bezier_right);
 
-    t_left  = FLT_MAX;
-    t_right = FLT_MAX;
-    hit_left  = converge_bezier3(&bezier_left,  v0, vm, depth-1, &v_left,  &t_left);
-    hit_right = converge_bezier3(&bezier_right, vm, vn, depth-1, &v_right, &t_right);
+  Real v_left  = FLT_MAX;
+  Real v_right = FLT_MAX;
+  Real t_left  = FLT_MAX;
+  Real t_right = FLT_MAX;
+  const bool hit_left  = converge_bezier3(bezier_left,  v0, vm, depth-1, &v_left,  &t_left);
+  const bool hit_right = converge_bezier3(bezier_right, vm, vn, depth-1, &v_right, &t_right);
 
-    if (hit_left || hit_right) {
-      if (t_left < t_right) {
-        *P_hit = t_left;
-        *v_hit = v_left;
-      } else {
-        *P_hit = t_right;
-        *v_hit = v_right;
-      }
+  if (hit_left || hit_right) {
+    if (t_left < t_right) {
+      *P_hit = t_left;
+      *v_hit = v_left;
+    } else {
+      *P_hit = t_right;
+      *v_hit = v_right;
     }
+  }
 
-    return hit_left || hit_right;
+  return hit_left || hit_right;
+}
+
+static void time_sample_bezier3(Bezier3 *bezier, Real time)
+{
+  for (int i = 0; i < 4; i++) {
+    bezier->cp[i].P += time * bezier->velocity[i];
   }
 }
 
-static void time_sample_bezier3(Bezier3 *bezier, double time)
+static Vector eval_bezier3(const ControlPoint *cp, Real t)
 {
-  int i;
-  for (i = 0; i < 4; i++) {
-    bezier->cp[i].P.x += time * bezier->velocity[i].x;
-    bezier->cp[i].P.y += time * bezier->velocity[i].y;
-    bezier->cp[i].P.z += time * bezier->velocity[i].z;
-  }
+  const Real u = 1 - t;
+  const Real a = u * u * u;
+  const Real b = 3 * u * u * t;
+  const Real c = 3 * u * t * t;
+  const Real d = t * t * t;
+
+  return a * cp[0].P + b * cp[1].P + c * cp[2].P + d * cp[3].P;
 }
 
-static void eval_bezier3(Vector *evalP, const ControlPoint *cp, double t)
+static Vector derivative_bezier3(const ControlPoint *cp, Real t)
 {
-  const double u = 1-t;
-  const double a = u * u * u;
-  const double b = 3 * u * u * t;
-  const double c = 3 * u * t * t;
-  const double d = t * t * t;
+  const Real u = 1 - t;
+  const Real a = 2 * u * u;
+  const Real b = 4 * u * t;
+  const Real c = 2 * t * t;
 
-  evalP->x = a * cp[0].P.x + b * cp[1].P.x + c * cp[2].P.x + d * cp[3].P.x;
-  evalP->y = a * cp[0].P.y + b * cp[1].P.y + c * cp[2].P.y + d * cp[3].P.y;
-  evalP->z = a * cp[0].P.z + b * cp[1].P.z + c * cp[2].P.z + d * cp[3].P.z;
+  return
+      a * (cp[1].P - cp[0].P) +
+      b * (cp[2].P - cp[1].P) +
+      c * (cp[3].P - cp[2].P);
 }
 
-static void derivative_bezier3(Vector *deriv, const ControlPoint *cp, double t)
-{
-  const double u = 1-t;
-  const double a = 2 * u * u;
-  const double b = 4 * u * t;
-  const double c = 2 * t * t;
-  ControlPoint CP[3];
-
-  VEC_SUB(&CP[0].P, &cp[1].P, &cp[0].P);
-  VEC_SUB(&CP[1].P, &cp[2].P, &cp[1].P);
-  VEC_SUB(&CP[2].P, &cp[3].P, &cp[2].P);
-
-  deriv->x = a * CP[0].P.x + b * CP[1].P.x + c * CP[2].P.x;
-  deriv->y = a * CP[0].P.y + b * CP[1].P.y + c * CP[2].P.y;
-  deriv->z = a * CP[0].P.z + b * CP[1].P.z + c * CP[2].P.z;
-}
-
-static void split_bezier3(const Bezier3 *bezier,
+static void split_bezier3(const Bezier3 &bezier,
     Bezier3 *left, Bezier3 *right)
 {
-  Vector midP;
-  Vector midCP;
+  const Vector midP = eval_bezier3(bezier.cp, .5);
+  const Vector midCP = mid_point(bezier.cp[1].P, bezier.cp[2].P);
 
-  eval_bezier3(&midP, bezier->cp, .5);
-  mid_point(&midCP, &bezier->cp[1].P, &bezier->cp[2].P);
-
-  left->cp[0].P = bezier->cp[0].P;
-  mid_point(&left->cp[1].P, &bezier->cp[0].P, &bezier->cp[1].P);
-  mid_point(&left->cp[2].P, &left->cp[1].P, &midCP);
+  left->cp[0].P = bezier.cp[0].P;
+  left->cp[1].P = mid_point(bezier.cp[0].P, bezier.cp[1].P);
+  left->cp[2].P = mid_point(left->cp[1].P, midCP);
   left->cp[3].P = midP;
 
-  right->cp[3].P = bezier->cp[3].P;
-  mid_point(&right->cp[2].P, &bezier->cp[3].P, &bezier->cp[2].P);
-  mid_point(&right->cp[1].P, &right->cp[2].P, &midCP);
+  right->cp[3].P = bezier.cp[3].P;
+  right->cp[2].P = mid_point(bezier.cp[3].P, bezier.cp[2].P);
+  right->cp[1].P = mid_point(right->cp[2].P, midCP);
   right->cp[0].P = midP;
 
-  left->width[0] = bezier->width[0];
-  left->width[1] = (bezier->width[0] + bezier->width[1]) * .5;
+  left->width[0] = bezier.width[0];
+  left->width[1] = (bezier.width[0] + bezier.width[1]) * .5;
   right->width[0] = left->width[1];
-  right->width[1] = bezier->width[1];
+  right->width[1] = bezier.width[1];
 }
 
-static void mid_point(Vector *mid, const Vector *a, const Vector *b)
+static int compute_split_depth_limit(const ControlPoint *cp, Real epsilon)
 {
-  mid->x = (a->x + b->x) * .5;
-  mid->y = (a->y + b->y) * .5;
-  mid->z = (a->z + b->z) * .5;
-}
-
-static void cache_split_depth(Curve *curve)
-{
-  assert(curve->split_depth.empty());
-
-  curve->split_depth.resize(curve->GetCurveCount());
-  for (int i = 0; i < curve->GetCurveCount(); i++) {
-    Bezier3 bezier;
-    int depth;
-
-    get_bezier3(curve, i, &bezier);
-    depth = compute_split_depth_limit(bezier.cp, 2*get_bezier3_max_radius(&bezier) / 20.);
-    depth = Clamp(depth, 1, 5);
-
-    curve->split_depth[i] = depth;
-  }
-}
-
-static int compute_split_depth_limit(const ControlPoint *cp, double epsilon)
-{
-  int i;
-  int r0;
   const int N = 4;
-  double L0;
+  Real L0 = -1.;
 
-  L0 = -1.;
-  for (i = 0; i < N-2; i++) {
-    const double x_val = fabs(cp[i].P.x - 2 * cp[i+1].P.x + cp[i+2].P.x);
-    const double y_val = fabs(cp[i].P.y - 2 * cp[i+1].P.y + cp[i+2].P.y);
-    const double max_val = Max(x_val, y_val);
+  for (int i = 0; i < N-2; i++) {
+    const Real x_val = fabs(cp[i].P.x - 2 * cp[i+1].P.x + cp[i+2].P.x);
+    const Real y_val = fabs(cp[i].P.y - 2 * cp[i+1].P.y + cp[i+2].P.y);
+    const Real max_val = Max(x_val, y_val);
     L0 = Max(L0, max_val);
   }
 
-  r0 = (int) (log(sqrt(2.) * N * (N-1) * L0 / (8. * epsilon)) / log(4.));
+  const int r0 = (int) (log(sqrt(2.) * N * (N-1) * L0 / (8. * epsilon)) / log(4.));
   return r0;
 }
 
-static double get_bezier3_max_radius(const Bezier3 *bezier)
+static Real get_bezier3_max_radius(const Bezier3 &bezier)
 {
-  return .5 * Max(bezier->width[0], bezier->width[1]);
+  return .5 * Max(bezier.width[0], bezier.width[1]);
 }
 
-static double get_bezier3_width(const Bezier3 *bezier, double t)
+static Real get_bezier3_width(const Bezier3 &bezier, Real t)
 {
-  return Lerp(bezier->width[0], bezier->width[1], t);
+  return Lerp(bezier.width[0], bezier.width[1], t);
 }
 
-static void get_bezier3_bounds(const Bezier3 *bezier, Box *bounds)
+static void get_bezier3_bounds(const Bezier3 &bezier, Box *bounds)
 {
-  int i;
-  double max_radius;
-
   BoxReverseInfinite(bounds);
-  for (i = 0; i < 4; i++) {
-    BoxAddPoint(bounds, bezier->cp[i].P);
+
+  for (int i = 0; i < 4; i++) {
+    BoxAddPoint(bounds, bezier.cp[i].P);
   }
 
-  max_radius = get_bezier3_max_radius(bezier);
+  const Real max_radius = get_bezier3_max_radius(bezier);
   BoxExpand(bounds, max_radius);
 }
 
 static void get_bezier3(const Curve *curve, int prim_id, Bezier3 *bezier)
 {
-  int i0, i1, i2, i3;
+  const int i0 = curve->GetCurveIndices(prim_id);
+  const int i1 = i0 + 1;
+  const int i2 = i0 + 2;
+  const int i3 = i0 + 3;
 
-  i0 = curve->indices[prim_id];
-  i1 = i0 + 1;
-  i2 = i0 + 2;
-  i3 = i0 + 3;
+  bezier->cp[0].P = curve->GetVertexPosition(i0);
+  bezier->cp[1].P = curve->GetVertexPosition(i1);
+  bezier->cp[2].P = curve->GetVertexPosition(i2);
+  bezier->cp[3].P = curve->GetVertexPosition(i3);
 
-  bezier->cp[0].P = curve->P[i0];
-  bezier->cp[1].P = curve->P[i1];
-  bezier->cp[2].P = curve->P[i2];
-  bezier->cp[3].P = curve->P[i3];
+  bezier->width[0] = curve->GetVertexWidth(4*prim_id + 0);
+  bezier->width[1] = curve->GetVertexWidth(4*prim_id + 3);
 
-  bezier->width[0] = curve->width[4*prim_id + 0];
-  bezier->width[1] = curve->width[4*prim_id + 3];
-
-  if (curve->HasVertexVelocity()) {
-    bezier->velocity[0] = curve->GetVertexVelocity(i0);
-    bezier->velocity[1] = curve->GetVertexVelocity(i1);
-    bezier->velocity[2] = curve->GetVertexVelocity(i2);
-    bezier->velocity[3] = curve->GetVertexVelocity(i3);
-  } else {
-    bezier->velocity[0] = Vector();
-    bezier->velocity[1] = Vector();
-    bezier->velocity[2] = Vector();
-    bezier->velocity[3] = Vector();
-  }
+  bezier->velocity[0] = curve->GetVertexVelocity(i0);
+  bezier->velocity[1] = curve->GetVertexVelocity(i1);
+  bezier->velocity[2] = curve->GetVertexVelocity(i2);
+  bezier->velocity[3] = curve->GetVertexVelocity(i3);
 }
 
 } // namespace xxx

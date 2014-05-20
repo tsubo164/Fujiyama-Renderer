@@ -69,18 +69,20 @@ public:
   std::vector<double>   width;
   std::vector<int>      indices;
 
-  std::vector<int> split_depth;
+  std::vector<int> split_depth_;
 
   Box bounds;
+
+  void cache_split_depth();
 };
 
 FJ_API Curve *CrvNew(void);
 FJ_API void CrvFree(Curve *curve);
 
-FJ_API void *CrvAllocateVertex(Curve *curve, const char *attr_name, int nverts);
-FJ_API void *CrvAllocateCurve(Curve *curve, const char *attr_name, int ncurves);
+FJ_API void CrvAllocateVertex(Curve *curve, const char *attr_name, int nverts);
+FJ_API void CrvAllocateCurve(Curve *curve, const char *attr_name, int ncurves);
 
-FJ_API Vector *CrvAddVelocity(Curve *curve);
+FJ_API void CrvAddVelocity(Curve *curve);
 
 FJ_API void CrvComputeBounds(Curve *curve);
 FJ_API void CrvGetPrimitiveSet(const Curve *curve, PrimitiveSet *primset);
