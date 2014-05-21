@@ -683,7 +683,7 @@ static struct Color4 apply_pixel_filter(struct Worker *worker, int x, int y)
   struct Sample *pixel_samples = worker->pixel_samples;
   struct Filter *filter = worker->filter;
 
-  struct Color4 pixel = {0, 0, 0, 0};
+  struct Color4 pixel;
   float wgt_sum = 0.f;
   float inv_sum = 0.f;
   int i;
@@ -724,7 +724,7 @@ static void reconstruct_image(struct Worker *worker)
 
   for (y = ymin; y < ymax; y++) {
     for (x = xmin; x < xmax; x++) {
-      struct Color4 pixel = {0, 0, 0, 0};
+      struct Color4 pixel;
 
       SmpGetPixelSamples(worker->sampler, worker->pixel_samples, x, y);
       pixel = apply_pixel_filter(worker, x, y);
@@ -789,7 +789,7 @@ static int integrate_samples(struct Worker *worker)
   struct Ray ray;
 
   while ((smp = SmpGetNextSample(worker->sampler)) != NULL) {
-    struct Color4 C_trace = {0, 0, 0, 0};
+    struct Color4 C_trace;
     double t_hit = FLT_MAX;
     int hit = 0;
     int interrupted = 0;

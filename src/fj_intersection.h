@@ -6,27 +6,29 @@ See LICENSE and README
 #ifndef FJ_INTERSECTION_H
 #define FJ_INTERSECTION_H
 
+#include "fj_compatibility.h"
 #include "fj_tex_coord.h"
 #include "fj_vector.h"
 #include "fj_color.h"
+#include "fj_types.h"
 
 namespace fj {
 
 struct ObjectInstance;
 
 struct Intersection {
-  struct Vector P;
-  struct Vector N;
-  struct Color Cd;
-  struct TexCoord uv;
+  Vector P;
+  Vector N;
+  Color Cd;
+  TexCoord uv;
 
-  struct Vector dPdu;
-  struct Vector dPdv;
+  Vector dPdu;
+  Vector dPdv;
 
-  const struct ObjectInstance *object;
+  const ObjectInstance *object;
   int prim_id;
 
-  double t_hit;
+  Real t_hit;
 };
 
 } // namespace xxx

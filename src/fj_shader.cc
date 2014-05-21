@@ -12,7 +12,7 @@ See LICENSE and README
 namespace fj {
 
 static int error_no = SHD_ERR_NOERR;
-static const struct Color NO_SHADER_COLOR = {.5, 1., 0.};
+static const struct Color NO_SHADER_COLOR(.5, 1., 0.);
 
 struct Shader {
   void *self;

@@ -18,7 +18,7 @@ See LICENSE and README
 
 namespace fj {
 
-static const struct Color4 NO_TEXTURE_COLOR = {1, .63, .63};
+static const struct Color4 NO_TEXTURE_COLOR(1, .63, .63, 1);
 
 struct TextureCache {
   struct FrameBuffer *fb;

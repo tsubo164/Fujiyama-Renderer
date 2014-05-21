@@ -113,9 +113,9 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
   const struct PlasticShader *plastic = (struct PlasticShader *) self;
-  struct Color diff = {0, 0, 0};
-  struct Color spec = {0, 0, 0};
-  struct Color4 diff_map = {1, 1, 1, 1};
+  struct Color diff;
+  struct Color spec;
+  struct Color4 diff_map(1, 1, 1, 1);
   struct Vector Nf;
   int i = 0;
 
@@ -169,7 +169,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 
   /* reflect */
   if (plastic->do_reflect) {
-    struct Color4 C_refl = {0, 0, 0, 0};
+    struct Color4 C_refl;
     struct Vector R;
     double t_hit = FLT_MAX;
     double Kr = 0;

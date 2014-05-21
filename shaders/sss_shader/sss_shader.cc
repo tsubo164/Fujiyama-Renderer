@@ -172,9 +172,9 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
   const struct SSSShader *sss = (struct SSSShader *) self;
-  struct Color diff = {0, 0, 0};
-  struct Color spec = {0, 0, 0};
-  struct Color4 diff_map = {1, 1, 1, 1};
+  struct Color diff;
+  struct Color spec;
+  struct Color4 diff_map(1, 1, 1, 1);
   int i;
 
   struct LightSample *samples = NULL;
@@ -187,8 +187,8 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     struct LightOutput Lout;
     float Ks = 0;
 
-    struct Color single_scatter = {0, 0, 0};
-    struct Color diffusion_scatter = {0, 0, 0};
+    struct Color single_scatter;
+    struct Color diffusion_scatter;
 
     SlIlluminance(cxt, &samples[i], &in->P, &in->N, PI / 2., in, &Lout);
     /* spec */
@@ -232,7 +232,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 
   /* reflect */
   if (sss->do_reflect) {
-    struct Color4 C_refl = {0, 0, 0};
+    struct Color4 C_refl;
     struct Vector R;
     double t_hit = FLT_MAX;
     double Kr = 0;
@@ -308,7 +308,7 @@ static void single_scattering(const struct SSSShader *sss,
   const struct TraceContext self_cxt = SlSelfHitContext(cxt, in->shaded_object);
   struct LightOutput Lout;
 
-  struct Color scatter = {0, 0, 0};
+  struct Color scatter;
 
   Ln.x = light_sample->P.x - P->x;
   Ln.y = light_sample->P.y - P->y;
@@ -434,7 +434,7 @@ static void diffusion_scattering(const struct SSSShader *sss,
   const int nsamples = sss->multiple_scattering_samples;
   int i, j;
 
-  struct Color scatter = {0, 0, 0};
+  struct Color scatter;
 
   alpha_prime[0] = sigma_s_prime[0] / sigma_t_prime[0];
   alpha_prime[1] = sigma_s_prime[1] / sigma_t_prime[1];
@@ -561,7 +561,7 @@ static void diffusion_scattering(const struct SSSShader *sss,
 static int set_diffuse(void *self, const struct PropertyValue *value)
 {
   struct SSSShader *sss = (struct SSSShader *) self;
-  struct Color diffuse = {0, 0, 0};
+  struct Color diffuse;
 
   diffuse.r = Max(0, value->vector[0]);
   diffuse.g = Max(0, value->vector[1]);
@@ -574,7 +574,7 @@ static int set_diffuse(void *self, const struct PropertyValue *value)
 static int set_specular(void *self, const struct PropertyValue *value)
 {
   struct SSSShader *sss = (struct SSSShader *) self;
-  struct Color specular = {0, 0, 0};
+  struct Color specular;
 
   specular.r = Max(0, value->vector[0]);
   specular.g = Max(0, value->vector[1]);
@@ -587,7 +587,7 @@ static int set_specular(void *self, const struct PropertyValue *value)
 static int set_ambient(void *self, const struct PropertyValue *value)
 {
   struct SSSShader *sss = (struct SSSShader *) self;
-  struct Color ambient = {0, 0, 0};
+  struct Color ambient;
 
   ambient.r = Max(0, value->vector[0]);
   ambient.g = Max(0, value->vector[1]);
@@ -611,7 +611,7 @@ static int set_roughness(void *self, const struct PropertyValue *value)
 static int set_reflect(void *self, const struct PropertyValue *value)
 {
   struct SSSShader *sss = (struct SSSShader *) self;
-  struct Color reflect = {0, 0, 0};
+  struct Color reflect;
 
   reflect.r = Max(0, value->vector[0]);
   reflect.g = Max(0, value->vector[1]);

@@ -255,7 +255,7 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const float *data = (const float *) in->data_buffer;
-        struct Color Cd = {0, 0, 0};
+        struct Color Cd;
         Cd.r = data[3*j + 0];
         Cd.g = data[3*j + 1];
         Cd.b = data[3*j + 2];

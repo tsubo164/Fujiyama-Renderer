@@ -81,7 +81,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
   const struct VolumeShader *volume = (struct VolumeShader *) self;
-  struct Color diff = {0, 0, 0};
+  struct Color diff;
 
   struct LightSample *samples = NULL;
   const int nsamples = SlGetLightSampleCount(in);
@@ -117,7 +117,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 static int set_diffuse(void *self, const struct PropertyValue *value)
 {
   struct VolumeShader *volume = (struct VolumeShader *) self;
-  struct Color diffuse = {0, 0, 0};
+  struct Color diffuse;
 
   diffuse.r = Max(0, value->vector[0]);
   diffuse.g = Max(0, value->vector[1]);

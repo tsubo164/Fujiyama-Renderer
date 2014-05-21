@@ -85,7 +85,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     const struct SurfaceInput *in, struct SurfaceOutput *out)
 {
   const struct ConstantShader *constant = (struct ConstantShader *) self;
-  struct Color4 C_tex = {0, 0, 0, 0};
+  struct Color4 C_tex;
 
   /* C_tex */
   if (constant->texture != NULL) {
@@ -110,7 +110,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 static int set_diffuse(void *self, const struct PropertyValue *value)
 {
   struct ConstantShader *constant = (struct ConstantShader *) self;
-  struct Color diffuse = {0, 0, 0};
+  struct Color diffuse;
 
   diffuse.r = Max(0, value->vector[0]);
   diffuse.g = Max(0, value->vector[1]);

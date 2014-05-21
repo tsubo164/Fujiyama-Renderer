@@ -108,10 +108,10 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   /* allocate samples */
   samples = SlNewLightSamples(in);
 
-  ColSet(&out->Cs, 0, 0, 0);
+  out->Cs = Color();
 
   for (i = 0; i < nsamples; i++) {
-    struct LightOutput Lout = {{0}};
+    struct LightOutput Lout = {};
     struct Vector tangent;
     float diff = 0;
     float spec = 0;
@@ -138,7 +138,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 static int set_diffuse(void *self, const struct PropertyValue *value)
 {
   struct HairShader *hair = (struct HairShader *) self;
-  struct Color diffuse = {0, 0, 0};
+  struct Color diffuse;
 
   diffuse.r = Max(0, value->vector[0]);
   diffuse.g = Max(0, value->vector[1]);
@@ -151,7 +151,7 @@ static int set_diffuse(void *self, const struct PropertyValue *value)
 static int set_specular(void *self, const struct PropertyValue *value)
 {
   struct HairShader *hair = (struct HairShader *) self;
-  struct Color specular = {0, 0, 0};
+  struct Color specular;
 
   specular.r = Max(0, value->vector[0]);
   specular.g = Max(0, value->vector[1]);
@@ -164,7 +164,7 @@ static int set_specular(void *self, const struct PropertyValue *value)
 static int set_ambient(void *self, const struct PropertyValue *value)
 {
   struct HairShader *hair = (struct HairShader *) self;
-  struct Color ambient = {0, 0, 0};
+  struct Color ambient;
 
   ambient.r = Max(0, value->vector[0]);
   ambient.g = Max(0, value->vector[1]);
@@ -188,7 +188,7 @@ static int set_roughness(void *self, const struct PropertyValue *value)
 static int set_reflect(void *self, const struct PropertyValue *value)
 {
   struct HairShader *hair = (struct HairShader *) self;
-  struct Color reflect = {0, 0, 0};
+  struct Color reflect;
 
   reflect.r = Max(0, value->vector[0]);
   reflect.g = Max(0, value->vector[1]);

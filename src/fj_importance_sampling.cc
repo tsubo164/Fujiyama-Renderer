@@ -74,8 +74,8 @@ int ImportanceSampling(struct Texture *texture, int seed,
     for (;;) {
       const double rand = sum * XorNextFloat01(&xr);
       const int index = lookup_histgram(histgram, NPIXELS, rand);
-      struct DomeSample sample = {{0}};
-      struct Color4 tex_rgba = {0, 0, 0, 0};
+      struct DomeSample sample = {};
+      struct Color4 tex_rgba;
 
       if (picked[index] == 1) {
         /*
@@ -129,8 +129,8 @@ int StratifiedImportanceSampling(struct Texture *texture, int seed,
     for (;;) {
       const double rand = sum * ((i + XorNextFloat01(&xr)) / sample_count);
       const int index = lookup_histgram(histgram, NPIXELS, rand);
-      struct DomeSample sample = {{0}};
-      struct Color4 tex_rgba = {0, 0, 0, 0};
+      struct DomeSample sample = {};
+      struct Color4 tex_rgba;
 
       if (picked[index] == 1) {
         /*
@@ -221,7 +221,7 @@ int StructuredImportanceSampling(struct Texture *texture, int seed,
 
   for (i = 0; i < sample_count; i++) {
     struct DomeSample *sample = &dome_samples[i];
-    struct Color4 tex_rgba = {0, 0, 0, 0};
+    struct Color4 tex_rgba;
     TexLookup(texture, sample->uv.u, sample->uv.v, &tex_rgba);
     sample->color.r = tex_rgba.r;
     sample->color.g = tex_rgba.g;
@@ -244,7 +244,7 @@ static void make_histgram(struct Texture *texture,
   int i;
 
   for (i = 0; i < NPIXELS; i++) {
-    struct Color4 tex_rgba = {0, 0, 0, 0};
+    struct Color4 tex_rgba;
     struct TexCoord uv = {0, 0};
 
     index_to_uv(sample_xres, sample_yres, i, &uv);
@@ -304,7 +304,7 @@ static void setup_structured_importance_sampling(struct Texture *texture,
   int i;
 
   for (i = 0; i < NPIXELS; i++) {
-    struct Color4 tex_rgba = {0, 0, 0, 0};
+    struct Color4 tex_rgba;
     struct TexCoord uv = {0, 0};
 
     index_to_uv(sample_xres, sample_yres, i, &uv);
@@ -552,7 +552,7 @@ static void generate_dome_samples(int sample_xres, int sample_yres,
         continue;
       }
       {
-        struct DomeSample sample = {{0}};
+        struct DomeSample sample = {};
         xy_to_uv(sample_xres, sample_yres, Y[x0].x, Y[x0].y, &sample.uv);
         uv_to_dir(sample.uv.u, sample.uv.v, &sample.dir);
         dome_samples[next_dome_sample] = sample;
@@ -585,7 +585,7 @@ static void generate_dome_samples(int sample_xres, int sample_yres,
         nX++;
 
         {
-          struct DomeSample sample = {{0}};
+          struct DomeSample sample = {};
           xy_to_uv(sample_xres, sample_yres, Y[p_max].x, Y[p_max].y, &sample.uv);
           uv_to_dir(sample.uv.u, sample.uv.v, &sample.dir);
           dome_samples[next_dome_sample] = sample;

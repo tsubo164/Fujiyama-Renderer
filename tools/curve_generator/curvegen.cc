@@ -242,8 +242,8 @@ int main(int argc, const char **argv)
       {
         double amp = 1;
         double C_noise = 0;
-        struct Color C_dark = {.8, .5, .3};
-        struct Color C_light = {.9, .88, .85};
+        struct Color C_dark(.8, .5, .3);
+        struct Color C_light(.9, .88, .85);
         struct Vector freq(3, 3, 3);
         struct Vector offset(0, 1, 0);
         struct Vector src_Q;
@@ -254,7 +254,7 @@ int main(int argc, const char **argv)
 
         C_noise = amp * PerlinNoise(&src_Q, 2, .5, 2);
         C_noise = SmoothStep(C_noise, .55, .75);
-        ColLerp(dst_Cd, C_dark, C_light, C_noise);
+        *dst_Cd = ColLerp(C_dark, C_light, C_noise);
       }
 
       cp_id++;

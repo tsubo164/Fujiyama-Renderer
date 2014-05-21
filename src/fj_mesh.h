@@ -10,12 +10,11 @@ See LICENSE and README
 #include "fj_tex_coord.h"
 #include "fj_vector.h"
 #include "fj_color.h"
+#include "fj_types.h"
 #include "fj_box.h"
 #include <vector>
 
 namespace fj {
-
-typedef int Index;
 
 struct TriIndex {
   Index i0, i1, i2;

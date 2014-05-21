@@ -298,7 +298,7 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, Real time,
     const int i1 = curve->GetCurveIndices(prim_id) + 2;
     const Color Cd_curve0 = curve->GetVertexColor(i0);
     const Color Cd_curve1 = curve->GetVertexColor(i1);
-    ColLerp(&isect->Cd, Cd_curve0, Cd_curve1, v_hit);
+    isect->Cd = ColLerp(Cd_curve0, Cd_curve1, v_hit);
   }
 
   return hit;

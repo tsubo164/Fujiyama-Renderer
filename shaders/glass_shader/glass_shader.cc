@@ -106,13 +106,13 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   struct TraceContext refr_cxt;
   struct Vector T;
   struct Vector R;
-  struct Color4 C_refl = {0, 0, 0, 0};
-  struct Color4 C_refr = {0, 0, 0, 0};
+  struct Color4 C_refl;
+  struct Color4 C_refr;
   double Kt = 0, Kr = 0;
   double t_hit = FLT_MAX;
 
   /* Cs */
-  ColSet(&out->Cs, 0, 0, 0);
+  out->Cs = Color();
 
   Kr = SlFresnel(&in->I, &in->N, 1/glass->ior);
   Kt = 1 - Kr;
@@ -149,7 +149,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 static int set_diffuse(void *self, const struct PropertyValue *value)
 {
   struct GlassShader *glass = (struct GlassShader *) self;
-  struct Color diffuse = {0, 0, 0};
+  struct Color diffuse;
 
   diffuse.r = Max(0, value->vector[0]);
   diffuse.g = Max(0, value->vector[1]);
@@ -162,7 +162,7 @@ static int set_diffuse(void *self, const struct PropertyValue *value)
 static int set_specular(void *self, const struct PropertyValue *value)
 {
   struct GlassShader *glass = (struct GlassShader *) self;
-  struct Color specular = {0, 0, 0};
+  struct Color specular;
 
   specular.r = Max(0, value->vector[0]);
   specular.g = Max(0, value->vector[1]);
@@ -175,7 +175,7 @@ static int set_specular(void *self, const struct PropertyValue *value)
 static int set_ambient(void *self, const struct PropertyValue *value)
 {
   struct GlassShader *glass = (struct GlassShader *) self;
-  struct Color ambient = {0, 0, 0};
+  struct Color ambient;
 
   ambient.r = Max(0, value->vector[0]);
   ambient.g = Max(0, value->vector[1]);
@@ -188,7 +188,7 @@ static int set_ambient(void *self, const struct PropertyValue *value)
 static int set_filter_color(void *self, const struct PropertyValue *value)
 {
   struct GlassShader *glass = (struct GlassShader *) self;
-  struct Color filter_color = {0, 0, 0};
+  struct Color filter_color;
 
   filter_color.r = Max(.001, value->vector[0]);
   filter_color.g = Max(.001, value->vector[1]);

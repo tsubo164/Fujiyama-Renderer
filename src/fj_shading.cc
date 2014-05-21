@@ -142,8 +142,8 @@ int SlTrace(const struct TraceContext *cxt,
     double ray_tmin, double ray_tmax, struct Color4 *out_rgba, double *t_hit)
 {
   struct Ray ray;
-  struct Color4 surface_color = {0, 0, 0, 0};
-  struct Color4 volume_color = {0, 0, 0, 0};
+  struct Color4 surface_color;
+  struct Color4 volume_color;
   int hit_surface = 0;
   int hit_volume = 0;
 
@@ -283,7 +283,7 @@ int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *samp
 {
   double cosangle = 0.;
   struct Vector nml_axis;
-  struct Color light_color = {0, 0, 0};
+  struct Color light_color;
 
   out->Cl.r = 0;
   out->Cl.g = 0;
@@ -321,7 +321,7 @@ int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *samp
 
   if (cxt->cast_shadow) {
     struct TraceContext shad_cxt;
-    struct Color4 C_occl = {0, 0, 0, 0};
+    struct Color4 C_occl;
     double t_hit = FLT_MAX;
     int hit = 0;
 
@@ -404,8 +404,8 @@ void SlBumpMapping(const struct Texture *bump_map,
     const struct TexCoord *texcoord, double amplitude,
     const struct Vector *N, struct Vector *N_bump)
 {
-  struct Color4 C_tex0 = {0, 0, 0, 1};
-  struct Color4 C_tex1 = {0, 0, 0, 1};
+  struct Color4 C_tex0(0, 0, 0, 1);
+  struct Color4 C_tex1(0, 0, 0, 1);
   struct Vector N_dPdu;
   struct Vector N_dPdv;
   float Bu, Bv;
@@ -424,15 +424,15 @@ void SlBumpMapping(const struct Texture *bump_map,
   /* Bu = B(u - du, v) - B(v + du, v) / (2 * du) */
   TexLookup(bump_map, texcoord->u - du, texcoord->v, &C_tex0);
   TexLookup(bump_map, texcoord->u + du, texcoord->v, &C_tex1);
-  val0 = COL_LUMINANCE(&C_tex0);
-  val1 = COL_LUMINANCE(&C_tex1);
+  val0 = Luminance4(C_tex0);
+  val1 = Luminance4(C_tex1);
   Bu = (val0 - val1) / (2 * du);
 
   /* Bv = B(u, v - dv) - B(v, v + dv) / (2 * dv) */
   TexLookup(bump_map, texcoord->u, texcoord->v - dv, &C_tex0);
   TexLookup(bump_map, texcoord->u, texcoord->v + dv, &C_tex1);
-  val0 = COL_LUMINANCE(&C_tex0);
-  val1 = COL_LUMINANCE(&C_tex1);
+  val0 = Luminance4(C_tex0);
+  val1 = Luminance4(C_tex1);
   Bv = (val0 - val1) / (2 * dv);
 
   /* N ~= N + Bv(N x Pu) + Bu(N x Pv) */
@@ -614,7 +614,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
     /* raymarch */
     while (t <= t_limit && out_rgba->a < opacity_threshold) {
       const struct Interval *interval = IntervalListGetHead(intervals);
-      struct Color color = {0, 0, 0};
+      struct Color color;
       float opacity = 0;
 
       /* loop over volume candidates at this sample point */
