@@ -157,7 +157,7 @@ static int read_texture(
     double w)
 {
   struct ObjBuffer *buffer = (struct ObjBuffer *) interpreter;
-  struct TexCoord uv = {0, 0};
+  struct TexCoord uv;
 
   uv.u = x;
   uv.v = y;

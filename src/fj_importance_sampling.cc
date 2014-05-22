@@ -245,12 +245,12 @@ static void make_histgram(struct Texture *texture,
 
   for (i = 0; i < NPIXELS; i++) {
     struct Color4 tex_rgba;
-    struct TexCoord uv = {0, 0};
+    struct TexCoord uv;
 
     index_to_uv(sample_xres, sample_yres, i, &uv);
     TexLookup(texture, uv.u, uv.v, &tex_rgba);
 
-    sum += .2989 * tex_rgba.r + .5866 * tex_rgba.g + .1145 * tex_rgba.b;
+    sum += Luminance4(tex_rgba);
     histgram[i] = sum;
   }
 }
@@ -305,12 +305,12 @@ static void setup_structured_importance_sampling(struct Texture *texture,
 
   for (i = 0; i < NPIXELS; i++) {
     struct Color4 tex_rgba;
-    struct TexCoord uv = {0, 0};
+    struct TexCoord uv;
 
     index_to_uv(sample_xres, sample_yres, i, &uv);
     TexLookup(texture, uv.u, uv.v, &tex_rgba);
 
-    L[i] = .2989 * tex_rgba.r + .5866 * tex_rgba.g + .1145 * tex_rgba.b;
+    L[i] = Luminance4(tex_rgba);
     L_whole += L[i];
   }
   L_mean = L_whole / NPIXELS;

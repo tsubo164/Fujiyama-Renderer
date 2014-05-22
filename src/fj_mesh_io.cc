@@ -267,7 +267,7 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const float *data = (const float *) in->data_buffer;
-        struct TexCoord texcoord = {0, 0};
+        struct TexCoord texcoord;
         texcoord.u = data[2*j + 0];
         texcoord.v = data[2*j + 1];
         MshSetVertexTexture(mesh, j, &texcoord);

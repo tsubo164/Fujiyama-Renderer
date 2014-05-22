@@ -96,8 +96,8 @@ static int cache_open_mipmap(struct TextureCache *cache, const char *filename)
 
 static void lookup_cache(struct TextureCache *cache, float u, float v, struct Color4 *rgba)
 {
-  struct TexCoord tex_space = {0, 0};
-  struct TexCoord tile_space = {0, 0};
+  struct TexCoord tex_space;
+  struct TexCoord tile_space;
 
   int XNTILES, YNTILES;
   int xpxl, ypxl;

@@ -9,6 +9,27 @@ See LICENSE and README
 namespace fj {
 
 struct TexCoord {
+  TexCoord() : u(0), v(0) {}
+  TexCoord(float uu, float vv) : u(uu), v(vv) {}
+  ~TexCoord() {}
+
+  const float &operator[](int i) const
+  {
+    switch(i) {
+    case 0: return u;
+    case 1: return v;
+    default: return u; // TODO ERROR HANDLING
+    }
+  }
+  float &operator[](int i)
+  {
+    switch(i) {
+    case 0: return u;
+    case 1: return v;
+    default: return u; // TODO ERROR HANDLING
+    }
+  }
+
   float u, v;
 };
 

@@ -32,18 +32,18 @@ struct Color {
     }
   }
 
-  const Color &operator+=(const Color &a)
+  const Color &operator+=(const Color &A)
   {
-    r += a.r;
-    g += a.g;
-    b += a.b;
+    r += A.r;
+    g += A.g;
+    b += A.b;
     return *this;
   }
-  const Color &operator-=(const Color &a)
+  const Color &operator-=(const Color &A)
   {
-    r -= a.r;
-    g -= a.g;
-    b -= a.b;
+    r -= A.r;
+    g -= A.g;
+    b -= A.b;
     return *this;
   }
   const Color &operator*=(float scalar)
@@ -63,51 +63,51 @@ struct Color {
   float r, g, b;
 };
 
-inline Color operator+(const Color &a, const Color &b)
+inline Color operator+(const Color &A, const Color &B)
 {
   return Color(
-    a.r + b.r,
-    a.g + b.g,
-    a.b + b.b);
+    A.r + B.r,
+    A.g + B.g,
+    A.b + B.b);
 }
 
-inline Color operator-(const Color &a, const Color &b)
+inline Color operator-(const Color &A, const Color &B)
 {
   return Color(
-    a.r - b.r,
-    a.g - b.g,
-    a.b - b.b);
+    A.r - B.r,
+    A.g - B.g,
+    A.b - B.b);
 }
 
-inline Color operator*(const Color &a, float scalar)
+inline Color operator*(const Color &A, float scalar)
 {
   return Color(
-    a.r * scalar,
-    a.g * scalar,
-    a.b * scalar);
+    A.r * scalar,
+    A.g * scalar,
+    A.b * scalar);
 }
 
-inline Color operator*(float scalar, const Color &a)
+inline Color operator*(float scalar, const Color &A)
 {
-  return a * scalar;
+  return A * scalar;
 }
 
-inline Color operator/(const Color &a, float scalar)
+inline Color operator/(const Color &A, float scalar)
 {
   // no checking zero division
   const float inv = 1.f/scalar;
   return Color(
-    a.r * inv,
-    a.g * inv,
-    a.b * inv);
+    A.r * inv,
+    A.g * inv,
+    A.b * inv);
 }
 
-inline Color operator-(const Color &a)
+inline Color operator-(const Color &A)
 {
   return Color(
-    -a.r,
-    -a.g,
-    -a.b);
+    -A.r,
+    -A.g,
+    -A.b);
 }
 
 struct Color4 {
