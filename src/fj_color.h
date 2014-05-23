@@ -6,9 +6,11 @@ See LICENSE and README
 #ifndef FJ_COLOR_H
 #define FJ_COLOR_H
 
+#include "fj_compatibility.h"
+
 namespace fj {
 
-struct Color {
+struct FJ_API Color {
   Color() : r(0), g(0), b(0) {}
   Color(float rr, float gg, float bb) : r(rr), g(gg), b(bb) {}
   ~Color() {}
@@ -237,9 +239,9 @@ inline Color ColLerp(const Color &A, const Color &B, float t)
   return (1 - t) * A + t * B;
 }
 
-extern struct Color *ColAlloc(long count);
-extern struct Color *ColRealloc(struct Color *c, long count);
-extern void ColFree(struct Color *c);
+FJ_API struct Color *ColAlloc(long count);
+FJ_API struct Color *ColRealloc(struct Color *c, long count);
+FJ_API void ColFree(struct Color *c);
 
 } // namespace xxx
 

@@ -25,6 +25,7 @@ extern void AccFree(struct Accelerator *acc);
 extern double AccGetBoundsPadding(void);
 extern void AccGetBounds(const struct Accelerator *acc, struct Box *bounds);
 extern void AccSetPrimitiveSet(struct Accelerator *acc, const struct PrimitiveSet *primset);
+extern void AccSetPrimitiveSetPointer(struct Accelerator *acc, struct PrimitiveSet *primset);
 
 extern void AccComputeBounds(struct Accelerator *acc);
 extern int AccBuild(struct Accelerator *acc);

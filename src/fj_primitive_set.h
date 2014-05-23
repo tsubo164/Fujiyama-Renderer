@@ -6,6 +6,8 @@ See LICENSE and README
 #ifndef FJ_PRIMITIVESET_H
 #define FJ_PRIMITIVESET_H
 
+#include "fj_types.h"
+
 namespace fj {
 
 struct Intersection;
@@ -27,6 +29,43 @@ struct PrimitiveSet {
   PrimBoundsFunction PrimitiveBounds;
   PrimSetBoundsFunction PrimitiveSetBounds;
   PrimCountFunction PrimitiveCount;
+
+  PrimitiveSet() :
+      PrimitiveIntersect(0),
+      PrimitiveBounds(0),
+      PrimitiveSetBounds(0),
+      PrimitiveCount(0)
+  {
+  }
+  virtual ~PrimitiveSet() {}
+
+  bool RayIntersect(Index prim_id, Real time, const Ray &ray, Intersection *isect) const
+  {
+    return ray_intersect(prim_id, time, ray, isect);
+  }
+  void GetPrimitiveBounds(Index prim_id, Box *bounds) const
+  {
+    get_primitive_bounds(prim_id, bounds);
+  }
+  void GetBounds(Box *bounds) const
+  {
+    get_bounds(bounds);
+  }
+  Index GetPrimitiveCount() const
+  {
+    return get_primitive_count();
+  }
+
+public:
+  virtual bool ray_intersect(Index prim_id, Real time,
+      const Ray &ray, Intersection *isect) const
+  { return false; }
+  virtual void get_primitive_bounds(Index prim_id, Box *bounds) const
+  {}
+  virtual void get_bounds(Box *bounds) const
+  {}
+  virtual Index get_primitive_count() const
+  { return 0; }
 };
 
 /* Each primitive set should make PrimitiveSet by caling this function */

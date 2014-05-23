@@ -412,8 +412,11 @@ ID SiNewPointCloud(const char *filename)
     return SI_BADID;
   }
 
+#if 0
   PtcGetPrimitiveSet(ptc, &primset);
   AccSetPrimitiveSet(acc, &primset);
+#endif
+  AccSetPrimitiveSetPointer(acc, ptc);
 
   ptc_id = encode_id(Type_PointCloud, GET_LAST_ADDED_ID(PointCloud));
   accel_id = encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));

@@ -68,24 +68,40 @@ const char *PrmGetName(const struct PrimitiveSet *primset)
 
 int PrmGetPrimitiveCount(const struct PrimitiveSet *primset)
 {
-  return primset->PrimitiveCount(primset->data);
+  if (primset->PrimitiveCount != NULL) {
+    return primset->PrimitiveCount(primset->data);
+  } else {
+    return primset->GetPrimitiveCount();
+  }
 }
 
 void PrmGetBounds(const struct PrimitiveSet *primset, struct Box *bounds)
 {
-  primset->PrimitiveSetBounds(primset->data, bounds);
+  if (primset->PrimitiveSetBounds != NULL) {
+    primset->PrimitiveSetBounds(primset->data, bounds);
+  } else {
+    primset->GetBounds(bounds);
+  }
 }
 
 int PrmRayIntersect(const struct PrimitiveSet *primset, int prim_id, double time,
     const struct Ray *ray, struct Intersection *isect)
 {
-  return primset->PrimitiveIntersect(primset->data, prim_id, time, ray, isect);
+  if (primset->PrimitiveIntersect != NULL) {
+    return primset->PrimitiveIntersect(primset->data, prim_id, time, ray, isect);
+  } else {
+    return primset->RayIntersect(prim_id, time, *ray, isect);
+  }
 }
 
 void PrmGetPrimitiveBounds(const struct PrimitiveSet *primset,
     int prim_id, struct Box *bounds)
 {
-  primset->PrimitiveBounds(primset->data, prim_id, bounds);
+  if (primset->PrimitiveBounds != NULL) {
+    primset->PrimitiveBounds(primset->data, prim_id, bounds);
+  } else {
+    primset->GetPrimitiveBounds(prim_id, bounds);
+  }
 }
 
 } // namespace xxx

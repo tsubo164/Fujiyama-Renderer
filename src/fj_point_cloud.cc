@@ -5,10 +5,11 @@ See LICENSE and README
 
 #include "fj_point_cloud.h"
 #include "fj_intersection.h"
-#include "fj_primitive_set.h"
 #include "fj_numeric.h"
 #include "fj_memory.h"
 #include "fj_ray.h"
+
+#include <cstdio>
 
 #define ATTRIBUTE_LIST(ATTR) \
   ATTR(Point, Vector,   P_,        Position) \
@@ -17,11 +18,30 @@ See LICENSE and README
 
 namespace fj {
 
-static int point_ray_intersect(const void *prim_set, int prim_id, double time,
-    const Ray *ray, Intersection *isect);
-static void point_bounds(const void *prim_set, int prim_id, Box *bounds);
-static void point_cloud_bounds(const void *prim_set, Box *bounds);
-static int point_count(const void *prim_set);
+#define ATTR(Class, Type, Name, Label) \
+void PointCloud::Add##Class##Label() \
+{ \
+  Name.resize(Get##Class##Count()); \
+} \
+Type PointCloud::Get##Class##Label(int idx) const \
+{ \
+  if (idx < 0 || idx >= static_cast<int>(Name.size())) { \
+    return Type(); \
+  } \
+  return Name[idx]; \
+} \
+void PointCloud::Set##Class##Label(int idx, const Type &value) \
+{ \
+  if (idx < 0 || idx >= static_cast<int>(Name.size())) \
+    return; \
+  Name[idx] = value; \
+} \
+bool PointCloud::Has##Class##Label() const \
+{ \
+  return !Name.empty(); \
+}
+  ATTRIBUTE_LIST(ATTR)
+#undef ATTR
 
 PointCloud::PointCloud() : point_count_(0)
 {
@@ -52,59 +72,13 @@ void PointCloud::ComputeBounds()
 
   for (int i = 0; i < GetPointCount(); i++) {
     Box ptbox;
-    point_bounds(this, i, &ptbox);
+    GetPrimitiveBounds(i, &ptbox);
     BoxAddBox(&bounds_, ptbox);
   }
 }
 
-#define ATTR(Class, Type, Name, Label) \
-void PointCloud::Add##Class##Label() \
-{ \
-  Name.resize(Get##Class##Count()); \
-} \
-Type PointCloud::Get##Class##Label(int idx) const \
-{ \
-  if (idx < 0 || idx >= static_cast<int>(Name.size())) { \
-    return Type(); \
-  } \
-  return Name[idx]; \
-} \
-void PointCloud::Set##Class##Label(int idx, const Type &value) \
-{ \
-  if (idx < 0 || idx >= static_cast<int>(Name.size())) \
-    return; \
-  Name[idx] = value; \
-} \
-bool PointCloud::Has##Class##Label() const \
-{ \
-  return !Name.empty(); \
-}
-  ATTRIBUTE_LIST(ATTR)
-#undef ATTR
-
-PointCloud *PtcNew(void)
-{
-  return new PointCloud();
-}
-
-void PtcFree(PointCloud *ptc)
-{
-  delete ptc;
-}
-
-void PtcGetPrimitiveSet(const PointCloud *ptc, PrimitiveSet *primset)
-{
-  MakePrimitiveSet(primset,
-      "PointCloud",
-      ptc,
-      point_ray_intersect,
-      point_bounds,
-      point_cloud_bounds,
-      point_count);
-}
-
-static int point_ray_intersect(const void *prim_set, int prim_id, double time,
-    const Ray *ray, Intersection *isect)
+bool PointCloud::ray_intersect(Index prim_id, Real time,
+    const Ray &ray, Intersection *isect) const
 {
 /*
   X = o + t * d;
@@ -114,16 +88,15 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
   t = (-d * (o - center) +- sqrt(D)) / |d|^2;
   D = {d * (o - center)}^2 - |d|^2 * (|o - center|^2 - r^2);
 */
-  const PointCloud *ptc = (const PointCloud *) prim_set;
-  const Vector P = ptc->GetPointPosition(prim_id);
-  const Vector velocity = ptc->GetPointVelocity(prim_id);
-  const double radius = ptc->GetPointRadius(prim_id);
+  const Vector P = GetPointPosition(prim_id);
+  const Vector velocity = GetPointVelocity(prim_id);
+  const double radius = GetPointRadius(prim_id);
 
-  const Vector center = ptc->HasPointVelocity() ? P + time * velocity : P;
-  const Vector orig_local = ray->orig - center;
+  const Vector center = P + time * velocity;
+  const Vector orig_local = ray.orig - center;
 
-  const Real a = Dot(ray->dir, ray->dir);
-  const Real b = Dot(ray->dir, orig_local);
+  const Real a = Dot(ray.dir, ray.dir);
+  const Real b = Dot(ray.dir, orig_local);
   const Real c = Dot(orig_local, orig_local) - radius * radius;
 
   const Real discriminant = b * b - a * c;
@@ -140,7 +113,7 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
   }
   const Real t_hit = (t1 <= 0.) ? t1 : t0;
 
-  isect->P = RayPointAt(*ray, t_hit);
+  isect->P = RayPointAt(ray, t_hit);
   isect->N = Normalize(isect->P - center);
 
   isect->object = NULL;
@@ -150,35 +123,37 @@ static int point_ray_intersect(const void *prim_set, int prim_id, double time,
   return true;
 }
 
-static void point_bounds(const void *prim_set, int prim_id, Box *bounds)
+void PointCloud::get_primitive_bounds(Index prim_id, Box *bounds) const
 {
-  const PointCloud *ptc = (const PointCloud *) prim_set;
-  const Vector P = ptc->GetPointPosition(prim_id);
-  const Vector velocity = ptc->GetPointVelocity(prim_id);
-  const Real radius = ptc->GetPointRadius(prim_id);
+  const Vector P = GetPointPosition(prim_id);
+  const Vector velocity = GetPointVelocity(prim_id);
+  const Real radius = GetPointRadius(prim_id);
 
   *bounds = Box(
       P.x, P.y, P.z,
       P.x, P.y, P.z);
 
-  if (ptc->HasPointVelocity()) {
-    const Vector P_close = P + velocity;
-    BoxAddPoint(bounds, P_close);
-  }
-
+  BoxAddPoint(bounds, P + velocity);
   BoxExpand(bounds, radius);
 }
-
-static void point_cloud_bounds(const void *prim_set, Box *bounds)
+void PointCloud::get_bounds(Box *bounds) const
 {
-  const PointCloud *ptc = (const PointCloud *) prim_set;
-  *bounds = ptc->GetBounds();
+  *bounds = GetBounds();
 }
 
-static int point_count(const void *prim_set)
+Index PointCloud::get_primitive_count() const
 {
-  const PointCloud *ptc = (const PointCloud *) prim_set;
-  return ptc->GetPointCount();
+  return GetPointCount();
+}
+
+PointCloud *PtcNew(void)
+{
+  return new PointCloud();
+}
+
+void PtcFree(PointCloud *ptc)
+{
+  delete ptc;
 }
 
 } // namespace xxx

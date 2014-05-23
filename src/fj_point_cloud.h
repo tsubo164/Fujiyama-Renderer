@@ -7,6 +7,7 @@ See LICENSE and README
 #define FJ_POINTCLOUD_H
 
 #include "fj_compatibility.h"
+#include "fj_primitive_set.h"
 #include "fj_vector.h"
 #include "fj_types.h"
 #include "fj_box.h"
@@ -14,7 +15,7 @@ See LICENSE and README
 
 namespace fj {
 
-class FJ_API PointCloud {
+class FJ_API PointCloud : public PrimitiveSet {
 public:
   PointCloud();
   ~PointCloud();
@@ -42,6 +43,12 @@ public:
   void ComputeBounds();
 
 private:
+  virtual bool ray_intersect(Index prim_id, Real time,
+      const Ray &ray, Intersection *isect) const;
+  virtual void get_primitive_bounds(Index prim_id, Box *bounds) const;
+  virtual void get_bounds(Box *bounds) const;
+  virtual Index get_primitive_count() const;
+
   int point_count_;
   std::vector<Vector> P_;
   std::vector<Vector> velocity_;
@@ -51,9 +58,6 @@ private:
 
 FJ_API PointCloud *PtcNew(void);
 FJ_API void PtcFree(PointCloud *ptc);
-
-struct PrimitiveSet;
-FJ_API void PtcGetPrimitiveSet(const PointCloud *ptc, PrimitiveSet *primset);
 
 } // namespace xxx
 
