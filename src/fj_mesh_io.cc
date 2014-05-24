@@ -227,7 +227,8 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
     const char *attrname;
     attrname = in->attr_names[i];
     if (strcmp(attrname, "P") == 0) {
-      MshAllocateVertex(mesh, "P", in->nverts);
+      mesh->SetVertexCount(in->nverts);
+      mesh->AddVertexPosition();
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const double *data = (const double *) in->data_buffer;
@@ -235,11 +236,12 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
         P.x = data[3*j + 0];
         P.y = data[3*j + 1];
         P.z = data[3*j + 2];
-        MshSetVertexPosition(mesh, j, &P);
+        mesh->SetVertexPosition(j, P);
       }
     }
     else if (strcmp(attrname, "N") == 0) {
-      MshAllocateVertex(mesh, "N", in->nverts);
+      mesh->SetVertexCount(in->nverts);
+      mesh->AddVertexNormal();
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const double *data = (const double *) in->data_buffer;
@@ -247,11 +249,12 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
         N.x = data[3*j + 0];
         N.y = data[3*j + 1];
         N.z = data[3*j + 2];
-        MshSetVertexNormal(mesh, j, &N);
+        mesh->SetVertexNormal(j, N);
       }
     }
     else if (strcmp(attrname, "Cd") == 0) {
-      MshAllocateVertex(mesh, "Cd", in->nverts);
+      mesh->SetVertexCount(in->nverts);
+      mesh->AddVertexColor();
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const float *data = (const float *) in->data_buffer;
@@ -259,22 +262,24 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
         Cd.r = data[3*j + 0];
         Cd.g = data[3*j + 1];
         Cd.b = data[3*j + 2];
-        MshSetVertexColor(mesh, j, &Cd);
+        mesh->SetVertexColor(j, Cd);
       }
     }
     else if (strcmp(attrname, "uv") == 0) {
-      MshAllocateVertex(mesh, "uv", in->nverts);
+      mesh->SetVertexCount(in->nverts);
+      mesh->AddVertexTexture();
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const float *data = (const float *) in->data_buffer;
         struct TexCoord texcoord;
         texcoord.u = data[2*j + 0];
         texcoord.v = data[2*j + 1];
-        MshSetVertexTexture(mesh, j, &texcoord);
+        mesh->SetVertexTexture(j, texcoord);
       }
     }
     else if (strcmp(attrname, "velocity") == 0) {
-      MshAllocateVertex(mesh, "velocity", in->nverts);
+      mesh->SetVertexCount(in->nverts);
+      mesh->AddVertexVelocity();
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const double *data = (const double *) in->data_buffer;
@@ -282,11 +287,12 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
         velocity.x = data[3*j + 0];
         velocity.y = data[3*j + 1];
         velocity.z = data[3*j + 2];
-        MshSetVertexVelocity(mesh, j, &velocity);
+        mesh->SetVertexVelocity(j, velocity);
       }
     }
     else if (strcmp(attrname, "indices") == 0) {
-      MshAllocateFace(mesh, "indices", in->nfaces);
+      mesh->SetFaceCount(in->nfaces);
+      mesh->AddFaceIndices();
       read_attridata(in);
       for (j = 0; j < in->nfaces; j++) {
         const Index *data = (const Index *) in->data_buffer;
@@ -294,12 +300,12 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
         tri_index.i0 = data[3*j + 0];
         tri_index.i1 = data[3*j + 1];
         tri_index.i2 = data[3*j + 2];
-        MshSetFaceVertexIndices(mesh, j, &tri_index);
+        mesh->SetFaceIndices(j, tri_index);
       }
     }
   }
 
-  MshComputeBounds(mesh);
+  mesh->ComputeBounds();
   MshCloseInputFile(in);
 
   return 0;

@@ -639,7 +639,7 @@ ID SiNewMesh(const char *filename)
     return SI_BADID;
   }
   if (strcmp(filename, "null") == 0) {
-    MshClear(mesh);
+    mesh->Clear();
   } else {
     if (MshLoadFile(mesh, filename)) {
       set_errno(SI_ERR_FAILLOAD);
@@ -653,8 +653,11 @@ ID SiNewMesh(const char *filename)
     return SI_BADID;
   }
 
+#if 0
   MshGetPrimitiveSet(mesh, &primset);
   AccSetPrimitiveSet(acc, &primset);
+#endif
+  AccSetPrimitiveSetPointer(acc, mesh);
 
   mesh_id = encode_id(Type_Mesh, GET_LAST_ADDED_ID(Mesh));
   accel_id = encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));

@@ -71,7 +71,7 @@ int main(int argc, const char **argv)
 
     MshLoadFile(mesh, in_filename);
 
-    face_count = MshGetFaceCount(mesh);
+    face_count = mesh->GetFaceCount();
     point_count_list = FJ_MEM_ALLOC_ARRAY(int, face_count);
 
     for (i = 0; i < face_count; i++) {

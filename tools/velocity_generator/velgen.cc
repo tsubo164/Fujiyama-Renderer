@@ -100,9 +100,9 @@ int main(int argc, const char **argv)
     return -1;
   }
 
-  nverts = MshGetVertexCount(mesh);
+  nverts = mesh->GetVertexCount();
   printf("nverts: %d\n", nverts);
-  nfaces = MshGetFaceCount(mesh);
+  nfaces = mesh->GetFaceCount();
   printf("nfaces: %d\n", nfaces);
 
   P = VecAlloc(nverts);
@@ -114,7 +114,7 @@ int main(int argc, const char **argv)
     struct Box bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
     for (i = 0; i < nverts; i++) {
       struct Vector pos;
-      MshGetVertexPosition(mesh, i, &pos);
+      pos = mesh->GetVertexPosition(i);
       BoxAddPoint(&bounds, pos);
     }
     zmin = bounds.min.z;
@@ -131,8 +131,8 @@ int main(int argc, const char **argv)
     double freq = .2;
     double znml = 0;
 
-    MshGetVertexPosition(mesh, i, &pos);
-    MshGetVertexNormal(mesh, i, &nml);
+    pos = mesh->GetVertexPosition(i);
+    nml = mesh->GetVertexNormal(i);
 
     znml = (pos.z - zmin) / (zmax - zmin);
 
@@ -156,7 +156,7 @@ int main(int argc, const char **argv)
   for (i = 0; i < nfaces; i++) {
     struct TriIndex tri;
 
-    MshGetFaceVertexIndices(mesh, i, &tri);
+    tri = mesh->GetFaceIndices(i);
     indices[i] = tri;
   }
 

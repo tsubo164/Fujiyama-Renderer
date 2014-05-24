@@ -7,6 +7,7 @@ See LICENSE and README
 #define FJ_MESH_H
 
 #include "fj_compatibility.h"
+#include "fj_primitive_set.h"
 #include "fj_tex_coord.h"
 #include "fj_vector.h"
 #include "fj_color.h"
@@ -20,49 +21,7 @@ struct TriIndex {
   Index i0, i1, i2;
 };
 
-struct PrimitiveSet;
-
-struct Mesh;
-
-extern Mesh *MshNew(void);
-extern void MshFree(Mesh *mesh);
-
-extern void MshClear(Mesh *mesh);
-
-/* allocations */
-extern void MshAllocateVertex(Mesh *mesh, const char *attr_name, int nverts);
-extern void MshAllocateFace(Mesh *mesh, const char *attr_name, int nfaces);
-
-/* properties */
-extern int MshGetVertexCount(const Mesh *mesh);
-extern int MshGetFaceCount(const Mesh *mesh);
-
-extern void MshGetFaceVertexPosition(const Mesh *mesh, int face_index,
-    Vector *P0, Vector *P1, Vector *P2);
-extern void MshGetFaceVertexNormal(const Mesh *mesh, int face_index,
-    Vector *N0, Vector *N1, Vector *N2);
-
-/* property setting */
-extern void MshSetVertexPosition(Mesh *mesh, int index, const Vector *P);
-extern void MshSetVertexNormal(Mesh *mesh, int index, const Vector *N);
-extern void MshSetVertexColor(Mesh *mesh, int index, const Color *Cd);
-extern void MshSetVertexTexture(Mesh *mesh, int index, const TexCoord *uv);
-extern void MshSetVertexVelocity(Mesh *mesh, int index, const Vector *velocity);
-extern void MshSetFaceVertexIndices(Mesh *mesh, int face_index,
-    const TriIndex *tri_index);
-
-extern void MshGetVertexPosition(const Mesh *mesh, int index, Vector *P);
-extern void MshGetVertexNormal(const Mesh *mesh, int index, Vector *N);
-extern void MshGetFaceVertexIndices(const Mesh *mesh, int face_index,
-    TriIndex *tri_index);
-
-/* re-computation */
-extern void MshComputeBounds(Mesh *mesh);
-extern void MshComputeNormals(Mesh *mesh);
-
-extern void MshGetPrimitiveSet(const Mesh *mesh, PrimitiveSet *primset);
-
-class FJ_API Mesh {
+class FJ_API Mesh : public PrimitiveSet {
 public:
   Mesh();
   ~Mesh();
@@ -106,6 +65,12 @@ public:
   void Clear();
 
 private:
+  virtual bool ray_intersect(Index prim_id, Real time,
+      const Ray &ray, Intersection *isect) const;
+  virtual void get_primitive_bounds(Index prim_id, Box *bounds) const;
+  virtual void get_bounds(Box *bounds) const;
+  virtual Index get_primitive_count() const;
+
   int nverts;
   int nfaces;
 
@@ -118,6 +83,14 @@ private:
 
   Box bounds;
 };
+
+extern Mesh *MshNew(void);
+extern void MshFree(Mesh *mesh);
+
+extern void MshGetFaceVertexPosition(const Mesh *mesh, int face_index,
+    Vector *P0, Vector *P1, Vector *P2);
+extern void MshGetFaceVertexNormal(const Mesh *mesh, int face_index,
+    Vector *N0, Vector *N1, Vector *N2);
 
 } // namespace xxx
 

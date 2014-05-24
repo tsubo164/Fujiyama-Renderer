@@ -21,6 +21,7 @@ See LICENSE and README
     #include <stdint.h>
 #else
   #define FJ_LINUX
+  #define __STDC_LIMIT_MACROS
   #if defined(__x86_64__)
     /* 64bit Linux */
     #include <stdint.h>

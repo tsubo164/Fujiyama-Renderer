@@ -114,7 +114,7 @@ int main(int argc, const char **argv)
     return -1;
   }
 
-  nfaces = MshGetFaceCount(mesh);
+  nfaces = mesh->GetFaceCount();
   printf("nfaces: %d\n", nfaces);
 
   /* count total_ncurves */
@@ -376,12 +376,12 @@ static int gen_hair(int argc, const char **argv)
   }
 
   {
-    const int64_t N = MshGetVertexCount(mesh);
+    const int64_t N = mesh->GetVertexCount();
     struct Box bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
     int p;
     for (p = 0; p < N; p++) {
       struct Vector pt;
-      MshGetVertexPosition(mesh, p, &pt);
+      pt = mesh->GetVertexPosition(p);
       BoxAddPoint(&bounds, pt);
     }
     ymin = bounds.min.y;
@@ -390,7 +390,7 @@ static int gen_hair(int argc, const char **argv)
     zmax = bounds.max.z;
   }
 
-  nfaces = MshGetFaceCount(mesh);
+  nfaces = mesh->GetFaceCount();
   printf("nfaces: %d\n", nfaces);
 
   /* count total_ncurves */
