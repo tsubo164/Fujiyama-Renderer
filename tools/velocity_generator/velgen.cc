@@ -36,7 +36,7 @@ int main(int argc, const char **argv)
   struct Vector *P = NULL;
   struct Vector *N = NULL;
   struct Vector *velocity = NULL;
-  struct TriIndex *indices = NULL;
+  Index3 *indices = NULL;
 
   int nfaces = 0;
   int nverts = 0;
@@ -108,7 +108,7 @@ int main(int argc, const char **argv)
   P = VecAlloc(nverts);
   N = VecAlloc(nverts);
   velocity = VecAlloc(nverts);
-  indices = FJ_MEM_ALLOC_ARRAY(struct TriIndex, nfaces);
+  indices = FJ_MEM_ALLOC_ARRAY(Index3, nfaces);
 
   {
     struct Box bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
@@ -154,10 +154,7 @@ int main(int argc, const char **argv)
   }
 
   for (i = 0; i < nfaces; i++) {
-    struct TriIndex tri;
-
-    tri = mesh->GetFaceIndices(i);
-    indices[i] = tri;
+    indices[i] = mesh->GetFaceIndices(i);
   }
 
   /* setup MshOutput */

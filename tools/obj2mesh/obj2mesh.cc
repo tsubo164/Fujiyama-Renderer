@@ -103,9 +103,9 @@ struct ObjBuffer *ObjBufferNew(void)
   buffer->P = ArrNew(sizeof(struct Vector));
   buffer->N = ArrNew(sizeof(struct Vector));
   buffer->uv = ArrNew(sizeof(struct TexCoord));
-  buffer->vertex_indices = ArrNew(sizeof(struct TriIndex));
-  buffer->texture_indices = ArrNew(sizeof(struct TriIndex));
-  buffer->normal_indices = ArrNew(sizeof(struct TriIndex));
+  buffer->vertex_indices = ArrNew(sizeof(Index3));
+  buffer->texture_indices = ArrNew(sizeof(Index3));
+  buffer->normal_indices = ArrNew(sizeof(Index3));
 
   buffer->nverts = 0;
   buffer->nfaces = 0;
@@ -199,7 +199,7 @@ static int read_face(
 
   for (i = 0; i < ntriangles; i++) {
     if (vertex_indices != NULL) {
-      struct TriIndex tri_index = {0, 0, 0};
+      Index3 tri_index;
       tri_index.i0 = vertex_indices[0] - 1;
       tri_index.i1 = vertex_indices[i + 1] - 1;
       tri_index.i2 = vertex_indices[i + 2] - 1;
@@ -207,7 +207,7 @@ static int read_face(
     }
 
     if (texture_indices != NULL) {
-      struct TriIndex tri_index = {0, 0, 0};
+      Index3 tri_index;
       tri_index.i0 = texture_indices[0] - 1;
       tri_index.i1 = texture_indices[i + 1] - 1;
       tri_index.i2 = texture_indices[i + 2] - 1;
@@ -215,7 +215,7 @@ static int read_face(
     }
 
     if (normal_indices != NULL) {
-      struct TriIndex tri_index = {0, 0, 0};
+      Index3 tri_index;
       tri_index.i0 = normal_indices[0] - 1;
       tri_index.i1 = normal_indices[i + 1] - 1;
       tri_index.i2 = normal_indices[i + 2] - 1;
@@ -267,7 +267,7 @@ int ObjBufferToMeshFile(const struct ObjBuffer *buffer, const char *filename)
   out->uv = (struct TexCoord *) buffer->uv->data;
   out->nfaces = buffer->nfaces;
   out->nface_attrs = 1;
-  out->indices = (struct TriIndex *) buffer->vertex_indices->data;
+  out->indices = (Index3 *) buffer->vertex_indices->data;
 
   MshWriteFile(out);
   MshCloseOutputFile(out);
@@ -280,7 +280,7 @@ int ObjBufferComputeNormals(struct ObjBuffer *buffer)
   const int nfaces = buffer->nfaces;
   struct Vector *P = (struct Vector *) buffer->P->data;
   struct Vector *N = (struct Vector *) buffer->N->data;
-  struct TriIndex *indices = (struct TriIndex *) buffer->vertex_indices->data;
+  Index3 *indices = (Index3 *) buffer->vertex_indices->data;
   int i;
 
   if (P == NULL || indices == NULL)

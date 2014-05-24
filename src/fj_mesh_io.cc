@@ -296,7 +296,7 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
       read_attridata(in);
       for (j = 0; j < in->nfaces; j++) {
         const Index *data = (const Index *) in->data_buffer;
-        struct TriIndex tri_index = {0, 0, 0};
+        Index3 tri_index;
         tri_index.i0 = data[3*j + 0];
         tri_index.i1 = data[3*j + 1];
         tri_index.i2 = data[3*j + 2];

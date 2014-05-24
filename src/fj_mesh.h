@@ -17,10 +17,6 @@ See LICENSE and README
 
 namespace fj {
 
-struct TriIndex {
-  Index i0, i1, i2;
-};
-
 class FJ_API Mesh : public PrimitiveSet {
 public:
   Mesh();
@@ -44,14 +40,14 @@ public:
   Color    GetVertexColor(int idx) const;
   TexCoord GetVertexTexture(int idx) const;
   Vector   GetVertexVelocity(int idx) const;
-  TriIndex GetFaceIndices(int idx) const;
+  Index3 GetFaceIndices(int idx) const;
 
   void SetVertexPosition(int idx, const Vector &value);
   void SetVertexNormal(int idx, const Vector &value);
   void SetVertexColor(int idx, const Color &value);
   void SetVertexTexture(int idx, const TexCoord &value);
   void SetVertexVelocity(int idx, const Vector &value);
-  void SetFaceIndices(int idx, const TriIndex &value);
+  void SetFaceIndices(int idx, const Index3 &value);
 
   bool HasVertexPosition() const;
   bool HasVertexNormal() const;
@@ -79,7 +75,7 @@ private:
   std::vector<Color>    Cd;
   std::vector<TexCoord> uv;
   std::vector<Vector>   velocity;
-  std::vector<TriIndex> indices;
+  std::vector<Index3> indices;
 
   Box bounds;
 };

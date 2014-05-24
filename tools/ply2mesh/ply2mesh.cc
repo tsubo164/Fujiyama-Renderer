@@ -98,7 +98,7 @@ int main(int argc, const char **argv)
     fprintf(stderr, "Could not open output file: %s\n", argv[2]);
     return -1;
   }
-  index_array = ArrNew(sizeof(struct TriIndex));
+  index_array = ArrNew(sizeof(Index3));
 
   filename = (char *) argv[1];
   in_ply = ply_open_for_reading(filename, &nelems, &elem_names, &file_type, &version);
@@ -157,7 +157,7 @@ int main(int argc, const char **argv)
 
         /* n triangles in a polygon is (n vertices - 2) */
         for (k = 0; k < face.nverts - 2; k++) {
-          struct TriIndex tri_index = {0, 0, 0};
+          Index3 tri_index;
           tri_index.i0 = face.verts[0];
           tri_index.i1 = face.verts[k + 1];
           tri_index.i2 = face.verts[k + 2];
@@ -179,7 +179,7 @@ int main(int argc, const char **argv)
     struct Vector *P0, *P1, *P2;
     struct Vector *N0, *N1, *N2;
     struct Vector Ng;
-    struct TriIndex *indices = (struct TriIndex *) index_array->data;
+    Index3 *indices = (Index3 *) index_array->data;
     const int i0 = indices[i].i0;
     const int i1 = indices[i].i1;
     const int i2 = indices[i].i2;
@@ -220,7 +220,7 @@ int main(int argc, const char **argv)
   out->uv = uv;
   out->nfaces = ntris;
   out->nface_attrs = 1;
-  out->indices = (struct TriIndex *) index_array->data;
+  out->indices = (Index3 *) index_array->data;
 
   MshWriteFile(out);
 

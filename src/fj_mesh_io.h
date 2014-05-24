@@ -11,6 +11,7 @@ See LICENSE and README
 namespace fj {
 
 struct TexCoord;
+struct Index3;
 struct Vector;
 struct Color;
 struct Mesh;
@@ -46,12 +47,12 @@ struct MeshOutput {
   int nfaces;
   int nface_attrs;
 
-  struct Vector *P;
-  struct Vector *N;
-  struct Color *Cd;
-  struct TexCoord *uv;
-  struct Vector *velocity;
-  struct TriIndex *indices;
+  Vector *P;
+  Vector *N;
+  Color *Cd;
+  TexCoord *uv;
+  Vector *velocity;
+  Index3 *indices;
 };
 
 /* mesh input file interfaces */

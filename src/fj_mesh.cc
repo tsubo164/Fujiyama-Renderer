@@ -19,7 +19,7 @@ See LICENSE and README
   ATTR(Vertex, Color,    Cd,       Color) \
   ATTR(Vertex, TexCoord, uv,       Texture) \
   ATTR(Vertex, Vector,   velocity, Velocity) \
-  ATTR(Face,   TriIndex, indices,  Indices)
+  ATTR(Face,   Index3,   indices,  Indices)
 
 namespace fj {
 
@@ -111,7 +111,7 @@ void Mesh::ComputeNormals()
 
   /* compute N */
   for (int i = 0; i < nfaces; i++) {
-    const TriIndex &face = indices[i];
+    const Index3 &face = indices[i];
 
     const Vector &P0 = P[face.i0];
     const Vector &P1 = P[face.i1];
@@ -143,7 +143,7 @@ void Mesh::ComputeBounds()
 bool Mesh::ray_intersect(Index prim_id, Real time,
     const Ray &ray, Intersection *isect) const
 {
-  const TriIndex face = GetFaceIndices(prim_id);
+  const Index3 face = GetFaceIndices(prim_id);
 
   /* TODO make function */
   Vector P0 = GetVertexPosition(face.i0);
@@ -213,7 +213,7 @@ bool Mesh::ray_intersect(Index prim_id, Real time,
 
 void Mesh::get_primitive_bounds(Index prim_id, Box *bounds) const
 {
-  const TriIndex face = GetFaceIndices(prim_id);
+  const Index3 face = GetFaceIndices(prim_id);
 
   const Vector P0 = GetVertexPosition(face.i0);
   const Vector P1 = GetVertexPosition(face.i1);
@@ -259,7 +259,7 @@ void MshFree(Mesh *mesh)
 void MshGetFaceVertexPosition(const Mesh *mesh, int face_index,
     Vector *P0, Vector *P1, Vector *P2)
 {
-  const TriIndex face = mesh->GetFaceIndices(face_index);
+  const Index3 face = mesh->GetFaceIndices(face_index);
 
   *P0 = mesh->GetVertexPosition(face.i0);
   *P1 = mesh->GetVertexPosition(face.i1);
@@ -269,7 +269,7 @@ void MshGetFaceVertexPosition(const Mesh *mesh, int face_index,
 void MshGetFaceVertexNormal(const Mesh *mesh, int face_index,
     Vector *N0, Vector *N1, Vector *N2)
 {
-  const TriIndex face = mesh->GetFaceIndices(face_index);
+  const Index3 face = mesh->GetFaceIndices(face_index);
 
   *N0 = mesh->GetVertexNormal(face.i0);
   *N1 = mesh->GetVertexNormal(face.i1);

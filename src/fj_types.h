@@ -13,7 +13,7 @@ namespace fj {
 typedef double Real;
 typedef int Index;
 
-struct Index3 {
+struct FJ_API Index3 {
   Index3() : i0(0), i1(0), i2(0) {}
   ~Index3() {}
 
