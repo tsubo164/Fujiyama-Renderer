@@ -145,12 +145,13 @@ int CrvReadHeader(struct CurveInput *in)
   return 0;
 }
 
-int CrvReadAttribute(struct CurveInput *in, void *data)
+int CrvReadAttribute(struct CurveInput *in)
 {
   size_t nreads = 0;
   size_t datasize = 0;
   nreads += fread(&datasize, sizeof(size_t), 1, in->file);
-  nreads += fread(data, sizeof(char), datasize, in->file);
+  in->data_buffer.resize(datasize);
+  nreads += fread(&in->data_buffer[0], sizeof(char), datasize, in->file);
 
   return 0;
 }
@@ -255,32 +256,79 @@ int CrvLoadFile(struct Curve *curve, const char *filename)
     const char *attrname;
     attrname = in->attr_names[i];
     if (strcmp(attrname, "P") == 0) {
-      CrvAllocateVertex(curve, "P", in->nverts);
-      CrvReadAttribute(in, &curve->P[0]);
+      curve->SetVertexCount(in->nverts);
+      curve->AddVertexPosition();
+      CrvReadAttribute(in);
+      for (int j = 0; j < in->nverts; j++) {
+        const Real *data = (const Real *) &in->data_buffer[0];
+        const Vector P(
+            data[3*j + 0],
+            data[3*j + 1],
+            data[3*j + 2]);
+        curve->SetVertexPosition(j, P);
+      }
     }
     else if (strcmp(attrname, "width") == 0) {
-      CrvAllocateVertex(curve, "width", in->nverts);
-      CrvReadAttribute(in, &curve->width[0]);
+      curve->SetVertexCount(in->nverts);
+      curve->AddVertexWidth();
+      CrvReadAttribute(in);
+      for (int j = 0; j < in->nverts; j++) {
+        const Real *data = (const Real *) &in->data_buffer[0];
+        const Real width = data[j];
+        curve->SetVertexWidth(j, width);
+      }
     }
     else if (strcmp(attrname, "Cd") == 0) {
-      CrvAllocateVertex(curve, "Cd", in->nverts);
-      CrvReadAttribute(in, &curve->Cd[0]);
+      curve->SetVertexCount(in->nverts);
+      curve->AddVertexColor();
+      CrvReadAttribute(in);
+      for (int j = 0; j < in->nverts; j++) {
+        const float *data = (const float *) &in->data_buffer[0];
+        const Color Cd(
+            data[3*j + 0],
+            data[3*j + 1],
+            data[3*j + 2]);
+        curve->SetVertexColor(j, Cd);
+      }
     }
     else if (strcmp(attrname, "uv") == 0) {
-      CrvAllocateVertex(curve, "uv", in->nverts);
-      CrvReadAttribute(in, &curve->uv[0]);
+      curve->SetVertexCount(in->nverts);
+      curve->AddVertexTexture();
+      CrvReadAttribute(in);
+      for (int j = 0; j < in->nverts; j++) {
+        const float *data = (const float *) &in->data_buffer[0];
+        const TexCoord texcoord(
+            data[2*j + 0],
+            data[2*j + 1]);
+        curve->SetVertexTexture(j, texcoord);
+      }
     }
     else if (strcmp(attrname, "velocity") == 0) {
-      CrvAddVelocity(curve);
-      CrvReadAttribute(in, &curve->velocity[0]);
+      curve->SetVertexCount(in->nverts);
+      curve->AddVertexVelocity();
+      CrvReadAttribute(in);
+      for (int j = 0; j < in->nverts; j++) {
+        const Real *data = (const Real *) &in->data_buffer[0];
+        const Vector velocity(
+            data[3*j + 0],
+            data[3*j + 1],
+            data[3*j + 2]);
+        curve->SetVertexVelocity(j, velocity);
+      }
     }
     else if (strcmp(attrname, "indices") == 0) {
-      CrvAllocateCurve(curve, "indices", in->ncurves);
-      CrvReadAttribute(in, &curve->indices[0]);
+      curve->SetCurveCount(in->ncurves);
+      curve->AddCurveIndices();
+      CrvReadAttribute(in);
+      for (int j = 0; j < in->ncurves; j++) {
+        const Index *data = (const Index *) &in->data_buffer[0];
+        const Index idx = data[j];
+        curve->SetCurveIndices(j, idx);
+      }
     }
   }
 
-  CrvComputeBounds(curve);
+  curve->ComputeBounds();
   CrvCloseInputFile(in);
 
   return 0;

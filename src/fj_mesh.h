@@ -40,7 +40,7 @@ public:
   Color    GetVertexColor(int idx) const;
   TexCoord GetVertexTexture(int idx) const;
   Vector   GetVertexVelocity(int idx) const;
-  Index3 GetFaceIndices(int idx) const;
+  Index3   GetFaceIndices(int idx) const;
 
   void SetVertexPosition(int idx, const Vector &value);
   void SetVertexNormal(int idx, const Vector &value);
@@ -67,17 +67,17 @@ private:
   virtual void get_bounds(Box *bounds) const;
   virtual Index get_primitive_count() const;
 
-  int nverts;
-  int nfaces;
+  int nverts_;
+  int nfaces_;
 
-  std::vector<Vector>   P;
-  std::vector<Vector>   N;
-  std::vector<Color>    Cd;
-  std::vector<TexCoord> uv;
-  std::vector<Vector>   velocity;
-  std::vector<Index3> indices;
+  std::vector<Vector>   P_;
+  std::vector<Vector>   N_;
+  std::vector<Color>    Cd_;
+  std::vector<TexCoord> uv_;
+  std::vector<Vector>   velocity_;
+  std::vector<Index3>   indices_;
 
-  Box bounds;
+  Box bounds_;
 };
 
 extern Mesh *MshNew(void);

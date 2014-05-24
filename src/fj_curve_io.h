@@ -6,7 +6,8 @@ See LICENSE and README
 #ifndef FJ_CURVEIO_H
 #define FJ_CURVEIO_H
 
-#include <stdio.h>
+#include <vector>
+#include <cstdio>
 
 namespace fj {
 
@@ -31,6 +32,8 @@ struct CurveInput {
   int *indices;
 
   char **attr_names;
+
+  std::vector<char> data_buffer;
 };
 
 struct CurveOutput {
@@ -66,7 +69,7 @@ extern const char *CrvGetErrorMessage(int err);
 extern struct CurveInput *CrvOpenInputFile(const char *filename);
 extern void CrvCloseInputFile(struct CurveInput *in);
 extern int CrvReadHeader(struct CurveInput *in);
-extern int CrvReadAttribute(struct CurveInput *in, void *data);
+extern int CrvReadAttribute(struct CurveInput *in);
 
 /* curve output file interfaces */
 extern struct CurveOutput *CrvOpenOutputFile(const char *filename);

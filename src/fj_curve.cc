@@ -20,14 +20,39 @@ See LICENSE and README
 #include <math.h>
 
 #define ATTRIBUTE_LIST(ATTR) \
-  ATTR(Vertex, Vector,   P,        Position) \
-  ATTR(Vertex, Color,    Cd,       Color) \
-  ATTR(Vertex, TexCoord, uv,       Texture) \
-  ATTR(Vertex, Vector,   velocity, Velocity) \
-  ATTR(Vertex, Real,   width,    Width) \
-  ATTR(Curve,  int,      indices,  Indices)
+  ATTR(Vertex, Vector,   P_,        Position) \
+  ATTR(Vertex, Color,    Cd_,       Color) \
+  ATTR(Vertex, TexCoord, uv_,       Texture) \
+  ATTR(Vertex, Vector,   velocity_, Velocity) \
+  ATTR(Vertex, Real,     width_,    Width) \
+  ATTR(Curve,  int,      indices_,  Indices)
 
 namespace fj {
+
+#define ATTR(Class, Type, Name, Label) \
+void Curve::Add##Class##Label() \
+{ \
+  Name.resize(Get##Class##Count()); \
+} \
+Type Curve::Get##Class##Label(int idx) const \
+{ \
+  if (idx < 0 || idx >= static_cast<int>(Name.size())) { \
+    return Type(); \
+  } \
+  return Name[idx]; \
+} \
+void Curve::Set##Class##Label(int idx, const Type &value) \
+{ \
+  if (idx < 0 || idx >= static_cast<int>(Name.size())) \
+    return; \
+  Name[idx] = value; \
+} \
+bool Curve::Has##Class##Label() const \
+{ \
+  return !Name.empty(); \
+}
+  ATTRIBUTE_LIST(ATTR)
+#undef ATTR
 
 struct ControlPoint {
   Vector P;
@@ -38,13 +63,6 @@ struct Bezier3 {
   Real width[2];
   Vector velocity[4];
 };
-
-/* curve interfaces */
-static int curve_ray_intersect(const void *prim_set, int prim_id, Real time,
-    const Ray *ray, Intersection *isect);
-static void curve_bounds(const void *prim_set, int prim_id, Box *bounds);
-static void curveset_bounds(const void *prim_set, Box *bounds);
-static int curve_count(const void *prim_set);
 
 /* bezier curve interfaces */
 static Real get_bezier3_max_radius(const Bezier3 &bezier);
@@ -74,7 +92,7 @@ static inline Real dot_xy(const Vector &a, const Vector &b)
   return a.x * b.x + a.y * b.y;
 }
 
-Curve::Curve() : nverts(0), ncurves(0)
+Curve::Curve() : nverts_(0), ncurves_(0)
 {
 }
 
@@ -84,40 +102,40 @@ Curve::~Curve()
 
 int Curve::GetVertexCount() const
 {
-  return nverts;
+  return nverts_;
 }
 
 int Curve::GetCurveCount() const
 {
-  return ncurves;
+  return ncurves_;
 }
 
 void Curve::SetVertexCount(int count)
 {
-  nverts = count;
+  nverts_ = count;
 }
 
 void Curve::SetCurveCount(int count)
 {
-  ncurves = count;
+  ncurves_ = count;
 }
 
 const Box &Curve::GetBounds() const
 {
-  return bounds;
+  return bounds_;
 }
 
 void Curve::ComputeBounds()
 {
   Real max_radius = 0;
 
-  BoxReverseInfinite(&bounds);
+  BoxReverseInfinite(&bounds_);
 
   for (int i = 0; i < GetCurveCount(); i++) {
     Box bezier_bounds;
 
-    curve_bounds(this, i, &bezier_bounds);
-    BoxAddBox(&bounds, bezier_bounds);
+    GetPrimitiveBounds(i, &bezier_bounds);
+    BoxAddBox(&bounds_, bezier_bounds);
 
     Bezier3 bezier;
     get_bezier3(this, i, &bezier);
@@ -126,36 +144,11 @@ void Curve::ComputeBounds()
     max_radius = Max(max_radius, bezier_max_radius);
   }
 
-  BoxExpand(&bounds, max_radius);
+  BoxExpand(&bounds_, max_radius);
 
   /* TODO find a better place to put this */
   cache_split_depth();
 }
-
-#define ATTR(Class, Type, Name, Label) \
-void Curve::Add##Class##Label() \
-{ \
-  Name.resize(Get##Class##Count()); \
-} \
-Type Curve::Get##Class##Label(int idx) const \
-{ \
-  if (idx < 0 || idx >= static_cast<int>(Name.size())) { \
-    return Type(); \
-  } \
-  return Name[idx]; \
-} \
-void Curve::Set##Class##Label(int idx, const Type &value) \
-{ \
-  if (idx < 0 || idx >= static_cast<int>(Name.size())) \
-    return; \
-  Name[idx] = value; \
-} \
-bool Curve::Has##Class##Label() const \
-{ \
-  return !Name.empty(); \
-}
-  ATTRIBUTE_LIST(ATTR)
-#undef ATTR
 
 void Curve::cache_split_depth()
 {
@@ -176,101 +169,20 @@ void Curve::cache_split_depth()
   }
 }
 
-Curve *CrvNew(void)
+bool Curve::ray_intersect(Index prim_id, Real time,
+    const Ray &ray, Intersection *isect) const
 {
-  return new Curve();
-}
-
-void CrvFree(Curve *curve)
-{
-  delete curve;
-}
-
-/* TODO REMOVE THIS API */
-void CrvAllocateVertex(Curve *curve, const char *attr_name, int nverts)
-{
-  if (curve->GetVertexCount() != 0 && curve->GetVertexCount() != nverts) {
-    /* TODO error handling */
-#if 0
-    return NULL;
-#endif
-  }
-
-  curve->SetVertexCount(nverts);
-
-  if (strcmp(attr_name, "P") == 0) {
-    curve->AddVertexPosition();
-  }
-  else if (strcmp(attr_name, "width") == 0) {
-    curve->AddVertexWidth();
-  }
-  else if (strcmp(attr_name, "Cd") == 0) {
-    curve->AddVertexColor();
-  }
-  else if (strcmp(attr_name, "uv") == 0) {
-    curve->AddVertexTexture();
-  }
-}
-
-/* TODO REMOVE THIS API */
-void CrvAllocateCurve(Curve *curve, const char *attr_name, int ncurves)
-{
-  if (curve->GetCurveCount() != 0 && curve->GetCurveCount() != ncurves) {
-    /* TODO error handling */
-#if 0
-    return NULL;
-#endif
-  }
-
-  curve->SetCurveCount(ncurves);
-
-  if (strcmp(attr_name, "indices") == 0) {
-    curve->AddCurveIndices();
-  }
-}
-
-void CrvAddVelocity(Curve *curve)
-{
-  if (curve->GetVertexCount() == 0) {
-    return;
-  }
-
-  curve->AddVertexVelocity();
-}
-
-void CrvComputeBounds(Curve *curve)
-{
-  curve->ComputeBounds();
-}
-
-void CrvGetPrimitiveSet(const Curve *curve, PrimitiveSet *primset)
-{
-  MakePrimitiveSet(primset,
-      "Curve",
-      curve,
-      curve_ray_intersect,
-      curve_bounds,
-      curveset_bounds,
-      curve_count);
-}
-
-// TODO MAKE PRIVATE FUNCTION AS SOON AS ADD INTERFACE CLASS
-static int curve_ray_intersect(const void *prim_set, int prim_id, Real time,
-    const Ray *ray, Intersection *isect)
-{
-  const Curve *curve = (const Curve *) prim_set;
-
   Matrix world_to_ray;
   Bezier3 bezier;
   Ray nml_ray;
 
   // for scaled ray
-  const Real ray_scale = Length(ray->dir);
-  nml_ray = *ray;
+  const Real ray_scale = Length(ray.dir);
+  nml_ray = ray;
   nml_ray.dir /= ray_scale;
 
-  get_bezier3(curve, prim_id, &bezier);
-  const int depth = curve->split_depth_[prim_id];
+  get_bezier3(this, prim_id, &bezier);
+  const int depth = split_depth_[prim_id];
   time_sample_bezier3(&bezier, time);
 
   compute_world_to_ray_matrix(nml_ray, &world_to_ray);
@@ -285,31 +197,29 @@ static int curve_ray_intersect(const void *prim_set, int prim_id, Real time,
   if (hit) {
     // P
     isect->t_hit = ttmp / ray_scale;
-    isect->P = RayPointAt(*ray, isect->t_hit);
+    isect->P = RayPointAt(ray, isect->t_hit);
 
     // dPdv
     Bezier3 original;
-    get_bezier3(curve, prim_id, &original);
+    get_bezier3(this, prim_id, &original);
     time_sample_bezier3(&original, time);
     isect->dPdv = derivative_bezier3(original.cp, v_hit);
 
     // Cd
-    const int i0 = curve->GetCurveIndices(prim_id);
-    const int i1 = curve->GetCurveIndices(prim_id) + 2;
-    const Color Cd_curve0 = curve->GetVertexColor(i0);
-    const Color Cd_curve1 = curve->GetVertexColor(i1);
+    const int i0 = GetCurveIndices(prim_id);
+    const int i1 = GetCurveIndices(prim_id) + 2;
+    const Color Cd_curve0 = GetVertexColor(i0);
+    const Color Cd_curve1 = GetVertexColor(i1);
     isect->Cd = ColLerp(Cd_curve0, Cd_curve1, v_hit);
   }
 
   return hit;
 }
 
-static void curve_bounds(const void *prim_set, int prim_id, Box *bounds)
+void Curve::get_primitive_bounds(Index prim_id, Box *bounds) const
 {
-  const Curve *curve = (const Curve *) prim_set;
-
   Bezier3 bezier;
-  get_bezier3(curve, prim_id, &bezier);
+  get_bezier3(this, prim_id, &bezier);
   get_bezier3_bounds(bezier, bounds);
 
   /* TODO need to pass max time sample instead of 1. */
@@ -320,16 +230,24 @@ static void curve_bounds(const void *prim_set, int prim_id, Box *bounds)
   BoxAddBox(bounds, bounds_shutter_close);
 }
 
-static void curveset_bounds(const void *prim_set, Box *bounds)
+void Curve::get_bounds(Box *bounds) const
 {
-  const Curve *curve = (const Curve *) prim_set;
-  *bounds = curve->GetBounds();
+  *bounds = GetBounds();
 }
 
-static int curve_count(const void *prim_set)
+Index Curve::get_primitive_count() const
 {
-  const Curve *curve = (const Curve *) prim_set;
-  return curve->GetCurveCount();
+  return GetCurveCount();
+}
+
+Curve *CrvNew(void)
+{
+  return new Curve();
+}
+
+void CrvFree(Curve *curve)
+{
+  delete curve;
 }
 
 static void compute_world_to_ray_matrix(const Ray &ray, Matrix *dst)

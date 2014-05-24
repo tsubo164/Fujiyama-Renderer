@@ -14,12 +14,12 @@ See LICENSE and README
 #include <string.h>
 
 #define ATTRIBUTE_LIST(ATTR) \
-  ATTR(Vertex, Vector,   P,        Position) \
-  ATTR(Vertex, Vector,   N,        Normal) \
-  ATTR(Vertex, Color,    Cd,       Color) \
-  ATTR(Vertex, TexCoord, uv,       Texture) \
-  ATTR(Vertex, Vector,   velocity, Velocity) \
-  ATTR(Face,   Index3,   indices,  Indices)
+  ATTR(Vertex, Vector,   P_,        Position) \
+  ATTR(Vertex, Vector,   N_,        Normal) \
+  ATTR(Vertex, Color,    Cd_,       Color) \
+  ATTR(Vertex, TexCoord, uv_,       Texture) \
+  ATTR(Vertex, Vector,   velocity_, Velocity) \
+  ATTR(Face,   Index3,   indices_,  Indices)
 
 namespace fj {
 
@@ -50,16 +50,16 @@ bool Mesh::Has##Class##Label() const \
 
 void Mesh::Clear()
 {
-  nverts = 0;
-  nfaces = 0;
-  bounds = Box();
+  nverts_ = 0;
+  nfaces_ = 0;
+  bounds_ = Box();
 
 #define ATTR(Class, Type, Name, Label) std::vector<Type>().swap(Name);
   ATTRIBUTE_LIST(ATTR)
 #undef ATTR
 }
 
-Mesh::Mesh() : nverts(0), nfaces(0), bounds()
+Mesh::Mesh() : nverts_(0), nfaces_(0), bounds_()
 {
 }
 
@@ -69,32 +69,32 @@ Mesh::~Mesh()
 
 int Mesh::GetVertexCount() const
 {
-  return nverts;
+  return nverts_;
 }
 
 int Mesh::GetFaceCount() const
 {
-  return nfaces;
+  return nfaces_;
 }
 
 void Mesh::SetVertexCount(int count)
 {
-  nverts = count;
+  nverts_ = count;
 }
 
 void Mesh::SetFaceCount(int count)
 {
-  nfaces = count;
+  nfaces_ = count;
 }
 
 const Box &Mesh::GetBounds() const
 {
-  return bounds;
+  return bounds_;
 }
 
 void Mesh::ComputeNormals()
 {
-  if (P.empty() || indices.empty())
+  if (!HasVertexPosition() || !HasFaceIndices())
     return;
 
   const int nverts = GetVertexCount();
@@ -104,39 +104,44 @@ void Mesh::ComputeNormals()
     AddVertexNormal();
   }
 
-  /* initialize N */
+  // initialize N
   for (int i = 0; i < nverts; i++) {
-    N[i] = Vector(0, 0, 0);
+    SetVertexNormal(i, Vector(0, 0, 0));
   }
 
-  /* compute N */
+  // compute N
   for (int i = 0; i < nfaces; i++) {
-    const Index3 &face = indices[i];
+    const Index3 face = GetFaceIndices(i);
 
-    const Vector &P0 = P[face.i0];
-    const Vector &P1 = P[face.i1];
-    const Vector &P2 = P[face.i2];
+    const Vector P0 = GetVertexPosition(face.i0);
+    const Vector P1 = GetVertexPosition(face.i1);
+    const Vector P2 = GetVertexPosition(face.i2);
 
     const Vector Ng = TriComputeFaceNormal(P0, P1, P2);
-    N[face.i0] += Ng;
-    N[face.i1] += Ng;
-    N[face.i2] += Ng;
+    const Vector N0 = GetVertexNormal(face.i0) + Ng;
+    const Vector N1 = GetVertexNormal(face.i1) + Ng;
+    const Vector N2 = GetVertexNormal(face.i2) + Ng;
+
+    SetVertexNormal(face.i0, N0);
+    SetVertexNormal(face.i1, N1);
+    SetVertexNormal(face.i2, N2);
   }
 
-  /* normalize N */
+  // normalize N
   for (int i = 0; i < nverts; i++) {
-    N[i] = Normalize(N[i]);
+    const Vector N = GetVertexNormal(i);
+    SetVertexNormal(i, Normalize(N));
   }
 }
 
 void Mesh::ComputeBounds()
 {
-  BoxReverseInfinite(&bounds);
+  BoxReverseInfinite(&bounds_);
 
   for (int i = 0; i < GetFaceCount(); i++) {
     Box tri_bounds;
     GetPrimitiveBounds(i, &tri_bounds);
-    BoxAddBox(&bounds, tri_bounds);
+    BoxAddBox(&bounds_, tri_bounds);
   }
 }
 

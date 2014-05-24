@@ -412,10 +412,6 @@ ID SiNewPointCloud(const char *filename)
     return SI_BADID;
   }
 
-#if 0
-  PtcGetPrimitiveSet(ptc, &primset);
-  AccSetPrimitiveSet(acc, &primset);
-#endif
   AccSetPrimitiveSetPointer(acc, ptc);
 
   ptc_id = encode_id(Type_PointCloud, GET_LAST_ADDED_ID(PointCloud));
@@ -579,8 +575,7 @@ ID SiNewCurve(const char *filename)
     return SI_BADID;
   }
 
-  CrvGetPrimitiveSet(curve, &primset);
-  AccSetPrimitiveSet(acc, &primset);
+  AccSetPrimitiveSetPointer(acc, curve);
 
   curve_id = encode_id(Type_Curve, GET_LAST_ADDED_ID(Curve));
   accel_id = encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
@@ -653,10 +648,6 @@ ID SiNewMesh(const char *filename)
     return SI_BADID;
   }
 
-#if 0
-  MshGetPrimitiveSet(mesh, &primset);
-  AccSetPrimitiveSet(acc, &primset);
-#endif
   AccSetPrimitiveSetPointer(acc, mesh);
 
   mesh_id = encode_id(Type_Mesh, GET_LAST_ADDED_ID(Mesh));

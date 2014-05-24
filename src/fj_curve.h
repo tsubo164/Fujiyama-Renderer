@@ -7,7 +7,9 @@ See LICENSE and README
 #define FJ_CURVE_H
 
 #include "fj_compatibility.h"
+#include "fj_primitive_set.h"
 #include "fj_tex_coord.h"
+#include "fj_vector.h"
 #include "fj_color.h"
 #include "fj_types.h"
 #include "fj_box.h"
@@ -15,9 +17,7 @@ See LICENSE and README
 
 namespace fj {
 
-struct PrimitiveSet;
-
-class FJ_API Curve {
+class FJ_API Curve : public PrimitiveSet {
 public:
   Curve();
   ~Curve();
@@ -39,14 +39,14 @@ public:
   Color    GetVertexColor(int idx) const;
   TexCoord GetVertexTexture(int idx) const;
   Vector   GetVertexVelocity(int idx) const;
-  double   GetVertexWidth(int idx) const;
+  Real     GetVertexWidth(int idx) const;
   int      GetCurveIndices(int idx) const;
 
   void SetVertexPosition(int idx, const Vector &value);
   void SetVertexColor(int idx, const Color &value);
   void SetVertexTexture(int idx, const TexCoord &value);
   void SetVertexVelocity(int idx, const Vector &value);
-  void SetVertexWidth(int idx, const double &value);
+  void SetVertexWidth(int idx, const Real &value);
   void SetCurveIndices(int idx, const int &value);
 
   bool HasVertexPosition() const;
@@ -58,34 +58,32 @@ public:
 
   void ComputeBounds();
 
-public:
-  int nverts;
-  int ncurves;
+private:
+  virtual bool ray_intersect(Index prim_id, Real time,
+      const Ray &ray, Intersection *isect) const;
+  virtual void get_primitive_bounds(Index prim_id, Box *bounds) const;
+  virtual void get_bounds(Box *bounds) const;
+  virtual Index get_primitive_count() const;
 
-  std::vector<Vector>   P;
-  std::vector<Color>    Cd;
-  std::vector<TexCoord> uv;
-  std::vector<Vector>   velocity;
-  std::vector<double>   width;
-  std::vector<int>      indices;
+  int nverts_;
+  int ncurves_;
+
+  std::vector<Vector>   P_;
+  std::vector<Color>    Cd_;
+  std::vector<TexCoord> uv_;
+  std::vector<Vector>   velocity_;
+  std::vector<Real>     width_;
+  std::vector<int>      indices_;
+
+  Box bounds_;
 
   std::vector<int> split_depth_;
-
-  Box bounds;
 
   void cache_split_depth();
 };
 
 FJ_API Curve *CrvNew(void);
 FJ_API void CrvFree(Curve *curve);
-
-FJ_API void CrvAllocateVertex(Curve *curve, const char *attr_name, int nverts);
-FJ_API void CrvAllocateCurve(Curve *curve, const char *attr_name, int ncurves);
-
-FJ_API void CrvAddVelocity(Curve *curve);
-
-FJ_API void CrvComputeBounds(Curve *curve);
-FJ_API void CrvGetPrimitiveSet(const Curve *curve, PrimitiveSet *primset);
 
 } // namespace xxx
 

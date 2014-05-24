@@ -44,6 +44,35 @@ struct Vector {
     }
   }
 
+#if 0
+  const Vector &operator+=(const Vector &a)
+  {
+    (*this)[0] += a[0];
+    (*this)[1] += a[1];
+    (*this)[2] += a[2];
+    return *this;
+  }
+  const Vector &operator-=(const Vector &a)
+  {
+    (*this)[0] -= a[0];
+    (*this)[1] -= a[1];
+    (*this)[2] -= a[2];
+    return *this;
+  }
+  const Vector &operator*=(Real scalar)
+  {
+    (*this)[0] *= scalar;
+    (*this)[1] *= scalar;
+    (*this)[2] *= scalar;
+    return *this;
+  }
+  const Vector &operator/=(Real scalar)
+  {
+    // no checking zero division
+    const Real inv = 1./scalar;
+    return *this *= inv;
+  }
+#endif
   const Vector &operator+=(const Vector &a)
   {
     x += a.x;
@@ -77,6 +106,12 @@ struct Vector {
 
 inline Vector operator+(const Vector &a, const Vector &b)
 {
+#if 0
+  return Vector(
+    a[0] + b[0],
+    a[1] + b[1],
+    a[2] + b[2]);
+#endif
   return Vector(
     a.x + b.x,
     a.y + b.y,
@@ -85,6 +120,12 @@ inline Vector operator+(const Vector &a, const Vector &b)
 
 inline Vector operator-(const Vector &a, const Vector &b)
 {
+#if 0
+  return Vector(
+    a[0] - b[0],
+    a[1] - b[1],
+    a[2] - b[2]);
+#endif
   return Vector(
     a.x - b.x,
     a.y - b.y,
