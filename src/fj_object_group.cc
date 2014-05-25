@@ -11,7 +11,6 @@ See LICENSE and README
 #include "fj_interval.h"
 #include "fj_matrix.h"
 #include "fj_memory.h"
-#include "fj_array.h"
 #include "fj_ray.h"
 #include "fj_box.h"
 
@@ -24,20 +23,17 @@ namespace fj {
 
 class ObjectList {
 public:
-  ObjectList()
+  ObjectList() : objects(), bounds()
   {
-    objects = ArrNew(sizeof(struct ObjectInstance *));
     BoxReverseInfinite(&bounds);
   }
   ~ObjectList()
   {
-    if (objects != NULL)
-      ArrFree(objects);
   }
 
   Index GetObjectCount() const
   {
-    return objects->nelems;
+    return objects.size();
   }
   const Box &GetBounds() const
   {
@@ -45,15 +41,16 @@ public:
   }
   const ObjectInstance *GetObject(Index index) const
   {
-    const ObjectInstance **objs = (const ObjectInstance **) objects->data;
-    return objs[index];
+    // TODO CHECK RANGE
+    return objects[index];
   }
   void AddObject(const ObjectInstance *obj)
   {
     Box other_bounds;
     ObjGetBounds(obj, &other_bounds);
 
-    ArrPushPointer(objects, obj);
+    objects.push_back(obj);
+
     BoxAddBox(&bounds, other_bounds);
   }
   void ComputeBounds()
@@ -68,8 +65,7 @@ public:
   }
 
 private:
-  struct Array *objects;
-  //std::vector<ObjectInstance*> objects;
+  std::vector<const ObjectInstance*> objects;
   Box bounds;
 };
 
