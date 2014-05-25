@@ -56,7 +56,7 @@ struct PrimitiveSet {
     return get_primitive_count();
   }
 
-public:
+private:
   virtual bool ray_intersect(Index prim_id, Real time,
       const Ray &ray, Intersection *isect) const
   { return false; }

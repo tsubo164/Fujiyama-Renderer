@@ -10,9 +10,6 @@ See LICENSE and README
 #include "fj_memory.h"
 #include "fj_ray.h"
 
-// TODO REMOVE THIS
-#include <string.h>
-
 #define ATTRIBUTE_LIST(ATTR) \
   ATTR(Vertex, Vector,   P_,        Position) \
   ATTR(Vertex, Vector,   N_,        Normal) \
