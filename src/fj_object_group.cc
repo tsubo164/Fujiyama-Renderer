@@ -9,89 +9,132 @@ See LICENSE and README
 #include "fj_primitive_set.h"
 #include "fj_accelerator.h"
 #include "fj_interval.h"
-#include "fj_matrix.h"
-#include "fj_memory.h"
 #include "fj_ray.h"
 #include "fj_box.h"
 
 #include <vector>
-#include <cassert>
-#include <cstdio>
-#include <cfloat>
 
 namespace fj {
 
-class ObjectList {
+class ObjectSet : public PrimitiveSet {
 public:
-  ObjectList() : objects(), bounds()
-  {
-    BoxReverseInfinite(&bounds);
-  }
-  ~ObjectList()
-  {
-  }
+  ObjectSet();
+  ~ObjectSet();
 
-  Index GetObjectCount() const
-  {
-    return objects.size();
-  }
-  const Box &GetBounds() const
-  {
-    return bounds;
-  }
-  const ObjectInstance *GetObject(Index index) const
-  {
-    // TODO CHECK RANGE
-    return objects[index];
-  }
-  void AddObject(const ObjectInstance *obj)
-  {
-    Box other_bounds;
-    ObjGetBounds(obj, &other_bounds);
+  Index GetObjectCount() const;
 
-    objects.push_back(obj);
+  const ObjectInstance *GetObject(Index index) const;
+  void AddObject(const ObjectInstance *obj);
 
-    BoxAddBox(&bounds, other_bounds);
-  }
-  void ComputeBounds()
-  {
-    for (int i = 0; i < GetObjectCount(); i++) {
-      const ObjectInstance *obj = GetObject(i);
-      struct Box obj_bounds;
-
-      ObjGetBounds(obj, &obj_bounds);
-      BoxAddBox(&bounds, obj_bounds);
-    }
-  }
+  const Box &GetBounds() const;
+  void ComputeBounds();
 
 private:
-  std::vector<const ObjectInstance*> objects;
-  Box bounds;
+  virtual bool ray_intersect(Index prim_id, Real time,
+      const Ray &ray, Intersection *isect) const;
+  virtual void get_primitive_bounds(Index prim_id, Box *bounds) const;
+  virtual void get_bounds(Box *bounds) const;
+  virtual Index get_primitive_count() const;
+
+  std::vector<const ObjectInstance*> objects_;
+  Box bounds_;
 };
 
-static void object_bounds(const void *prim_set, int prim_id, struct Box *bounds);
-static int object_ray_intersect(const void *prim_set, int prim_id, double time,
-    const struct Ray *ray, struct Intersection *isect);
+ObjectSet::ObjectSet() : objects_(), bounds_()
+{
+  BoxReverseInfinite(&bounds_);
+}
+
+ObjectSet::~ObjectSet()
+{
+}
+
+Index ObjectSet::GetObjectCount() const
+{
+  return objects_.size();
+}
+
+const ObjectInstance *ObjectSet::GetObject(Index index) const
+{
+  // TODO CHECK RANGE
+  return objects_[index];
+}
+
+void ObjectSet::AddObject(const ObjectInstance *obj)
+{
+  Box other_bounds;
+  ObjGetBounds(obj, &other_bounds);
+
+  objects_.push_back(obj);
+
+  BoxAddBox(&bounds_, other_bounds);
+}
+
+const Box &ObjectSet::GetBounds() const
+{
+  return bounds_;
+}
+
+void ObjectSet::ComputeBounds()
+{
+  for (int i = 0; i < GetObjectCount(); i++) {
+    const ObjectInstance *obj = GetObject(i);
+    struct Box obj_bounds;
+
+    ObjGetBounds(obj, &obj_bounds);
+    BoxAddBox(&bounds_, obj_bounds);
+  }
+}
+
+bool ObjectSet::ray_intersect(Index prim_id, Real time,
+    const Ray &ray, Intersection *isect) const
+{
+  const ObjectInstance *obj = GetObject(prim_id);
+  return ObjIntersect(obj, time, &ray, isect);
+}
+
+void ObjectSet::get_primitive_bounds(Index prim_id, Box *bounds) const
+{
+  const ObjectInstance *obj = GetObject(prim_id);
+  ObjGetBounds(obj, bounds);
+}
+
+void ObjectSet::get_bounds(Box *bounds) const
+{
+  *bounds = GetBounds();
+}
+
+Index ObjectSet::get_primitive_count() const
+{
+  return GetObjectCount();
+}
+
+static void volume_bounds(const void *prim_set, int prim_id, struct Box *bounds);
 static int volume_ray_intersect(const void *prim_set, int prim_id, double time,
     const struct Ray *ray, struct Interval *interval);
-static void object_list_bounds(const void *prim_set, struct Box *bounds);
-static int object_count(const void *prim_set);
 
 class ObjectGroup {
 public:
   ObjectGroup();
   ~ObjectGroup();
 
-  ObjectList surface_list;
-  ObjectList volume_list;
+  void AddObject(const ObjectInstance *obj);
+  const Accelerator *GetSurfaceAccelerator() const;
+  const VolumeAccelerator *GetVolumeAccelerator() const;
+
+  void ComputeBounds();
+
+public:
+  ObjectSet surface_set;
+  ObjectSet volume_set;
 
   struct Accelerator *surface_acc;
   struct VolumeAccelerator *volume_acc;
 };
 
 ObjectGroup::ObjectGroup() : 
-    surface_list(),
-    volume_list(),
+    surface_set(),
+    volume_set(),
     surface_acc(NULL),
     volume_acc(NULL)
 {
@@ -103,6 +146,40 @@ ObjectGroup::~ObjectGroup()
 {
   AccFree(surface_acc);
   VolumeAccFree(volume_acc);
+}
+
+void ObjectGroup::AddObject(const ObjectInstance *obj)
+{
+  if (ObjIsSurface(obj)) {
+    surface_set.AddObject(obj);
+    AccSetPrimitiveSetPointer(surface_acc, &surface_set);
+  }
+  else if (ObjIsVolume(obj)) {
+    volume_set.AddObject(obj);
+
+    VolumeAccSetTargetGeometry(volume_acc,
+        &volume_set,
+        volume_set.GetObjectCount(),
+        &volume_set.GetBounds(),
+        volume_ray_intersect,
+        volume_bounds);
+  }
+}
+
+const Accelerator *ObjectGroup::GetSurfaceAccelerator() const
+{
+  return surface_acc;
+}
+
+const VolumeAccelerator *ObjectGroup::GetVolumeAccelerator() const
+{
+  return volume_acc;
+}
+
+void ObjectGroup::ComputeBounds()
+{
+  surface_set.ComputeBounds();
+  volume_set.ComputeBounds();
 }
 
 struct ObjectGroup *ObjGroupNew(void)
@@ -117,80 +194,37 @@ void ObjGroupFree(struct ObjectGroup *grp)
 
 void ObjGroupAdd(struct ObjectGroup *grp, const struct ObjectInstance *obj)
 {
-  if (ObjIsSurface(obj)) {
-    struct PrimitiveSet primset;
-    grp->surface_list.AddObject(obj);
-
-    MakePrimitiveSet(&primset,
-        "ObjectInstance:Surface",
-        &grp->surface_list,
-        object_ray_intersect,
-        object_bounds,
-        object_list_bounds,
-        object_count);
-    AccSetPrimitiveSet(grp->surface_acc, &primset);
-  }
-  else if (ObjIsVolume(obj)) {
-    grp->volume_list.AddObject(obj);
-
-    VolumeAccSetTargetGeometry(grp->volume_acc,
-        &grp->volume_list,
-        grp->volume_list.GetObjectCount(),
-        &grp->volume_list.GetBounds(),
-        volume_ray_intersect,
-        object_bounds);
-  }
+  grp->AddObject(obj);
 }
 
 const struct Accelerator *ObjGroupGetSurfaceAccelerator(const struct ObjectGroup *grp)
 {
-  return grp->surface_acc;
+  return grp->GetSurfaceAccelerator();
 }
 
 const struct VolumeAccelerator *ObjGroupGetVolumeAccelerator(const struct ObjectGroup *grp)
 {
-  return grp->volume_acc;
+  return grp->GetVolumeAccelerator();
 }
 
 void ObjGroupComputeBounds(struct ObjectGroup *grp)
 {
-  grp->surface_list.ComputeBounds();
-  grp->volume_list.ComputeBounds();
+  grp->ComputeBounds();
 }
 
-static void object_bounds(const void *prim_set, int prim_id, struct Box *bounds)
+static void volume_bounds(const void *prim_set, int prim_id, struct Box *bounds)
 {
-  const struct ObjectList *list = (const struct ObjectList *) prim_set;
-  const struct ObjectInstance *obj = list->GetObject(prim_id);
+  const ObjectSet *objset = (const ObjectSet *) prim_set;
+  const struct ObjectInstance *obj = objset->GetObject(prim_id);
   ObjGetBounds(obj, bounds);
-}
-
-static int object_ray_intersect(const void *prim_set, int prim_id, double time,
-    const struct Ray *ray, struct Intersection *isect)
-{
-  const struct ObjectList *list = (const struct ObjectList *) prim_set;
-  const struct ObjectInstance *obj = list->GetObject(prim_id);
-  return ObjIntersect(obj, time, ray, isect);
 }
 
 static int volume_ray_intersect(const void *prim_set, int prim_id, double time,
     const struct Ray *ray, struct Interval *interval)
 {
-  const struct ObjectList *list = (const struct ObjectList *) prim_set;
-  const struct ObjectInstance *obj = list->GetObject(prim_id);
+  const ObjectSet *objset = (const ObjectSet *) prim_set;
+  const struct ObjectInstance *obj = objset->GetObject(prim_id);
   return ObjVolumeIntersect(obj, time, ray, interval);
-}
-
-static void object_list_bounds(const void *prim_set, struct Box *bounds)
-{
-  const struct ObjectList *list = (const struct ObjectList *) prim_set;
-  *bounds = list->GetBounds();
-}
-
-static int object_count(const void *prim_set)
-{
-  const struct ObjectList *list = (const struct ObjectList *) prim_set;
-  return list->GetObjectCount();
 }
 
 } // namespace xxx

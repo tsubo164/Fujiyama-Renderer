@@ -8,6 +8,7 @@ See LICENSE and README
 #include <stddef.h>
 #include <float.h>
 
+#include <cstdio>
 namespace fj {
 
 const static struct Box null_bounds;
@@ -68,6 +69,7 @@ const char *PrmGetName(const struct PrimitiveSet *primset)
 
 int PrmGetPrimitiveCount(const struct PrimitiveSet *primset)
 {
+    printf("-------------- %p\n", primset);
   if (primset->PrimitiveCount != NULL) {
     return primset->PrimitiveCount(primset->data);
   } else {

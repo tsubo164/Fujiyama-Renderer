@@ -150,6 +150,7 @@ static int build_bvh_accel(DerivedAccelerator derived,
 
   bvh->root = build_bvh(primptrs, 0, NPRIMS, 0);
   if (bvh->root == NULL) {
+    // TODO NODE COULD BE NULL IF PRIMITIVE IS EMPTY. MIGHT BE BETTER CHANGE
     FJ_MEM_FREE(primptrs);
     FJ_MEM_FREE(prims);
     return -1;
@@ -180,6 +181,10 @@ static int intersect_bvh_recursive(const struct PrimitiveSet *primset,
   double boxhit_tmin;
   double boxhit_tmax;
   int hit_left, hit_right;
+
+  // TODO NODE COULD BE NULL IF PRIMITIVE IS EMPTY. MIGHT BE BETTER CHANGE
+  if (node == NULL)
+    return 0;
 
   const bool hit = BoxRayIntersect(node->bounds,
       ray->orig, ray->dir, ray->tmin, ray->tmax,
@@ -226,6 +231,10 @@ static int intersect_bvh_loop(const struct PrimitiveSet *primset,
 
   const struct BVHNode *node = root;
   struct BVHNodeStack stack = {0, {NULL}};
+
+  // TODO NODE COULD BE NULL IF PRIMITIVE IS EMPTY. MIGHT BE BETTER CHANGE
+  if (node == NULL)
+    return 0;
 
   isect_min = &isect_candidates[0];
   isect_tmp = &isect_candidates[1];
