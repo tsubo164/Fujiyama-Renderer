@@ -20,7 +20,7 @@ namespace fj {
 class FJ_API Mesh : public PrimitiveSet {
 public:
   Mesh();
-  ~Mesh();
+  virtual ~Mesh();
 
   int GetVertexCount() const;
   int GetFaceCount() const;

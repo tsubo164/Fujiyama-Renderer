@@ -20,6 +20,21 @@ namespace fj {
 
 static const double PADDING = .0001;
 
+class NullPrimitiveSet : public PrimitiveSet {
+public:
+  NullPrimitiveSet() {}
+  virtual ~NullPrimitiveSet() {}
+
+private:
+  virtual bool ray_intersect(Index prim_id, Real time,
+      const Ray &ray, Intersection *isect) const { return false; }
+  virtual void get_primitive_bounds(Index prim_id, Box *bounds) const {}
+  virtual void get_bounds(Box *bounds) const {}
+  virtual Index get_primitive_count() const { return 0; }
+};
+
+static NullPrimitiveSet null_primset;
+
 struct Accelerator {
   const char *name;
   struct Box bounds;
@@ -67,7 +82,8 @@ struct Accelerator *AccNew(int accelerator_type)
 
   // TODO THIS IS TEMPORARY
   //InitPrimitiveSet(&acc->primset__);
-  acc->primset = NULL;
+  // TODO acc->primset = NULL;
+  acc->primset = &null_primset;
   //InitPrimitiveSet(acc->primset);
   BoxReverseInfinite(&acc->bounds);
 

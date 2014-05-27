@@ -3,28 +3,38 @@ Copyright (c) 2011-2014 Hiroshi Tsubokawa
 See LICENSE and README
 */
 
-#ifndef FJ_OBJECTGROUP_H
-#define FJ_OBJECTGROUP_H
+#ifndef FJ_OBJECT_GROUP_H
+#define FJ_OBJECT_GROUP_H
 
-#include "fj_transform.h"
+#include "fj_object_set.h"
 
 namespace fj {
 
-struct ObjectGroup;
 struct ObjectInstance;
-
-struct Intersection;
+struct VolumeAccelerator;
 struct Accelerator;
-struct Ray;
 
-extern struct ObjectGroup *ObjGroupNew(void);
-extern void ObjGroupFree(struct ObjectGroup *grp);
+class ObjectGroup {
+public:
+  ObjectGroup();
+  ~ObjectGroup();
 
-extern void ObjGroupAdd(struct ObjectGroup *grp, const struct ObjectInstance *obj);
-extern const struct Accelerator *ObjGroupGetSurfaceAccelerator(const struct ObjectGroup *grp);
-extern const struct VolumeAccelerator *ObjGroupGetVolumeAccelerator(const struct ObjectGroup *grp);
+  void AddObject(const ObjectInstance *obj);
+  const Accelerator *GetSurfaceAccelerator() const;
+  const VolumeAccelerator *GetVolumeAccelerator() const;
 
-extern void ObjGroupComputeBounds(struct ObjectGroup *grp);
+  void ComputeBounds();
+
+private:
+  ObjectSet surface_set;
+  ObjectSet volume_set;
+
+  Accelerator *surface_acc;
+  VolumeAccelerator *volume_acc;
+};
+
+extern ObjectGroup *ObjGroupNew(void);
+extern void ObjGroupFree(ObjectGroup *grp);
 
 } // namespace xxx
 

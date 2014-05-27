@@ -20,7 +20,7 @@ namespace fj {
 class FJ_API Curve : public PrimitiveSet {
 public:
   Curve();
-  ~Curve();
+  virtual ~Curve();
 
   int GetVertexCount() const;
   int GetCurveCount() const;

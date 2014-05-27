@@ -289,7 +289,7 @@ Status SiAddObjectToGroup(ID group, ID object)
       return SI_FAIL;
   }
 
-  ObjGroupAdd(group_ptr, object_ptr);
+  group_ptr->AddObject(object_ptr);
 
   set_errno(SI_ERR_NONE);
   return SI_SUCCESS;
@@ -989,7 +989,7 @@ static int create_implicit_groups(void)
   N = ScnGetObjectInstanceCount(get_scene());
   for (i = 0; i < N; i++) {
     struct ObjectInstance *obj = ScnGetObjectInstance(get_scene(), i);
-    ObjGroupAdd(all_objects, obj);
+    all_objects->AddObject(obj);
   }
 
   /* Preparing ObjectInstance */
@@ -1015,7 +1015,7 @@ static int create_implicit_groups(void)
       if (self_group == NULL) {
         /* TODO error handling */
       }
-      ObjGroupAdd(self_group, obj);
+      self_group->AddObject(obj);
       ObjSetSelfHitTarget(obj, self_group);
     }
   }
@@ -1051,7 +1051,7 @@ static void compute_objects_bounds(void)
   N = ScnGetObjectGroupCount(get_scene());
   for (i = 0; i < N; i++) {
     struct ObjectGroup *grp = ScnGetObjectGroup(get_scene(), i);
-    ObjGroupComputeBounds(grp);
+    grp->ComputeBounds();
   }
 }
 
@@ -1080,8 +1080,9 @@ static void build_accelerators(void)
     struct Accelerator *mutable_acc = NULL;
     struct VolumeAccelerator *mutable_volume_acc = NULL;
 
-    mutable_acc = (struct Accelerator *) ObjGroupGetSurfaceAccelerator(grp);
-    mutable_volume_acc = (struct VolumeAccelerator *) ObjGroupGetVolumeAccelerator(grp);
+    // TODO TRY TO AVOID MUTABLE
+    mutable_acc = (struct Accelerator *) grp->GetSurfaceAccelerator();
+    mutable_volume_acc = (struct VolumeAccelerator *) grp->GetVolumeAccelerator();
 
     /* TODO come up with a better way */
     if (mutable_acc != NULL) {

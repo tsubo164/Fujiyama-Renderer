@@ -18,7 +18,7 @@ namespace fj {
 class FJ_API PointCloud : public PrimitiveSet {
 public:
   PointCloud();
-  ~PointCloud();
+  virtual ~PointCloud();
 
   int GetPointCount() const;
   void SetPointCount(int point_count);

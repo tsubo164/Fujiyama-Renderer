@@ -189,7 +189,7 @@ int SlSurfaceRayIntersect(const struct TraceContext *cxt,
   int hit = 0;
 
   setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
-  acc = ObjGroupGetSurfaceAccelerator(cxt->trace_target),
+  acc = cxt->trace_target->GetSurfaceAccelerator();
   hit = AccIntersect(acc, cxt->time, &ray, &isect);
 
   if (hit) {
@@ -515,7 +515,7 @@ static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
   out_rgba->g = 0;
   out_rgba->b = 0;
   out_rgba->a = 0;
-  acc = ObjGroupGetSurfaceAccelerator(cxt->trace_target),
+  acc = cxt->trace_target->GetSurfaceAccelerator();
   hit = AccIntersect(acc, cxt->time, ray, &isect);
 
   /* TODO handle shadow ray for surface geometry */
@@ -562,7 +562,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
     return 0;
   }
 
-  acc = ObjGroupGetVolumeAccelerator(cxt->trace_target);
+  acc = cxt->trace_target->GetVolumeAccelerator();
   hit = VolumeAccIntersect(acc, cxt->time, ray, intervals);
 
   if (!hit) {
