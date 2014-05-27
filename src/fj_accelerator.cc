@@ -28,8 +28,8 @@ public:
 private:
   virtual bool ray_intersect(Index prim_id, Real time,
       const Ray &ray, Intersection *isect) const { return false; }
-  virtual void get_primitive_bounds(Index prim_id, Box *bounds) const {}
-  virtual void get_bounds(Box *bounds) const {}
+  virtual void get_primitive_bounds(Index prim_id, Box *bounds) const { *bounds = Box(); }
+  virtual void get_bounds(Box *bounds) const { *bounds = Box(); }
   virtual Index get_primitive_count() const { return 0; }
 };
 
@@ -107,7 +107,7 @@ void AccGetBounds(const struct Accelerator *acc, struct Box *bounds)
 
 void AccComputeBounds(struct Accelerator *acc)
 {
-  PrmGetBounds(acc->primset, &acc->bounds);
+  acc->primset->GetBounds(&acc->bounds);
   BoxExpand(&acc->bounds, AccGetBoundsPadding());
 }
 

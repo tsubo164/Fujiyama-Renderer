@@ -121,10 +121,10 @@ static int build_grid_accel(DerivedAccelerator derived,
   const double PADDING = AccGetBoundsPadding();
   const double HALF_PADDING = .5 * PADDING;
 
-  PrmGetBounds(primset, &bounds);
+  primset->GetBounds(&bounds);
   BoxExpand(&bounds, PADDING);
 
-  NPRIMS = PrmGetPrimitiveCount(primset);
+  NPRIMS = primset->GetPrimitiveCount();
   compute_grid_cellsizes(NPRIMS, 
       bounds.max.x - bounds.min.x,
       bounds.max.y - bounds.min.y,
@@ -148,7 +148,7 @@ static int build_grid_accel(DerivedAccelerator derived,
     int primid = i;
     struct Box primbbox;
 
-    PrmGetPrimitiveBounds(primset, primid, &primbbox);
+    primset->GetPrimitiveBounds(primid, &primbbox);
     BoxExpand(&primbbox, HALF_PADDING);
 
     /* compute the ranges of cell indices. e.g. [X0 .. X1) */
@@ -413,7 +413,7 @@ static const char *get_grid_accel_name(void)
 static int prim_ray_intersect(const struct PrimitiveSet *primset, int prim_id,
     double time, const struct Ray *ray, struct Intersection *isect)
 {
-  const int hit = PrmRayIntersect(primset, prim_id, time, ray, isect);
+  const int hit = primset->RayIntersect(prim_id, time, *ray, isect);
 
   if (!hit) {
     isect->t_hit = FLT_MAX;

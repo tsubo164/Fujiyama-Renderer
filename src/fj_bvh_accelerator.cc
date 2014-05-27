@@ -121,7 +121,7 @@ static int build_bvh_accel(DerivedAccelerator derived,
   struct BVHAccelerator *bvh = (struct BVHAccelerator *) derived;
   struct Primitive *prims = NULL;
   struct Primitive **primptrs = NULL;
-  const int NPRIMS = PrmGetPrimitiveCount(primset);
+  const int NPRIMS = primset->GetPrimitiveCount();
   int i;
 
   if (NPRIMS == 0) {
@@ -139,7 +139,7 @@ static int build_bvh_accel(DerivedAccelerator derived,
   }
 
   for (i = 0; i < NPRIMS; i++) {
-    PrmGetPrimitiveBounds(primset, i, &prims[i].bounds);
+    primset->GetPrimitiveBounds(i, &prims[i].bounds);
     prims[i].centroid[0] = (prims[i].bounds.max.x + prims[i].bounds.min.x) / 2;
     prims[i].centroid[1] = (prims[i].bounds.max.y + prims[i].bounds.min.y) / 2;
     prims[i].centroid[2] = (prims[i].bounds.max.z + prims[i].bounds.min.z) / 2;
@@ -476,7 +476,7 @@ static const char *get_bvh_accel_name(void)
 static int prim_ray_intersect(const struct PrimitiveSet *primset, int prim_id,
     double time, const struct Ray *ray, struct Intersection *isect)
 {
-  const int hit = PrmRayIntersect(primset, prim_id, time, ray, isect);
+  const bool hit = primset->RayIntersect(prim_id, time, *ray, isect);
 
   if (!hit) {
     isect->t_hit = FLT_MAX;

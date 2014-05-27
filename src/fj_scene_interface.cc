@@ -383,7 +383,6 @@ ID SiNewPointCloud(const char *filename)
 {
   struct PointCloud *ptc = NULL;
   struct Accelerator *acc = NULL;
-  struct PrimitiveSet primset;
 
   ID ptc_id = SI_BADID;
   ID accel_id = SI_BADID;
@@ -554,7 +553,6 @@ ID SiNewCurve(const char *filename)
 {
   struct Curve *curve = NULL;
   struct Accelerator *acc = NULL;
-  struct PrimitiveSet primset;
 
   ID curve_id = SI_BADID;
   ID accel_id = SI_BADID;
@@ -623,7 +621,6 @@ ID SiNewMesh(const char *filename)
 {
   struct Mesh *mesh = NULL;
   struct Accelerator *acc = NULL;
-  struct PrimitiveSet primset;
 
   ID mesh_id = SI_BADID;
   ID accel_id = SI_BADID;
