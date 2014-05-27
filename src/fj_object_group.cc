@@ -38,7 +38,7 @@ void ObjectGroup::AddObject(const ObjectInstance *obj)
 {
   if (ObjIsSurface(obj)) {
     surface_set.AddObject(obj);
-    AccSetPrimitiveSetPointer(surface_acc, &surface_set);
+    AccSetPrimitiveSet(surface_acc, &surface_set);
   }
   else if (ObjIsVolume(obj)) {
     volume_set.AddObject(obj);

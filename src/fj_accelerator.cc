@@ -40,8 +40,6 @@ struct Accelerator {
   struct Box bounds;
   int has_built;
 
-  // TODO THIS IS TEMPORARY
-  struct PrimitiveSet primset__;
   struct PrimitiveSet *primset;
 
   /* private */
@@ -80,11 +78,7 @@ struct Accelerator *AccNew(int accelerator_type)
   acc->name = acc->GetDerivedName();
   acc->has_built = 0;
 
-  // TODO THIS IS TEMPORARY
-  //InitPrimitiveSet(&acc->primset__);
-  // TODO acc->primset = NULL;
   acc->primset = &null_primset;
-  //InitPrimitiveSet(acc->primset);
   BoxReverseInfinite(&acc->bounds);
 
   return acc;
@@ -164,14 +158,7 @@ int AccIntersect(const struct Accelerator *acc, double time,
   return acc->IntersectDerived(acc->derived, acc->primset, time, ray, isect);
 }
 
-void AccSetPrimitiveSet(struct Accelerator *acc, const struct PrimitiveSet *primset)
-{
-  acc->primset__ = *primset;
-  acc->primset = &acc->primset__;
-  AccComputeBounds(acc);
-}
-
-void AccSetPrimitiveSetPointer(struct Accelerator *acc, struct PrimitiveSet *primset)
+void AccSetPrimitiveSet(struct Accelerator *acc, struct PrimitiveSet *primset)
 {
   acc->primset = primset;
   AccComputeBounds(acc);
