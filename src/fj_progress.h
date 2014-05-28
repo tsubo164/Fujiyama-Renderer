@@ -6,26 +6,30 @@ See LICENSE and README
 #ifndef FJ_PROGRESS_H
 #define FJ_PROGRESS_H
 
-#include "fj_compatibility.h"
+#include "fj_types.h"
 
 namespace fj {
 
 typedef int64_t Iteration;
 
-typedef int ProgressStatus;
-enum {
+enum ProgressStatus {
   PROGRESS_ONGOING = 0,
   PROGRESS_DONE = 1
 };
 
-struct Progress {
-  Iteration total_iterations;
-  Iteration iteration;
-};
+class Progress {
+public:
+  Progress();
+  ~Progress();
 
-extern void PrgStart(struct Progress *progress, Iteration total_iterations);
-extern ProgressStatus PrgIncrement(struct Progress *progress);
-extern void PrgDone(struct Progress *progress);
+  void Start(Iteration total_iterations);
+  ProgressStatus Increment();
+  void Done();
+
+private:
+  Iteration total_iterations_;
+  Iteration iteration_;
+};
 
 } // namespace xxx
 

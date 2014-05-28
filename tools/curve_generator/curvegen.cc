@@ -144,7 +144,7 @@ int main(int argc, const char **argv)
   sourceN = VecAlloc(total_ncurves);
 
   printf("Computing curve's positions ...\n");
-  PrgStart(&progress, total_ncurves);
+  progress.Start(total_ncurves);
 
   curve_id = 0;
   for (i = 0; i < nfaces; i++) {
@@ -191,14 +191,14 @@ int main(int argc, const char **argv)
 
       curve_id++;
 
-      PrgIncrement(&progress);
+      progress.Increment();
     }
   }
   assert(curve_id == total_ncurves);
-  PrgDone(&progress);
+  progress.Done();
 
   printf("Generating curves ...\n");
-  PrgStart(&progress, total_ncurves);
+  progress.Start(total_ncurves);
 
   cp_id = 0;
   curve_id = 0;
@@ -262,10 +262,10 @@ int main(int argc, const char **argv)
     indices[curve_id] = 4*i;
     curve_id++;
 
-    PrgIncrement(&progress);
+    progress.Increment();
   }
   assert(cp_id == total_ncps);
-  PrgDone(&progress);
+  progress.Done();
 
   out = CrvOpenOutputFile(curvefile);
   if (out == NULL) {
@@ -434,7 +434,7 @@ static int gen_hair(int argc, const char **argv)
   sourceN = VecAlloc(total_ncurves);
 
   printf("Computing curve's positions ...\n");
-  PrgStart(&progress, total_ncurves / N_CURVES_PER_HAIR);
+  progress.Start(total_ncurves / N_CURVES_PER_HAIR);
 
   strand_id = 0;
   curve_id = 0;
@@ -566,11 +566,11 @@ static int gen_hair(int argc, const char **argv)
 
       strand_id++;
 
-      PrgIncrement(&progress);
+      progress.Increment();
     }
   }
   assert(strand_id == total_ncurves / N_CURVES_PER_HAIR);
-  PrgDone(&progress);
+  progress.Done();
 
   out = CrvOpenOutputFile(curvefile);
   if (out == NULL) {

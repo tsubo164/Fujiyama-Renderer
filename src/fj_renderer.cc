@@ -111,7 +111,7 @@ static Interrupt default_frame_start(void *data, const struct FrameInfo *info)
     int idx;
     fp->current_segment = 0;
     idx = fp->current_segment;
-    PrgStart(&fp->progress, fp->iteration_list[idx]);
+    fp->progress.Start(fp->iteration_list[idx]);
   }
 
   return CALLBACK_CONTINUE;
@@ -136,7 +136,7 @@ static Interrupt default_tile_start(void *data, const struct TileInfo *info)
 static void increment_progress(void *data)
 {
   struct FrameProgress *fp = (struct FrameProgress *) data;
-  const ProgressStatus status = PrgIncrement(&fp->progress);
+  const ProgressStatus status = fp->progress.Increment();
 
   if (status == PROGRESS_DONE) {
     Elapse elapse;
@@ -148,10 +148,10 @@ static void increment_progress(void *data)
 
     printf(" %3d%%  ", idx * 10); 
     printf("(%dh %dm %ds)\n", elapse.hour, elapse.min, elapse.sec);
-    PrgDone(&fp->progress);
+    fp->progress.Done();
 
     if (idx != 10) {
-      PrgStart(&fp->progress, fp->iteration_list[idx]);
+      fp->progress.Start(fp->iteration_list[idx]);
     }
   }
 }

@@ -177,7 +177,7 @@ static int FillWithSpecksAlongLine(struct Volume *volume,
   /* TODO should not be a point attribute? */
   NSPECKS = cp0->speck_count;
 
-  PrgStart(&progress, NSPECKS);
+  progress.Start(NSPECKS);
 
   for (i = 0; i < NSPECKS; i++) {
     struct WispsControlPoint cp_t;
@@ -215,9 +215,9 @@ static int FillWithSpecksAlongLine(struct Volume *volume,
     P_speck.z += noise.x * cp_t.udir.z + noise.y * cp_t.vdir.z + noise.z * cp_t.wdir.z;
 
     FillWithSphere(volume, &P_speck, cp_t.speck_radius, cp_t.density);
-    PrgIncrement(&progress);
+    progress.Increment();
   }
-  PrgDone(&progress);
+  progress.Done();
 
   return 0;
 }
