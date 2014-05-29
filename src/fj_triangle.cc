@@ -36,8 +36,9 @@ Vector TriComputeFaceNormal(const Vector &vert0, const Vector &vert1, const Vect
 {
   const Vector a = vert1 - vert0;
   const Vector b = vert2 - vert0;
+  Vector cross = Cross(a, b);
 
-  return Normalize(Cross(a, b));
+  return Normalize(&cross);
 }
 
 Vector TriComputeNormal( const Vector &N0, const Vector &N1, const Vector &N2,

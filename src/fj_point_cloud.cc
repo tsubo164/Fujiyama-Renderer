@@ -114,7 +114,8 @@ bool PointCloud::ray_intersect(Index prim_id, Real time,
   const Real t_hit = (t1 <= 0.) ? t1 : t0;
 
   isect->P = RayPointAt(ray, t_hit);
-  isect->N = Normalize(isect->P - center);
+  isect->N = isect->P - center;
+  Normalize(&isect->N);
 
   isect->object = NULL;
   isect->prim_id = prim_id;

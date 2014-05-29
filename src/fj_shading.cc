@@ -302,7 +302,7 @@ int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *samp
   }
 
   nml_axis = *axis;
-  nml_axis = Normalize(nml_axis);
+  Normalize(&nml_axis);
   cosangle = Dot(nml_axis, out->Ln);
   if (cosangle < cos(angle)) {
     return 0;
@@ -436,15 +436,15 @@ void SlBumpMapping(const struct Texture *bump_map,
   Bv = (val0 - val1) / (2 * dv);
 
   /* N ~= N + Bv(N x Pu) + Bu(N x Pv) */
-  VEC3_CROSS(&N_dPdu, N, dPdu);
-  VEC3_CROSS(&N_dPdv, N, dPdv);
+  N_dPdu = Cross(*N, *dPdu);
+  N_dPdv = Cross(*N, *dPdv);
   MUL(&N_dPdu, du);
   MUL(&N_dPdv, du);
   N_bump->x = N->x + amplitude * (Bv * N_dPdu.x - Bu * N_dPdv.x);
   N_bump->y = N->y + amplitude * (Bv * N_dPdu.y - Bu * N_dPdv.y);
   N_bump->z = N->z + amplitude * (Bv * N_dPdu.z - Bu * N_dPdv.z);
 
-  *N_bump = Normalize(*N_bump);
+  Normalize(N_bump);
 }
 #undef MUL
 

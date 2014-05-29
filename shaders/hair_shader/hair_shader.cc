@@ -119,7 +119,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     SlIlluminance(cxt, &samples[i], &in->P, &in->N, PI, in, &Lout);
 
     tangent = in->dPdv;
-    tangent = Normalize(tangent);
+    Normalize(&tangent);
 
     diff = kajiya_diffuse(&tangent, &Lout.Ln);
     spec = kajiya_specular(&tangent, &Lout.Ln, &in->I);

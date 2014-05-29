@@ -126,8 +126,8 @@ void Mesh::ComputeNormals()
 
   // normalize N
   for (int i = 0; i < nverts; i++) {
-    const Vector N = GetVertexNormal(i);
-    SetVertexNormal(i, Normalize(N));
+    Vector N = GetVertexNormal(i);
+    SetVertexNormal(i, Normalize(&N));
   }
 }
 

@@ -456,9 +456,9 @@ static void diffusion_scattering(const struct SSSShader *sss,
     up.z = 0;
   }
 
-  VEC3_CROSS(&base1, N, &up);
+  base1 = Cross(*N, up);
   Normalize(&base1);
-  VEC3_CROSS(&base2, N, &base1);
+  base2 = Cross(*N, base1);
 
   for (i = 0; i < nsamples; i++) {
     struct XorShift *mutable_xr = (struct XorShift *) &sss->xr;

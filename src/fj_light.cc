@@ -280,7 +280,7 @@ static void grid_light_get_samples(const struct Light *light,
   XfmLerpTransformSample(&light->transform_samples, 0, &transform_interp);
 
   XfmTransformVector(&transform_interp, &N_sample);
-  N_sample = Normalize(N_sample);
+  Normalize(&N_sample);
 
   nsamples = Min(nsamples, max_samples);
   for (i = 0; i < nsamples; i++) {
@@ -310,7 +310,7 @@ static void grid_light_illuminate(const struct Light *light,
   Ln.y = Ps->y - sample->P.y;
   Ln.z = Ps->z - sample->P.z;
 
-  Ln = Normalize(Ln);
+  Normalize(&Ln);
 
   dot = Dot(Ln, sample->N);
   if (light->double_sided) {
@@ -355,7 +355,7 @@ static void sphere_light_get_samples(const struct Light *light,
 
     XfmTransformPoint(&transform_interp, &P_sample);
     XfmTransformVector(&transform_interp, &N_sample);
-    N_sample = Normalize(N_sample);
+    Normalize(&N_sample);
 
     samples[i].P = P_sample;
     samples[i].N = N_sample;
@@ -374,7 +374,7 @@ static void sphere_light_illuminate(const struct Light *light,
   Ln.y = Ps->y - sample->P.y;
   Ln.z = Ps->z - sample->P.z;
 
-  Ln = Normalize(Ln);
+  Normalize(&Ln);
 
   dot = Dot(Ln, sample->N);
 
@@ -458,7 +458,7 @@ static int dome_light_preprocess(struct Light *light)
     sample->color.g = .63;
     sample->color.b = .63;
     sample->dir = Vector(1./NSAMPLES, 1, 1./NSAMPLES);
-    sample->dir = Normalize(sample->dir);
+    Normalize(&sample->dir);
   }
 
   if (light->environment_map == NULL) {

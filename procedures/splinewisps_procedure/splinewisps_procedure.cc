@@ -123,8 +123,8 @@ static int MyRun(void *self)
   cp0.wdir.x = cp1.orig.x - cp0.orig.x;
   cp0.wdir.y = cp1.orig.y - cp0.orig.y;
   cp0.wdir.z = cp1.orig.z - cp0.orig.z;
-  VEC3_CROSS(&cp0.udir, &cp0.wdir, &cp0.vdir);
-  VEC3_CROSS(&cp0.vdir, &cp0.udir, &cp0.wdir);
+  cp0.udir = Cross(cp0.wdir, cp0.vdir);
+  cp0.vdir = Cross(cp0.udir, cp0.wdir);
   Normalize(&cp0.udir);
   Normalize(&cp0.vdir);
   Normalize(&cp0.wdir);

@@ -261,7 +261,7 @@ int ObjIntersect(const struct ObjectInstance *obj, double time,
   /* transform intersection back to world space */
   XfmTransformPoint(&transform_interp, &isect->P);
   XfmTransformVector(&transform_interp, &isect->N);
-  isect->N = Normalize(isect->N);
+  Normalize(&isect->N);
 
   XfmTransformVector(&transform_interp, &isect->dPdu);
   XfmTransformVector(&transform_interp, &isect->dPdv);
