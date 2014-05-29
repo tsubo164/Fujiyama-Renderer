@@ -5,10 +5,7 @@ See LICENSE and README
 
 #include "fj_noise.h"
 #include "fj_vector.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <limits.h>
+#include <cmath>
 
 #define PERMUTAION \
 151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69, \
@@ -29,78 +26,83 @@ namespace fj {
 
 static const int perm[] = {
   PERMUTAION,
-  /* repeat */
+  // repeat
   PERMUTAION
 };
 
-static double fade(double t);
-static double lerp(double t, double a, double b);
-static double grad(int hash, double x, double y, double z); 
-
-extern double PerlinNoise(const struct Vector *position,
-    double lacunarity, double persistence, int octaves)
+Real PerlinNoise(const struct Vector &position,
+    Real lacunarity, Real persistence, int octaves)
 {
-  struct Vector P;
-  double noise_value = 0;
-  double amp = 1;
-  int i;
+  Vector P = position;
+  Real noise_value = 0;
+  Real amp = 1;
 
-  P.x = position->x;
-  P.y = position->y;
-  P.z = position->z;
-
-  for (i = 0; i < octaves; i++) {
+  for (int i = 0; i < octaves; i++) {
     noise_value += amp * PeriodicNoise3d(P.x, P.y, P.z);
 
     amp *= persistence;
-    P.x *= lacunarity;
-    P.y *= lacunarity;
-    P.z *= lacunarity;
+    P   *= lacunarity;
   }
 
   return noise_value;
 }
 
-void PerlinNoise3d(const struct Vector *position,
-    double lacunarity, double persistence, int octaves,
-    struct Vector *P_out)
+Vector PerlinNoise3d(const struct Vector &position,
+    Real lacunarity, Real persistence, int octaves)
 {
-  struct Vector P;
+  Vector P_out;
+  Vector P;
 
-  P.x = position->x;
-  P.y = position->y;
-  P.z = position->z;
-  P_out->x = PerlinNoise(&P, lacunarity, persistence, octaves);
+  P = position;
+  P_out.x = PerlinNoise(P, lacunarity, persistence, octaves);
 
-  P.x = position->x + 131.977;
-  P.y = position->y + 21.1823;
-  P.z = position->z + 71.0231;
-  P_out->y = PerlinNoise(&P, lacunarity, persistence, octaves);
+  P = position + Vector(131.977, 21.1823, 71.0231);
+  P_out.y = PerlinNoise(P, lacunarity, persistence, octaves);
 
-  P.x = position->x + 237.492;
-  P.y = position->y + 11.1312;
-  P.z = position->z + 133.129;
-  P_out->z = PerlinNoise(&P, lacunarity, persistence, octaves);
+  P = position + Vector(237.492, 11.1312, 133.129);
+  P_out.z = PerlinNoise(P, lacunarity, persistence, octaves);
+
+  return P_out;
 }
 
-double PeriodicNoise3d(double x, double y, double z)
+static inline Real fade(Real t)
 {
-  /* Find unit cube that contains point. */
+  return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+static inline Real lerp(Real t, Real a, Real b)
+{
+  return a + t * (b - a);
+}
+
+static inline Real grad(int hash, Real x, Real y, Real z) 
+{
+  // Convert lo 4 bits of hash code into 12 gradient directions.
+  const int h = hash & 15;
+  const Real u = h < 8 ? x : y;
+  const Real v = h < 4 ? y : h==12 || h==14 ? x : z;
+
+  return ((h&1) == 0 ? u : -u) + ((h&2) == 0 ? v : -v);
+}
+
+Real PeriodicNoise3d(Real x, Real y, Real z)
+{
+  // Find unit cube that contains point.
   const int X = (int) floor(x) & 255;
   const int Y = (int) floor(y) & 255;
   const int Z = (int) floor(z) & 255;
 
-  /* Find relative x,y,z of point in cube. */
-  const double xx = x - floor(x);
-  const double yy = y - floor(y);
-  const double zz = z - floor(z);
+  // Find relative x,y,z of point in cube.
+  const Real xx = x - floor(x);
+  const Real yy = y - floor(y);
+  const Real zz = z - floor(z);
 
-  /* Compute fade curves for each of x,y,z. */
-  const double u = fade(xx);
-  const double v = fade(yy);
-  const double w = fade(zz);
+  // Compute fade curves for each of x,y,z.
+  const Real u = fade(xx);
+  const Real v = fade(yy);
+  const Real w = fade(zz);
 
-  /* Hash coordinates of the 8 cube corners. */
+  // Hash coordinates of the 8 cube corners.
   const int A =  perm[X] + Y;
   const int AA = perm[A] + Z;
   const int AB = perm[A + 1] + Z;
@@ -108,8 +110,8 @@ double PeriodicNoise3d(double x, double y, double z)
   const int BA = perm[B] + Z;
   const int BB = perm[B + 1] + Z;
 
-  /* Add blended results from 8 corners of cube */
-  const double result = 
+  // Add blended results from 8 corners of cube.
+  const Real result = 
     lerp(w,
       lerp(v,
         lerp(u, grad(perm[AA],   xx,   yy,   zz),
@@ -123,26 +125,6 @@ double PeriodicNoise3d(double x, double y, double z)
             grad(perm[BB+1], xx-1, yy-1, zz-1))));
 
   return result;
-}
-
-static double fade(double t)
-{
-  return t * t * t * (t * (t * 6 - 15) + 10);
-}
-
-static double lerp(double t, double a, double b)
-{
-  return a + t * (b - a);
-}
-
-static double grad(int hash, double x, double y, double z) 
-{
-  /* Convert lo 4 bits of hash code into 12 gradient directions. */
-  const int h = hash & 15;
-  const double u = h < 8 ? x : y;
-  const double v = h < 4 ? y : h==12 || h==14 ? x : z;
-
-  return ((h&1) == 0 ? u : -u) + ((h&2) == 0 ? v : -v);
 }
 
 } // namespace xxx

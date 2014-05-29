@@ -261,7 +261,7 @@ static void compute_filter_size(struct Volume *volume)
   voxelsize.y = volume->size.y / volume->buffer->res.y;
   voxelsize.z = volume->size.z / volume->buffer->res.z;
 
-  volume->filtersize = VEC3_LEN(&voxelsize);
+  volume->filtersize = Length(voxelsize);
 }
 
 static void set_buffer_value(struct VoxelBuffer *buffer, int x, int y, int z, float value)

@@ -25,9 +25,9 @@ void LerpWispConstrolPoint(struct WispsControlPoint *cp,
   VEC3_LERP(&cp->vdir, &cp0->vdir, &cp1->vdir, t);
   VEC3_LERP(&cp->wdir, &cp0->wdir, &cp1->wdir, t);
   VEC3_LERP(&cp->noise_space, &cp0->noise_space, &cp1->noise_space, t);
-  VEC3_NORMALIZE(&cp->udir);
-  VEC3_NORMALIZE(&cp->vdir);
-  VEC3_NORMALIZE(&cp->wdir);
+  cp->udir = Normalize(cp->udir);
+  cp->vdir = Normalize(cp->vdir);
+  cp->wdir = Normalize(cp->wdir);
 
   cp->density = Lerp(cp0->density, cp1->density, t);
   cp->radius = Lerp(cp0->radius, cp1->radius, t);
@@ -48,9 +48,9 @@ extern void BilerpWispConstrolPoint(struct WispsControlPoint *cp,
   VEC3_BILERP(&cp->wdir, &cp00->wdir, &cp10->wdir, &cp01->wdir, &cp11->wdir, s, t);
   VEC3_BILERP(&cp->noise_space, &cp00->noise_space, &cp10->noise_space,
       &cp01->noise_space, &cp11->noise_space, s, t);
-  VEC3_NORMALIZE(&cp->udir);
-  VEC3_NORMALIZE(&cp->vdir);
-  VEC3_NORMALIZE(&cp->wdir);
+  cp->udir = Normalize(cp->udir);
+  cp->vdir = Normalize(cp->vdir);
+  cp->wdir = Normalize(cp->wdir);
 
   cp->density = Bilerp(cp00->density, cp10->density, cp01->density, cp11->density, s, t);
   cp->radius = Bilerp(cp00->radius, cp10->radius, cp01->radius, cp11->radius, s, t);
@@ -88,7 +88,7 @@ void FillWithSphere(struct Volume *volume,
         P.z -= center->z;
 
         value = VolGetValue(volume, i, j, k);
-        value += density * Fit(VEC3_LEN(&P) - radius,
+        value += density * Fit(Length(P) - radius,
             -thresholdwidth, thresholdwidth, 1, 0);
         VolSetValue(volume, i, j, k, value);
       }

@@ -240,7 +240,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     const struct TraceContext refl_cxt = SlReflectContext(cxt, in->shaded_object);
 
     SlReflect(&in->I, &in->N, &R);
-    VEC3_NORMALIZE(&R);
+    Normalize(&R);
     /* TODO fix hard-coded trace distance */
     SlTrace(&refl_cxt, &in->P, &R, .001, 1000, &C_refl, &t_hit);
 
@@ -313,14 +313,14 @@ static void single_scattering(const struct SSSShader *sss,
   Ln.x = light_sample->P.x - P->x;
   Ln.y = light_sample->P.y - P->y;
   Ln.z = light_sample->P.z - P->z;
-  VEC3_NORMALIZE(&Ln);
+  Normalize(&Ln);
 
   Li.x = -Ln.x;
   Li.y = -Ln.y;
   Li.z = -Ln.z;
 
   SlRefract(&in->I, &in->N, one_over_eta, &To);
-  VEC3_NORMALIZE(&To);
+  Normalize(&To);
 
   for (i = 0; i < nsamples; i++) {
     struct XorShift *mutable_xr = (struct XorShift *) &sss->xr;
@@ -363,22 +363,22 @@ static void single_scattering(const struct SSSShader *sss,
       }
 
       si = t_hit;
-      Ln_dot_Ni = VEC3_DOT(&Ln, &Ni);
+      Ln_dot_Ni = Dot(Ln, Ni);
 
       sp_i = si * Ln_dot_Ni /
           sqrt(1 - one_over_eta * one_over_eta * (1 - Ln_dot_Ni * Ln_dot_Ni));
 
       SlRefract(&Li, &Ni, one_over_eta, &Ti);
-      VEC3_NORMALIZE(&Ti);
+      Normalize(&Ti);
 
       Kri = SlFresnel(&Li, &Ni, one_over_eta);
       Kti = 1 - Kri;
 
-      Ti_dot_To = VEC3_DOT(&Ti, &To);
+      Ti_dot_To = Dot(Ti, To);
       phase = (1 - g_sq) / pow(1 + 2 * g * Ti_dot_To + g_sq, 1.5);
 
-      Ni_dot_To = VEC3_DOT(&Ni, &To);
-      Ni_dot_Ti = VEC3_DOT(&Ni, &Ti);
+      Ni_dot_To = Dot(Ni, To);
+      Ni_dot_Ti = Dot(Ni, Ti);
       G = Abs(Ni_dot_To) / Abs(Ni_dot_Ti);
 
       SlIlluminance(cxt, light_sample, &Pi, &Ni, PI / 2., in, &Lout);
@@ -443,13 +443,13 @@ static void diffusion_scattering(const struct SSSShader *sss,
   Ln.x = light_sample->P.x - P->x;
   Ln.y = light_sample->P.y - P->y;
   Ln.z = light_sample->P.z - P->z;
-  VEC3_NORMALIZE(&Ln);
+  Normalize(&Ln);
 
   N_neg.x = -N->x;
   N_neg.y = -N->y;
   N_neg.z = -N->z;
 
-  local_dot_up = VEC3_DOT(N, &up);
+  local_dot_up = Dot(*N, up);
   if (Abs(local_dot_up) > .9) {
     up.x = 1;
     up.y = 0;
@@ -457,7 +457,7 @@ static void diffusion_scattering(const struct SSSShader *sss,
   }
 
   VEC3_CROSS(&base1, N, &up);
-  VEC3_NORMALIZE(&base1);
+  Normalize(&base1);
   VEC3_CROSS(&base2, N, &base1);
 
   for (i = 0; i < nsamples; i++) {
@@ -514,7 +514,7 @@ static void diffusion_scattering(const struct SSSShader *sss,
 
       SlIlluminance(cxt, light_sample, &Pi, &Ni, PI / 2., in, &Lout);
 
-      r = VEC3_LEN(&P_Pi);
+      r = Length(P_Pi);
       zr = sqrt(3 * (1 - alpha_prime[j])) / sigma_tr[j];
       zv = A * zr;
       dr = sqrt(r * r + zr * zr); /* distance to positive light */
@@ -524,7 +524,7 @@ static void diffusion_scattering(const struct SSSShader *sss,
       Rd = (sigma_tr_dr + 1) * exp(-sigma_tr_dr) * zr / pow(dr, 3) +
          (sigma_tr_dv + 1) * exp(-sigma_tr_dv) * zr / pow(dv, 3);
 
-      Ln_dot_Ni = VEC3_DOT(&Ln, &Ni);
+      Ln_dot_Ni = Dot(Ln, Ni);
       Ln_dot_Ni = Max(0, Ln_dot_Ni);
 
       scat = sigma_tr[j] * sigma_tr[j] * exp(-sigma_tr[j] * r);

@@ -119,7 +119,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     SlIlluminance(cxt, &samples[i], &in->P, &in->N, PI, in, &Lout);
 
     tangent = in->dPdv;
-    VEC3_NORMALIZE(&tangent);
+    tangent = Normalize(tangent);
 
     diff = kajiya_diffuse(&tangent, &Lout.Ln);
     spec = kajiya_specular(&tangent, &Lout.Ln, &in->I);
@@ -200,7 +200,7 @@ static int set_reflect(void *self, const struct PropertyValue *value)
 
 static float kajiya_diffuse(const struct Vector *tangent, const struct Vector *Ln)
 {
-  const float TL = VEC3_DOT(tangent, Ln);
+  const float TL = Dot(*tangent, *Ln);
   const float diff = sqrt(1-TL*TL);
 
   return diff;
@@ -211,8 +211,8 @@ static float kajiya_specular(const struct Vector *tangent,
 {
   float spec = 0;
   const float roughness = .05;
-  const float TL = VEC3_DOT(tangent, Ln);
-  const float TI = VEC3_DOT(tangent, I);
+  const float TL = Dot(*tangent, *Ln);
+  const float TI = Dot(*tangent, *I);
 
   assert(-1 <= TL && TL <= 1);
   assert(-1 <= TI && TI <= 1);

@@ -98,22 +98,22 @@ static int MyRun(void *self)
     return -1;
   }
 
-  VEC3_SET(&cp0.orig, -.75, -.5, .75);
-  VEC3_SET(&cp0.udir, 1, 0, 0);
-  VEC3_SET(&cp0.vdir, 0, 1, 0);
-  VEC3_SET(&cp0.wdir, 0, 0, 1);
-  VEC3_SET(&cp0.noise_space, 0, 0, 0);
+  cp0.orig = Vector(-.75, -.5, .75);
+  cp0.udir = Vector(1, 0, 0);
+  cp0.vdir = Vector(0, 1, 0);
+  cp0.wdir = Vector(0, 0, 1);
+  cp0.noise_space = Vector(0, 0, 0);
   cp0.density = 1;
   cp0.radius = .5;
   cp0.noise_amplitude = 1;
   cp0.speck_count = 100000 * 100;
   cp0.speck_radius = .01 * .5;
 
-  VEC3_SET(&cp1.orig, .75, .5, -.75);
-  VEC3_SET(&cp1.udir, 1, 0, 0);
-  VEC3_SET(&cp1.vdir, 0, 1, 0);
-  VEC3_SET(&cp1.wdir, 0, 0, 1);
-  VEC3_SET(&cp1.noise_space, 0, 0, 1);
+  cp1.orig = Vector(.75, .5, -.75);
+  cp1.udir = Vector(1, 0, 0);
+  cp1.vdir = Vector(0, 1, 0);
+  cp1.wdir = Vector(0, 0, 1);
+  cp1.noise_space = Vector(0, 0, 1);
   cp1.density = 1;
   cp1.radius = .25;
   cp1.noise_amplitude = 1;
@@ -125,9 +125,9 @@ static int MyRun(void *self)
   cp0.wdir.z = cp1.orig.z - cp0.orig.z;
   VEC3_CROSS(&cp0.udir, &cp0.wdir, &cp0.vdir);
   VEC3_CROSS(&cp0.vdir, &cp0.udir, &cp0.wdir);
-  VEC3_NORMALIZE(&cp0.udir);
-  VEC3_NORMALIZE(&cp0.vdir);
-  VEC3_NORMALIZE(&cp0.wdir);
+  Normalize(&cp0.udir);
+  Normalize(&cp0.vdir);
+  Normalize(&cp0.wdir);
 
   cp1.udir = cp0.udir;
   cp1.vdir = cp0.vdir;

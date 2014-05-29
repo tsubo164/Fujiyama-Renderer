@@ -294,7 +294,7 @@ int ObjBufferComputeNormals(struct ObjBuffer *buffer)
   /* initialize N */
   for (i = 0; i < nverts; i++) {
     struct Vector *nml = &N[i];
-    VEC3_SET(nml, 0, 0, 0);
+    *nml = Vector();
   }
 
   /* compute N */
@@ -331,7 +331,7 @@ int ObjBufferComputeNormals(struct ObjBuffer *buffer)
   /* normalize N */
   for (i = 0; i < nverts; i++) {
     struct Vector *nml = &N[i];
-    VEC3_NORMALIZE(nml);
+    Normalize(nml);
   }
 
   return 0;

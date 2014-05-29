@@ -91,7 +91,7 @@ int main(int argc, const char **argv)
       center.x *= 2.5;
       center.y *= 2.5;
       center.z *= 2.5;
-      noise_val = PerlinNoise(&center, 2, .5, 8);
+      noise_val = PerlinNoise(center, 2, .5, 8);
       noise_val = Fit(noise_val, -.2, 1, 0, 1);
 
       area = TriComputeArea(P0, P1, P2);
@@ -190,7 +190,7 @@ static void noise_position(struct Vector *P, const struct Vector *N, struct Vect
   struct Vector P_offset;
   double noise_amp = 0;
 
-  PerlinNoise3d(P, 2, .5, 8, &noise_vec);
+  noise_vec = PerlinNoise3d(*P, 2, .5, 8);
 
   noise_vec.x += N->x;
   noise_vec.y += N->y;
@@ -200,7 +200,7 @@ static void noise_position(struct Vector *P, const struct Vector *N, struct Vect
   P_offset.y = P->y - 24.31 + .2;
   P_offset.z = P->z + 123.4;
 
-  noise_amp = PerlinNoise(&P_offset, 2, .5, 8);
+  noise_amp = PerlinNoise(P_offset, 2, .5, 8);
   noise_amp = Fit(noise_amp, .2, 1, 0, 1);
 
   P->x += noise_amp * noise_vec.x;

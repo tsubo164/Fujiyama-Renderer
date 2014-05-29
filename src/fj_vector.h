@@ -7,7 +7,6 @@ See LICENSE and README
 #define FJ_VECTOR_H
 
 #include "fj_types.h"
-#include <cstdlib>
 #include <cmath>
 
 namespace fj {
@@ -171,6 +170,14 @@ inline Real Length(const Vector &a)
     a.z * a.z);
 }
 
+inline void Normalize(Vector *a)
+{
+  const Real len = Length(*a);
+  if (len == 0)
+    return;
+  *a /= len;
+}
+
 inline Vector Normalize(const Vector &a)
 {
   const Real len = Length(a);
@@ -205,6 +212,7 @@ extern void VecPrint(const struct Vector *a);
 #define VEC2_DOT(a,b) ((a)->x * (b)->x + (a)->y * (b)->y)
 
 /* VEC3 */
+#if 0
 #define VEC3_SET(dst,X,Y,Z) do { \
   (dst)->x = (X); \
   (dst)->y = (Y); \
@@ -223,6 +231,7 @@ extern void VecPrint(const struct Vector *a);
   (a)->y *= len; \
   (a)->z *= len; \
   } while(0)
+#endif
 
 #define VEC3_CROSS(dst,a,b) do { \
   (dst)->x = (a)->y * (b)->z - (a)->z * (b)->y; \

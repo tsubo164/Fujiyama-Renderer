@@ -41,7 +41,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 
 void SlFaceforward(const struct Vector *I, const struct Vector *N, struct Vector *Nf)
 {
-  if (VEC3_DOT(I, N) < 0) {
+  if (Dot(*I, *N) < 0) {
     *Nf = *N;
     return;
   }
@@ -58,7 +58,7 @@ double SlFresnel(const struct Vector *I, const struct Vector *N, double ior)
   double cos = 0;
 
   /* dot(-I, N) */
-  cos = -1 * VEC3_DOT(I, N);
+  cos = -1 * Dot(*I, *N);
   if (cos > 0) {
     eta = ior;
   } else {
@@ -80,7 +80,7 @@ double SlPhong(const struct Vector *I, const struct Vector *N, const struct Vect
 
   SlReflect(L, N, &Lrefl);
 
-  spec = VEC3_DOT(I, &Lrefl);
+  spec = Dot(*I, Lrefl);
   spec = Max(0., spec);
   spec = pow(spec, 1/Max(.001, roughness));
 
@@ -90,7 +90,7 @@ double SlPhong(const struct Vector *I, const struct Vector *N, const struct Vect
 void SlReflect(const struct Vector *I, const struct Vector *N, struct Vector *R)
 {
   /* dot(-I, N) */
-  const double cos = -1 * VEC3_DOT(I, N);
+  const double cos = -1 * Dot(*I, *N);
 
   R->x = I->x + 2 * cos * N->x;
   R->y = I->y + 2 * cos * N->y;
@@ -107,7 +107,7 @@ void SlRefract(const struct Vector *I, const struct Vector *N, double ior,
   double eta = 0;
 
   /* dot(-I, N) */
-  cos1 = -1 * VEC3_DOT(I, N);
+  cos1 = -1 * Dot(*I, *N);
   if (cos1 < 0) {
     cos1 *= -1;
     eta = 1/ior;
@@ -293,7 +293,7 @@ int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *samp
   out->Ln.y = sample->P.y - Ps->y;
   out->Ln.z = sample->P.z - Ps->z;
 
-  out->distance = VEC3_LEN(&out->Ln);
+  out->distance = Length(out->Ln);
   if (out->distance > 0) {
     const double inv_dist = 1. / out->distance;
     out->Ln.x *= inv_dist;
@@ -302,8 +302,8 @@ int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *samp
   }
 
   nml_axis = *axis;
-  VEC3_NORMALIZE(&nml_axis);
-  cosangle = VEC3_DOT(&nml_axis, &out->Ln);
+  nml_axis = Normalize(nml_axis);
+  cosangle = Dot(nml_axis, out->Ln);
   if (cosangle < cos(angle)) {
     return 0;
   }
@@ -444,7 +444,7 @@ void SlBumpMapping(const struct Texture *bump_map,
   N_bump->y = N->y + amplitude * (Bv * N_dPdu.y - Bu * N_dPdv.y);
   N_bump->z = N->z + amplitude * (Bv * N_dPdu.z - Bu * N_dPdv.z);
 
-  VEC3_NORMALIZE(N_bump);
+  *N_bump = Normalize(*N_bump);
 }
 #undef MUL
 
@@ -631,7 +631,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 
           in.shaded_object = interval->object;
           in.P = P;
-          VEC3_SET(&in.N, 0, 0, 0);
+          in.N = Vector(0, 0, 0);
           ShdEvaluate(ObjGetShader(interval->object), cxt, &in, &out);
 
           color.r = out.Cs.r * opacity;

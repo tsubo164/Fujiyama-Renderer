@@ -29,9 +29,9 @@ void XfmReset(struct Transform *transform)
   transform->transform_order = ORDER_SRT;
   transform->rotate_order = ORDER_XYZ;
 
-  VEC3_SET(&transform->translate, 0, 0, 0);
-  VEC3_SET(&transform->rotate, 0, 0, 0);
-  VEC3_SET(&transform->scale, 1, 1, 1);
+  transform->translate = Vector(0, 0, 0);
+  transform->rotate    = Vector(0, 0, 0);
+  transform->scale     = Vector(1, 1, 1);
 }
 
 void XfmTransformPoint(const struct Transform *transform, struct Vector *point)
@@ -66,19 +66,19 @@ void XfmTransformBoundsInverse(const struct Transform *transform, struct Box *bo
 
 void XfmSetTranslate(struct Transform *transform, double tx, double ty, double tz)
 {
-  VEC3_SET(&transform->translate, tx, ty, tz);
+  transform->translate = Vector(tx, ty, tz);
   update_matrix(transform);
 }
 
 void XfmSetRotate(struct Transform *transform, double rx, double ry, double rz)
 {
-  VEC3_SET(&transform->rotate, rx, ry, rz);
+  transform->rotate = Vector(rx, ry, rz);
   update_matrix(transform);
 }
 
 void XfmSetScale(struct Transform *transform, double sx, double sy, double sz)
 {
-  VEC3_SET(&transform->scale, sx, sy, sz);
+  transform->scale = Vector(sx, sy, sz);
   update_matrix(transform);
 }
 
@@ -104,9 +104,9 @@ void XfmSetTransform(struct Transform *transform,
 {
   transform->transform_order = transform_order;
   transform->rotate_order = rotate_order;
-  VEC3_SET(&transform->translate, tx, ty, tz);
-  VEC3_SET(&transform->rotate, rx, ry, rz);
-  VEC3_SET(&transform->scale, sx, sy, sz);
+  transform->translate = Vector(tx, ty, tz);
+  transform->rotate = Vector(rx, ry, rz);
+  transform->scale = Vector(sx, sy, sz);
   update_matrix(transform);
 }
 

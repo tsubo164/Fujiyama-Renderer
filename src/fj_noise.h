@@ -6,18 +6,20 @@ See LICENSE and README
 #ifndef FJ_NOISE_H
 #define FJ_NOISE_H
 
+#include "fj_compatibility.h"
+#include "fj_types.h"
+
 namespace  fj {
 
 struct Vector;
 
-extern double PerlinNoise(const struct Vector *position,
-    double lacunarity, double persistence, int octaves);
+FJ_API Real PerlinNoise(const Vector &position,
+    Real lacunarity, Real persistence, int octaves);
 
-extern void PerlinNoise3d(const struct Vector *position,
-    double lacunarity, double persistence, int octaves,
-    struct Vector *P_out);
+FJ_API Vector PerlinNoise3d(const Vector &position,
+    Real lacunarity, Real persistence, int octaves);
 
-extern double PeriodicNoise3d(double x, double y, double z);
+FJ_API Real PeriodicNoise3d(Real x, Real y, Real z);
 
 } // namespace xxx
 

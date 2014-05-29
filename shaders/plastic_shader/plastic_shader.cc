@@ -147,7 +147,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     */
 
     /* diff */
-    Kd = VEC3_DOT(&Nf, &Lout.Ln);
+    Kd = Dot(Nf, Lout.Ln);
     Kd = Max(0, Kd);
     diff.r += Kd * Lout.Cl.r;
     diff.g += Kd * Lout.Cl.g;
@@ -177,7 +177,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     const struct TraceContext refl_cxt = SlReflectContext(cxt, in->shaded_object);
 
     SlReflect(&in->I, &Nf, &R);
-    VEC3_NORMALIZE(&R);
+    R = Normalize(R);
     SlTrace(&refl_cxt, &in->P, &R, .001, 1000, &C_refl, &t_hit);
 
     Kr = SlFresnel(&in->I, &Nf, 1/plastic->ior);

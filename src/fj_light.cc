@@ -249,7 +249,7 @@ static void point_light_get_samples(const struct Light *light,
   XfmLerpTransformSample(&light->transform_samples, 0, &transform_interp);
 
   samples[0].P = transform_interp.translate;
-  VEC3_SET(&samples[0].N, 0, 0, 0);
+  samples[0].N = Vector(0, 0, 0);
   samples[0].light = light;
 }
 
@@ -280,7 +280,7 @@ static void grid_light_get_samples(const struct Light *light,
   XfmLerpTransformSample(&light->transform_samples, 0, &transform_interp);
 
   XfmTransformVector(&transform_interp, &N_sample);
-  VEC3_NORMALIZE(&N_sample);
+  N_sample = Normalize(N_sample);
 
   nsamples = Min(nsamples, max_samples);
   for (i = 0; i < nsamples; i++) {
@@ -310,9 +310,9 @@ static void grid_light_illuminate(const struct Light *light,
   Ln.y = Ps->y - sample->P.y;
   Ln.z = Ps->z - sample->P.z;
 
-  VEC3_NORMALIZE(&Ln);
+  Ln = Normalize(Ln);
 
-  dot = VEC3_DOT(&Ln, &sample->N);
+  dot = Dot(Ln, sample->N);
   if (light->double_sided) {
     dot = Abs(dot);
   } else {
@@ -355,7 +355,7 @@ static void sphere_light_get_samples(const struct Light *light,
 
     XfmTransformPoint(&transform_interp, &P_sample);
     XfmTransformVector(&transform_interp, &N_sample);
-    VEC3_NORMALIZE(&N_sample);
+    N_sample = Normalize(N_sample);
 
     samples[i].P = P_sample;
     samples[i].N = N_sample;
@@ -374,9 +374,9 @@ static void sphere_light_illuminate(const struct Light *light,
   Ln.y = Ps->y - sample->P.y;
   Ln.z = Ps->z - sample->P.z;
 
-  VEC3_NORMALIZE(&Ln);
+  Ln = Normalize(Ln);
 
-  dot = VEC3_DOT(&Ln, &sample->N);
+  dot = Dot(Ln, sample->N);
 
   if (dot > 0) {
     Cl->r = light->sample_intensity * light->color.r;
@@ -457,8 +457,8 @@ static int dome_light_preprocess(struct Light *light)
     sample->color.r = 1;
     sample->color.g = .63;
     sample->color.b = .63;
-    VEC3_SET(&sample->dir, 1./NSAMPLES, 1, 1./NSAMPLES);
-    VEC3_NORMALIZE(&sample->dir);
+    sample->dir = Vector(1./NSAMPLES, 1, 1./NSAMPLES);
+    sample->dir = Normalize(sample->dir);
   }
 
   if (light->environment_map == NULL) {

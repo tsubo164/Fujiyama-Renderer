@@ -43,7 +43,7 @@ void XorSolidSphereRand(struct XorShift *xr, struct Vector *out_position)
     out_position->y = 2 * XorNextFloat01(xr) - 1;
     out_position->z = 2 * XorNextFloat01(xr) - 1;
 
-    if (VEC3_DOT(out_position, out_position) <= 1) {
+    if (Dot(*out_position, *out_position) <= 1) {
       break;
     }
   }
@@ -59,7 +59,7 @@ void XorHollowSphereRand(struct XorShift *xr, struct Vector *out_position)
     out_position->y = 2 * XorNextFloat01(xr) - 1;
     out_position->z = 2 * XorNextFloat01(xr) - 1;
 
-    dot = VEC3_DOT(out_position, out_position);
+    dot = Dot(*out_position, *out_position);
 
     if (dot > 0 && dot <= 1) {
       break;

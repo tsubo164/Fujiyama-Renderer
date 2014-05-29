@@ -120,7 +120,7 @@ void CamGetRay(const struct Camera *cam, const struct Vector2 *screen_uv,
   ray->dir.y = target.y - eye.y;
   ray->dir.z = target.z - eye.z;
 
-  VEC3_NORMALIZE(&ray->dir);
+  ray->dir = Normalize(ray->dir);
   ray->orig = eye;
 
   ray->tmin = cam->znear;

@@ -99,11 +99,11 @@ static int MyRun(void *self)
     return -1;
   }
 
-  VEC3_SET(&cp00.orig, 0, 0, 0);
-  VEC3_SET(&cp00.udir, 1, 0, 0);
-  VEC3_SET(&cp00.vdir, 0, 1, 0);
-  VEC3_SET(&cp00.wdir, 0, 0, 1);
-  VEC3_SET(&cp00.noise_space, 0, 0, 0);
+  cp00.orig = Vector(0, 0, 0);
+  cp00.udir = Vector(1, 0, 0);
+  cp00.vdir = Vector(0, 1, 0);
+  cp00.wdir = Vector(0, 0, 1);
+  cp00.noise_space = Vector(0, 0, 0);
   cp00.density = 1;
   cp00.radius = .5;
   cp00.noise_amplitude = 1;
@@ -114,15 +114,15 @@ static int MyRun(void *self)
   cp01 = cp00;
   cp11 = cp00;
 
-  VEC3_SET(&cp00.orig, -.75, -.75, 0);
-  VEC3_SET(&cp10.orig,  .75, -.75, 0);
-  VEC3_SET(&cp01.orig, -.75,  .75, 0);
-  VEC3_SET(&cp11.orig,  .75,  .75, 0);
+  cp00.orig = Vector(-.75, -.75, 0);
+  cp10.orig = Vector( .75, -.75, 0);
+  cp01.orig = Vector(-.75,  .75, 0);
+  cp11.orig = Vector( .75,  .75, 0);
 
-  VEC3_SET(&cp00.noise_space, 0, 0, 0);
-  VEC3_SET(&cp10.noise_space, 1, 0, 0);
-  VEC3_SET(&cp01.noise_space, 0, 1, 0);
-  VEC3_SET(&cp11.noise_space, 1, 1, 0);
+  cp00.noise_space = Vector(0, 0, 0);
+  cp10.noise_space = Vector(1, 0, 0);
+  cp01.noise_space = Vector(0, 1, 0);
+  cp11.noise_space = Vector(1, 1, 0);
 
   cp11.radius = 1;
 

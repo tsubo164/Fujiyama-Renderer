@@ -139,7 +139,7 @@ int main(int argc, const char **argv)
         ply_get_element(in_ply, &vert);
 
         pt = &P[j];
-        VEC3_SET(pt, vert.x, vert.y, vert.z);
+        *pt = Vector(vert.x, vert.y, vert.z);
 
         if (has_uv) {
           uv[j].u = vert.uv1;
@@ -172,7 +172,7 @@ int main(int argc, const char **argv)
   N = VecAlloc(nverts);
   for (i = 0; i < nverts; i++) {
     struct Vector *nml = &N[i];
-    VEC3_SET(nml, 0, 0, 0);
+    *nml = Vector();
   }
   /* compute N */
   for (i = 0; i < ntris; i++) {
@@ -208,7 +208,7 @@ int main(int argc, const char **argv)
   /* normalize N */
   for (i = 0; i < nverts; i++) {
     struct Vector *nml = &N[i];
-    VEC3_NORMALIZE(nml);
+    Normalize(nml);
   }
 
   /* setup MshOutput */

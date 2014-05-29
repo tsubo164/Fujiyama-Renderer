@@ -96,11 +96,11 @@ static int MyRun(void *self)
     return -1;
   }
 
-  VEC3_SET(&cp.orig, 0, 0, 0);
-  VEC3_SET(&cp.udir, 1, 0, 0);
-  VEC3_SET(&cp.vdir, 0, 1, 0);
-  VEC3_SET(&cp.wdir, 0, 0, 1);
-  VEC3_SET(&cp.noise_space, 0, 0, 0);
+  cp.orig = Vector(0, 0, 0);
+  cp.udir = Vector(1, 0, 0);
+  cp.vdir = Vector(0, 1, 0);
+  cp.wdir = Vector(0, 0, 1);
+  cp.noise_space = Vector(0, 0, 0);
   cp.density = 5;
   cp.radius = .75;
   cp.noise_amplitude = 1;
@@ -179,7 +179,7 @@ static int FillWithPointClouds(struct Volume *volume,
         P_local_space.x =  cell_center.x - cp->orig.x;
         P_local_space.y =  cell_center.y - cp->orig.y;
         P_local_space.z =  cell_center.z - cp->orig.z;
-        distance = VEC3_LEN(&P_local_space);
+        distance = Length(P_local_space);
 
         if (distance < cp->radius - thresholdwidth) {
           value = VolGetValue(volume, i, j, k);
@@ -189,7 +189,7 @@ static int FillWithPointClouds(struct Volume *volume,
         }
 
         P_noise_space = P_local_space;
-        VEC3_NORMALIZE(&P_noise_space);
+        Normalize(&P_noise_space);
         P_noise_space.x += cp->noise_space.x;
         P_noise_space.y += cp->noise_space.y;
         P_noise_space.z += cp->noise_space.z;

@@ -142,7 +142,7 @@ int main(int argc, const char **argv)
     Q.x = pos.x * freq;
     Q.y = pos.y * freq;
     Q.z = pos.z * freq;
-    PerlinNoise3d(&Q, 2, .5, 1, &noise_vec);
+    noise_vec = PerlinNoise3d(Q, 2, .5, 1);
 
     vel.x = vscale * noise_vec.x;
     vel.y = vscale * noise_vec.y;
