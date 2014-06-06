@@ -100,7 +100,7 @@ struct Vector {
     return *this *= inv;
   }
 
-  double x, y, z;
+  Real x, y, z;
 };
 
 inline Vector operator+(const Vector &a, const Vector &b)

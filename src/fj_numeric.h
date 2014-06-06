@@ -7,11 +7,13 @@ See LICENSE and README
 #define FJ_NUMERIC_H
 
 #include "fj_types.h"
+#include <limits>
 #include <cmath>
 
 namespace fj {
 
 const Real PI = 3.14159265358979323846;
+const Real REAL_MAX = std::numeric_limits<Real>::max();
 
 inline Real Abs(Real x)
 {

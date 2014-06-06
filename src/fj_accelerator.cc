@@ -32,8 +32,9 @@ static NullPrimitiveSet null_primset;
 // for critical session
 static void build_accelerator_callback(void *data);
 
-Accelerator::Accelerator()
+Accelerator::Accelerator() : bounds_(), has_built_(false), primset_(NULL)
 {
+  SetPrimitiveSet(NULL);
 }
 
 Accelerator::~Accelerator()

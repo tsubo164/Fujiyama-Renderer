@@ -27,9 +27,6 @@ ObjectGroup::ObjectGroup() :
 {
   surface_acc = new BVHAccelerator();
   volume_acc = VolumeAccNew(VOLACC_BVH);
-
-  // TODO REMOVE THIS AccSetPrimitiveSet
-  surface_acc->SetPrimitiveSet(&surface_set);
 }
 
 ObjectGroup::~ObjectGroup()
