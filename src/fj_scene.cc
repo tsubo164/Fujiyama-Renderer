@@ -101,7 +101,10 @@ struct ObjectInstance *ScnNewObjectInstance(struct Scene *scene)
 /* Accelerator */
 struct Accelerator *ScnNewAccelerator(struct Scene *scene, int accelerator_type)
 {
-  return (struct Accelerator *) push_entry(scene->AcceleratorList, AccNew(accelerator_type));
+  Accelerator *acc = AccNew();
+  AccCreateDerived(acc, accelerator_type);
+  return (struct Accelerator *) push_entry(scene->AcceleratorList, acc);
+  //return (struct Accelerator *) push_entry(scene->AcceleratorList, AccNew(accelerator_type));
 }
 
 /* FrameBuffer */

@@ -5,6 +5,7 @@ See LICENSE and README
 
 #include "fj_object_group.h"
 #include "fj_volume_accelerator.h"
+#include "fj_bvh_accelerator.h"
 #include "fj_object_instance.h"
 #include "fj_accelerator.h"
 #include "fj_interval.h"
@@ -24,13 +25,13 @@ ObjectGroup::ObjectGroup() :
     surface_acc(NULL),
     volume_acc(NULL)
 {
-  surface_acc = AccNew(ACC_BVH);
+  surface_acc = new BVHAccelerator();
   volume_acc = VolumeAccNew(VOLACC_BVH);
 }
 
 ObjectGroup::~ObjectGroup()
 {
-  AccFree(surface_acc);
+  delete surface_acc;
   VolumeAccFree(volume_acc);
 }
 

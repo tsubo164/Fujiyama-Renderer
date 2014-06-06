@@ -9,7 +9,6 @@ See LICENSE and README
 #include "fj_primitive_set.h"
 #include "fj_multi_thread.h"
 #include "fj_memory.h"
-#include "fj_box.h"
 #include "fj_ray.h"
 
 #include <assert.h>
@@ -35,22 +34,132 @@ private:
 
 static NullPrimitiveSet null_primset;
 
-struct Accelerator {
-  const char *name;
-  struct Box bounds;
-  int has_built;
+// TODO TEMP
+static void build_accelerator(void *data);
 
-  struct PrimitiveSet *primset;
+Accelerator::Accelerator() :
+  // TODO TEMPORARY
+  derived(NULL),
+  NewDerived(NULL),
+  FreeDerived(NULL),
+  BuildDerived(NULL),
+  IntersectDerived(NULL),
+  GetDerivedName(NULL)
+{
+}
 
-  /* private */
-  DerivedAccelerator derived;
-  NewDerivedFunction NewDerived;
-  FreeDerivedFunction FreeDerived;
-  BuildDerivedFunction BuildDerived;
-  IntersectDerivedFunction IntersectDerived;
-  GetDerivedNameFunction GetDerivedName;
-};
+Accelerator::~Accelerator()
+{
+}
 
+Real Accelerator::GetBoundsPadding() const
+{
+  return PADDING;
+}
+
+const Box &Accelerator::GetBounds() const
+{
+  return bounds_;
+}
+
+void Accelerator::ComputeBounds()
+{
+  primset_->GetBounds(&bounds_);
+  BoxExpand(&bounds_, GetBoundsPadding());
+}
+
+void Accelerator::SetPrimitiveSet(PrimitiveSet *primset)
+{
+  if (primset == NULL) {
+    primset_ = &null_primset;
+  } else {
+    primset_ = primset;
+  }
+}
+
+int Accelerator::Build()
+{
+  if (has_built_) { 
+    return -1;
+  }
+
+  const bool err = build();
+  if (err) {
+    return -1;
+  }
+
+  has_built_ = true;
+  return 0;
+}
+
+bool Accelerator::Intersect(const Ray &ray, Real time, Intersection *isect) const
+{
+  double boxhit_tmin = 0;
+  double boxhit_tmax = 0;
+
+  // check intersection with overall bounds
+  const bool hit = BoxRayIntersect(bounds_, ray.orig, ray.dir, ray.tmin, ray.tmax,
+        &boxhit_tmin, &boxhit_tmax);
+
+  if (!hit) {
+    return false;
+  }
+
+  if (0) {
+    // dynamic build
+    // now disabled. build all accelerators before rendering
+    MtCriticalSection((void *) this, build_accelerator);
+  }
+
+  return intersect(ray, time, isect);
+}
+
+// TODO TEMPORARY
+void AccCreateDerived(Accelerator *acc, int accelerator_type)
+{
+  if (acc == NULL)
+    return;
+
+  switch (accelerator_type) {
+  case ACC_GRID:
+    GetGridAcceleratorFunction(acc);
+    break;
+  case ACC_BVH:
+    GetBVHAcceleratorFunction(acc);
+    break;
+  default:
+    assert(!"invalid accelerator type");
+    break;
+  }
+
+  acc->derived = acc->NewDerived();
+  if (acc->derived == NULL) {
+    AccFree(acc);
+    return;
+  }
+
+  if (acc->GetDerivedName != NULL) {
+    acc->name = acc->GetDerivedName();
+  }
+
+  acc->has_built_ = 0;
+
+  acc->primset_ = &null_primset;
+  BoxReverseInfinite(&acc->bounds_);
+
+}
+
+struct Accelerator *AccNew(void)
+{
+  struct Accelerator *acc = FJ_MEM_ALLOC(struct Accelerator);
+
+  if (acc == NULL)
+    return NULL;
+
+  return acc;
+}
+
+#if 0
 struct Accelerator *AccNew(int accelerator_type)
 {
   struct Accelerator *acc = FJ_MEM_ALLOC(struct Accelerator);
@@ -76,13 +185,14 @@ struct Accelerator *AccNew(int accelerator_type)
     return NULL;
   }
   acc->name = acc->GetDerivedName();
-  acc->has_built = 0;
+  acc->has_built_ = 0;
 
-  acc->primset = &null_primset;
-  BoxReverseInfinite(&acc->bounds);
+  acc->primset_ = &null_primset;
+  BoxReverseInfinite(&acc->bounds_);
 
   return acc;
 }
+#endif
 
 void AccFree(struct Accelerator *acc)
 {
@@ -91,7 +201,11 @@ void AccFree(struct Accelerator *acc)
   if (acc->derived == NULL)
     return;
 
-  acc->FreeDerived(acc->derived);
+  // TODO TEMPORARY
+  if (acc->FreeDerived != NULL) {
+    acc->FreeDerived(acc->derived);
+  }
+
   FJ_MEM_FREE(acc);
 }
 
@@ -102,27 +216,32 @@ double AccGetBoundsPadding(void)
 
 void AccGetBounds(const struct Accelerator *acc, struct Box *bounds)
 {
-  *bounds = acc->bounds;
+  *bounds = acc->bounds_;
 }
 
 void AccComputeBounds(struct Accelerator *acc)
 {
-  acc->primset->GetBounds(&acc->bounds);
-  BoxExpand(&acc->bounds, AccGetBoundsPadding());
+  acc->primset_->GetBounds(&acc->bounds_);
+  BoxExpand(&acc->bounds_, AccGetBoundsPadding());
 }
 
 int AccBuild(struct Accelerator *acc)
 {
   int err = 0;
 
-  if (acc->has_built)
+  if (acc->has_built_)
     return -1;
 
-  err = acc->BuildDerived(acc->derived, acc->primset);
+  if (acc->BuildDerived != NULL) {
+    err = acc->BuildDerived(acc->derived, acc->primset_);
+  } else {
+    err = acc->Build();
+  }
+
   if (err)
     return -1;
 
-  acc->has_built = 1;
+  acc->has_built_ = 1;
   return 0;
 }
 
@@ -130,7 +249,7 @@ static void build_accelerator(void *data)
 {
   struct Accelerator *acc = (struct Accelerator *) data;
 
-  if (!acc->has_built) {
+  if (!acc->has_built_) {
     printf("\nbuilding %s accelerator ...\n", acc->name);
     AccBuild(acc);
     fflush(stdout);
@@ -144,7 +263,7 @@ int AccIntersect(const struct Accelerator *acc, double time,
   double boxhit_tmax = 0;
 
   /* check intersection with overall bounds */
-  if (!BoxRayIntersect(acc->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
+  if (!BoxRayIntersect(acc->bounds_, ray->orig, ray->dir, ray->tmin, ray->tmax,
         &boxhit_tmin, &boxhit_tmax)) {
     return 0;
   }
@@ -155,12 +274,16 @@ int AccIntersect(const struct Accelerator *acc, double time,
     MtCriticalSection((void *) acc, build_accelerator);
   }
 
-  return acc->IntersectDerived(acc->derived, acc->primset, time, ray, isect);
+  if (acc->IntersectDerived != NULL) {
+    return acc->IntersectDerived(acc->derived, acc->primset_, time, ray, isect);
+  } else {
+    return acc->Intersect(*ray, time, isect);
+  }
 }
 
 void AccSetPrimitiveSet(struct Accelerator *acc, struct PrimitiveSet *primset)
 {
-  acc->primset = primset;
+  acc->primset_ = primset;
   AccComputeBounds(acc);
 }
 

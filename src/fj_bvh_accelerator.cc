@@ -12,8 +12,9 @@ See LICENSE and README
 #include "fj_box.h"
 #include "fj_ray.h"
 
-#include <assert.h>
-#include <float.h>
+#include <cstdio>
+#include <cassert>
+#include <cfloat>
 
 namespace fj {
 
@@ -28,25 +29,27 @@ enum {
 };
 
 struct Primitive {
-  struct Box bounds;
+  Primitive() : bounds(), centroid(), index(0) {}
+  ~Primitive() {}
+
+  Box bounds;
   double centroid[3];
   int index;
 };
 
 struct BVHNode {
-  struct BVHNode *left;
-  struct BVHNode *right;
-  struct Box bounds;
+  BVHNode() : left(NULL), right(NULL), bounds(), prim_id(-1) {}
+  ~BVHNode() {}
+
+  BVHNode *left;
+  BVHNode *right;
+  Box bounds;
   int prim_id;
 };
 
 struct BVHNodeStack {
   int depth;
   const struct BVHNode *node[BVH_STACKSIZE];
-};
-
-struct BVHAccelerator {
-  struct BVHNode *root;
 };
 
 static DerivedAccelerator new_bvh_accel(void);
@@ -57,14 +60,14 @@ static int intersect_bvh_accel(DerivedAccelerator derived,
     const struct PrimitiveSet *primset, double time, const struct Ray *ray,
     struct Intersection *isect);
 static int intersect_bvh_recursive(const struct PrimitiveSet *primset,
-    const struct BVHNode *node, double time, const struct Ray *ray,
+    const struct BVHNode *node, double time, const struct Ray &ray,
     struct Intersection *isect);
-static int intersect_bvh_loop(const struct PrimitiveSet *primset,
-    const struct BVHNode *root, double time, const struct Ray *ray,
-    struct Intersection *isect);
+static int intersect_bvh_loop(const PrimitiveSet *primset,
+    const struct BVHNode *root, double time, const Ray &ray,
+    Intersection *isect);
 static const char *get_bvh_accel_name(void);
 
-static struct BVHNode *new_bvhnode(void);
+static struct BVHNode *new_bvhnode();
 static void free_bvhnode_recursive(struct BVHNode *node);
 static struct BVHNode *build_bvh(struct Primitive **prims, int begin, int end, int axis);
 static int is_bvh_leaf(const struct BVHNode *node);
@@ -81,8 +84,76 @@ static const struct BVHNode *pop_node(struct BVHNodeStack *stack);
 
 /* TODO move this somewhere */
 static int prim_ray_intersect(const struct PrimitiveSet *primset, int prim_id,
-    double time, const struct Ray *ray, struct Intersection *isect);
+    double time, const struct Ray &ray, struct Intersection *isect);
 static void swap_isect_ptr(struct Intersection **isect0, struct Intersection **isect1);
+
+BVHAccelerator::BVHAccelerator() : root(NULL)
+{
+}
+
+BVHAccelerator::~BVHAccelerator()
+{
+}
+
+int BVHAccelerator::build()
+{
+  // TODO TEMP
+  printf("================================================================================\n");
+  printf("BVHAccelerator::build() CALLED!!!!\n");
+  printf("================================================================================\n");
+
+  Primitive *prims = NULL;
+  Primitive **primptrs = NULL;
+  const PrimitiveSet *primset = GetPrimitiveSet();
+  const int NPRIMS = primset->GetPrimitiveCount();
+  int i;
+
+  if (NPRIMS == 0) {
+    return -1;
+  }
+
+  prims = FJ_MEM_ALLOC_ARRAY(Primitive, NPRIMS);
+  if (prims == NULL)
+    return -1;
+
+  primptrs = FJ_MEM_ALLOC_ARRAY(Primitive *, NPRIMS);
+  if (primptrs == NULL) {
+    FJ_MEM_FREE(prims);
+    return -1;
+  }
+
+  for (i = 0; i < NPRIMS; i++) {
+    primset->GetPrimitiveBounds(i, &prims[i].bounds);
+    prims[i].centroid[0] = (prims[i].bounds.max.x + prims[i].bounds.min.x) / 2;
+    prims[i].centroid[1] = (prims[i].bounds.max.y + prims[i].bounds.min.y) / 2;
+    prims[i].centroid[2] = (prims[i].bounds.max.z + prims[i].bounds.min.z) / 2;
+    prims[i].index = i;
+
+    primptrs[i] = &prims[i];
+  }
+
+  root = build_bvh(primptrs, 0, NPRIMS, 0);
+  if (root == NULL) {
+    // TODO NODE COULD BE NULL IF PRIMITIVE IS EMPTY. MIGHT BE BETTER CHANGE
+    FJ_MEM_FREE(primptrs);
+    FJ_MEM_FREE(prims);
+    return -1;
+  }
+
+  FJ_MEM_FREE(primptrs);
+  FJ_MEM_FREE(prims);
+  return 0;
+}
+
+bool BVHAccelerator::intersect(const Ray &ray, Real time, Intersection *isect) const
+{
+  const PrimitiveSet *primset = GetPrimitiveSet();
+
+  if (1)
+    return intersect_bvh_loop(primset, root, time, ray, isect);
+  else
+    return intersect_bvh_recursive(primset, root, time, ray, isect);
+}
 
 void GetBVHAcceleratorFunction(struct Accelerator *acc)
 {
@@ -168,13 +239,13 @@ static int intersect_bvh_accel(DerivedAccelerator derived,
   const struct BVHAccelerator *bvh = (const struct BVHAccelerator *) derived;
 
   if (1)
-    return intersect_bvh_loop(primset, bvh->root, time, ray, isect);
+    return intersect_bvh_loop(primset, bvh->root, time, *ray, isect);
   else
-    return intersect_bvh_recursive(primset, bvh->root, time, ray, isect);
+    return intersect_bvh_recursive(primset, bvh->root, time, *ray, isect);
 }
 
 static int intersect_bvh_recursive(const struct PrimitiveSet *primset,
-    const struct BVHNode *node, double time, const struct Ray *ray,
+    const struct BVHNode *node, double time, const struct Ray &ray,
     struct Intersection *isect)
 {
   struct Intersection isect_left, isect_right;
@@ -187,7 +258,7 @@ static int intersect_bvh_recursive(const struct PrimitiveSet *primset,
     return 0;
 
   const bool hit = BoxRayIntersect(node->bounds,
-      ray->orig, ray->dir, ray->tmin, ray->tmax,
+      ray.orig, ray.dir, ray.tmin, ray.tmax,
       &boxhit_tmin, &boxhit_tmax);
 
   if (!hit) {
@@ -203,9 +274,9 @@ static int intersect_bvh_recursive(const struct PrimitiveSet *primset,
   isect_right.t_hit = FLT_MAX;
   hit_right = intersect_bvh_recursive(primset, node->right, time, ray, &isect_right);
 
-  if (isect_left.t_hit < ray->tmin)
+  if (isect_left.t_hit < ray.tmin)
     isect_left.t_hit = FLT_MAX;
-  if (isect_right.t_hit < ray->tmin)
+  if (isect_right.t_hit < ray.tmin)
     isect_right.t_hit = FLT_MAX;
 
   if (isect_left.t_hit < isect_right.t_hit) {
@@ -217,9 +288,9 @@ static int intersect_bvh_recursive(const struct PrimitiveSet *primset,
   return (hit_left || hit_right);
 }
 
-static int intersect_bvh_loop(const struct PrimitiveSet *primset,
-    const struct BVHNode *root, double time, const struct Ray *ray,
-    struct Intersection *isect)
+static int intersect_bvh_loop(const PrimitiveSet *primset,
+    const BVHNode *root, double time, const Ray &ray,
+    Intersection *isect)
 {
   int hit = 0;
   int hittmp = 0;
@@ -255,11 +326,11 @@ static int intersect_bvh_loop(const struct PrimitiveSet *primset,
     }
 
     hit_left = BoxRayIntersect(node->left->bounds,
-        ray->orig, ray->dir, ray->tmin, ray->tmax,
+        ray.orig, ray.dir, ray.tmin, ray.tmax,
         &boxhit_tmin, &boxhit_tmax);
 
     hit_right = BoxRayIntersect(node->right->bounds,
-        ray->orig, ray->dir, ray->tmin, ray->tmax,
+        ray.orig, ray.dir, ray.tmin, ray.tmax,
         &boxhit_tmin, &boxhit_tmax);
 
     whichhit = HIT_NONE;
@@ -352,19 +423,9 @@ static struct BVHNode *build_bvh(struct Primitive **primptrs, int begin, int end
   return node;
 }
 
-static struct BVHNode *new_bvhnode(void)
+static struct BVHNode *new_bvhnode()
 {
-  struct BVHNode *node = FJ_MEM_ALLOC(struct BVHNode);
-
-  if (node == NULL)
-    return NULL;
-
-  node->left = NULL;
-  node->right = NULL;
-  node->prim_id = -1;
-  node->bounds = Box();
-
-  return node;
+  return new BVHNode();
 }
 
 static void free_bvhnode_recursive(struct BVHNode *node)
@@ -372,19 +433,10 @@ static void free_bvhnode_recursive(struct BVHNode *node)
   if (node == NULL)
     return;
 
-  if (is_bvh_leaf(node)) {
-    FJ_MEM_FREE(node);
-    return;
-  }
-
-  assert(node->left != NULL);
-  assert(node->right != NULL);
-  assert(node->prim_id == -1);
-
   free_bvhnode_recursive(node->left);
   free_bvhnode_recursive(node->right);
 
-  FJ_MEM_FREE(node);
+  delete node;
 }
 
 static int is_bvh_leaf(const struct BVHNode *node)
@@ -474,16 +526,16 @@ static const char *get_bvh_accel_name(void)
 }
 
 static int prim_ray_intersect(const struct PrimitiveSet *primset, int prim_id,
-    double time, const struct Ray *ray, struct Intersection *isect)
+    double time, const struct Ray &ray, struct Intersection *isect)
 {
-  const bool hit = primset->RayIntersect(prim_id, time, *ray, isect);
+  const bool hit = primset->RayIntersect(prim_id, time, ray, isect);
 
   if (!hit) {
     isect->t_hit = FLT_MAX;
     return 0;
   }
 
-  if (isect->t_hit < ray->tmin || ray->tmax < isect->t_hit) {
+  if (isect->t_hit < ray.tmin || ray.tmax < isect->t_hit) {
     isect->t_hit = FLT_MAX;
     return 0;
   }
