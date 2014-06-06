@@ -34,7 +34,7 @@ static void setup_surface_input(
     const struct Ray *ray,
     struct SurfaceInput *in);
 
-static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
+static int trace_surface(const struct TraceContext *cxt, const struct Ray &ray,
     struct Color4 *out_rgba, double *t_hit);
 static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray,
     struct Color4 *out_rgba);
@@ -157,7 +157,7 @@ int SlTrace(const struct TraceContext *cxt,
 
   setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
 
-  hit_surface = trace_surface(cxt, &ray, &surface_color, t_hit);
+  hit_surface = trace_surface(cxt, ray, &surface_color, t_hit);
 
   if (shadow_ray_has_reached_opcity_limit(cxt, surface_color.a)) {
     *out_rgba = surface_color;
@@ -190,7 +190,7 @@ int SlSurfaceRayIntersect(const struct TraceContext *cxt,
 
   setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
   acc = cxt->trace_target->GetSurfaceAccelerator();
-  hit = AccIntersect(acc, cxt->time, &ray, &isect);
+  hit = acc->Intersect(ray, cxt->time, &isect);
 
   if (hit) {
     *P_hit = isect.P;
@@ -504,7 +504,7 @@ static void setup_surface_input(
   in->dPdv = isect->dPdv;
 }
 
-static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
+static int trace_surface(const struct TraceContext *cxt, const struct Ray &ray,
     struct Color4 *out_rgba, double *t_hit)
 {
   const struct Accelerator *acc = NULL;
@@ -516,7 +516,7 @@ static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
   out_rgba->b = 0;
   out_rgba->a = 0;
   acc = cxt->trace_target->GetSurfaceAccelerator();
-  hit = AccIntersect(acc, cxt->time, ray, &isect);
+  hit = acc->Intersect(ray, cxt->time, &isect);
 
   /* TODO handle shadow ray for surface geometry */
   /*
@@ -529,7 +529,7 @@ static int trace_surface(const struct TraceContext *cxt, const struct Ray *ray,
     struct SurfaceInput in;
     struct SurfaceOutput out;
 
-    setup_surface_input(&isect, ray, &in);
+    setup_surface_input(&isect, &ray, &in);
     ShdEvaluate(ObjGetShader(isect.object), cxt, &in, &out);
 
     out.Os = Clamp(out.Os, 0, 1);

@@ -10,8 +10,6 @@ See LICENSE and README
 
 namespace fj {
 
-extern void GetBVHAcceleratorFunction(Accelerator *acc);
-
 // TODO
 struct BVHNode;
 
@@ -23,6 +21,7 @@ public:
 public:
   virtual int build();
   virtual bool intersect(const Ray &ray, Real time, Intersection *isect) const;
+  virtual const char *get_name() const;
 
   BVHNode *root;
 };

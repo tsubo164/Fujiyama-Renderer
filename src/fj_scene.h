@@ -25,6 +25,12 @@ See LICENSE and README
 
 namespace fj {
 
+// TODO TMP
+enum AcceleratorType {
+  ACC_GRID = 0,
+  ACC_BVH
+};
+
 struct Scene;
 
 /* Scene */

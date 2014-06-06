@@ -27,6 +27,9 @@ ObjectGroup::ObjectGroup() :
 {
   surface_acc = new BVHAccelerator();
   volume_acc = VolumeAccNew(VOLACC_BVH);
+
+  // TODO REMOVE THIS AccSetPrimitiveSet
+  surface_acc->SetPrimitiveSet(&surface_set);
 }
 
 ObjectGroup::~ObjectGroup()
@@ -39,7 +42,7 @@ void ObjectGroup::AddObject(const ObjectInstance *obj)
 {
   if (ObjIsSurface(obj)) {
     surface_set.AddObject(obj);
-    AccSetPrimitiveSet(surface_acc, &surface_set);
+    surface_acc->SetPrimitiveSet(&surface_set);
   }
   else if (ObjIsVolume(obj)) {
     volume_set.AddObject(obj);

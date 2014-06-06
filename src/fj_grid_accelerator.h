@@ -11,8 +11,6 @@ See LICENSE and README
 
 namespace fj {
 
-extern void GetGridAcceleratorFunction(struct Accelerator *acc);
-
 struct Cell;
 
 class GridAccelerator : public Accelerator {
@@ -23,6 +21,7 @@ public:
 public:
   virtual int build();
   virtual bool intersect(const Ray &ray, Real time, Intersection *isect) const;
+  virtual const char *get_name() const;
 
   struct Cell **cells;
   int ncells[3];

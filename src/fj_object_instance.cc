@@ -254,7 +254,7 @@ int ObjIntersect(const struct ObjectInstance *obj, double time,
   XfmTransformPointInverse(&transform_interp, &ray_object_space.orig);
   XfmTransformVectorInverse(&transform_interp, &ray_object_space.dir);
 
-  hit = AccIntersect(obj->acc, time, &ray_object_space, isect);
+  hit = obj->acc->Intersect(ray_object_space, time, isect);
   if (!hit)
     return 0;
 
@@ -334,7 +334,7 @@ int ObjGetVolumeSample(const struct ObjectInstance *obj, double time,
 static void update_object_bounds(struct ObjectInstance *obj)
 {
   if (ObjIsSurface(obj)) {
-    AccGetBounds(obj->acc, &obj->bounds);
+    obj->bounds = obj->acc->GetBounds();
   }
   else if (ObjIsVolume(obj)) {
     VolGetBounds(obj->volume, &obj->bounds);

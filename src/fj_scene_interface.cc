@@ -411,7 +411,7 @@ ID SiNewPointCloud(const char *filename)
     return SI_BADID;
   }
 
-  AccSetPrimitiveSet(acc, ptc);
+  acc->SetPrimitiveSet(ptc);
 
   ptc_id = encode_id(Type_PointCloud, GET_LAST_ADDED_ID(PointCloud));
   accel_id = encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
@@ -573,7 +573,7 @@ ID SiNewCurve(const char *filename)
     return SI_BADID;
   }
 
-  AccSetPrimitiveSet(acc, curve);
+  acc->SetPrimitiveSet(curve);
 
   curve_id = encode_id(Type_Curve, GET_LAST_ADDED_ID(Curve));
   accel_id = encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
@@ -645,7 +645,7 @@ ID SiNewMesh(const char *filename)
     return SI_BADID;
   }
 
-  AccSetPrimitiveSet(acc, mesh);
+  acc->SetPrimitiveSet(mesh);
 
   mesh_id = encode_id(Type_Mesh, GET_LAST_ADDED_ID(Mesh));
   accel_id = encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
@@ -1036,7 +1036,7 @@ static void compute_objects_bounds(void)
   N = ScnGetAcceleratorCount(get_scene());
   for (i = 0; i < N; i++) {
     struct Accelerator *acc = ScnGetAccelerator(get_scene(), i);
-    AccComputeBounds(acc);
+    acc->ComputeBounds();
   }
 
   N = ScnGetObjectInstanceCount(get_scene());
@@ -1069,7 +1069,7 @@ static void build_accelerators(void)
 
   for (i = 0; i < NOBJTECTS; i++) {
     struct Accelerator *acc = ScnGetAccelerator(get_scene(), i);
-    AccBuild(acc);
+    acc->Build();
   }
 
   for (i = 0; i < NGROUPS; i++) {
@@ -1083,7 +1083,7 @@ static void build_accelerators(void)
 
     /* TODO come up with a better way */
     if (mutable_acc != NULL) {
-      AccBuild(mutable_acc);
+      mutable_acc->Build();
     }
     if (mutable_volume_acc != NULL) {
       VolumeAccBuild(mutable_volume_acc);

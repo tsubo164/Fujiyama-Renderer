@@ -52,20 +52,12 @@ struct BVHNodeStack {
   const struct BVHNode *node[BVH_STACKSIZE];
 };
 
-static DerivedAccelerator new_bvh_accel(void);
-static void free_bvh_accel(DerivedAccelerator derived);
-static int build_bvh_accel(DerivedAccelerator derived,
-    const struct PrimitiveSet *primset);
-static int intersect_bvh_accel(DerivedAccelerator derived,
-    const struct PrimitiveSet *primset, double time, const struct Ray *ray,
-    struct Intersection *isect);
 static int intersect_bvh_recursive(const struct PrimitiveSet *primset,
     const struct BVHNode *node, double time, const struct Ray &ray,
     struct Intersection *isect);
 static int intersect_bvh_loop(const PrimitiveSet *primset,
     const struct BVHNode *root, double time, const Ray &ray,
     Intersection *isect);
-static const char *get_bvh_accel_name(void);
 
 static struct BVHNode *new_bvhnode();
 static void free_bvhnode_recursive(struct BVHNode *node);
@@ -93,6 +85,7 @@ BVHAccelerator::BVHAccelerator() : root(NULL)
 
 BVHAccelerator::~BVHAccelerator()
 {
+  free_bvhnode_recursive(root);
 }
 
 int BVHAccelerator::build()
@@ -155,93 +148,9 @@ bool BVHAccelerator::intersect(const Ray &ray, Real time, Intersection *isect) c
     return intersect_bvh_recursive(primset, root, time, ray, isect);
 }
 
-void GetBVHAcceleratorFunction(struct Accelerator *acc)
+const char *BVHAccelerator::get_name() const
 {
-  AccSetDerivedFunctions(acc,
-      new_bvh_accel,
-      free_bvh_accel,
-      build_bvh_accel,
-      intersect_bvh_accel,
-      get_bvh_accel_name);
-}
-
-static DerivedAccelerator new_bvh_accel(void)
-{
-  struct BVHAccelerator *bvh = FJ_MEM_ALLOC(struct BVHAccelerator);
-
-  if (bvh == NULL)
-    return NULL;
-
-  bvh->root = NULL;
-
-  return (DerivedAccelerator) bvh;
-}
-
-static void free_bvh_accel(DerivedAccelerator derived)
-{
-  struct BVHAccelerator *bvh = (struct BVHAccelerator *) derived;
-
-  free_bvhnode_recursive(bvh->root);
-
-  FJ_MEM_FREE(bvh);
-}
-
-static int build_bvh_accel(DerivedAccelerator derived,
-    const struct PrimitiveSet *primset)
-{
-  struct BVHAccelerator *bvh = (struct BVHAccelerator *) derived;
-  struct Primitive *prims = NULL;
-  struct Primitive **primptrs = NULL;
-  const int NPRIMS = primset->GetPrimitiveCount();
-  int i;
-
-  if (NPRIMS == 0) {
-    return -1;
-  }
-
-  prims = FJ_MEM_ALLOC_ARRAY(struct Primitive, NPRIMS);
-  if (prims == NULL)
-    return -1;
-
-  primptrs = FJ_MEM_ALLOC_ARRAY(struct Primitive *, NPRIMS);
-  if (primptrs == NULL) {
-    FJ_MEM_FREE(prims);
-    return -1;
-  }
-
-  for (i = 0; i < NPRIMS; i++) {
-    primset->GetPrimitiveBounds(i, &prims[i].bounds);
-    prims[i].centroid[0] = (prims[i].bounds.max.x + prims[i].bounds.min.x) / 2;
-    prims[i].centroid[1] = (prims[i].bounds.max.y + prims[i].bounds.min.y) / 2;
-    prims[i].centroid[2] = (prims[i].bounds.max.z + prims[i].bounds.min.z) / 2;
-    prims[i].index = i;
-
-    primptrs[i] = &prims[i];
-  }
-
-  bvh->root = build_bvh(primptrs, 0, NPRIMS, 0);
-  if (bvh->root == NULL) {
-    // TODO NODE COULD BE NULL IF PRIMITIVE IS EMPTY. MIGHT BE BETTER CHANGE
-    FJ_MEM_FREE(primptrs);
-    FJ_MEM_FREE(prims);
-    return -1;
-  }
-
-  FJ_MEM_FREE(primptrs);
-  FJ_MEM_FREE(prims);
-  return 0;
-}
-
-static int intersect_bvh_accel(DerivedAccelerator derived,
-    const struct PrimitiveSet *primset, double time, const struct Ray *ray,
-    struct Intersection *isect)
-{
-  const struct BVHAccelerator *bvh = (const struct BVHAccelerator *) derived;
-
-  if (1)
-    return intersect_bvh_loop(primset, bvh->root, time, *ray, isect);
-  else
-    return intersect_bvh_recursive(primset, bvh->root, time, *ray, isect);
+  return "BVH Accelerator";
 }
 
 static int intersect_bvh_recursive(const struct PrimitiveSet *primset,
@@ -518,11 +427,6 @@ static const struct BVHNode *pop_node(struct BVHNodeStack *stack)
 {
   assert(!is_empty(stack));
   return stack->node[--stack->depth];
-}
-
-static const char *get_bvh_accel_name(void)
-{
-  return ACCELERATOR_NAME;
 }
 
 static int prim_ray_intersect(const struct PrimitiveSet *primset, int prim_id,

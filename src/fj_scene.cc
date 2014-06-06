@@ -34,6 +34,20 @@ See LICENSE and README
   /* printf(#type"List freed\n"); */ \
 } while(0)
 
+// TODO
+#define FREE_LIST__(scene,type) do { \
+  int i; \
+  struct type **nodes; \
+  if (LIST(scene,type) == NULL) break; \
+  nodes = (struct type ** ) LIST(scene,type)->data; \
+  for (i = 0; i < (int) LIST(scene,type)->nelems; i++) { \
+    delete nodes[i]; \
+    /* printf("\t"#type" %d: freed\n", i); */ \
+  } \
+  ArrFree(LIST(scene,type)); \
+  /* printf(#type"List freed\n"); */ \
+} while(0)
+
 #define DEFINE_LIST_FUNCTIONS(Type) \
 size_t ScnGet##Type##Count(const struct Scene *scene) \
 { \
@@ -250,7 +264,8 @@ static void new_all_node_list(struct Scene *scene)
 static void free_all_node_list(struct Scene *scene)
 {
   FREE_LIST(scene, ObjectInstance, ObjFree);
-  FREE_LIST(scene, Accelerator, AccFree);
+  //FREE_LIST(scene, Accelerator, AccFree);
+  FREE_LIST__(scene, Accelerator);
   FREE_LIST(scene, FrameBuffer, FbFree);
   FREE_LIST(scene, ObjectGroup, ObjGroupFree);
   FREE_LIST(scene, PointCloud, PtcFree);
