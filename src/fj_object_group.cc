@@ -19,7 +19,7 @@ static void volume_bounds(const void *prim_set, int prim_id, Box *bounds);
 static int volume_ray_intersect(const void *prim_set, int prim_id, double time,
     const Ray *ray, Interval *interval);
 
-ObjectGroup::ObjectGroup() : 
+ObjectGroup::ObjectGroup() :
     surface_set(),
     volume_set(),
     surface_acc(NULL),

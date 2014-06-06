@@ -151,12 +151,15 @@ void AccCreateDerived(Accelerator *acc, int accelerator_type)
 
 struct Accelerator *AccNew(void)
 {
+  return new Accelerator();
+#if 0
   struct Accelerator *acc = FJ_MEM_ALLOC(struct Accelerator);
 
   if (acc == NULL)
     return NULL;
 
   return acc;
+#endif
 }
 
 #if 0
@@ -198,6 +201,16 @@ void AccFree(struct Accelerator *acc)
 {
   if (acc == NULL)
     return;
+
+  // TODO TEMPORARY
+  if (acc->derived == NULL && acc->FreeDerived != NULL) {
+    acc->FreeDerived(acc->derived);
+  }
+
+  delete acc;
+#if 0
+  if (acc == NULL)
+    return;
   if (acc->derived == NULL)
     return;
 
@@ -207,6 +220,7 @@ void AccFree(struct Accelerator *acc)
   }
 
   FJ_MEM_FREE(acc);
+#endif
 }
 
 double AccGetBoundsPadding(void)

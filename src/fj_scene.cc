@@ -6,9 +6,13 @@ See LICENSE and README
 #include "fj_scene.h"
 #include "fj_memory.h"
 #include "fj_array.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cassert>
+
+#include "fj_grid_accelerator.h"
+#include "fj_bvh_accelerator.h"
 
 #define LIST(scene,type) ((scene)->type ## List)
 
@@ -101,10 +105,25 @@ struct ObjectInstance *ScnNewObjectInstance(struct Scene *scene)
 /* Accelerator */
 struct Accelerator *ScnNewAccelerator(struct Scene *scene, int accelerator_type)
 {
+  Accelerator *acc = NULL;
+  switch (accelerator_type) {
+  case ACC_GRID:
+    acc = new GridAccelerator();
+    break;
+  case ACC_BVH:
+    acc = new BVHAccelerator();
+    break;
+  default:
+    assert(!"invalid accelerator type");
+    break;
+  }
+  return (struct Accelerator *) push_entry(scene->AcceleratorList, acc);
+#if 0
   Accelerator *acc = AccNew();
   AccCreateDerived(acc, accelerator_type);
   return (struct Accelerator *) push_entry(scene->AcceleratorList, acc);
   //return (struct Accelerator *) push_entry(scene->AcceleratorList, AccNew(accelerator_type));
+#endif
 }
 
 /* FrameBuffer */
