@@ -258,7 +258,7 @@ void XfmInitTransformSampleList(struct TransformSampleList *list)
 void XfmPushTranslateSample(struct TransformSampleList *list,
     double tx, double ty, double tz, double time)
 {
-  struct PropertySample sample = {{0, 0, 0}, 0};
+  struct PropertySample sample;
 
   sample.vector[0] = tx;
   sample.vector[1] = ty;
@@ -271,7 +271,7 @@ void XfmPushTranslateSample(struct TransformSampleList *list,
 void XfmPushRotateSample(struct TransformSampleList *list,
     double rx, double ry, double rz, double time)
 {
-  struct PropertySample sample = {{0, 0, 0}, 0};
+  struct PropertySample sample;
 
   sample.vector[0] = rx;
   sample.vector[1] = ry;
@@ -284,7 +284,7 @@ void XfmPushRotateSample(struct TransformSampleList *list,
 void XfmPushScaleSample(struct TransformSampleList *list,
     double sx, double sy, double sz, double time)
 {
-  struct PropertySample sample = {{0, 0, 0}, 0};
+  struct PropertySample sample;
 
   sample.vector[0] = sx;
   sample.vector[1] = sy;
@@ -309,9 +309,9 @@ void XfmSetSampleRotateOrder(struct TransformSampleList *list, int order)
 void XfmLerpTransformSample(const struct TransformSampleList *list, double time,
     struct Transform *transform_interp)
 {
-  struct PropertySample T = INIT_PROPERTYSAMPLE;
-  struct PropertySample R = INIT_PROPERTYSAMPLE;
-  struct PropertySample S = INIT_PROPERTYSAMPLE;
+  struct PropertySample T;
+  struct PropertySample R;
+  struct PropertySample S;
 
   PropLerpSamples(&list->translate, time, &T);
   PropLerpSamples(&list->rotate, time, &R);

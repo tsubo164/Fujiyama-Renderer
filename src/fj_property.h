@@ -7,7 +7,7 @@ See LICENSE and README
 #define FJ_PROPERTY_H
 
 #include "fj_types.h"
-#include <algorithm>
+#include <cstddef>
 
 namespace fj {
 
@@ -35,19 +35,17 @@ class Mesh;
 
 class PropertyValue {
 public:
-  PropertyValue()
-  {
-    type = PROP_NONE;
-    std::fill(vector, vector + 4, 0);
-    string       = NULL;
-    object_group = NULL;
-    turbulence   = NULL;
-    texture      = NULL;
-    shader       = NULL;
-    volume       = NULL;
-    mesh         = NULL;
-    time         = 0;
-  }
+  PropertyValue() :
+    type(PROP_NONE),
+    vector(),
+    string      (NULL),
+    object_group(NULL),
+    turbulence  (NULL),
+    texture     (NULL),
+    shader      (NULL),
+    volume      (NULL),
+    mesh        (NULL),
+    time        (0) {}
   ~PropertyValue() {}
 
 public:
@@ -74,50 +72,49 @@ public:
   int (*SetProperty)(void *self, const PropertyValue *value);
 };
 
-extern struct PropertyValue PropScalar(double v0);
-extern struct PropertyValue PropVector2(double v0, double v1);
-extern struct PropertyValue PropVector3(double v0, double v1, double v2);
-extern struct PropertyValue PropVector4(double v0, double v1, double v2, double v3);
-extern struct PropertyValue PropString(const char *string);
+extern PropertyValue PropScalar(Real v0);
+extern PropertyValue PropVector2(Real v0, Real v1);
+extern PropertyValue PropVector3(Real v0, Real v1, Real v2);
+extern PropertyValue PropVector4(Real v0, Real v1, Real v2, Real v3);
+extern PropertyValue PropString(const char *string);
 
-extern struct PropertyValue PropObjectGroup(struct ObjectGroup *group);
-extern struct PropertyValue PropTurbulence(struct Turbulence *turbulence);
-extern struct PropertyValue PropTexture(struct Texture *texture);
-extern struct PropertyValue PropVolume(struct Volume *volume);
-extern struct PropertyValue PropMesh(struct Mesh *mesh);
+extern PropertyValue PropObjectGroup(ObjectGroup *group);
+extern PropertyValue PropTurbulence(Turbulence *turbulence);
+extern PropertyValue PropTexture(Texture *texture);
+extern PropertyValue PropVolume(Volume *volume);
+extern PropertyValue PropMesh(Mesh *mesh);
 
-extern int PropIsValid(const struct Property *prop);
+extern int PropIsValid(const Property *prop);
 
-extern const char *PropName(const struct Property *prop);
-extern const int PropType(const struct Property *prop);
-extern const double PropDefaultValue(const struct Property *prop, int index);
-extern const char *PropTypeString(const struct Property *prop);
+extern const char *PropName(const Property *prop);
+extern const int PropType(const Property *prop);
+extern const Real PropDefaultValue(const Property *prop, int index);
+extern const char *PropTypeString(const Property *prop);
 
-extern const struct Property *PropFind(const struct Property *list, int type, const char *name);
-extern int PropSetAllDefaultValues(void *self, const struct Property *list);
+extern const Property *PropFind(const Property *list, int type, const char *name);
+extern int PropSetAllDefaultValues(void *self, const Property *list);
 
 /* for time variable properties */
 enum { MAX_PROPERTY_SAMPLES = 8 };
 
 struct PropertySample {
-  double vector[4];
-  double time;
+  PropertySample() : vector(), time(0) {}
+  ~PropertySample() {}
+
+  Real vector[4];
+  Real time;
 };
 
-#define INIT_PROPERTYSAMPLE { \
-  {0, 0, 0, 0}, \
-  0}
-
 struct PropertySampleList {
-  struct PropertySample samples[MAX_PROPERTY_SAMPLES];
+  PropertySample samples[MAX_PROPERTY_SAMPLES];
   int sample_count;
 };
 
-extern void PropInitSampleList(struct PropertySampleList *list);
-extern int PropPushSample(struct PropertySampleList *list, const struct PropertySample *sample);
-extern void PropLerpSamples(const struct PropertySampleList *list, double time,
-    struct PropertySample *dst);
+extern void PropInitSampleList(PropertySampleList *list);
+extern int PropPushSample(PropertySampleList *list, const PropertySample *sample);
+extern void PropLerpSamples(const PropertySampleList *list, Real time,
+    PropertySample *dst);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

@@ -241,7 +241,7 @@ int PropSetAllDefaultValues(void *self, const struct Property *list)
 /* for time variable properties */
 void PropInitSampleList(struct PropertySampleList *list)
 {
-  const struct PropertySample initial_value = INIT_PROPERTYSAMPLE;
+  const struct PropertySample initial_value;
   int i;
 
   for (i = 0; i < MAX_PROPERTY_SAMPLES; i++) {
