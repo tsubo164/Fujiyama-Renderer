@@ -6,9 +6,11 @@ See LICENSE and README
 #ifndef FJ_TRANSFORM_H
 #define FJ_TRANSFORM_H
 
+#include "fj_compatibility.h"
 #include "fj_property.h"
 #include "fj_matrix.h"
 #include "fj_vector.h"
+#include "fj_types.h"
 
 namespace fj {
 
@@ -27,16 +29,48 @@ enum TransformOrder {
   ORDER_ZYX
 };
 
-struct Transform {
-  struct Matrix matrix;
-  struct Matrix inverse;
+extern bool IsTransformOrder(int order);
+extern bool IsRotateOrder(int order);
+
+class FJ_API Transform {
+public:
+  Transform();
+  ~Transform();
+
+  void Init();
+
+  void TransformPoint(Vector *point)   const;
+  void TransformVector(Vector *vector) const;
+  void TransformBounds(Box *bounds)    const;
+
+  void TransformPointInverse(Vector *point)   const;
+  void TransformVectorInverse(Vector *vector) const;
+  void TransformBoundsInverse(Box *bounds)    const;
+
+  void SetTranslate(Real tx, Real ty, Real tz);
+  void SetRotate   (Real rx, Real ry, Real rz);
+  void SetScale    (Real sx, Real sy, Real sz);
+
+  void SetTransformOrder(int order);
+  void SetRotateOrder   (int order);
+  void SetTransform(
+      int transform_order, int rotate_order,
+      Real tx, Real ty, Real tz,
+      Real rx, Real ry, Real rz,
+      Real sx, Real sy, Real sz);
+
+public:
+  void update_matrix();
+
+  Matrix matrix;
+  Matrix inverse;
 
   int transform_order;
   int rotate_order;
 
-  struct Vector translate;
-  struct Vector rotate;
-  struct Vector scale;
+  Vector translate;
+  Vector rotate;
+  Vector scale;
 };
 
 struct Box;

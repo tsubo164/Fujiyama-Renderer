@@ -21,6 +21,126 @@ static void make_transform_matrix(
     double sx, double sy, double sz,
     struct Matrix *transform);
 
+bool IsTransformOrder(int order)
+{
+  return order >= 0 && order < 6;
+}
+
+bool IsRotateOrder(int order)
+{
+  return order >= 6 && order < 12;
+}
+
+Transform::Transform()
+{
+  Init();
+}
+
+Transform::~Transform()
+{
+}
+
+void Transform::Init()
+{
+  MatIdentity(&matrix);
+  MatIdentity(&inverse);
+
+  transform_order = ORDER_SRT;
+  rotate_order = ORDER_XYZ;
+
+  translate = Vector(0, 0, 0);
+  rotate    = Vector(0, 0, 0);
+  scale     = Vector(1, 1, 1);
+}
+
+void Transform::TransformPoint(Vector *point) const
+{
+  MatTransformPoint(matrix, point);
+}
+
+void Transform::TransformVector(Vector *vector) const
+{
+  MatTransformVector(matrix, vector);
+}
+
+void Transform::TransformBounds(Box *bounds) const
+{
+  MatTransformBounds(matrix, bounds);
+}
+
+void Transform::TransformPointInverse(Vector *point) const
+{
+  MatTransformPoint(inverse, point);
+}
+
+void Transform::TransformVectorInverse(Vector *vector) const
+{
+  MatTransformVector(inverse, vector);
+}
+
+void Transform::TransformBoundsInverse(Box *bounds) const
+{
+  MatTransformBounds(inverse, bounds);
+}
+
+void Transform::SetTranslate(Real tx, Real ty, Real tz)
+{
+  translate = Vector(tx, ty, tz);
+  update_matrix();
+}
+
+void Transform::SetRotate(Real rx, Real ry, Real rz)
+{
+  rotate = Vector(rx, ry, rz);
+  update_matrix();
+}
+
+void Transform::SetScale(Real sx, Real sy, Real sz)
+{
+  scale = Vector(sx, sy, sz);
+  update_matrix();
+}
+
+void Transform::SetTransformOrder(int order)
+{
+  assert(is_transform_order(order));
+  transform_order = order;
+  update_matrix();
+}
+
+void Transform::SetRotateOrder(int order)
+{
+  assert(is_rotate_order(order));
+  rotate_order = order;
+  update_matrix();
+}
+
+void Transform::SetTransform(
+    int transform_order, int rotate_order,
+    Real tx, Real ty, Real tz,
+    Real rx, Real ry, Real rz,
+    Real sx, Real sy, Real sz)
+{
+  transform_order = transform_order;
+  rotate_order    = rotate_order;
+  translate       = Vector(tx, ty, tz);
+  rotate          = Vector(rx, ry, rz);
+  scale           = Vector(sx, sy, sz);
+  update_matrix();
+}
+
+void Transform::update_matrix()
+{
+  make_transform_matrix(transform_order, rotate_order,
+      translate.x, translate.y, translate.z,
+      rotate.x,    rotate.y,    rotate.z,
+      scale.x,     scale.y,     scale.z,
+      &matrix);
+
+  MatInverse(&inverse, matrix);
+}
+
+//==============================================================================
 void XfmReset(struct Transform *transform)
 {
   MatIdentity(&transform->matrix);
