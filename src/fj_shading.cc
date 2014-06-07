@@ -184,7 +184,7 @@ int SlSurfaceRayIntersect(const struct TraceContext *cxt,
     struct Vector *P_hit, struct Vector *N_hit, double *t_hit)
 {
   const struct Accelerator *acc = NULL;
-  struct Intersection isect = {};
+  struct Intersection isect;
   struct Ray ray;
   int hit = 0;
 
@@ -508,7 +508,7 @@ static int trace_surface(const struct TraceContext *cxt, const struct Ray &ray,
     struct Color4 *out_rgba, double *t_hit)
 {
   const struct Accelerator *acc = NULL;
-  struct Intersection isect = {};
+  struct Intersection isect;
   int hit = 0;
 
   out_rgba->r = 0;

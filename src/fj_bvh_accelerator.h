@@ -10,8 +10,7 @@ See LICENSE and README
 
 namespace fj {
 
-// TODO
-struct BVHNode;
+class BVHNode;
 
 class BVHAccelerator : public Accelerator {
 public:
@@ -28,4 +27,4 @@ public:
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H
