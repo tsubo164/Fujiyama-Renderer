@@ -688,7 +688,7 @@ Status SiAssignObjectGroup(ID id, const char *name, ID group)
 {
   const struct Entry entry = decode_id(id);
   const struct Entry group_ent = decode_id(group);
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
   struct ObjectGroup *group_ptr = NULL;
   int err = 0;
 
@@ -709,7 +709,7 @@ Status SiAssignTexture(ID id, const char *name, ID texture)
 {
   const struct Entry entry = decode_id(id);
   const struct Entry texture_ent = decode_id(texture);
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
   struct Texture *texture_ptr = NULL;
   int err = 0;
 
@@ -846,7 +846,7 @@ Status SiAssignTurbulence(ID id, const char *name, ID turbulence)
 {
   const struct Entry entry = decode_id(id);
   const struct Entry turbulence_ent = decode_id(turbulence);
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
   struct Turbulence *turbulence_ptr = NULL;
   int err = 0;
 
@@ -867,7 +867,7 @@ Status SiAssignVolume(ID id, const char *name, ID volume)
 {
   const struct Entry entry = decode_id(id);
   const struct Entry volume_ent = decode_id(volume);
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
   struct Volume *volume_ptr = NULL;
   int err = 0;
 
@@ -888,7 +888,7 @@ Status SiAssignMesh(ID id, const char *name, ID mesh)
 {
   const struct Entry entry = decode_id(id);
   const struct Entry mesh_ent = decode_id(mesh);
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
   struct Mesh *mesh_ptr = NULL;
   int err = 0;
 

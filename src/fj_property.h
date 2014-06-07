@@ -6,6 +6,9 @@ See LICENSE and README
 #ifndef FJ_PROPERTY_H
 #define FJ_PROPERTY_H
 
+#include "fj_types.h"
+#include <algorithm>
+
 namespace fj {
 
 enum PropertyType {
@@ -23,46 +26,52 @@ enum PropertyType {
   PROP_MESH
 };
 
-struct ObjectGroup;
-struct Turbulence;
-struct Texture;
-struct Shader;
-struct Volume;
-struct Mesh;
+class ObjectGroup;
+class Turbulence;
+class Texture;
+class Shader;
+class Volume;
+class Mesh;
 
-struct PropertyValue {
+class PropertyValue {
+public:
+  PropertyValue()
+  {
+    type = PROP_NONE;
+    std::fill(vector, vector + 4, 0);
+    string       = NULL;
+    object_group = NULL;
+    turbulence   = NULL;
+    texture      = NULL;
+    shader       = NULL;
+    volume       = NULL;
+    mesh         = NULL;
+    time         = 0;
+  }
+  ~PropertyValue() {}
+
+public:
   int type;
 
-  double vector[4];
+  Real vector[4];
   const char *string;
 
-  struct ObjectGroup *object_group;
-  struct Turbulence *turbulence;
-  struct Texture *texture;
-  struct Shader *shader;
-  struct Volume *volume;
-  struct Mesh *mesh;
+  ObjectGroup *object_group;
+  Turbulence *turbulence;
+  Texture *texture;
+  Shader *shader;
+  Volume *volume;
+  Mesh *mesh;
 
-  double time;
+  Real time;
 };
 
-#define INIT_PROPERTYVALUE { \
-  PROP_NONE, \
-  {0, 0, 0, 0}, \
-  NULL, \
-  NULL, \
-  NULL, \
-  NULL, \
-  NULL, \
-  NULL, \
-  NULL, \
-  0}
-
-struct Property {
+class Property {
+public:
   int type;
   const char *name;
-  double default_value[4];
-  int (*SetProperty)(void *self, const struct PropertyValue *value);
+  Real default_value[4];
+  int (*SetProperty)(void *self, const PropertyValue *value);
 };
 
 extern struct PropertyValue PropScalar(double v0);
@@ -77,7 +86,6 @@ extern struct PropertyValue PropTexture(struct Texture *texture);
 extern struct PropertyValue PropVolume(struct Volume *volume);
 extern struct PropertyValue PropMesh(struct Mesh *mesh);
 
-extern struct PropertyValue InitPropValue(void);
 extern int PropIsValid(const struct Property *prop);
 
 extern const char *PropName(const struct Property *prop);

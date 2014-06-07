@@ -32,7 +32,7 @@ static void sort_by_sample_time(struct PropertySampleList *list);
 
 struct PropertyValue PropScalar(double v0)
 {
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
 
   value.type = PROP_SCALAR;
   value.vector[0] = v0;
@@ -42,7 +42,7 @@ struct PropertyValue PropScalar(double v0)
 
 struct PropertyValue PropVector2(double v0, double v1)
 {
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
 
   value.type = PROP_VECTOR2;
   value.vector[0] = v0;
@@ -53,7 +53,7 @@ struct PropertyValue PropVector2(double v0, double v1)
 
 struct PropertyValue PropVector3(double v0, double v1, double v2)
 {
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
 
   value.type = PROP_VECTOR3;
   value.vector[0] = v0;
@@ -65,7 +65,7 @@ struct PropertyValue PropVector3(double v0, double v1, double v2)
 
 struct PropertyValue PropVector4(double v0, double v1, double v2, double v3)
 {
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
 
   value.type = PROP_VECTOR4;
   value.vector[0] = v0;
@@ -78,7 +78,7 @@ struct PropertyValue PropVector4(double v0, double v1, double v2, double v3)
 
 struct PropertyValue PropString(const char *string)
 {
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
 
   value.type = PROP_STRING;
   value.string = string;
@@ -88,7 +88,7 @@ struct PropertyValue PropString(const char *string)
 
 struct PropertyValue PropObjectGroup(struct ObjectGroup *group)
 {
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
 
   value.type = PROP_OBJECTGROUP;
   value.object_group = group;
@@ -98,7 +98,7 @@ struct PropertyValue PropObjectGroup(struct ObjectGroup *group)
 
 struct PropertyValue PropTurbulence(struct Turbulence *turbulence)
 {
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
 
   value.type = PROP_TURBULENCE;
   value.turbulence = turbulence;
@@ -108,7 +108,7 @@ struct PropertyValue PropTurbulence(struct Turbulence *turbulence)
 
 struct PropertyValue PropTexture(struct Texture *texture)
 {
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
 
   value.type = PROP_TEXTURE;
   value.texture = texture;
@@ -118,7 +118,7 @@ struct PropertyValue PropTexture(struct Texture *texture)
 
 struct PropertyValue PropVolume(struct Volume *volume)
 {
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
 
   value.type = PROP_VOLUME;
   value.volume = volume;
@@ -128,17 +128,11 @@ struct PropertyValue PropVolume(struct Volume *volume)
 
 struct PropertyValue PropMesh(struct Mesh *mesh)
 {
-  struct PropertyValue value = InitPropValue();
+  struct PropertyValue value;
 
   value.type = PROP_MESH;
   value.mesh = mesh;
 
-  return value;
-}
-
-struct PropertyValue InitPropValue(void)
-{
-  const struct PropertyValue value = INIT_PROPERTYVALUE;
   return value;
 }
 
@@ -210,7 +204,7 @@ int PropSetAllDefaultValues(void *self, const struct Property *list)
   int err_count = 0;
 
   for (prop = list; PropIsValid(prop); prop++) {
-    struct PropertyValue value = InitPropValue();
+    struct PropertyValue value;
     int err = 0;
 
     switch (PropType(prop)) {
