@@ -6,6 +6,9 @@ See LICENSE and README
 #ifndef FJ_TEXTURE_H
 #define FJ_TEXTURE_H
 
+#include <string>
+#include <vector>
+
 namespace fj {
 
 struct Texture;
@@ -17,7 +20,7 @@ public:
   TextureCache();
   ~TextureCache();
 
-  int OpenMipmap(const char *filename);
+  int OpenMipmap(const std::string &filename);
   Color4 LookupTexture(float u, float v);
 
   int GetTextureWidth() const;
@@ -30,6 +33,17 @@ private:
   int last_xtile_;
   int last_ytile_;
   bool is_open_;
+};
+
+class Texture {
+public:
+  Texture();
+  ~Texture();
+
+public:
+  std::string filename;
+  std::vector<TextureCache> cache_list;
+  int cache_count;
 };
 
 extern struct Texture *TexNew(void);
