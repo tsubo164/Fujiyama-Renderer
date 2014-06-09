@@ -6,7 +6,37 @@ See LICENSE and README
 #ifndef FJ_VOLUME_H
 #define FJ_VOLUME_H
 
+#include "fj_vector.h"
+#include "fj_types.h"
+#include <vector>
+
 namespace fj {
+
+class Resolution {
+public:
+  Resolution() : x(0), y(0), z(0) {}
+  Resolution(int xx, int yy, int zz) : x(xx), y(yy), z(zz) {}
+  ~Resolution() {}
+
+  int x, y, z;
+};
+
+class VoxelBuffer {
+public:
+  VoxelBuffer();
+  ~VoxelBuffer();
+
+  void Resize(int xres, int yres, int zres);
+  const Resolution &GetResolution() const;
+  bool IsEmpty() const;
+
+  void SetValue(int x, int y, int z, float value);
+  float GetValue(int x, int y, int z) const;
+
+private:
+  std::vector<float> data_;
+  Resolution res_;
+};
 
 struct Volume;
 struct Vector;
