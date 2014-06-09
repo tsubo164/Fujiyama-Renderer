@@ -38,4 +38,4 @@ extern void ObjGroupFree(ObjectGroup *grp);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

@@ -9,180 +9,165 @@ See LICENSE and README
 #include "fj_framebuffer.h"
 #include "fj_multi_thread.h"
 #include "fj_tex_coord.h"
-#include "fj_memory.h"
 #include "fj_mipmap.h"
 #include "fj_vector.h"
 #include "fj_color.h"
 #include "fj_box.h"
-#include <stdlib.h>
+
+#include <cstdlib>
 
 namespace fj {
 
 static const struct Color4 NO_TEXTURE_COLOR(1, .63, .63, 1);
 
-struct TextureCache {
-  struct FrameBuffer *fb;
-  struct MipInput *mip;
-  int last_xtile;
-  int last_ytile;
-};
-
-static struct TextureCache *new_cache(void)
+TextureCache::TextureCache() :
+  fb_(NULL),
+  mip_(NULL),
+  last_xtile_(-1),
+  last_ytile_(-1),
+  is_open_(false)
 {
-  struct TextureCache *cache = FJ_MEM_ALLOC(struct TextureCache);
-
-  if (cache == NULL) {
-    return NULL;
-  }
-
-  cache->fb = NULL;
-  cache->mip = NULL;
-  cache->last_xtile = -1;
-  cache->last_ytile = -1;
-
-  return cache;
 }
 
-static void free_cache(struct TextureCache *cache)
+TextureCache::~TextureCache()
 {
-  if (cache == NULL) {
-    return;
-  }
-
-  FbFree(cache->fb);
-  MipCloseInputFile(cache->mip);
-  FJ_MEM_FREE(cache);
+  FbFree(fb_);
+  MipCloseInputFile(mip_);
 }
 
-static void free_cache_list(struct TextureCache **cache_list, int cache_count)
+int TextureCache::OpenMipmap(const char *filename)
 {
-  int i;
-
-  if (cache_list == NULL) {
-    return;
-  }
-
-  for (i = 0; i < cache_count; i++) {
-    struct TextureCache *cache = cache_list[i];
-    free_cache(cache);
-  }
-
-  FJ_MEM_FREE(cache_list);
-}
-
-static int cache_open_mipmap(struct TextureCache *cache, const char *filename)
-{
-  if (cache == NULL) {
+  if (filename == NULL) {
     return -1;
   }
 
-  cache->mip = MipOpenInputFile(filename);
-  if (cache->mip == NULL) {
+  mip_ = MipOpenInputFile(filename);
+  if (mip_ == NULL) {
     return -1;
   }
 
-  cache->fb = FbNew();
-  if (cache->fb == NULL) {
+  fb_ = FbNew();
+  if (fb_ == NULL) {
     return -1;
   }
 
-  if (MipReadHeader(cache->mip)) {
+  if (MipReadHeader(mip_)) {
     return -1;
   }
 
-  FbResize(cache->fb, cache->mip->tilesize, cache->mip->tilesize, cache->mip->nchannels);
+  FbResize(fb_, mip_->tilesize, mip_->tilesize, mip_->nchannels);
+  is_open_ = true;
+
   return 0;
 }
 
-static void lookup_cache(struct TextureCache *cache, float u, float v, struct Color4 *rgba)
+Color4 TextureCache::LookupTexture(float u, float v)
 {
-  struct TexCoord tex_space;
-  struct TexCoord tile_space;
-
-  int XNTILES, YNTILES;
-  int xpxl, ypxl;
-  int xtile, ytile;
-
-  if (cache == NULL || cache->mip == NULL) {
-    *rgba = NO_TEXTURE_COLOR;
-    return;
+  if (mip_ == NULL) {
+    return NO_TEXTURE_COLOR;
   }
 
-  tex_space.u = u - floor(u);
-  tex_space.v = v - floor(v);
+  const TexCoord tex_space(
+      u - floor(u),
+      v - floor(v));
 
-  XNTILES = cache->mip->xntiles;
-  YNTILES = cache->mip->yntiles;
+  const TexCoord tile_space(
+           tex_space.u  * mip_->xntiles,
+      (1 - tex_space.v) * mip_->yntiles);
 
-  tile_space.u = tex_space.u * XNTILES;
-  tile_space.v = (1-tex_space.v) * YNTILES;
+  const int xtile = static_cast<int>(floor(tile_space.u));
+  const int ytile = static_cast<int>(floor(tile_space.v));
 
-  xtile = (int) floor(tile_space.u);
-  ytile = (int) floor(tile_space.v);
-
-  if (xtile != cache->last_xtile || ytile != cache->last_ytile) {
-    cache->mip->data = FbGetWritable(cache->fb, 0, 0, 0);
-    MipReadTile(cache->mip, xtile, ytile);
-    cache->last_xtile = xtile;
-    cache->last_ytile = ytile;
+  if (xtile != last_xtile_ || ytile != last_ytile_) {
+    mip_->data = FbGetWritable(fb_, 0, 0, 0);
+    MipReadTile(mip_, xtile, ytile);
+    last_xtile_ = xtile;
+    last_ytile_ = ytile;
   }
 
-  xpxl = (int)( (tile_space.u - floor(tile_space.u)) * 64);
-  ypxl = (int)( (tile_space.v - floor(tile_space.v)) * 64);
+  const int xpxl = (int)( (tile_space.u - floor(tile_space.u)) * 64);
+  const int ypxl = (int)( (tile_space.v - floor(tile_space.v)) * 64);
 
-  FbGetColor(cache->fb, xpxl, ypxl, rgba);
+  // TODO FbGetColor returns Color4
+  Color4 rgba;
+  FbGetColor(fb_, xpxl, ypxl, &rgba);
+  return rgba;
 }
 
-struct Texture {
+int TextureCache::GetTextureWidth() const
+{
+  if (mip_ == NULL)
+    return 0;
+  else
+    return mip_->width;
+}
+
+int TextureCache::GetTextureHeight() const
+{
+  if (mip_ == NULL)
+    return 0;
+  else
+    return mip_->height;
+}
+
+bool TextureCache::IsOpen() const
+{
+  return is_open_;
+}
+
+static void free_cache_list(struct TextureCache *cache_list, int cache_count)
+{
+  delete [] cache_list;
+}
+
+class Texture {
+public:
+  Texture();
+  ~Texture();
+
+public:
   char *filename;
-  struct TextureCache **cache_list;
+  TextureCache *cache_list;
   int cache_count;
 };
 
+Texture::Texture() :
+  filename(NULL),
+  cache_list(NULL),
+  cache_count(MtGetMaxThreadCount())
+{
+}
+
+Texture::~Texture()
+{
+  free_cache_list(cache_list, cache_count);
+  StrFree(filename);
+}
+
 struct Texture *TexNew(void)
 {
-  struct Texture *tex = FJ_MEM_ALLOC(struct Texture);
-
-  if (tex == NULL) {
-    return NULL;
-  }
-
-  tex->filename = NULL;
-  tex->cache_list = NULL;
-  tex->cache_count = MtGetMaxThreadCount();
-
-  return tex;
+  return new Texture();
 }
 
 void TexFree(struct Texture *tex)
 {
-  if (tex == NULL) {
-    return;
-  }
-
-  free_cache_list(tex->cache_list, tex->cache_count);
-  StrFree(tex->filename);
-
-  FJ_MEM_FREE(tex);
+  delete tex;
 }
 
 void TexLookup(const struct Texture *tex, float u, float v, struct Color4 *rgba)
 {
   const int thread_id = MtGetThreadID();
+  TextureCache &this_cache = tex->cache_list[thread_id];
 
-  if (tex->cache_list[thread_id] == NULL) {
-    struct TextureCache *cache = new_cache();
-    cache_open_mipmap(cache, tex->filename);
-    tex->cache_list[thread_id] = cache;
+  if (!this_cache.IsOpen()) {
+    this_cache.OpenMipmap(tex->filename);
   }
 
-  lookup_cache(tex->cache_list[thread_id], u, v, rgba);
+  *rgba = this_cache.LookupTexture(u, v);
 }
 
 int TexLoadFile(struct Texture *tex, const char *filename)
 {
-  int i;
-
   if (tex->filename != NULL) {
     free_cache_list(tex->cache_list, tex->cache_count);
     StrFree(tex->filename);
@@ -193,34 +178,29 @@ int TexLoadFile(struct Texture *tex, const char *filename)
     free_cache_list(tex->cache_list, tex->cache_count);
   }
 
-  tex->cache_list = FJ_MEM_ALLOC_ARRAY(struct TextureCache *, tex->cache_count);
+  tex->cache_list = new TextureCache[tex->cache_count];
   if (tex->cache_list == NULL) {
     /* TODO error handling */
     return -1;
   }
 
-  for (i = 0; i < tex->cache_count; i++) {
-    tex->cache_list[i] = NULL;
-  }
-
-  tex->cache_list[0] = new_cache();
-  return cache_open_mipmap(tex->cache_list[0], tex->filename);
+  return tex->cache_list[0].OpenMipmap(tex->filename);
 }
 
 int TexGetWidth(const struct Texture *tex)
 {
-  if (tex->cache_list[0] == NULL) {
+  if (tex->cache_list == NULL) {
     return 0;
   }
-  return tex->cache_list[0]->mip->width;
+  return tex->cache_list[0].GetTextureWidth();
 }
 
 int TexGetHeight(const struct Texture *tex)
 {
-  if (tex->cache_list[0] == NULL) {
+  if (tex->cache_list == NULL) {
     return 0;
   }
-  return tex->cache_list[0]->mip->height;
+  return tex->cache_list[0].GetTextureHeight();
 }
 
 } // namespace xxx

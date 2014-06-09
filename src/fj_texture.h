@@ -11,6 +11,27 @@ namespace fj {
 struct Texture;
 struct Color4;
 
+// Texture cache for each thread
+class TextureCache {
+public:
+  TextureCache();
+  ~TextureCache();
+
+  int OpenMipmap(const char *filename);
+  Color4 LookupTexture(float u, float v);
+
+  int GetTextureWidth() const;
+  int GetTextureHeight() const;
+  bool IsOpen() const;
+
+private:
+  struct FrameBuffer *fb_;
+  struct MipInput *mip_;
+  int last_xtile_;
+  int last_ytile_;
+  bool is_open_;
+};
+
 extern struct Texture *TexNew(void);
 extern void TexFree(struct Texture *tex);
 
@@ -28,4 +49,4 @@ extern int TexGetHeight(const struct Texture *tex);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H
