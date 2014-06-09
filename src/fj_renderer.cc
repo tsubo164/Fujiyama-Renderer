@@ -465,7 +465,7 @@ static int preprocess_camera(const struct Renderer *renderer)
 
   xres = renderer->resolution[0];
   yres = renderer->resolution[1];
-  CamSetAspect(cam, xres/(double)yres);
+  cam->SetAspect(xres/(double)yres);
 
   return 0;
 }
@@ -794,7 +794,7 @@ static int integrate_samples(struct Worker *worker)
     int hit = 0;
     int interrupted = 0;
 
-    CamGetRay(worker->camera, &smp->uv, smp->time, &ray);
+    worker->camera->GetRay(smp->uv, smp->time, &ray);
     cxt.time = smp->time;
 
     hit = SlTrace(&cxt, &ray.orig, &ray.dir, ray.tmin, ray.tmax, &C_trace, &t_hit);

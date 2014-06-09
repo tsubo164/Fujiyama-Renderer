@@ -6,139 +6,119 @@ See LICENSE and README
 #include "fj_camera.h"
 #include "fj_property.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
-#include "fj_vector.h"
 #include "fj_ray.h"
-#include <string.h>
-#include <assert.h>
+
+#include <cassert>
+#include <cmath>
 
 namespace fj {
 
-struct Camera {
-  struct TransformSampleList transform_samples;
-
-  double aspect;
-  double znear;
-  double zfar;
-  double fov;
-
-  struct Vector2 uv_size;
-};
-
-static void compute_uv_size(struct Camera *cam);
-static void compute_ray_target(const struct Camera *cam,
-    const struct Vector2 *uv, struct Vector *target);
-
-struct Camera *CamNew(const char *type)
+Camera::Camera() :
+  transform_samples_(),
+  aspect_(1),
+  znear_(.01),
+  zfar_(1000),
+  fov_(30.),
+  uv_size_()
 {
-  struct Camera *cam = FJ_MEM_ALLOC(struct Camera);
-  if (cam == NULL)
-    return NULL;
-
-  XfmInitTransformSampleList(&cam->transform_samples);
-
-  CamSetAspect(cam, 1);
-  CamSetFov(cam, 30);
-  CamSetNearPlane(cam, .01);
-  CamSetFarPlane(cam, 1000);
-
-  compute_uv_size(cam);
-
-  return cam;
+  XfmInitTransformSampleList(&transform_samples_);
+  compute_uv_size();
 }
 
-void CamFree(struct Camera *cam)
+Camera::~Camera()
 {
-  if (cam == NULL)
-    return;
-  FJ_MEM_FREE(cam);
 }
 
-void CamSetAspect(struct Camera *cam, double aspect)
+void Camera::SetAspect(Real aspect)
 {
   assert(aspect > 0);
-  cam->aspect = aspect;
+  aspect_ = aspect;
 
-  compute_uv_size(cam);
+  compute_uv_size();
 }
 
-void CamSetFov(struct Camera *cam, double fov)
+void Camera::SetFov(Real fov)
 {
   assert(fov > 0);
   assert(fov < 180);
-  cam->fov = fov;
+  fov_ = fov;
 
-  compute_uv_size(cam);
+  compute_uv_size();
 }
 
-void CamSetNearPlane(struct Camera *cam, double znear)
+void Camera::SetNearPlane(Real znear)
 {
   assert(znear > 0);
-  cam->znear = znear;
+  znear_ = znear;
 }
 
-void CamSetFarPlane(struct Camera *cam, double zfar)
+void Camera::SetFarPlane(Real zfar)
 {
   assert(zfar > 0);
-  cam->zfar = zfar;
+  zfar_ = zfar;
 }
 
-void CamSetTranslate(struct Camera *cam, double tx, double ty, double tz, double time)
+void Camera::SetTranslate(Real tx, Real ty, Real tz, Real time)
 {
-  XfmPushTranslateSample(&cam->transform_samples, tx, ty, tz, time);
+  XfmPushTranslateSample(&transform_samples_, tx, ty, tz, time);
 }
 
-void CamSetRotate(struct Camera *cam, double rx, double ry, double rz, double time)
+void Camera::SetRotate(Real rx, Real ry, Real rz, Real time)
 {
-  XfmPushRotateSample(&cam->transform_samples, rx, ry, rz, time);
+  XfmPushRotateSample(&transform_samples_, rx, ry, rz, time);
 }
 
-void CamSetTransformOrder(struct Camera *cam, int order)
+void Camera::SetTransformOrder(int order)
 {
-  XfmSetSampleTransformOrder(&cam->transform_samples, order);
+  XfmSetSampleTransformOrder(&transform_samples_, order);
 }
 
-void CamSetRotateOrder(struct Camera *cam, int order)
+void Camera::SetRotateOrder(int order)
 {
-  XfmSetSampleRotateOrder(&cam->transform_samples, order);
+  XfmSetSampleRotateOrder(&transform_samples_, order);
 }
 
-void CamGetRay(const struct Camera *cam, const struct Vector2 *screen_uv,
-    double time, struct Ray *ray)
+void Camera::GetRay(const Vector2 &screen_uv, Real time, Ray *ray) const
 {
-  struct Transform transform_interp;
-  struct Vector target;
-  struct Vector eye;
+  Transform transform_interp;
+  XfmLerpTransformSample(&transform_samples_, time, &transform_interp);
 
-  XfmLerpTransformSample(&cam->transform_samples, time, &transform_interp);
+  Vector target = compute_ray_target(screen_uv);
+  Vector eye;
 
-  compute_ray_target(cam, screen_uv, &target);
   XfmTransformPoint(&transform_interp, &target);
   XfmTransformPoint(&transform_interp, &eye);
 
-  ray->dir.x = target.x - eye.x;
-  ray->dir.y = target.y - eye.y;
-  ray->dir.z = target.z - eye.z;
-
+  ray->dir  = target - eye;
   Normalize(&ray->dir);
   ray->orig = eye;
 
-  ray->tmin = cam->znear;
-  ray->tmax = cam->zfar;
+  ray->tmin = znear_;
+  ray->tmax = zfar_;
 }
 
-static void compute_uv_size(struct Camera *cam)
+void Camera::compute_uv_size()
 {
-  cam->uv_size.y = 2 * tan(Radian(cam->fov / 2.));
-  cam->uv_size.x = cam->uv_size.y * cam->aspect;
+  uv_size_[1] = 2 * tan(Radian(fov_ / 2.));
+  uv_size_[0] = uv_size_[1] * aspect_;
 }
 
-static void compute_ray_target(const struct Camera *cam,
-    const struct Vector2 *uv, struct Vector *target)
+Vector Camera::compute_ray_target(const Vector2 &uv) const
 {
-  target->x = (uv->x - .5) * cam->uv_size.x;
-  target->y = (uv->y - .5) * cam->uv_size.y;
-  target->z = -1;
+  return Vector(
+      (uv[0] - .5) * uv_size_[0],
+      (uv[1] - .5) * uv_size_[1],
+      -1);
+}
+
+Camera *CamNew(const char *type)
+{
+  return new Camera();
+}
+
+void CamFree(Camera *cam)
+{
+  delete cam;
 }
 
 } // namespace xxx

@@ -11,7 +11,8 @@ See LICENSE and README
 
 namespace fj {
 
-struct Ray {
+class Ray {
+public:
   Ray() : orig(), dir(0, 0, 1), tmin(.001), tmax(1000) {}
   ~Ray() {}
 
@@ -29,4 +30,4 @@ inline Vector RayPointAt(const Ray &ray, Real t)
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

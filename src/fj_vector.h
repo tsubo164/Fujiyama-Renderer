@@ -11,10 +11,28 @@ See LICENSE and README
 
 namespace fj {
 
-struct Vector2 {
+class Vector2 {
+public:
   Vector2() : x(0), y(0) {}
   Vector2(Real xx, Real yy) : x(xx), y(yy) {}
   ~Vector2() {}
+
+  const Real &operator[](int i) const
+  {
+    switch(i) {
+    case 0: return x;
+    case 1: return y;
+    default: return x; // TODO ERROR HANDLING
+    }
+  }
+  Real &operator[](int i)
+  {
+    switch(i) {
+    case 0: return x;
+    case 1: return y;
+    default: return x; // TODO ERROR HANDLING
+    }
+  }
 
   Real x, y;
 };

@@ -7,29 +7,47 @@ See LICENSE and README
 #define FJ_CAMERA_H
 
 #include "fj_transform.h"
+#include "fj_vector.h"
+#include "fj_types.h"
 
 namespace fj {
 
-struct Camera;
-struct Vector2;
-struct Ray;
+class Ray;
 
-extern struct Camera *CamNew(const char *type);
-extern void CamFree(struct Camera *cam);
+class Camera {
+public:
+  Camera();
+  ~Camera();
 
-extern void CamSetAspect(struct Camera *cam, double aspect);
-extern void CamSetFov(struct Camera *cam, double fov);
-extern void CamSetNearPlane(struct Camera *cam, double znear);
-extern void CamSetFarPlane(struct Camera *cam, double zfar);
+  void SetAspect(Real aspect);
+  void SetFov(Real fov);
+  void SetNearPlane(Real znear);
+  void SetFarPlane(Real zfar);
 
-extern void CamSetTranslate(struct Camera *cam, double tx, double ty, double tz, double time);
-extern void CamSetRotate(struct Camera *cam, double rx, double ry, double rz, double time);
-extern void CamSetTransformOrder(struct Camera *cam, int order);
-extern void CamSetRotateOrder(struct Camera *cam, int order);
+  void SetTranslate(Real tx, Real ty, Real tz, Real time);
+  void SetRotate(Real rx, Real ry, Real rz, Real time);
+  void SetTransformOrder(int order);
+  void SetRotateOrder(int order);
 
-extern void CamGetRay(const struct Camera *cam, const struct Vector2 *screen_uv,
-    double time, struct Ray *ray);
+  void GetRay(const Vector2 &screen_uv, Real time, Ray *ray) const;
+
+private:
+  void compute_uv_size();
+  Vector compute_ray_target(const Vector2 &uv) const;
+
+  TransformSampleList transform_samples_;
+
+  Real aspect_;
+  Real znear_;
+  Real zfar_;
+  Real fov_;
+
+  Vector2 uv_size_;
+};
+
+extern Camera *CamNew(const char *type);
+extern void CamFree(Camera *cam);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

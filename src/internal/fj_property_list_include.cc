@@ -207,45 +207,50 @@ static int set_Renderer_thread_count(void *self, const struct PropertyValue *val
 
 static int set_Camera_fov(void *self, const struct PropertyValue *value)
 {
-  CamSetFov((struct Camera *) self, value->vector[0]);
+  Camera *cam = reinterpret_cast<Camera *>(self);
+  cam->SetFov(value->vector[0]);
   return 0;
 }
 
 static int set_Camera_znear(void *self, const struct PropertyValue *value)
 {
-  CamSetNearPlane((struct Camera *) self, value->vector[0]);
+  Camera *cam = reinterpret_cast<Camera *>(self);
+  cam->SetNearPlane(value->vector[0]);
   return 0;
 }
 
 static int set_Camera_zfar(void *self, const struct PropertyValue *value)
 {
-  CamSetFarPlane((struct Camera *) self, value->vector[0]);
+  Camera *cam = reinterpret_cast<Camera *>(self);
+  cam->SetFarPlane(value->vector[0]);
   return 0;
 }
 
 static int set_Camera_translate(void *self, const struct PropertyValue *value)
 {
-  CamSetTranslate((struct Camera *) self,
-      value->vector[0], value->vector[1], value->vector[2], value->time);
+  Camera *cam = reinterpret_cast<Camera *>(self);
+  cam->SetTranslate(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 
 static int set_Camera_rotate(void *self, const struct PropertyValue *value)
 {
-  CamSetRotate((struct Camera *) self,
-      value->vector[0], value->vector[1], value->vector[2], value->time);
+  Camera *cam = reinterpret_cast<Camera *>(self);
+  cam->SetRotate(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 
 static int set_Camera_transform_order(void *self, const struct PropertyValue *value)
 {
-  CamSetTransformOrder((struct Camera *) self, (int) value->vector[0]);
+  Camera *cam = reinterpret_cast<Camera *>(self);
+  cam->SetTransformOrder((int) value->vector[0]);
   return 0;
 }
 
 static int set_Camera_rotate_order(void *self, const struct PropertyValue *value)
 {
-  CamSetRotateOrder((struct Camera *) self, (int) value->vector[0]);
+  Camera *cam = reinterpret_cast<Camera *>(self);
+  cam->SetRotateOrder((int) value->vector[0]);
   return 0;
 }
 
