@@ -149,8 +149,8 @@ static int FillWithPointClouds(struct Volume *volume,
   /* TODO come up with the best place to put progress */
   struct Progress progress;
 
-  VolGetResolution(volume, &xres, &yres, &zres);
-  thresholdwidth = .5 * VolGetFilterSize(volume);
+  volume->GetResolution(&xres, &yres, &zres);
+  thresholdwidth = .5 * volume->GetFilterSize();
 
   VolGetIndexRange(volume, &cp->orig, cp->radius * 1.5,
       &xmin, &ymin, &zmin,
@@ -175,15 +175,15 @@ static int FillWithPointClouds(struct Volume *volume,
         float pyro_value = 0;
         float value = 0;
 
-        VolIndexToPoint(volume, i, j, k, &cell_center);
+        cell_center = volume->IndexToPoint(i, j, k);
         P_local_space.x =  cell_center.x - cp->orig.x;
         P_local_space.y =  cell_center.y - cp->orig.y;
         P_local_space.z =  cell_center.z - cp->orig.z;
         distance = Length(P_local_space);
 
         if (distance < cp->radius - thresholdwidth) {
-          value = VolGetValue(volume, i, j, k);
-          VolSetValue(volume, i, j, k, Max(value, cp->density));
+          value = volume->GetValue(i, j, k);
+          volume->SetValue(i, j, k, Max(value, cp->density));
           progress.Increment();
           continue;
         }
@@ -204,8 +204,8 @@ static int FillWithPointClouds(struct Volume *volume,
         pyro_value = Fit(pyro_func, -thresholdwidth, thresholdwidth, 1, 0);
         pyro_value *= cp->density;
 
-        value = VolGetValue(volume, i, j, k);
-        VolSetValue(volume, i, j, k, Max(value, pyro_value));
+        value = volume->GetValue(i, j, k);
+        volume->SetValue(i, j, k, Max(value, pyro_value));
 
         progress.Increment();
       }

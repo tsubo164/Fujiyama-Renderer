@@ -69,7 +69,7 @@ void FillWithSphere(struct Volume *volume,
   int i, j, k;
   int xmin, ymin, zmin;
   int xmax, ymax, zmax;
-  const double thresholdwidth = .5 * VolGetFilterSize(volume);
+  const double thresholdwidth = .5 * volume->GetFilterSize();
 
   VolGetIndexRange(volume, center, radius,
       &xmin, &ymin, &zmin,
@@ -81,16 +81,16 @@ void FillWithSphere(struct Volume *volume,
         struct Vector P;
         float value = 0;
 
-        VolIndexToPoint(volume, i, j, k, &P);
+        P = volume->IndexToPoint(i, j, k);
 
         P.x -= center->x;
         P.y -= center->y;
         P.z -= center->z;
 
-        value = VolGetValue(volume, i, j, k);
+        value = volume->GetValue(i, j, k);
         value += density * Fit(Length(P) - radius,
             -thresholdwidth, thresholdwidth, 1, 0);
-        VolSetValue(volume, i, j, k, value);
+        volume->SetValue(i, j, k, value);
       }
     }
   }

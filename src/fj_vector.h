@@ -37,7 +37,8 @@ public:
   Real x, y;
 };
 
-struct Vector {
+class Vector {
+public:
   Vector() : x(0), y(0), z(0) {}
   Vector(Real xx, Real yy, Real zz) : x(xx), y(yy), z(zz) {}
   ~Vector() {}

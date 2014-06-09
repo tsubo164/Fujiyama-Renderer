@@ -259,8 +259,8 @@ static int set_Camera_rotate_order(void *self, const struct PropertyValue *value
 
 static int set_Volume_resolution(void *self, const struct PropertyValue *value)
 {
-  VolResize((struct Volume *) self,
-      value->vector[0], value->vector[1], value->vector[2]);
+  Volume *volume = reinterpret_cast<Volume *>(self);
+  volume->Resize(value->vector[0], value->vector[1], value->vector[2]);
   return 0;
 }
 
@@ -269,13 +269,13 @@ static int set_Volume_bounds_min(void *self, const struct PropertyValue *value)
   struct Volume *volume = (struct Volume *) self;
   struct Box bounds;
 
-  VolGetBounds(volume, &bounds);
+  bounds = volume->GetBounds();
 
   bounds.min.x = value->vector[0];
   bounds.min.y = value->vector[1];
   bounds.min.z = value->vector[2];
 
-  VolSetBounds(volume, &bounds);
+  volume->SetBounds(bounds);
 
   return 0;
 }
@@ -285,13 +285,13 @@ static int set_Volume_bounds_max(void *self, const struct PropertyValue *value)
   struct Volume *volume = (struct Volume *) self;
   struct Box bounds;
 
-  VolGetBounds(volume, &bounds);
+  bounds = volume->GetBounds();
 
   bounds.max.x = value->vector[0];
   bounds.max.y = value->vector[1];
   bounds.max.z = value->vector[2];
 
-  VolSetBounds(volume, &bounds);
+  volume->SetBounds(bounds);
 
   return 0;
 }

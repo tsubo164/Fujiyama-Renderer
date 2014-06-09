@@ -6,8 +6,10 @@ See LICENSE and README
 #ifndef FJ_VOLUME_H
 #define FJ_VOLUME_H
 
+#include "fj_compatibility.h"
 #include "fj_vector.h"
 #include "fj_types.h"
+#include "fj_box.h"
 #include <vector>
 
 namespace fj {
@@ -38,39 +40,52 @@ private:
   Resolution res_;
 };
 
-struct Volume;
-struct Vector;
-struct Box;
+class VolumeSample {
+public:
+  VolumeSample() : density(0) {}
+  ~VolumeSample() {}
 
-struct VolumeSample {
   float density;
 };
 
-extern struct Volume *VolNew(void);
-extern void VolFree(struct Volume *volume);
+class FJ_API Volume {
+public:
+  Volume();
+  ~Volume();
 
-extern void VolResize(struct Volume *volume, int xres, int yres, int zres);
-extern void VolSetBounds(struct Volume *volume, struct Box *bounds);
-extern void VolGetBounds(const struct Volume *volume, struct Box *bounds);
-extern void VolGetResolution(const struct Volume *volume, int *i, int *j, int *k);
+  void Resize(int xres, int yres, int zres);
 
-extern double VolGetFilterSize(const struct Volume *volume);
+  void SetBounds(const Box &bounds);
+  const Box &GetBounds() const;
 
-extern void VolIndexToPoint(const struct Volume *volume, int i, int j, int k,
-    struct Vector *point);
-extern void VolPointToIndex(const struct Volume *volume, const struct Vector *point,
-    int *i, int *j, int *k);
+  void GetResolution(int *i, int *j, int *k) const;
+  Real GetFilterSize() const;
 
-extern void VolGetIndexRange(const struct Volume *volume,
-    const struct Vector *center, double radius,
+  Vector IndexToPoint(int i, int j, int k) const;
+  void PointToIndex(const Vector &point, int *i, int *j, int *k) const;
+
+  void SetValue(int x, int y, int z, float value);
+  float GetValue(int x, int y, int z) const;
+
+  bool GetSample(const Vector &point, VolumeSample *sample) const;
+
+public:
+  void compute_filter_size();
+
+  VoxelBuffer buffer_;
+  Box bounds_;
+  Vector size_;
+
+  Real filtersize_;
+};
+
+extern Volume *VolNew(void);
+extern void VolFree(Volume *volume);
+
+extern void VolGetIndexRange(const Volume *volume,
+    const Vector *center, double radius,
     int *xmin, int *ymin, int *zmin,
     int *xmax, int *ymax, int *zmax);
-
-extern void VolSetValue(struct Volume *volume, int x, int y, int z, float value);
-extern float VolGetValue(const struct Volume *volume, int x, int y, int z);
-
-extern int VolGetSample(const struct Volume *volume, const struct Vector *point,
-      struct VolumeSample *sample);
 
 } // namespace xxx
 

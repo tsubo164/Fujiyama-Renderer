@@ -284,7 +284,7 @@ int ObjVolumeIntersect(const struct ObjectInstance *obj, double time,
   if (!ObjIsVolume(obj))
     return 0;
 
-  VolGetBounds(obj->volume, &volume_bounds);
+  volume_bounds = obj->volume->GetBounds();
 
   XfmLerpTransformSample(&obj->transform_samples, time, &transform_interp);
 
@@ -326,7 +326,7 @@ int ObjGetVolumeSample(const struct ObjectInstance *obj, double time,
   point_in_objspace = *point;
   XfmTransformPointInverse(&transform_interp, &point_in_objspace);
 
-  hit = VolGetSample(obj->volume, &point_in_objspace, sample);
+  hit = obj->volume->GetSample(point_in_objspace, sample);
 
   return hit;
 }
@@ -337,7 +337,7 @@ static void update_object_bounds(struct ObjectInstance *obj)
     obj->bounds = obj->acc->GetBounds();
   }
   else if (ObjIsVolume(obj)) {
-    VolGetBounds(obj->volume, &obj->bounds);
+    obj->bounds = obj->volume->GetBounds();
   }
   else {
     obj->bounds = Box();
