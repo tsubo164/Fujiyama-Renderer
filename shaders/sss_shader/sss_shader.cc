@@ -222,7 +222,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 
   /* diffuse map */
   if (sss->diffuse_map != NULL) {
-    TexLookup(sss->diffuse_map, in->uv.u, in->uv.v, &diff_map);
+    diff_map = sss->diffuse_map->Lookup(in->uv.u, in->uv.v);
   }
 
   /* Cs */

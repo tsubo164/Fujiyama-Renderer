@@ -411,8 +411,8 @@ void SlBumpMapping(const struct Texture *bump_map,
   float Bu, Bv;
   float du, dv;
   float val0, val1;
-  const int xres = TexGetWidth(bump_map);
-  const int yres = TexGetHeight(bump_map);
+  const int xres = bump_map->GetWidth();
+  const int yres = bump_map->GetHeight();
   
   if (xres == 0 || yres == 0) {
     return;
@@ -422,15 +422,15 @@ void SlBumpMapping(const struct Texture *bump_map,
   dv = 1. / yres;
 
   /* Bu = B(u - du, v) - B(v + du, v) / (2 * du) */
-  TexLookup(bump_map, texcoord->u - du, texcoord->v, &C_tex0);
-  TexLookup(bump_map, texcoord->u + du, texcoord->v, &C_tex1);
+  C_tex0 = bump_map->Lookup(texcoord->u - du, texcoord->v);
+  C_tex1 = bump_map->Lookup(texcoord->u + du, texcoord->v);
   val0 = Luminance4(C_tex0);
   val1 = Luminance4(C_tex1);
   Bu = (val0 - val1) / (2 * du);
 
   /* Bv = B(u, v - dv) - B(v, v + dv) / (2 * dv) */
-  TexLookup(bump_map, texcoord->u, texcoord->v - dv, &C_tex0);
-  TexLookup(bump_map, texcoord->u, texcoord->v + dv, &C_tex1);
+  C_tex0 = bump_map->Lookup(texcoord->u, texcoord->v - dv);
+  C_tex1 = bump_map->Lookup(texcoord->u, texcoord->v + dv);
   val0 = Luminance4(C_tex0);
   val1 = Luminance4(C_tex1);
   Bv = (val0 - val1) / (2 * dv);

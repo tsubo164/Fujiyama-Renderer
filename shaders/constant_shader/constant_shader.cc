@@ -89,7 +89,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 
   /* C_tex */
   if (constant->texture != NULL) {
-    TexLookup(constant->texture, in->uv.u, in->uv.v, &C_tex);
+    C_tex = constant->texture->Lookup(in->uv.u, in->uv.v);
     C_tex.r *= constant->diffuse.r;
     C_tex.g *= constant->diffuse.g;
     C_tex.b *= constant->diffuse.b;

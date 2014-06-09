@@ -159,7 +159,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
 
   /* diffuse map */
   if (plastic->diffuse_map != NULL) {
-    TexLookup(plastic->diffuse_map, in->uv.u, in->uv.v, &diff_map);
+    diff_map = plastic->diffuse_map->Lookup(in->uv.u, in->uv.v);
   }
 
   /* Cs */

@@ -85,7 +85,7 @@ int ImportanceSampling(struct Texture *texture, int seed,
 
       index_to_uv(sample_xres, sample_yres, index, &sample.uv);
       uv_to_dir(sample.uv.u, sample.uv.v, &sample.dir);
-      TexLookup(texture, sample.uv.u, sample.uv.v, &tex_rgba);
+      tex_rgba = texture->Lookup(sample.uv.u, sample.uv.v);
       sample.color.r = tex_rgba.r;
       sample.color.g = tex_rgba.g;
       sample.color.b = tex_rgba.b;
@@ -140,7 +140,7 @@ int StratifiedImportanceSampling(struct Texture *texture, int seed,
 
       index_to_uv(sample_xres, sample_yres, index, &sample.uv);
       uv_to_dir(sample.uv.u, sample.uv.v, &sample.dir);
-      TexLookup(texture, sample.uv.u, sample.uv.v, &tex_rgba);
+      tex_rgba = texture->Lookup(sample.uv.u, sample.uv.v);
       sample.color.r = tex_rgba.r;
       sample.color.g = tex_rgba.g;
       sample.color.b = tex_rgba.b;
@@ -222,7 +222,7 @@ int StructuredImportanceSampling(struct Texture *texture, int seed,
   for (i = 0; i < sample_count; i++) {
     struct DomeSample *sample = &dome_samples[i];
     struct Color4 tex_rgba;
-    TexLookup(texture, sample->uv.u, sample->uv.v, &tex_rgba);
+    tex_rgba = texture->Lookup(sample->uv.u, sample->uv.v);
     sample->color.r = tex_rgba.r;
     sample->color.g = tex_rgba.g;
     sample->color.b = tex_rgba.b;
@@ -248,7 +248,7 @@ static void make_histgram(struct Texture *texture,
     struct TexCoord uv;
 
     index_to_uv(sample_xres, sample_yres, i, &uv);
-    TexLookup(texture, uv.u, uv.v, &tex_rgba);
+    tex_rgba = texture->Lookup(uv.u, uv.v);
 
     sum += Luminance4(tex_rgba);
     histgram[i] = sum;
@@ -308,7 +308,7 @@ static void setup_structured_importance_sampling(struct Texture *texture,
     struct TexCoord uv;
 
     index_to_uv(sample_xres, sample_yres, i, &uv);
-    TexLookup(texture, uv.u, uv.v, &tex_rgba);
+    tex_rgba = texture->Lookup(uv.u, uv.v);
 
     L[i] = Luminance4(tex_rgba);
     L_whole += L[i];

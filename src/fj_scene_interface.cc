@@ -481,7 +481,7 @@ ID SiNewTexture(const char *filename)
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
   }
-  if (TexLoadFile(tex, filename)) {
+  if (tex->LoadFile(filename)) {
     set_errno(SI_ERR_FAILLOAD);
     return SI_FAIL;
   }

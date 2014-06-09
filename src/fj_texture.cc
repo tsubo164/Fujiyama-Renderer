@@ -4,7 +4,6 @@ See LICENSE and README
 */
 
 #include "fj_texture.h"
-#include "fj_string_function.h"
 #include "fj_framebuffer_io.h"
 #include "fj_framebuffer.h"
 #include "fj_multi_thread.h"
@@ -12,13 +11,12 @@ See LICENSE and README
 #include "fj_mipmap.h"
 #include "fj_vector.h"
 #include "fj_color.h"
-#include "fj_box.h"
 
 #include <cstddef>
 
 namespace fj {
 
-static const struct Color4 NO_TEXTURE_COLOR(1, .63, .63, 1);
+static const Color4 NO_TEXTURE_COLOR(1, .63, .63, 1);
 
 TextureCache::TextureCache() :
   fb_(NULL),
@@ -116,69 +114,63 @@ bool TextureCache::IsOpen() const
 }
 
 Texture::Texture() :
-  filename(""),
-  cache_list(MtGetMaxThreadCount()),
-  cache_count(MtGetMaxThreadCount())
+    filename_(""),
+    cache_list_(MtGetMaxThreadCount())
 {
 }
 
 Texture::~Texture()
 {
-  //StrFree(filename);
 }
 
-struct Texture *TexNew(void)
+Color4 Texture::Lookup(float u, float v) const
+{
+  const int thread_id = MtGetThreadID();
+  TextureCache &this_cache = const_cast<TextureCache&>(cache_list_[thread_id]);
+
+  if (!this_cache.IsOpen()) {
+    this_cache.OpenMipmap(filename_);
+  }
+
+  return this_cache.LookupTexture(u, v);
+}
+
+int Texture::LoadFile(const std::string &filename)
+{
+  if (filename_ == "") {
+    const size_t cache_count = cache_list_.size();
+    cache_list_.clear();
+    cache_list_.resize(cache_count);
+  }
+  filename_ = filename;
+
+  return cache_list_[0].OpenMipmap(filename_);
+}
+
+int Texture::GetWidth() const
+{
+  if (!cache_list_[0].IsOpen()) {
+    return 0;
+  }
+  return cache_list_[0].GetTextureWidth();
+}
+
+int Texture::GetHeight() const
+{
+  if (!cache_list_[0].IsOpen()) {
+    return 0;
+  }
+  return cache_list_[0].GetTextureHeight();
+}
+
+Texture *TexNew(void)
 {
   return new Texture();
 }
 
-void TexFree(struct Texture *tex)
+void TexFree(Texture *tex)
 {
   delete tex;
-}
-
-void TexLookup(const struct Texture *tex, float u, float v, struct Color4 *rgba)
-{
-  const int thread_id = MtGetThreadID();
-  TextureCache &this_cache = const_cast<TextureCache&>(tex->cache_list[thread_id]);
-
-  if (!this_cache.IsOpen()) {
-    this_cache.OpenMipmap(tex->filename);
-  }
-
-  *rgba = this_cache.LookupTexture(u, v);
-}
-
-int TexLoadFile(struct Texture *tex, const char *filename)
-{
-  if (filename == NULL || std::string("") == filename) {
-    return -1;
-  }
-
-  if (tex->filename == "") {
-    const size_t cache_count = tex->cache_list.size();
-    tex->cache_list.clear();
-    tex->cache_list.resize(cache_count);
-  }
-  tex->filename = filename;
-
-  return tex->cache_list[0].OpenMipmap(tex->filename);
-}
-
-int TexGetWidth(const struct Texture *tex)
-{
-  if (!tex->cache_list[0].IsOpen()) {
-    return 0;
-  }
-  return tex->cache_list[0].GetTextureWidth();
-}
-
-int TexGetHeight(const struct Texture *tex)
-{
-  if (!tex->cache_list[0].IsOpen()) {
-    return 0;
-  }
-  return tex->cache_list[0].GetTextureHeight();
 }
 
 } // namespace xxx

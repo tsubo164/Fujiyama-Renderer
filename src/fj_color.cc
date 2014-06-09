@@ -8,17 +8,17 @@ See LICENSE and README
 
 namespace fj {
 
-struct Color *ColAlloc(long count)
+Color *ColAlloc(long count)
 {
-  return FJ_MEM_ALLOC_ARRAY(struct Color, count);
+  return FJ_MEM_ALLOC_ARRAY(Color, count);
 }
 
-struct Color *ColRealloc(struct Color *c, long count)
+Color *ColRealloc(Color *c, long count)
 {
-  return FJ_MEM_REALLOC_ARRAY(c, struct Color, count);
+  return FJ_MEM_REALLOC_ARRAY(c, Color, count);
 }
 
-void ColFree(struct Color *c)
+void ColFree(Color *c)
 {
   FJ_MEM_FREE(c);
 }

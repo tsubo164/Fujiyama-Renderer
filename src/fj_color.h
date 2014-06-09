@@ -10,7 +10,8 @@ See LICENSE and README
 
 namespace fj {
 
-struct FJ_API Color {
+class FJ_API Color {
+public:
   Color() : r(0), g(0), b(0) {}
   Color(float rr, float gg, float bb) : r(rr), g(gg), b(bb) {}
   ~Color() {}
@@ -112,7 +113,8 @@ inline Color operator-(const Color &A)
     -A.b);
 }
 
-struct Color4 {
+class Color4 {
+public:
   Color4() : r(0), g(0), b(0), a(0) {}
   Color4(float rr, float gg, float bb, float aa) : r(rr), g(gg), b(bb), a(aa) {}
   ~Color4() {}
@@ -239,10 +241,10 @@ inline Color ColLerp(const Color &A, const Color &B, float t)
   return (1 - t) * A + t * B;
 }
 
-FJ_API struct Color *ColAlloc(long count);
-FJ_API struct Color *ColRealloc(struct Color *c, long count);
-FJ_API void ColFree(struct Color *c);
+FJ_API Color *ColAlloc(long count);
+FJ_API Color *ColRealloc(Color *c, long count);
+FJ_API void ColFree(Color *c);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

@@ -11,8 +11,9 @@ See LICENSE and README
 
 namespace fj {
 
-struct Texture;
-struct Color4;
+class FrameBuffer;
+class MipInput;
+class Color4;
 
 // Texture cache for each thread
 class TextureCache {
@@ -28,8 +29,8 @@ public:
   bool IsOpen() const;
 
 private:
-  struct FrameBuffer *fb_;
-  struct MipInput *mip_;
+  FrameBuffer *fb_;
+  MipInput *mip_;
   int last_xtile_;
   int last_ytile_;
   bool is_open_;
@@ -40,26 +41,25 @@ public:
   Texture();
   ~Texture();
 
-public:
-  std::string filename;
-  std::vector<TextureCache> cache_list;
-  int cache_count;
+  /*
+   * Looks up a value of texture image.
+   * (r, r, r, 1) will be returned when texture is grayscale.
+   * (r, g, b, 1) will be returned when texture is rgb.
+   * (r, g, b, a) will be returned when texture is rgba.
+   */
+  Color4 Lookup(float u, float v) const;
+  int LoadFile(const std::string &filename);
+
+  int GetWidth() const;
+  int GetHeight() const;
+
+private:
+  std::string filename_;
+  std::vector<TextureCache> cache_list_;
 };
 
-extern struct Texture *TexNew(void);
-extern void TexFree(struct Texture *tex);
-
-/*
- * Looks up a value of texture image.
- * (r, r, r, 1) will be returned when texture is grayscale.
- * (r, g, b, 1) will be returned when texture is rgb.
- * (r, g, b, a) will be returned when texture is rgba.
- */
-extern void TexLookup(const struct Texture *tex, float u, float v, struct Color4 *rgba);
-extern int TexLoadFile(struct Texture *tex, const char *filename);
-
-extern int TexGetWidth(const struct Texture *tex);
-extern int TexGetHeight(const struct Texture *tex);
+extern Texture *TexNew(void);
+extern void TexFree(Texture *tex);
 
 } // namespace xxx
 
