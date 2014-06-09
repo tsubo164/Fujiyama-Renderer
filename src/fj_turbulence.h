@@ -6,25 +6,38 @@ See LICENSE and README
 #ifndef FJ_TURBULENCE_H
 #define FJ_TURBULENCE_H
 
+#include "fj_vector.h"
+#include "fj_types.h"
+
 namespace fj {
 
-struct Turbulence;
-struct Vector;
+class Turbulence {
+public:
+  Turbulence();
+  ~Turbulence();
 
-extern struct Turbulence *TrbNew(void);
-extern void TrbFree(struct Turbulence *turbulence);
+  void SetAmplitude(Real x, Real y, Real z);
+  void SetFrequency(Real x, Real y, Real z);
+  void SetOffset(Real x, Real y, Real z);
+  void SetLacunarity(Real lacunarity);
+  void SetGain(Real gain);
+  void SetOctaves(int octaves);
 
-extern void TrbSetAmplitude(struct Turbulence *turbulence, double x, double y, double z);
-extern void TrbSetFrequency(struct Turbulence *turbulence, double x, double y, double z);
-extern void TrbSetOffset(struct Turbulence *turbulence, double x, double y, double z);
-extern void TrbSetLacunarity(struct Turbulence *turbulence, double lacunarity);
-extern void TrbSetGain(struct Turbulence *turbulence, double gain);
-extern void TrbSetOctaves(struct Turbulence *turbulence, int octaves);
+  double Evaluate(const Vector &position) const;
+  Vector Evaluate3d(const Vector &position) const;
 
-extern double TrbEvaluate(const struct Turbulence *turbulence, const struct Vector *position);
-extern void TrbEvaluate3d(const struct Turbulence *turbulence, const struct Vector *position,
-    struct Vector *out_noise);
+private:
+  Vector amplitude_;
+  Vector frequency_;
+  Vector offset_;
+  Real   lacunarity_;
+  Real   gain_;
+  int    octaves_;
+};
+
+extern Turbulence *TrbNew();
+extern void TrbFree(Turbulence *turbulence);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

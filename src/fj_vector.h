@@ -104,6 +104,20 @@ struct Vector {
     z -= a.z;
     return *this;
   }
+  const Vector &operator*=(const Vector &a)
+  {
+    x *= a.x;
+    y *= a.y;
+    z *= a.z;
+    return *this;
+  }
+  const Vector &operator/=(const Vector &a)
+  {
+    x /= a.x;
+    y /= a.y;
+    z /= a.z;
+    return *this;
+  }
   const Vector &operator*=(Real scalar)
   {
     x *= scalar;
@@ -147,6 +161,22 @@ inline Vector operator-(const Vector &a, const Vector &b)
     a.x - b.x,
     a.y - b.y,
     a.z - b.z);
+}
+
+inline Vector operator*(const Vector &a, const Vector &b)
+{
+  return Vector(
+    a.x * b.x,
+    a.y * b.y,
+    a.z * b.z);
+}
+
+inline Vector operator/(const Vector &a, const Vector &b)
+{
+  return Vector(
+    a.x / b.x,
+    a.y / b.y,
+    a.z / b.z);
 }
 
 inline Vector operator*(const Vector &a, Real scalar)

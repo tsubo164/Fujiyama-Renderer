@@ -69,40 +69,43 @@ static int set_ObjectInstance_shadow_target(void *self, const struct PropertyVal
 
 static int set_Turbulence_lacunarity(void *self, const struct PropertyValue *value)
 {
-  TrbSetLacunarity((struct Turbulence *) self, value->vector[0]);
+  Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
+  turbulence->SetLacunarity(value->vector[0]);
   return 0;
 }
 
 static int set_Turbulence_gain(void *self, const struct PropertyValue *value)
 {
-  TrbSetGain((struct Turbulence *) self, value->vector[0]);
+  Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
+  turbulence->SetGain(value->vector[0]);
   return 0;
 }
 
 static int set_Turbulence_octaves(void *self, const struct PropertyValue *value)
 {
-  TrbSetOctaves((struct Turbulence *) self, (int) value->vector[0]);
+  Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
+  turbulence->SetOctaves((int) value->vector[0]);
   return 0;
 }
 
 static int set_Turbulence_amplitude(void *self, const struct PropertyValue *value)
 {
-  TrbSetAmplitude((struct Turbulence *) self,
-      value->vector[0], value->vector[1], value->vector[2]);
+  Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
+  turbulence->SetAmplitude(value->vector[0], value->vector[1], value->vector[2]);
   return 0;
 }
 
 static int set_Turbulence_frequency(void *self, const struct PropertyValue *value)
 {
-  TrbSetFrequency((struct Turbulence *) self,
-      value->vector[0], value->vector[1], value->vector[2]);
+  Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
+  turbulence->SetFrequency(value->vector[0], value->vector[1], value->vector[2]);
   return 0;
 }
 
 static int set_Turbulence_offset(void *self, const struct PropertyValue *value)
 {
-  TrbSetOffset((struct Turbulence *) self,
-      value->vector[0], value->vector[1], value->vector[2]);
+  Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
+  turbulence->SetOffset(value->vector[0], value->vector[1], value->vector[2]);
   return 0;
 }
 

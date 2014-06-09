@@ -201,7 +201,7 @@ static int FillWithSpecksOnSurface(struct Volume *volume,
     P_noise_space.x = cp_t.noise_space.x;
     P_noise_space.y = cp_t.noise_space.y;
     P_noise_space.z = cp_t.noise_space.z + cube.z;
-    TrbEvaluate3d(turbulence, &P_noise_space, &noise);
+    noise = turbulence->Evaluate3d(P_noise_space);
 
     noise.x *= cp_t.noise_amplitude;
     noise.y *= cp_t.noise_amplitude;
