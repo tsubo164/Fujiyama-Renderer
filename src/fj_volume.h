@@ -44,4 +44,4 @@ extern int VolGetSample(const struct Volume *volume, const struct Vector *point,
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

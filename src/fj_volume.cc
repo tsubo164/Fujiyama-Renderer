@@ -9,39 +9,89 @@ See LICENSE and README
 #include "fj_vector.h"
 #include "fj_box.h"
 
-#include <float.h>
-#include <stdio.h>
+#include <vector>
+#include <cfloat>
+#include <cstdio>
 
 namespace fj {
 
-struct Resolution {
+class Resolution {
+public:
+  Resolution() : x(0), y(0), z(0) {}
+  Resolution(int xx, int yy, int zz) : x(xx), y(yy), z(zz) {}
+  ~Resolution() {}
+
   int x, y, z;
 };
 
-struct VoxelBuffer {
-  float *data;
-  struct Resolution res;
+class VoxelBuffer {
+public:
+  VoxelBuffer();
+  ~VoxelBuffer();
+
+  void Resize(int xres, int yres, int zres);
+  Resolution GetResolution() const;
+  bool IsEmpty() const;
+
+public:
+  std::vector<float> data_;
+  Resolution res_;
 };
 
-struct Volume {
-  struct VoxelBuffer *buffer;
-  struct Box bounds;
-  struct Vector size;
+VoxelBuffer::VoxelBuffer() : data_(), res_()
+{
+}
 
-  double filtersize;
-};
+VoxelBuffer::~VoxelBuffer()
+{
+}
+
+void VoxelBuffer::Resize(int xres, int yres, int zres)
+{
+  data_.resize(xres * yres * zres, 0);
+  res_ = Resolution(xres, yres, zres);
+}
+
+Resolution VoxelBuffer::GetResolution() const
+{
+  return res_;
+}
+
+bool VoxelBuffer::IsEmpty() const
+{
+  return data_.empty();
+}
 
 static struct VoxelBuffer *new_voxel_buffer(void);
 static void free_voxel_buffer(struct VoxelBuffer *buffer);
-static void resize_voxel_buffer(struct VoxelBuffer *buffer, int xres, int yres, int zres);
-static void fill_voxel_buffer(struct VoxelBuffer *buffer, float value);
-static void compute_filter_size(struct Volume *volume);
 
+static void compute_filter_size(struct Volume *volume);
 static void set_buffer_value(struct VoxelBuffer *buffer, int x, int y, int z, float value);
 static float get_buffer_value(const struct VoxelBuffer *buffer, int x, int y, int z);
 
 static float trilinear_buffer_value(const struct VoxelBuffer *buffer, const struct Vector *P);
 static float nearest_buffer_value(const struct VoxelBuffer *buffer, const struct Vector *P);
+
+class Volume {
+public:
+  Volume();
+  ~Volume();
+
+public:
+  VoxelBuffer *buffer_;
+  Box bounds_;
+  Vector size_;
+
+  double filtersize_;
+};
+
+Volume::Volume()
+{
+}
+
+Volume::~Volume()
+{
+}
 
 struct Volume *VolNew(void)
 {
@@ -49,11 +99,11 @@ struct Volume *VolNew(void)
   if (volume == NULL)
     return NULL;
 
-  volume->buffer = NULL;
+  volume->buffer_ = NULL;
 
   /* this makes empty volume valid */
-  volume->bounds = Box();
-  volume->size = Vector();
+  volume->bounds_ = Box();
+  volume->size_ = Vector();
 
   compute_filter_size(volume);
 
@@ -65,7 +115,7 @@ void VolFree(struct Volume *volume)
   if (volume == NULL)
     return;
 
-  free_voxel_buffer(volume->buffer);
+  free_voxel_buffer(volume->buffer_);
   FJ_MEM_FREE(volume);
 }
 
@@ -75,64 +125,63 @@ void VolResize(struct Volume *volume, int xres, int yres, int zres)
     return;
   }
 
-  if (volume->buffer == NULL) {
-    volume->buffer = new_voxel_buffer();
-    if (volume->buffer == NULL) {
+  if (volume->buffer_ == NULL) {
+    volume->buffer_ = new_voxel_buffer();
+    if (volume->buffer_ == NULL) {
       /* TODO error handling when new_voxel_buffer fails */
     }
   }
 
-  resize_voxel_buffer(volume->buffer, xres, yres, zres);
-  fill_voxel_buffer(volume->buffer, 0);
+  volume->buffer_->Resize(xres, yres, zres);
 
   compute_filter_size(volume);
 }
 
 void VolSetBounds(struct Volume *volume, struct Box *bounds)
 {
-  volume->bounds = *bounds;
-  volume->size = BoxSize(volume->bounds);
+  volume->bounds_ = *bounds;
+  volume->size_ = BoxSize(volume->bounds_);
 
   compute_filter_size(volume);
 }
 
 void VolGetBounds(const struct Volume *volume, struct Box *bounds)
 {
-  *bounds = volume->bounds;
+  *bounds = volume->bounds_;
 }
 
 void VolGetResolution(const struct Volume *volume, int *i, int *j, int *k)
 {
-  *i = volume->buffer->res.x;
-  *j = volume->buffer->res.y;
-  *k = volume->buffer->res.z;
+  *i = volume->buffer_->res_.x;
+  *j = volume->buffer_->res_.y;
+  *k = volume->buffer_->res_.z;
 }
 
 double VolGetFilterSize(const struct Volume *volume)
 {
-  return volume->filtersize;
+  return volume->filtersize_;
 }
 
 void VolIndexToPoint(const struct Volume *volume, int i, int j, int k,
     struct Vector *point)
 {
-  point->x = (i + .5) / volume->buffer->res.x * volume->size.x + volume->bounds.min.x;
-  point->y = (j + .5) / volume->buffer->res.y * volume->size.y + volume->bounds.min.y;
-  point->z = (k + .5) / volume->buffer->res.z * volume->size.z + volume->bounds.min.z;
+  point->x = (i + .5) / volume->buffer_->res_.x * volume->size_.x + volume->bounds_.min.x;
+  point->y = (j + .5) / volume->buffer_->res_.y * volume->size_.y + volume->bounds_.min.y;
+  point->z = (k + .5) / volume->buffer_->res_.z * volume->size_.z + volume->bounds_.min.z;
 }
 
 void VolPointToIndex(const struct Volume *volume, const struct Vector *point,
     int *i, int *j, int *k)
 {
-  *i = (int) ((point->x - volume->bounds.min.x) / volume->size.x * volume->buffer->res.x);
-  *j = (int) ((point->y - volume->bounds.min.y) / volume->size.y * volume->buffer->res.y);
-  *k = (int) ((point->z - volume->bounds.min.z) / volume->size.z * volume->buffer->res.z);
+  *i = (int) ((point->x - volume->bounds_.min.x) / volume->size_.x * volume->buffer_->res_.x);
+  *j = (int) ((point->y - volume->bounds_.min.y) / volume->size_.y * volume->buffer_->res_.y);
+  *k = (int) ((point->z - volume->bounds_.min.z) / volume->size_.z * volume->buffer_->res_.z);
 
-  if (point->x == volume->buffer->res.x)
+  if (point->x == volume->buffer_->res_.x)
     *i -= 1;
-  if (point->y == volume->buffer->res.y)
+  if (point->y == volume->buffer_->res_.y)
     *j -= 1;
-  if (point->z == volume->buffer->res.z)
+  if (point->z == volume->buffer_->res_.z)
     *k -= 1;
 }
 
@@ -157,38 +206,38 @@ void VolGetIndexRange(const struct Volume *volume,
 
 void VolSetValue(struct Volume *volume, int x, int y, int z, float value)
 {
-  if (volume->buffer == NULL) {
+  if (volume->buffer_ == NULL) {
     return;
   }
-  set_buffer_value(volume->buffer, x, y, z, value);
+  set_buffer_value(volume->buffer_, x, y, z, value);
 }
 
 float VolGetValue(const struct Volume *volume, int x, int y, int z)
 {
-  return get_buffer_value(volume->buffer, x, y, z);
+  return get_buffer_value(volume->buffer_, x, y, z);
 }
 
 int VolGetSample(const struct Volume *volume, const struct Vector *point,
       struct VolumeSample *sample)
 {
-  const int hit = BoxContainsPoint(volume->bounds, *point);
+  const int hit = BoxContainsPoint(volume->bounds_, *point);
   struct Vector P;
 
   if (!hit) {
     return 0;
   }
-  if (volume->buffer == NULL) {
+  if (volume->buffer_ == NULL) {
     return 0;
   }
 
-  P.x = (point->x - volume->bounds.min.x) / volume->size.x * volume->buffer->res.x;
-  P.y = (point->y - volume->bounds.min.y) / volume->size.y * volume->buffer->res.y;
-  P.z = (point->z - volume->bounds.min.z) / volume->size.z * volume->buffer->res.z;
+  P.x = (point->x - volume->bounds_.min.x) / volume->size_.x * volume->buffer_->res_.x;
+  P.y = (point->y - volume->bounds_.min.y) / volume->size_.y * volume->buffer_->res_.y;
+  P.z = (point->z - volume->bounds_.min.z) / volume->size_.z * volume->buffer_->res_.z;
 
   if (1) {
-    sample->density = trilinear_buffer_value(volume->buffer, &P);
+    sample->density = trilinear_buffer_value(volume->buffer_, &P);
   } else {
-    sample->density = nearest_buffer_value(volume->buffer, &P);
+    sample->density = nearest_buffer_value(volume->buffer_, &P);
   }
 
   return 1;
@@ -196,103 +245,59 @@ int VolGetSample(const struct Volume *volume, const struct Vector *point,
 
 static struct VoxelBuffer *new_voxel_buffer(void)
 {
-  struct VoxelBuffer *buffer = FJ_MEM_ALLOC(struct VoxelBuffer);
-  if (buffer == NULL)
-    return NULL;
-
-  buffer->data = NULL;
-  buffer->res.x = 0;
-  buffer->res.y = 0;
-  buffer->res.z = 0;
-
-  return buffer;
+  return new VoxelBuffer();
 }
 
 static void free_voxel_buffer(struct VoxelBuffer *buffer)
 {
-  if (buffer == NULL)
-    return;
-
-  FJ_MEM_FREE(buffer->data);
-  buffer->data = NULL;
-  buffer->res.x = 0;
-  buffer->res.y = 0;
-  buffer->res.z = 0;
-
-  FJ_MEM_FREE(buffer);
-}
-
-static void resize_voxel_buffer(struct VoxelBuffer *buffer, int xres, int yres, int zres)
-{
-  buffer->data = FJ_MEM_REALLOC_ARRAY(buffer->data, float, xres * yres * zres);
-
-  if (buffer->data == NULL) {
-    buffer->res.x = 0;
-    buffer->res.y = 0;
-    buffer->res.z = 0;
-    return;
-  }
-
-  buffer->res.x = xres;
-  buffer->res.y = yres;
-  buffer->res.z = zres;
-}
-
-static void fill_voxel_buffer(struct VoxelBuffer *buffer, float value)
-{
-  const int N = buffer->res.x * buffer->res.y * buffer->res.z;
-  int i;
-
-  for (i = 0; i < N; i++) {
-    buffer->data[i] = value;
-  }
+  delete buffer;
 }
 
 static void compute_filter_size(struct Volume *volume)
 {
   struct Vector voxelsize;
 
-  if (volume->buffer == NULL) {
-    volume->filtersize = 0;
+  if (volume->buffer_ == NULL) {
+    volume->filtersize_ = 0;
     return;
   }
 
-  voxelsize.x = volume->size.x / volume->buffer->res.x;
-  voxelsize.y = volume->size.y / volume->buffer->res.y;
-  voxelsize.z = volume->size.z / volume->buffer->res.z;
+  voxelsize.x = volume->size_.x / volume->buffer_->res_.x;
+  voxelsize.y = volume->size_.y / volume->buffer_->res_.y;
+  voxelsize.z = volume->size_.z / volume->buffer_->res_.z;
 
-  volume->filtersize = Length(voxelsize);
+  volume->filtersize_ = Length(voxelsize);
 }
 
 static void set_buffer_value(struct VoxelBuffer *buffer, int x, int y, int z, float value)
 {
   int index;
 
-  if (x < 0 || buffer->res.x <= x)
+  if (x < 0 || buffer->res_.x <= x)
     return;
-  if (y < 0 || buffer->res.y <= y)
+  if (y < 0 || buffer->res_.y <= y)
     return;
-  if (z < 0 || buffer->res.z <= z)
+  if (z < 0 || buffer->res_.z <= z)
     return;
 
-  index = (z * buffer->res.x * buffer->res.y) + (y * buffer->res.x) + x;
-  buffer->data[index] = value;
+  index = (z * buffer->res_.x * buffer->res_.y) + (y * buffer->res_.x) + x;
+  buffer->data_[index] = value;
 }
 
 static float get_buffer_value(const struct VoxelBuffer *buffer, int x, int y, int z)
 {
   int index;
 
-  if (x < 0 || buffer->res.x <= x)
+  if (x < 0 || buffer->res_.x <= x)
     return 0;
-  if (y < 0 || buffer->res.y <= y)
+  if (y < 0 || buffer->res_.y <= y)
     return 0;
-  if (z < 0 || buffer->res.z <= z)
+  if (z < 0 || buffer->res_.z <= z)
     return 0;
 
-  index = (z * buffer->res.x * buffer->res.y) + (y * buffer->res.x) + x;
+  index = (z * buffer->res_.x * buffer->res_.y) + (y * buffer->res_.x) + x;
 
-  return buffer->data[index];
+  return buffer->data_[index];
 }
 
 static float trilinear_buffer_value(const struct VoxelBuffer *buffer, const struct Vector *P)
