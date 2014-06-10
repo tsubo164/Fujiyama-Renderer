@@ -53,7 +53,7 @@ int TextureCache::OpenMipmap(const std::string &filename)
     return -1;
   }
 
-  FbResize(fb_, mip_->tilesize, mip_->tilesize, mip_->nchannels);
+  fb_->Resize(mip_->tilesize, mip_->tilesize, mip_->nchannels);
   is_open_ = true;
 
   return 0;
@@ -77,7 +77,7 @@ Color4 TextureCache::LookupTexture(float u, float v)
   const int ytile = static_cast<int>(floor(tile_space.v));
 
   if (xtile != last_xtile_ || ytile != last_ytile_) {
-    mip_->data = FbGetWritable(fb_, 0, 0, 0);
+    mip_->data = fb_->GetWritable(0, 0, 0);
     MipReadTile(mip_, xtile, ytile);
     last_xtile_ = xtile;
     last_ytile_ = ytile;
@@ -86,10 +86,7 @@ Color4 TextureCache::LookupTexture(float u, float v)
   const int xpxl = (int)( (tile_space.u - floor(tile_space.u)) * 64);
   const int ypxl = (int)( (tile_space.v - floor(tile_space.v)) * 64);
 
-  // TODO FbGetColor returns Color4
-  Color4 rgba;
-  FbGetColor(fb_, xpxl, ypxl, &rgba);
-  return rgba;
+  return fb_->GetColor(xpxl, ypxl);
 }
 
 int TextureCache::GetTextureWidth() const

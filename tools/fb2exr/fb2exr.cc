@@ -70,18 +70,18 @@ try {
     return -1;
   }
 
-  FbResize(fb, in->width, in->height, in->nchannels);
-  in->data = FbGetWritable(fb, 0, 0, 0);
+  fb->Resize(in->width, in->height, in->nchannels);
+  in->data = fb->GetWritable(0, 0, 0);
 
   FbReadData(in);
   FbCloseInputFile(in);
 
-  const int width = FbGetWidth(fb);
-  const int height = FbGetHeight(fb);
-  const int nchannels = FbGetChannelCount(fb);
+  const int width = fb->GetWidth();
+  const int height = fb->GetHeight();
+  const int nchannels = fb->GetChannelCount();
   vector<Imf::Rgba> rgba(width * height);
 
-  copy_fb_into_rgba(FbGetReadOnly(fb, 0, 0, 0), &rgba[0], width, height, nchannels);
+  copy_fb_into_rgba(fb->GetReadOnly(0, 0, 0), &rgba[0], width, height, nchannels);
 
   FbFree(fb);
 

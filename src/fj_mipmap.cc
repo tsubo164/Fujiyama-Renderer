@@ -222,9 +222,9 @@ int MipGenerateFromSourceData(struct MipOutput *out,
   if (out->fb == NULL) {
     return -1;
   }
-  FbResize(out->fb, out->width, out->height, out->nchannels);
+  out->fb->Resize(out->width, out->height, out->nchannels);
   scale_and_copy_image(pixels, width, height,
-      FbGetWritable(out->fb, 0, 0, 0), out->width, out->height, out->nchannels);
+      out->fb->GetWritable(0, 0, 0), out->width, out->height, out->nchannels);
 
   out->tilesize = Min(64, out->width);
   out->tilesize = Min(out->tilesize, out->height);
@@ -257,7 +257,7 @@ void MipWriteFile(struct MipOutput *out)
     for (x = 0; x < XNTILES; x++) {
       int i;
       for (i = 0; i < TILESIZE; i++) {
-        const float *line = FbGetReadOnly(out->fb, x * TILESIZE, y * TILESIZE + i, 0);
+        const float *line = out->fb->GetReadOnly(x * TILESIZE, y * TILESIZE + i, 0);
         fwrite(line, sizeof(float), TILESIZE * out->nchannels, out->file);
       }
     }

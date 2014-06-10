@@ -57,11 +57,11 @@ int main(int argc, const char **argv)
     return -1;
   }
 
-  if (FbResize(hdr, width, height, 3) == NULL) {
+  if (hdr->Resize(width, height, 3) == NULL) {
     fprintf(stderr, "error: could not allocate framebuffer: %d x %d\n", width, height);
     return -1;
   }
-  RGBE_ReadPixels_RLE(fp, FbGetWritable(hdr, 0, 0, 0), width, height);
+  RGBE_ReadPixels_RLE(fp, hdr->GetWritable(0, 0, 0), width, height);
 
   if ((mip = MipOpenOutputFile(argv[2])) == NULL) {
     fprintf(stderr, "error: couldn't open output file\n");
@@ -69,7 +69,7 @@ int main(int argc, const char **argv)
     return -1;
   }
 
-  MipGenerateFromSourceData(mip, FbGetReadOnly(hdr, 0, 0, 0), width, height, 3);
+  MipGenerateFromSourceData(mip, hdr->GetReadOnly(0, 0, 0), width, height, 3);
   printf("input res: %d, %d\n", width, height);
   printf("output res: %d, %d\n", mip->width, mip->height);
 

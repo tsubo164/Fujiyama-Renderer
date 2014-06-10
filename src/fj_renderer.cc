@@ -480,7 +480,7 @@ static int preprocess_framebuffer(const struct Renderer *renderer)
 
   xres = renderer->resolution[0];
   yres = renderer->resolution[1];
-  FbResize(fb, xres, yres, 4);
+  fb->Resize(xres, yres, 4);
 
   return 0;
 }
@@ -729,7 +729,7 @@ static void reconstruct_image(struct Worker *worker)
       SmpGetPixelSamples(worker->sampler, worker->pixel_samples, x, y);
       pixel = apply_pixel_filter(worker, x, y);
 
-      FbSetColor(fb, x, y, &pixel);
+      fb->SetColor(x, y, pixel);
     }
   }
 }

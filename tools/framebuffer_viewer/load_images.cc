@@ -38,8 +38,8 @@ int load_fb(const char *filename, struct FrameBuffer *fb, struct BufferInfo *inf
     return -1;
   }
 
-  FbResize(fb, in->width, in->height, in->nchannels);
-  in->data = FbGetWritable(fb, 0, 0, 0);
+  fb->Resize(in->width, in->height, in->nchannels);
+  in->data = fb->GetWritable(0, 0, 0);
   FbReadData(in);
 
   BOX2_COPY(info->viewbox, in->viewbox);
@@ -67,7 +67,7 @@ int load_mip(const char *filename, struct FrameBuffer *fb, struct BufferInfo *in
     return -1;
   }
 
-  FbResize(fb, in->width, in->height, in->nchannels);
+  fb->Resize(in->width, in->height, in->nchannels);
 
   {
     int x, y;
@@ -76,18 +76,18 @@ int load_mip(const char *filename, struct FrameBuffer *fb, struct BufferInfo *in
     if (tilebuf == NULL) {
       /* TODO error handling */
     }
-    FbResize(tilebuf, in->tilesize, in->tilesize, in->nchannels);
+    tilebuf->Resize(in->tilesize, in->tilesize, in->nchannels);
 
     for (y = 0; y < in->yntiles; y++) {
       for (x = 0; x < in->xntiles; x++) {
         int i;
-        in->data = FbGetWritable(tilebuf, 0, 0, 0);
+        in->data = tilebuf->GetWritable(0, 0, 0);
         MipReadTile(in, x, y);
         for (i = 0; i < in->tilesize; i++) {
           float *dst;
           const float *src;
-          dst = FbGetWritable(fb, x * in->tilesize, y * in->tilesize + i, 0);
-          src = FbGetReadOnly(tilebuf, 0, i, 0);
+          dst = fb->GetWritable(x * in->tilesize, y * in->tilesize + i, 0);
+          src = tilebuf->GetReadOnly(0, i, 0);
           memcpy(dst, src, sizeof(float) * in->tilesize * in->nchannels);
         }
       }

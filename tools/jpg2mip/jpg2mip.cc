@@ -106,7 +106,7 @@ int main(int argc, const char **argv)
     goto cleanup_jpeg;
   }
 
-  if (FbResize(fb, width, height, nchans) == NULL) {
+  if (fb->Resize(width, height, nchans) == NULL) {
     fprintf(stderr, "error: could not allocate framebuffer: %d x %d\n", width, height);
     goto cleanup_jpeg;
   }
@@ -119,7 +119,7 @@ int main(int argc, const char **argv)
   /* read jpeg */
   i = 0;
   while (cinfo.output_scanline < cinfo.output_height) {
-    float * fb_scanline = FbGetWritable(fb, 0, i, 0);
+    float * fb_scanline = fb->GetWritable(0, i, 0);
     (void) jpeg_read_scanlines(&cinfo, buffer, 1);
     copy_scanline(buffer[0], fb_scanline, width, nchans);
     i++;
@@ -136,7 +136,7 @@ int main(int argc, const char **argv)
     return -1;
   }
 
-  MipGenerateFromSourceData(mip, FbGetReadOnly(fb, 0, 0, 0), width, height, nchans);
+  MipGenerateFromSourceData(mip, fb->GetReadOnly(0, 0, 0), width, height, nchans);
   printf("input res: %d, %d\n", width, height);
   printf("output res: %d, %d\n", mip->width, mip->height);
 

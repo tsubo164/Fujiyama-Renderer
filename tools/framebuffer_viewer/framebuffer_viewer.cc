@@ -137,7 +137,7 @@ void FbvDraw(const struct FrameBufferViewer *v)
   /* render framebuffer */
   glTranslatef(0.f, 0.f, 0.1f); 
 
-  if (!FbIsEmpty(v->fb)) {
+  if (!v->fb->IsEmpty()) {
     draw_image(&v->image);
     draw_outline(&v->image);
   }
@@ -372,8 +372,8 @@ int FbvLoadImage(struct FrameBufferViewer *v, const char *filename)
 
   {
     /* TODO define gamma function */
-    float *pixel = FbGetWritable(v->fb, 0, 0, 0);
-    const int N = FbGetWidth(v->fb) * FbGetHeight(v->fb) * FbGetChannelCount(v->fb);
+    float *pixel = v->fb->GetWritable(0, 0, 0);
+    const int N = v->fb->GetWidth() * v->fb->GetHeight() * v->fb->GetChannelCount();
     int i;
 
     const float gamma = 1 / 2.2;
@@ -393,14 +393,14 @@ void FbvGetImageSize(const struct FrameBufferViewer *v,
 {
   BOX2_COPY(databox, v->databox);
   BOX2_COPY(viewbox, v->viewbox);
-  *nchannels = FbGetChannelCount(v->fb);
+  *nchannels = v->fb->GetChannelCount();
 }
 
 /*----------------------------------------------------------------------------*/
 static void setup_image_drawing(struct FrameBufferViewer *v)
 {
-  setup_image_drawer(&v->image, FbGetReadOnly(v->fb, 0, 0, 0),
-      FbGetChannelCount(v->fb), v->diplay_channel,
+  setup_image_drawer(&v->image, v->fb->GetReadOnly(0, 0, 0),
+      v->fb->GetChannelCount(), v->diplay_channel,
       v->databox[0],
       v->viewbox[3] - v->viewbox[1] - v->databox[3],
       v->databox[2] - v->databox[0],
