@@ -12,7 +12,6 @@ See LICENSE and README
 
 namespace fj {
 
-class FrameBuffer;
 class MipInput;
 class Color4;
 

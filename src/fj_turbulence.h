@@ -6,12 +6,13 @@ See LICENSE and README
 #ifndef FJ_TURBULENCE_H
 #define FJ_TURBULENCE_H
 
+#include "fj_compatibility.h"
 #include "fj_vector.h"
 #include "fj_types.h"
 
 namespace fj {
 
-class Turbulence {
+class FJ_API Turbulence {
 public:
   Turbulence();
   ~Turbulence();
@@ -35,8 +36,8 @@ private:
   int    octaves_;
 };
 
-extern Turbulence *TrbNew();
-extern void TrbFree(Turbulence *turbulence);
+extern FJ_API Turbulence *TrbNew();
+extern FJ_API void TrbFree(Turbulence *turbulence);
 
 } // namespace xxx
 

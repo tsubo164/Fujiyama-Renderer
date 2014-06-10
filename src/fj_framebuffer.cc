@@ -175,12 +175,12 @@ int FrameBuffer::get_index(int x, int y, int z) const
   return y * width_ * nchannels_ + x * nchannels_ + z;
 }
 
-struct FrameBuffer *FbNew(void)
+FrameBuffer *FbNew(void)
 {
   return new FrameBuffer();
 }
 
-void FbFree(struct FrameBuffer *fb)
+void FbFree(FrameBuffer *fb)
 {
   delete fb;
 }

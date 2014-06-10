@@ -6,20 +6,31 @@ See LICENSE and README
 #ifndef FJ_FILTER_H
 #define FJ_FILTER_H
 
-namespace fj {
+#include "fj_types.h"
 
-struct Filter;
+namespace fj {
 
 enum {
   FLT_BOX = 0,
   FLT_GAUSSIAN
 };
 
-extern struct Filter *FltNew(int filtertype, double xwidth, double ywidth);
-extern void FltFree(struct Filter *filter);
+class Filter {
+public:
+  Filter();
+  ~Filter();
 
-extern double FltEvaluate(const struct Filter *filter, double x, double y);
+  void SetFilterType(int filtertype, Real xwidth, Real ywidth);
+  Real Evaluate(Real x, Real y) const;
+
+public:
+  Real xwidth_, ywidth_;
+  Real (*evaluate_)(Real xwidth, Real ywidth, Real x, Real y);
+};
+
+extern Filter *FltNew(int filtertype, Real xwidth, Real ywidth);
+extern void FltFree(Filter *filter);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

@@ -10,9 +10,9 @@ See LICENSE and README
 
 namespace fj {
 
-struct ObjectInstance;
-struct VolumeAccelerator;
-struct Accelerator;
+class ObjectInstance;
+class VolumeAccelerator;
+class Accelerator;
 
 class ObjectGroup {
 public:

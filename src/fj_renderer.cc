@@ -695,7 +695,7 @@ static struct Color4 apply_pixel_filter(struct Worker *worker, int x, int y)
 
     filtx = xres * sample->uv.x - (x + .5);
     filty = yres * (1-sample->uv.y) - (y + .5);
-    wgt = FltEvaluate(filter, filtx, filty);
+    wgt = filter->Evaluate(filtx, filty);
 
     pixel.r += wgt * sample->data[0];
     pixel.g += wgt * sample->data[1];

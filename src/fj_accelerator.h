@@ -11,9 +11,9 @@ See LICENSE and README
 
 namespace fj {
 
-struct Intersection;
+class Intersection;
 class PrimitiveSet;
-struct Ray;
+class Ray;
 
 class Accelerator {
 public:

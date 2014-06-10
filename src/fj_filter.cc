@@ -4,76 +4,74 @@ See LICENSE and README
 */
 
 #include "fj_filter.h"
-#include "fj_memory.h"
-
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
 
 namespace fj {
 
-struct Filter {
-  double xwidth, ywidth;
-  double (*evaluate)(const struct Filter *filter, double x, double y);
-};
+static Real eval_gaussian(Real xwidth, Real ywidth, Real x, Real y);
+static Real eval_box(Real xwidth, Real ywidth, Real x, Real y);
 
-static double eval_gaussian(const struct Filter *filter, double x, double y);
-static double eval_box(const struct Filter *filter, double x, double y);
-
-struct Filter *FltNew(int filtertype, double xwidth, double ywidth)
+Filter::Filter() :
+    xwidth_(1),
+    ywidth_(1),
+    evaluate_(eval_box)
 {
-  struct Filter *filter;
+}
 
+Filter::~Filter()
+{
+}
+
+void Filter::SetFilterType(int filtertype, Real xwidth, Real ywidth)
+{
   assert(xwidth > 0);
   assert(ywidth > 0);
 
-  filter = FJ_MEM_ALLOC(struct Filter);
-  if (filter == NULL)
-    return NULL;
-
   switch (filtertype) {
   case FLT_GAUSSIAN:
-    filter->evaluate = eval_gaussian;
+    evaluate_ = eval_gaussian;
     break;
   case FLT_BOX:
-    filter->evaluate = eval_box;
+    evaluate_ = eval_box;
     break;
   default:
     assert(!"invalid filter type");
     break;
   }
-  filter->xwidth = xwidth;
-  filter->ywidth = ywidth;
+  xwidth_ = xwidth;
+  ywidth_ = ywidth;
+}
 
+Real Filter::Evaluate(Real x, Real y) const
+{
+  return evaluate_(xwidth_, ywidth_, x, y);
+}
+
+Filter *FltNew(int filtertype, Real xwidth, Real ywidth)
+{
+  Filter *filter = new Filter();
+  filter->SetFilterType(filtertype, xwidth, ywidth);
   return filter;
 }
 
-void FltFree(struct Filter *filter)
+void FltFree(Filter *filter)
 {
-  if (filter == NULL)
-    return;
-
-  FJ_MEM_FREE(filter);
+  delete filter;
 }
 
-double FltEvaluate(const struct Filter *filter, double x, double y)
+static Real eval_gaussian(Real xwidth, Real ywidth, Real x, Real y)
 {
-  return filter->evaluate(filter, x, y);
-}
-
-static double eval_gaussian(const struct Filter *filter, double x, double y)
-{
-  /* 
-   *  The RenderMan Interface
-   *  Version 3.2.1
-   *  November, 2005
-   */
-  double xx = 2 * x / filter->xwidth;
-  double yy = 2 * y / filter->ywidth;
+  // The RenderMan Interface
+  // Version 3.2.1
+  // November, 2005
+  const Real xx = 2 * x / xwidth;
+  const Real yy = 2 * y / ywidth;
 
   return exp(-2 * ( xx * xx + yy * yy ));
 }
 
-static double eval_box(const struct Filter *filter, double x, double y)
+static Real eval_box(Real xwidth, Real ywidth, Real x, Real y)
 {
   return 1;
 }

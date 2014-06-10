@@ -6,6 +6,7 @@ See LICENSE and README
 #ifndef FJ_FRAMEBUFFER_H
 #define FJ_FRAMEBUFFER_H
 
+#include "fj_compatibility.h"
 #include <vector>
 
 /* TODO delete BOX2 */
@@ -32,7 +33,7 @@ namespace fj {
 
 class Color4;
 
-class FrameBuffer {
+class FJ_API FrameBuffer {
 public:
   FrameBuffer();
   ~FrameBuffer();
@@ -74,8 +75,8 @@ public:
   int nchannels_;
 };
 
-extern struct FrameBuffer *FbNew(void);
-extern void FbFree(struct FrameBuffer *fb);
+extern FJ_API FrameBuffer *FbNew(void);
+extern FJ_API void FbFree(FrameBuffer *fb);
 
 } // namespace xxx
 
