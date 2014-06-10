@@ -33,7 +33,7 @@ const ObjectInstance *ObjectSet::GetObject(Index index) const
 void ObjectSet::AddObject(const ObjectInstance *obj)
 {
   Box other_bounds;
-  ObjGetBounds(obj, &other_bounds);
+  other_bounds = obj->GetBounds();
 
   objects_.push_back(obj);
 
@@ -51,7 +51,7 @@ void ObjectSet::ComputeBounds()
     const ObjectInstance *obj = GetObject(i);
     Box obj_bounds;
 
-    ObjGetBounds(obj, &obj_bounds);
+    obj_bounds = obj->GetBounds();
     BoxAddBox(&bounds_, obj_bounds);
   }
 }
@@ -60,13 +60,13 @@ bool ObjectSet::ray_intersect(Index prim_id, Real time,
     const Ray &ray, Intersection *isect) const
 {
   const ObjectInstance *obj = GetObject(prim_id);
-  return ObjIntersect(obj, time, &ray, isect);
+  return obj->RayIntersect(ray, time, isect);
 }
 
 void ObjectSet::get_primitive_bounds(Index prim_id, Box *bounds) const
 {
   const ObjectInstance *obj = GetObject(prim_id);
-  ObjGetBounds(obj, bounds);
+  *bounds = obj->GetBounds();
 }
 
 void ObjectSet::get_bounds(Box *bounds) const

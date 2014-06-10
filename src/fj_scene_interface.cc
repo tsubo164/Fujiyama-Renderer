@@ -317,7 +317,7 @@ ID SiNewObjectInstance(ID primset_id)
       return SI_BADID;
     }
 
-    err = ObjSetSurface(object, acc);
+    err = object->SetSurface(acc);
     if (err) {
       set_errno(SI_ERR_FAILNEW);
       return SI_BADID;
@@ -341,7 +341,7 @@ ID SiNewObjectInstance(ID primset_id)
       return SI_BADID;
     }
 
-    err = ObjSetVolume(object, volume);
+    err = object->SetVolume(volume);
     if (err) {
       set_errno(SI_ERR_FAILNEW);
       return SI_BADID;
@@ -680,7 +680,7 @@ Status SiAssignShader(ID object, ID shader)
       return SI_FAIL;
   }
 
-  ObjSetShader(object_ptr, shader_ptr);
+  object_ptr->SetShader(shader_ptr);
   return SI_SUCCESS;
 }
 
@@ -995,16 +995,16 @@ static int create_implicit_groups(void)
     struct ObjectInstance *obj = ScnGetObjectInstance(get_scene(), i);
     const struct Light **lightlist = (const struct Light **) ScnGetLightList(get_scene());
     int nlights = ScnGetLightCount(get_scene());
-    ObjSetLightList(obj, lightlist, nlights);
+    obj->SetLightList(lightlist, nlights);
 
-    if (ObjGetReflectTarget(obj) == NULL)
-      ObjSetReflectTarget(obj, all_objects);
+    if (obj->GetReflectTarget() == NULL)
+      obj->SetReflectTarget(all_objects);
 
-    if (ObjGetRefractTarget(obj) == NULL)
-      ObjSetRefractTarget(obj, all_objects);
+    if (obj->GetRefractTarget() == NULL)
+      obj->SetRefractTarget(all_objects);
 
-    if (ObjGetShadowTarget(obj) == NULL)
-      ObjSetShadowTarget(obj, all_objects);
+    if (obj->GetShadowTarget() == NULL)
+      obj->SetShadowTarget(all_objects);
 
     {
       /* self hit group */
@@ -1013,7 +1013,7 @@ static int create_implicit_groups(void)
         /* TODO error handling */
       }
       self_group->AddObject(obj);
-      ObjSetSelfHitTarget(obj, self_group);
+      obj->SetSelfHitTarget(self_group);
     }
   }
 
@@ -1042,7 +1042,7 @@ static void compute_objects_bounds(void)
   N = ScnGetObjectInstanceCount(get_scene());
   for (i = 0; i < N; i++) {
     struct ObjectInstance *obj = ScnGetObjectInstance(get_scene(), i);
-    ObjComputeBounds(obj);
+    obj->ComputeBounds();
   }
 
   N = ScnGetObjectGroupCount(get_scene());

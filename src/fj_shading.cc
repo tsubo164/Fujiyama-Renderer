@@ -231,7 +231,7 @@ struct TraceContext SlReflectContext(const struct TraceContext *cxt,
 
   refl_cxt.reflect_depth++;
   refl_cxt.ray_context = CXT_REFLECT_RAY;
-  refl_cxt.trace_target = ObjGetReflectTarget(obj);
+  refl_cxt.trace_target = obj->GetReflectTarget();
 
   return refl_cxt;
 }
@@ -243,7 +243,7 @@ struct TraceContext SlRefractContext(const struct TraceContext *cxt,
 
   refr_cxt.refract_depth++;
   refr_cxt.ray_context = CXT_REFRACT_RAY;
-  refr_cxt.trace_target = ObjGetRefractTarget(obj);
+  refr_cxt.trace_target = obj->GetRefractTarget();
 
   return refr_cxt;
 }
@@ -257,7 +257,7 @@ struct TraceContext SlShadowContext(const struct TraceContext *cxt,
   /* turn off the secondary trance on occluding objects */
   shad_cxt.max_reflect_depth = 0;
   shad_cxt.max_refract_depth = 0;
-  shad_cxt.trace_target = ObjGetShadowTarget(obj);
+  shad_cxt.trace_target = obj->GetShadowTarget();
 
   return shad_cxt;
 }
@@ -267,14 +267,14 @@ struct TraceContext SlSelfHitContext(const struct TraceContext *cxt,
 {
   struct TraceContext self_cxt = *cxt;
 
-  self_cxt.trace_target = ObjGetSelfHitTarget(obj);
+  self_cxt.trace_target = obj->GetSelfHitTarget();
 
   return self_cxt;
 }
 
 int SlGetLightCount(const struct SurfaceInput *in)
 {
-  return ObjGetLightCount(in->shaded_object);
+  return in->shaded_object->GetLightCount();
 }
 
 int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *sample,
@@ -345,7 +345,7 @@ int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *samp
   /* TODO temp solution compute before rendering */
 int SlGetLightSampleCount(const struct SurfaceInput *in)
 {
-  const struct Light **lights = ObjGetLightList(in->shaded_object);
+  const struct Light **lights = in->shaded_object->GetLightList();
   const int nlights = SlGetLightCount(in);
   int nsamples = 0;
   int i;
@@ -363,7 +363,7 @@ int SlGetLightSampleCount(const struct SurfaceInput *in)
 
 struct LightSample *SlNewLightSamples(const struct SurfaceInput *in)
 {
-  const struct Light **lights = ObjGetLightList(in->shaded_object);
+  const struct Light **lights = in->shaded_object->GetLightList();
   const int nlights = SlGetLightCount(in);
   const int nsamples = SlGetLightSampleCount(in);
   int i;
@@ -530,7 +530,7 @@ static int trace_surface(const struct TraceContext *cxt, const struct Ray &ray,
     struct SurfaceOutput out;
 
     setup_surface_input(&isect, &ray, &in);
-    ShdEvaluate(ObjGetShader(isect.object), cxt, &in, &out);
+    ShdEvaluate(isect.object->GetShader(), cxt, &in, &out);
 
     out.Os = Clamp(out.Os, 0, 1);
     out_rgba->r = out.Cs.r;
@@ -620,7 +620,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
       /* loop over volume candidates at this sample point */
       for (; interval != NULL; interval = interval->next) {
         struct VolumeSample sample;
-        ObjGetVolumeSample(interval->object, cxt->time, &P, &sample);
+        interval->object->GetVolumeSample(P, cxt->time, &sample);
 
         /* merge volume with max density */
         opacity = Max(opacity, t_delta * sample.density);
@@ -632,7 +632,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
           in.shaded_object = interval->object;
           in.P = P;
           in.N = Vector(0, 0, 0);
-          ShdEvaluate(ObjGetShader(interval->object), cxt, &in, &out);
+          ShdEvaluate(interval->object->GetShader(), cxt, &in, &out);
 
           color.r = out.Cs.r * opacity;
           color.g = out.Cs.g * opacity;

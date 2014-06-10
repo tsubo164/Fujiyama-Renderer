@@ -37,11 +37,11 @@ ObjectGroup::~ObjectGroup()
 
 void ObjectGroup::AddObject(const ObjectInstance *obj)
 {
-  if (ObjIsSurface(obj)) {
+  if (obj->IsSurface()) {
     surface_set.AddObject(obj);
     surface_acc->SetPrimitiveSet(&surface_set);
   }
-  else if (ObjIsVolume(obj)) {
+  else if (obj->IsVolume()) {
     volume_set.AddObject(obj);
 
     VolumeAccSetTargetGeometry(volume_acc,
@@ -83,7 +83,7 @@ static void volume_bounds(const void *prim_set, int prim_id, Box *bounds)
 {
   const ObjectSet *objset = (const ObjectSet *) prim_set;
   const ObjectInstance *obj = objset->GetObject(prim_id);
-  ObjGetBounds(obj, bounds);
+  *bounds = obj->GetBounds();
 }
 
 static int volume_ray_intersect(const void *prim_set, int prim_id, double time,
@@ -91,7 +91,7 @@ static int volume_ray_intersect(const void *prim_set, int prim_id, double time,
 {
   const ObjectSet *objset = (const ObjectSet *) prim_set;
   const ObjectInstance *obj = objset->GetObject(prim_id);
-  return ObjVolumeIntersect(obj, time, ray, interval);
+  return obj->RayVolumeIntersect(*ray, time, interval);
 }
 
 } // namespace xxx

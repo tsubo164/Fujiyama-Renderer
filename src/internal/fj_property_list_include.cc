@@ -10,60 +10,65 @@ defines all properties for builtin type and some helper functions
 
 static int set_ObjectInstance_transform_order(void *self, const struct PropertyValue *value)
 {
-  /* TODO error handling */
+  // TODO error handling
   if (!XfmIsTransformOrder((int) value->vector[0]))
     return -1;
 
-  ObjSetTransformOrder((struct ObjectInstance *) self, (int) value->vector[0]);
+  ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
+  obj->SetTransformOrder((int) value->vector[0]);
   return 0;
 }
 
 static int set_ObjectInstance_rotate_order(void *self, const struct PropertyValue *value)
 {
-  /* TODO error handling */
+  // TODO error handling
   if (!XfmIsRotateOrder((int) value->vector[0]))
     return -1;
 
-  ObjSetRotateOrder((struct ObjectInstance *) self, (int) value->vector[0]);
+  ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
+  obj->SetRotateOrder((int) value->vector[0]);
   return 0;
 }
 
 static int set_ObjectInstance_translate(void *self, const struct PropertyValue *value)
 {
-  ObjSetTranslate((struct ObjectInstance *) self,
-      value->vector[0], value->vector[1], value->vector[2], value->time);
+  ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
+  obj->SetTranslate(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 
 static int set_ObjectInstance_rotate(void *self, const struct PropertyValue *value)
 {
-  ObjSetRotate((struct ObjectInstance *) self,
-      value->vector[0], value->vector[1], value->vector[2], value->time);
+  ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
+  obj->SetRotate(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 
 static int set_ObjectInstance_scale(void *self, const struct PropertyValue *value)
 {
-  ObjSetScale((struct ObjectInstance *) self,
-      value->vector[0], value->vector[1], value->vector[2], value->time);
+  ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
+  obj->SetScale(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 
 static int set_ObjectInstance_reflect_target(void *self, const struct PropertyValue *value)
 {
-  ObjSetReflectTarget((struct ObjectInstance *) self, value->object_group);
+  ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
+  obj->SetReflectTarget(value->object_group);
   return 0;
 }
 
 static int set_ObjectInstance_refract_target(void *self, const struct PropertyValue *value)
 {
-  ObjSetRefractTarget((struct ObjectInstance *) self, value->object_group);
+  ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
+  obj->SetRefractTarget(value->object_group);
   return 0;
 }
 
 static int set_ObjectInstance_shadow_target(void *self, const struct PropertyValue *value)
 {
-  ObjSetShadowTarget((struct ObjectInstance *) self, value->object_group);
+  ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
+  obj->SetShadowTarget(value->object_group);
   return 0;
 }
 
