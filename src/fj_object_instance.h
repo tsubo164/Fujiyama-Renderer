@@ -6,6 +6,7 @@ See LICENSE and README
 #ifndef FJ_OBJECTINSTANCE_H
 #define FJ_OBJECTINSTANCE_H
 
+#include "fj_compatibility.h"
 #include "fj_transform.h"
 #include "fj_box.h"
 
@@ -34,9 +35,9 @@ public:
   bool IsVolume() const;
 
   // transformation
-  void SetTranslate(double tx, double ty, double tz, double time);
-  void SetRotate(double rx, double ry, double rz, double time);
-  void SetScale(double sx, double sy, double sz, double time);
+  void SetTranslate(Real tx, Real ty, Real tz, Real time);
+  void SetRotate(Real rx, Real ry, Real rz, Real time);
+  void SetScale(Real sx, Real sy, Real sz, Real time);
   void SetTransformOrder(int order);
   void SetRotateOrder(int order);
 
@@ -60,9 +61,9 @@ public:
   void ComputeBounds();
 
   // sampling
-  bool RayIntersect(const Ray &ray, double time, Intersection *isect) const;
-  bool RayVolumeIntersect(const Ray &ray, double time, Interval *interval) const;
-  bool GetVolumeSample(const Vector &point, double time, VolumeSample *sample) const;
+  bool RayIntersect(const Ray &ray, Real time, Intersection *isect) const;
+  bool RayVolumeIntersect(const Ray &ray, Real time, Interval *interval) const;
+  bool GetVolumeSample(const Vector &point, Real time, VolumeSample *sample) const;
 
 public:
   void update_bounds();

@@ -17,7 +17,7 @@ const Real REAL_MAX = std::numeric_limits<Real>::max();
 
 inline Real Abs(Real x)
 {
-  return x < 0 ? -x : x;
+  return std::abs(x);
 }
 
 inline Real Min(Real x, Real y)

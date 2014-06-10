@@ -8,16 +8,13 @@ See LICENSE and README
 #include "fj_accelerator.h"
 #include "fj_object_group.h"
 #include "fj_interval.h"
-#include "fj_property.h"
 #include "fj_numeric.h"
 #include "fj_vector.h"
 #include "fj_volume.h"
 #include "fj_matrix.h"
-#include "fj_array.h"
 #include "fj_ray.h"
 
 #include <cassert>
-#include <cfloat>
 
 namespace fj {
 
@@ -93,19 +90,19 @@ bool ObjectInstance::IsVolume() const
   return true;
 }
 
-void ObjectInstance::SetTranslate(double tx, double ty, double tz, double time)
+void ObjectInstance::SetTranslate(Real tx, Real ty, Real tz, Real time)
 {
   XfmPushTranslateSample(&transform_samples_, tx, ty, tz, time);
   update_bounds();
 }
 
-void ObjectInstance::SetRotate(double rx, double ry, double rz, double time)
+void ObjectInstance::SetRotate(Real rx, Real ry, Real rz, Real time)
 {
   XfmPushRotateSample(&transform_samples_, rx, ry, rz, time);
   update_bounds();
 }
 
-void ObjectInstance::SetScale(double sx, double sy, double sz, double time)
+void ObjectInstance::SetScale(Real sx, Real sy, Real sz, Real time)
 {
   XfmPushScaleSample(&transform_samples_, sx, sy, sz, time);
   update_bounds();
@@ -200,25 +197,24 @@ void ObjectInstance::ComputeBounds()
   update_bounds();
 }
 
-bool ObjectInstance::RayIntersect(const Ray &ray, double time, Intersection *isect) const
+bool ObjectInstance::RayIntersect(const Ray &ray, Real time, Intersection *isect) const
 {
+  if (!IsSurface()) {
+    return false;
+  }
+
   Transform transform_interp;
-  Ray ray_object_space;
-  int hit = 0;
-
-  if (!IsSurface())
-    return 0;
-
   XfmLerpTransformSample(&transform_samples_, time, &transform_interp);
 
   // transform ray to object space
-  ray_object_space = ray;
+  Ray ray_object_space = ray;
   XfmTransformPointInverse(&transform_interp, &ray_object_space.orig);
   XfmTransformVectorInverse(&transform_interp, &ray_object_space.dir);
 
-  hit = acc_->Intersect(ray_object_space, time, isect);
-  if (!hit)
-    return 0;
+  const bool hit = acc_->Intersect(ray_object_space, time, isect);
+  if (!hit) {
+    return false;
+  }
 
   // transform intersection back to world space
   XfmTransformPoint(&transform_interp, &isect->P);
@@ -230,32 +226,29 @@ bool ObjectInstance::RayIntersect(const Ray &ray, double time, Intersection *ise
 
   isect->object = this;
 
-  return 1;
+  return true;
 }
 
-bool ObjectInstance::RayVolumeIntersect(const Ray &ray, double time,
+bool ObjectInstance::RayVolumeIntersect(const Ray &ray, Real time,
     Interval *interval) const
 {
+  if (!IsVolume()) {
+    return false;
+  }
+
   Transform transform_interp;
-  Ray ray_object_space;
-  Box volume_bounds;
-  double boxhit_tmin = 0;
-  double boxhit_tmax = 0;
-  int hit = 0;
-
-  if (!IsVolume())
-    return 0;
-
-  volume_bounds = volume_->GetBounds();
-
   XfmLerpTransformSample(&transform_samples_, time, &transform_interp);
 
-  /* transform ray to object space */
-  ray_object_space = ray;
+  // transform ray to object space
+  Ray ray_object_space = ray;
   XfmTransformPointInverse(&transform_interp, &ray_object_space.orig);
   XfmTransformVectorInverse(&transform_interp, &ray_object_space.dir);
 
-  hit = BoxRayIntersect(volume_bounds,
+  const Box volume_bounds = volume_->GetBounds();
+  Real boxhit_tmin = 0;
+  Real boxhit_tmax = 0;
+
+  const bool hit = BoxRayIntersect(volume_bounds,
       ray_object_space.orig,
       ray_object_space.dir,
       ray_object_space.tmin,
@@ -263,33 +256,30 @@ bool ObjectInstance::RayVolumeIntersect(const Ray &ray, double time,
       &boxhit_tmin, &boxhit_tmax);
 
   if (!hit) {
-    return 0;
+    return false;
   }
 
   interval->tmin = boxhit_tmin;
   interval->tmax = boxhit_tmax;
   interval->object = this;
 
-  return 1;
+  return true;
 }
 
-bool ObjectInstance::GetVolumeSample(const Vector &point, double time,
+bool ObjectInstance::GetVolumeSample(const Vector &point, Real time,
     VolumeSample *sample) const
 {
+  if (!IsVolume()) {
+    return false;
+  }
+
   Transform transform_interp;
-  Vector point_in_objspace;
-  int hit = 0;
-
-  if (!IsVolume())
-    return 0;
-
   XfmLerpTransformSample(&transform_samples_, time, &transform_interp);
 
-  point_in_objspace = point;
+  Vector point_in_objspace = point;
   XfmTransformPointInverse(&transform_interp, &point_in_objspace);
 
-  hit = volume_->GetSample(point_in_objspace, sample);
-
+  const bool hit = volume_->GetSample(point_in_objspace, sample);
   return hit;
 }
 
@@ -309,17 +299,12 @@ void ObjectInstance::update_bounds()
 
 void ObjectInstance::merge_sampled_bounds()
 {
-  Box merged_bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-  Box original_bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-  double S[3] = {1, 1, 1};
-  int i;
-
   // assumes bounds_ is the same as acc->bounds or vol->bounds
-  original_bounds = GetBounds();
+  Box original_bounds = GetBounds();
 
   // extend bounds when rotated to ensure object is always inside bounds
   if (transform_samples_.rotate.sample_count > 1) {
-    const double diagonal = BoxDiagonal(original_bounds);
+    const Real diagonal = BoxDiagonal(original_bounds);
     const Vector centroid = BoxCentroid(original_bounds);
 
     original_bounds = Box(
@@ -332,20 +317,20 @@ void ObjectInstance::merge_sampled_bounds()
   }
 
   // compute maximum scale over sampling time
-  S[0] = transform_samples_.scale.samples[0].vector[0];
-  S[1] = transform_samples_.scale.samples[0].vector[1];
-  S[2] = transform_samples_.scale.samples[0].vector[2];
-  for (i = 1; i < transform_samples_.scale.sample_count; i++) {
-    S[0] = Max(S[0], transform_samples_.scale.samples[i].vector[0]);
-    S[1] = Max(S[1], transform_samples_.scale.samples[i].vector[1]);
-    S[2] = Max(S[2], transform_samples_.scale.samples[i].vector[2]);
+  Real S[3] = {0, 0, 0};
+  for (int i = 0; i < transform_samples_.scale.sample_count; i++) {
+    S[0] = Max(S[0], Abs(transform_samples_.scale.samples[i].vector[0]));
+    S[1] = Max(S[1], Abs(transform_samples_.scale.samples[i].vector[1]));
+    S[2] = Max(S[2], Abs(transform_samples_.scale.samples[i].vector[2]));
   }
 
   // accumulate all bounds over sampling time
-  for (i = 0; i < transform_samples_.translate.sample_count; i++) {
-    Box sample_bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-    const double *T = transform_samples_.translate.samples[i].vector;
-    const double *R = transform_samples_.rotate.samples[i].vector;
+  Box merged_bounds;
+  BoxReverseInfinite(&merged_bounds);
+
+  for (int i = 0; i < transform_samples_.translate.sample_count; i++) {
+    const Real *T = transform_samples_.translate.samples[i].vector;
+    const Real *R = transform_samples_.rotate.samples[i].vector;
     Transform transform;
 
     XfmSetTransform(&transform,
@@ -354,7 +339,7 @@ void ObjectInstance::merge_sampled_bounds()
       R[0], R[1], R[2],
       S[0], S[1], S[2]);
 
-    sample_bounds = original_bounds;
+    Box sample_bounds = original_bounds;
     XfmTransformBounds(&transform, &sample_bounds);
     BoxAddBox(&merged_bounds, sample_bounds);
   }
