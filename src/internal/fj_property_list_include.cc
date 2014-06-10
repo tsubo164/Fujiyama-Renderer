@@ -298,77 +298,79 @@ static int set_Volume_bounds_max(void *self, const struct PropertyValue *value)
 
 static int set_Light_intensity(void *self, const struct PropertyValue *value)
 {
-  struct Light *light = (struct Light *) self;
-  LgtSetIntensity(light, value->vector[0]);
+  Light *light = reinterpret_cast<Light *>(self);
+  light->SetIntensity(value->vector[0]);
   return 0;
 }
 
 static int set_Light_color(void *self, const struct PropertyValue *value)
 {
-  LgtSetColor((struct Light *) self,
-      value->vector[0], value->vector[1], value->vector[2]);
+  Light *light = reinterpret_cast<Light *>(self);
+  light->SetColor(value->vector[0], value->vector[1], value->vector[2]);
   return 0;
 }
 
 static int set_Light_sample_count(void *self, const struct PropertyValue *value)
 {
-  struct Light *light = (struct Light *) self;
-  LgtSetSampleCount(light, (int) value->vector[0]);
+  Light *light = reinterpret_cast<Light *>(self);
+  light->SetSampleCount((int) value->vector[0]);
   return 0;
 }
 
 static int set_Light_double_sided(void *self, const struct PropertyValue *value)
 {
-  struct Light *light = (struct Light *) self;
-  LgtSetDoubleSided(light, (int) value->vector[0]);
+  Light *light = reinterpret_cast<Light *>(self);
+  light->SetDoubleSided((bool) value->vector[0]);
   return 0;
 }
 
 static int set_Light_environment_map(void *self, const struct PropertyValue *value)
 {
-  struct Light *light = (struct Light *) self;
-  LgtSetEnvironmentMap(light, value->texture);
+  Light *light = reinterpret_cast<Light *>(self);
+  light->SetEnvironmentMap(value->texture);
   return 0;
 }
 
 static int set_Light_transform_order(void *self, const struct PropertyValue *value)
 {
-  /* TODO error handling */
+  // TODO error handling
   if (!XfmIsTransformOrder((int) value->vector[0]))
     return -1;
 
-  LgtSetTransformOrder((struct Light *) self, (int) value->vector[0]);
+  Light *light = reinterpret_cast<Light *>(self);
+  light->SetTransformOrder((int) value->vector[0]);
   return 0;
 }
 
 static int set_Light_rotate_order(void *self, const struct PropertyValue *value)
 {
-  /* TODO error handling */
+  // TODO error handling
   if (!XfmIsRotateOrder((int) value->vector[0]))
     return -1;
 
-  LgtSetRotateOrder((struct Light *) self, (int) value->vector[0]);
+  Light *light = reinterpret_cast<Light *>(self);
+  light->SetRotateOrder((int) value->vector[0]);
   return 0;
 }
 
 static int set_Light_translate(void *self, const struct PropertyValue *value)
 {
-  LgtSetTranslate((struct Light *) self,
-      value->vector[0], value->vector[1], value->vector[2], value->time);
+  Light *light = reinterpret_cast<Light *>(self);
+  light->SetTranslate(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 
 static int set_Light_rotate(void *self, const struct PropertyValue *value)
 {
-  LgtSetRotate((struct Light *) self,
-      value->vector[0], value->vector[1], value->vector[2], value->time);
+  Light *light = reinterpret_cast<Light *>(self);
+  light->SetRotate(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 
 static int set_Light_scale(void *self, const struct PropertyValue *value)
 {
-  LgtSetScale((struct Light *) self,
-      value->vector[0], value->vector[1], value->vector[2], value->time);
+  Light *light = reinterpret_cast<Light *>(self);
+  light->SetScale(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 

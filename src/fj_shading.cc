@@ -308,7 +308,7 @@ int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *samp
     return 0;
   }
 
-  LgtIlluminate(sample, Ps, &light_color);
+  light_color = sample->light->Illuminate(*sample, *Ps);
   if (light_color.r < .0001 &&
     light_color.g < .0001 &&
     light_color.b < .0001) {
@@ -355,7 +355,7 @@ int SlGetLightSampleCount(const struct SurfaceInput *in)
   }
 
   for (i = 0; i < nlights; i++) {
-    nsamples += LgtGetSampleCount(lights[i]);
+    nsamples += lights[i]->GetSampleCount();
   }
 
   return nsamples;
@@ -379,8 +379,8 @@ struct LightSample *SlNewLightSamples(const struct SurfaceInput *in)
   samples = FJ_MEM_ALLOC_ARRAY(struct LightSample, nsamples);
   sample = samples;
   for (i = 0; i < nlights; i++) {
-    const int nsmp = LgtGetSampleCount(lights[i]);
-    LgtGetSamples(lights[i], sample, nsmp);
+    const int nsmp = lights[i]->GetSampleCount();
+    lights[i]->GetSamples(sample, nsmp);
     sample += nsmp;
   }
 

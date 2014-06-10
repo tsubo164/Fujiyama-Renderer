@@ -498,7 +498,7 @@ static int preprocess_lights(struct Renderer *renderer)
 
   for (i = 0; i < NLIGHTS; i++) {
     struct Light *light = renderer->target_lights[i];
-    const int err = LgtPreprocess(light);
+    const int err = light->Preprocess();
 
     if (err) {
       /* TODO error handling */

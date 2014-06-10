@@ -15,36 +15,36 @@ See LICENSE and README
 
 namespace fj {
 
-static int point_light_get_sample_count(const struct Light *light);
-static void point_light_get_samples(const struct Light *light,
-    struct LightSample *samples, int max_samples);
-static void point_light_illuminate(const struct Light *light,
-    const struct LightSample *sample,
-    const struct Vector *Ps, struct Color *Cl);
+static int point_light_get_sample_count(const Light *light);
+static void point_light_get_samples(const Light *light,
+    LightSample *samples, int max_samples);
+static void point_light_illuminate(const Light *light,
+    const LightSample *sample,
+    const Vector *Ps, Color *Cl);
 
-static int grid_light_get_sample_count(const struct Light *light);
-static void grid_light_get_samples(const struct Light *light,
-    struct LightSample *samples, int max_samples);
-static void grid_light_illuminate(const struct Light *light,
-    const struct LightSample *sample,
-    const struct Vector *Ps, struct Color *Cl);
+static int grid_light_get_sample_count(const Light *light);
+static void grid_light_get_samples(const Light *light,
+    LightSample *samples, int max_samples);
+static void grid_light_illuminate(const Light *light,
+    const LightSample *sample,
+    const Vector *Ps, Color *Cl);
 
-static int sphere_light_get_sample_count(const struct Light *light);
-static void sphere_light_get_samples(const struct Light *light,
-    struct LightSample *samples, int max_samples);
-static void sphere_light_illuminate(const struct Light *light,
-    const struct LightSample *sample,
-    const struct Vector *Ps, struct Color *Cl);
+static int sphere_light_get_sample_count(const Light *light);
+static void sphere_light_get_samples(const Light *light,
+    LightSample *samples, int max_samples);
+static void sphere_light_illuminate(const Light *light,
+    const LightSample *sample,
+    const Vector *Ps, Color *Cl);
 
-static int dome_light_get_sample_count(const struct Light *light);
-static void dome_light_get_samples(const struct Light *light,
-    struct LightSample *samples, int max_samples);
-static void dome_light_illuminate(const struct Light *light,
-    const struct LightSample *sample,
-    const struct Vector *Ps, struct Color *Cl);
-static int dome_light_preprocess(struct Light *light);
+static int dome_light_get_sample_count(const Light *light);
+static void dome_light_get_samples(const Light *light,
+    LightSample *samples, int max_samples);
+static void dome_light_illuminate(const Light *light,
+    const LightSample *sample,
+    const Vector *Ps, Color *Cl);
+static int dome_light_preprocess(Light *light);
 
-static int no_preprocess(struct Light *light);
+static int no_preprocess(Light *light);
 
 Light::Light() :
   color_(1, 1, 1),
@@ -120,9 +120,7 @@ void Light::SetLightType(int light_type)
 
 void Light::SetColor(float r, float g, float b)
 {
-  color_.r = r;
-  color_.g = g;
-  color_.b = b;
+  color_ = Color(r, g, b);
 }
 
 void Light::SetIntensity(float intensity)
@@ -144,7 +142,7 @@ void Light::SetDoubleSided(bool on_or_off)
   double_sided_ = on_or_off;
 }
 
-void Light::SetEnvironmentMap(struct Texture *texture)
+void Light::SetEnvironmentMap(Texture *texture)
 {
   environment_map_ = texture;
 }
@@ -196,111 +194,28 @@ int Light::Preprocess()
   return Preprocess_(this);
 }
 
-struct Light *LgtNew(int light_type)
+Light *LgtNew(int light_type)
 {
   Light *light = new Light();
   light->SetLightType(light_type);
   return light;
 }
 
-void LgtFree(struct Light *light)
+void LgtFree(Light *light)
 {
   delete light;
 }
 
-void LgtSetColor(struct Light *light, float r, float g, float b)
-{
-  light->color_.r = r;
-  light->color_.g = g;
-  light->color_.b = b;
-}
-
-void LgtSetIntensity(struct Light *light, double intensity)
-{
-  light->intensity_ = intensity;
-  /* TODO temp */
-  light->sample_intensity_ = light->intensity_ / light->sample_count_;
-}
-
-void LgtSetSampleCount(struct Light *light, int sample_count)
-{
-  light->sample_count_ = Max(sample_count, 1);
-  /* TODO temp */
-  light->sample_intensity_ = light->intensity_ / light->sample_count_;
-}
-
-void LgtSetDoubleSided(struct Light *light, int on_or_off)
-{
-  light->double_sided_ = (on_or_off != 0);
-}
-
-void LgtSetEnvironmentMap(struct Light *light, struct Texture *texture)
-{
-  light->environment_map_ = texture;
-}
-
-void LgtSetTranslate(struct Light *light,
-    double tx, double ty, double tz, double time)
-{
-  XfmPushTranslateSample(&light->transform_samples_, tx, ty, tz, time);
-}
-
-void LgtSetRotate(struct Light *light,
-    double rx, double ry, double rz, double time)
-{
-  XfmPushRotateSample(&light->transform_samples_, rx, ry, rz, time);
-}
-
-void LgtSetScale(struct Light *light,
-    double sx, double sy, double sz, double time)
-{
-  XfmPushScaleSample(&light->transform_samples_, sx, sy, sz, time);
-}
-
-void LgtSetTransformOrder(struct Light *light, int order)
-{
-  XfmSetSampleTransformOrder(&light->transform_samples_, order);
-}
-
-void LgtSetRotateOrder(struct Light *light, int order)
-{
-  XfmSetSampleRotateOrder(&light->transform_samples_, order);
-}
-
-void LgtGetSamples(const struct Light *light,
-    struct LightSample *samples, int max_samples)
-{
-  light->GetSamples_(light, samples, max_samples);
-}
-
-int LgtGetSampleCount(const struct Light *light)
-{
-  return light->GetSampleCount_(light);
-}
-
-/* TODO should have struct Light *light parameter? */
-void LgtIlluminate(const struct LightSample *sample,
-    const struct Vector *Ps, struct Color *Cl)
-{
-  const struct Light *light = sample->light;
-  light->Illuminate_(light, sample, Ps, Cl);
-}
-
-int LgtPreprocess(struct Light *light)
-{
-  return light->Preprocess_(light);
-}
-
 /* point light */
-static int point_light_get_sample_count(const struct Light *light)
+static int point_light_get_sample_count(const Light *light)
 {
   return 1;
 }
 
-static void point_light_get_samples(const struct Light *light,
-    struct LightSample *samples, int max_samples)
+static void point_light_get_samples(const Light *light,
+    LightSample *samples, int max_samples)
 {
-  struct Transform transform_interp;
+  Transform transform_interp;
 
   if (max_samples == 0)
     return;
@@ -313,9 +228,9 @@ static void point_light_get_samples(const struct Light *light,
   samples[0].light = light;
 }
 
-static void point_light_illuminate(const struct Light *light,
-    const struct LightSample *sample,
-    const struct Vector *Ps, struct Color *Cl)
+static void point_light_illuminate(const Light *light,
+    const LightSample *sample,
+    const Vector *Ps, Color *Cl)
 {
   Cl->r = light->intensity_ * light->color_.r;
   Cl->g = light->intensity_ * light->color_.g;
@@ -323,17 +238,17 @@ static void point_light_illuminate(const struct Light *light,
 }
 
 /* grid light */
-static int grid_light_get_sample_count(const struct Light *light)
+static int grid_light_get_sample_count(const Light *light)
 {
   return light->sample_count_;
 }
 
-static void grid_light_get_samples(const struct Light *light,
-    struct LightSample *samples, int max_samples)
+static void grid_light_get_samples(const Light *light,
+    LightSample *samples, int max_samples)
 {
-  struct Transform transform_interp;
-  int nsamples = LgtGetSampleCount(light);
-  struct Vector N_sample(0, 1, 0);
+  Transform transform_interp;
+  int nsamples = light->GetSampleCount();
+  Vector N_sample(0, 1, 0);
   int i;
 
   /* TODO time sampling */
@@ -344,10 +259,10 @@ static void grid_light_get_samples(const struct Light *light,
 
   nsamples = Min(nsamples, max_samples);
   for (i = 0; i < nsamples; i++) {
-    struct XorShift *mutable_xr = (struct XorShift *) &light->xr_;
+    XorShift *mutable_xr = (XorShift *) &light->xr_;
     const double x = (XorNextFloat01(mutable_xr) - .5);
     const double z = (XorNextFloat01(mutable_xr) - .5);
-    struct Vector P_sample;
+    Vector P_sample;
     P_sample.x = x;
     P_sample.z = z;
 
@@ -359,11 +274,11 @@ static void grid_light_get_samples(const struct Light *light,
   }
 }
 
-static void grid_light_illuminate(const struct Light *light,
-    const struct LightSample *sample,
-    const struct Vector *Ps, struct Color *Cl)
+static void grid_light_illuminate(const Light *light,
+    const LightSample *sample,
+    const Vector *Ps, Color *Cl)
 {
-  struct Vector Ln;
+  Vector Ln;
   double dot = 0;
 
   Ln.x = Ps->x - sample->P.x;
@@ -389,16 +304,16 @@ static void grid_light_illuminate(const struct Light *light,
 }
 
 /* sphere light */
-static int sphere_light_get_sample_count(const struct Light *light)
+static int sphere_light_get_sample_count(const Light *light)
 {
   return light->sample_count_;
 }
 
-static void sphere_light_get_samples(const struct Light *light,
-    struct LightSample *samples, int max_samples)
+static void sphere_light_get_samples(const Light *light,
+    LightSample *samples, int max_samples)
 {
-  struct Transform transform_interp;
-  int nsamples = LgtGetSampleCount(light);
+  Transform transform_interp;
+  int nsamples = light->GetSampleCount();
   int i;
 
   /* TODO time sampling */
@@ -406,9 +321,9 @@ static void sphere_light_get_samples(const struct Light *light,
 
   nsamples = Min(nsamples, max_samples);
   for (i = 0; i < nsamples; i++) {
-    struct XorShift *mutable_xr = (struct XorShift *) &light->xr_;
-    struct Vector P_sample;
-    struct Vector N_sample;
+    XorShift *mutable_xr = (XorShift *) &light->xr_;
+    Vector P_sample;
+    Vector N_sample;
 
     XorHollowSphereRand(mutable_xr, &P_sample);
     N_sample = P_sample;
@@ -423,11 +338,11 @@ static void sphere_light_get_samples(const struct Light *light,
   }
 }
 
-static void sphere_light_illuminate(const struct Light *light,
-    const struct LightSample *sample,
-    const struct Vector *Ps, struct Color *Cl)
+static void sphere_light_illuminate(const Light *light,
+    const LightSample *sample,
+    const Vector *Ps, Color *Cl)
 {
-  struct Vector Ln;
+  Vector Ln;
   double dot = 0;
 
   Ln.x = Ps->x - sample->P.x;
@@ -450,16 +365,16 @@ static void sphere_light_illuminate(const struct Light *light,
 }
 
 /* dome light */
-static int dome_light_get_sample_count(const struct Light *light)
+static int dome_light_get_sample_count(const Light *light)
 {
   return light->sample_count_;
 }
 
-static void dome_light_get_samples(const struct Light *light,
-    struct LightSample *samples, int max_samples)
+static void dome_light_get_samples(const Light *light,
+    LightSample *samples, int max_samples)
 {
-  struct Transform transform_interp;
-  int nsamples = LgtGetSampleCount(light);
+  Transform transform_interp;
+  int nsamples = light->GetSampleCount();
   int i;
 
   /* TODO time sampling */
@@ -467,9 +382,9 @@ static void dome_light_get_samples(const struct Light *light,
 
   nsamples = Min(nsamples, max_samples);
   for (i = 0; i < nsamples; i++) {
-    const struct DomeSample *dome_sample = &light->dome_samples_[i];
-    struct Vector P_sample;
-    struct Vector N_sample;
+    const DomeSample *dome_sample = &light->dome_samples_[i];
+    Vector P_sample;
+    Vector N_sample;
 
     P_sample.x = dome_sample->dir.x * FLT_MAX;
     P_sample.y = dome_sample->dir.y * FLT_MAX;
@@ -489,18 +404,18 @@ static void dome_light_get_samples(const struct Light *light,
   }
 }
 
-static void dome_light_illuminate(const struct Light *light,
-    const struct LightSample *sample,
-    const struct Vector *Ps, struct Color *Cl)
+static void dome_light_illuminate(const Light *light,
+    const LightSample *sample,
+    const Vector *Ps, Color *Cl)
 {
   Cl->r = light->sample_intensity_ * sample->color.r;
   Cl->g = light->sample_intensity_ * sample->color.g;
   Cl->b = light->sample_intensity_ * sample->color.b;
 }
 
-static int dome_light_preprocess(struct Light *light)
+static int dome_light_preprocess(Light *light)
 {
-  const int NSAMPLES = LgtGetSampleCount(light);
+  const int NSAMPLES = light->GetSampleCount();
   int XRES = 200;
   int YRES = 100;
   int i;
@@ -509,9 +424,9 @@ static int dome_light_preprocess(struct Light *light)
     FJ_MEM_FREE(light->dome_samples_);
   }
 
-  light->dome_samples_ = FJ_MEM_ALLOC_ARRAY(struct DomeSample, NSAMPLES);
+  light->dome_samples_ = FJ_MEM_ALLOC_ARRAY(DomeSample, NSAMPLES);
   for (i = 0; i < NSAMPLES; i++) {
-    struct DomeSample *sample = &light->dome_samples_[i];
+    DomeSample *sample = &light->dome_samples_[i];
     sample->uv.u = 1./NSAMPLES;
     sample->uv.v = 1./NSAMPLES;
     sample->color.r = 1;
@@ -549,7 +464,7 @@ static int dome_light_preprocess(struct Light *light)
   return 0;
 }
 
-static int no_preprocess(struct Light *light)
+static int no_preprocess(Light *light)
 {
   /* do nothing */
   return 0;
