@@ -41,12 +41,10 @@ public:
   Texture();
   ~Texture();
 
-  /*
-   * Looks up a value of texture image.
-   * (r, r, r, 1) will be returned when texture is grayscale.
-   * (r, g, b, 1) will be returned when texture is rgb.
-   * (r, g, b, a) will be returned when texture is rgba.
-   */
+  // Looks up a value of texture image.
+  // (r, r, r, 1) will be returned when texture is grayscale.
+  // (r, g, b, 1) will be returned when texture is rgb.
+  // (r, g, b, a) will be returned when texture is rgba.
   Color4 Lookup(float u, float v) const;
   int LoadFile(const std::string &filename);
 
