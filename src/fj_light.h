@@ -6,7 +6,9 @@ See LICENSE and README
 #ifndef FJ_LIGHT_H
 #define FJ_LIGHT_H
 
+#include "fj_importance_sampling.h"
 #include "fj_transform.h"
+#include "fj_random.h"
 #include "fj_vector.h"
 #include "fj_color.h"
 
@@ -19,18 +21,76 @@ enum LightType {
   LGT_DOME
 };
 
-struct Light;
-struct Texture;
+class Light;
+class Texture;
 
-struct LightSample {
-  const struct Light *light;
-  struct Vector P;
-  struct Vector N;
-  struct Color color;
+class LightSample {
+public:
+  const Light *light;
+  Vector P;
+  Vector N;
+  Color color;
 };
 
-extern struct Light *LgtNew(int light_type);
-extern void LgtFree(struct Light *light);
+class Light {
+public:
+  Light();
+  ~Light();
+
+  void SetLightType(int light_type);
+
+  // light properties
+  void SetColor(float r, float g, float b);
+  void SetIntensity(float intensity);
+  void SetSampleCount(int sample_count);
+  void SetDoubleSided(bool on_or_off);
+  void SetEnvironmentMap(Texture *texture);
+
+  // transformation
+  void SetTranslate(double tx, double ty, double tz, double time);
+  void SetRotate(double rx, double ry, double rz, double time);
+  void SetScale(double sx, double sy, double sz, double time);
+  void SetTransformOrder(int order);
+  void SetRotateOrder(int order);
+
+  // samples
+  void GetSamples(LightSample *samples, int max_samples) const;
+  int GetSampleCount() const;
+  Color Illuminate(const LightSample &sample, const Vector &Ps) const;
+  int Preprocess();
+
+public:
+  Color color_;
+  float intensity_;
+
+  // transformation properties
+  TransformSampleList transform_samples_;
+
+  // rng
+  XorShift xr_;
+
+  int type_;
+  bool double_sided_;
+  int sample_count_;
+  float sample_intensity_;
+
+  Texture *environment_map_;
+  // TODO tmp solution for dome light data
+  DomeSample *dome_samples_;
+
+  // TODO USE INHERITANCE
+  // functions
+  int (*GetSampleCount_)(const Light *light);
+  void (*GetSamples_)(const Light *light,
+      LightSample *samples, int max_samples);
+  void (*Illuminate_)(const Light *light,
+      const LightSample *sample,
+      const Vector *Ps, Color *Cl);
+  int (*Preprocess_)(Light *light);
+};
+
+extern Light *LgtNew(int light_type);
+extern void LgtFree(Light *light);
 
 extern void LgtSetColor(struct Light *light, float r, float g, float b);
 extern void LgtSetIntensity(struct Light *light, double intensity);
@@ -60,4 +120,4 @@ extern int LgtPreprocess(struct Light *light);
 
 } // namespace fj
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H
