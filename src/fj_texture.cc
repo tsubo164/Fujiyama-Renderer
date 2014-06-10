@@ -5,7 +5,6 @@ See LICENSE and README
 
 #include "fj_texture.h"
 #include "fj_framebuffer_io.h"
-#include "fj_framebuffer.h"
 #include "fj_multi_thread.h"
 #include "fj_tex_coord.h"
 #include "fj_mipmap.h"
@@ -19,7 +18,7 @@ namespace fj {
 static const Color4 NO_TEXTURE_COLOR(1, .63, .63, 1);
 
 TextureCache::TextureCache() :
-  fb_(NULL),
+  fb_(),
   mip_(NULL),
   last_xtile_(-1),
   last_ytile_(-1),
@@ -29,7 +28,7 @@ TextureCache::TextureCache() :
 
 TextureCache::~TextureCache()
 {
-  FbFree(fb_);
+  //FbFree(fb_);
   MipCloseInputFile(mip_);
 }
 
@@ -44,16 +43,18 @@ int TextureCache::OpenMipmap(const std::string &filename)
     return -1;
   }
 
+#if 0
   fb_ = FbNew();
   if (fb_ == NULL) {
     return -1;
   }
+#endif
 
   if (MipReadHeader(mip_)) {
     return -1;
   }
 
-  fb_->Resize(mip_->tilesize, mip_->tilesize, mip_->nchannels);
+  fb_.Resize(mip_->tilesize, mip_->tilesize, mip_->nchannels);
   is_open_ = true;
 
   return 0;
@@ -77,7 +78,7 @@ Color4 TextureCache::LookupTexture(float u, float v)
   const int ytile = static_cast<int>(floor(tile_space.v));
 
   if (xtile != last_xtile_ || ytile != last_ytile_) {
-    mip_->data = fb_->GetWritable(0, 0, 0);
+    mip_->data = fb_.GetWritable(0, 0, 0);
     MipReadTile(mip_, xtile, ytile);
     last_xtile_ = xtile;
     last_ytile_ = ytile;
@@ -86,7 +87,7 @@ Color4 TextureCache::LookupTexture(float u, float v)
   const int xpxl = (int)( (tile_space.u - floor(tile_space.u)) * 64);
   const int ypxl = (int)( (tile_space.v - floor(tile_space.v)) * 64);
 
-  return fb_->GetColor(xpxl, ypxl);
+  return fb_.GetColor(xpxl, ypxl);
 }
 
 int TextureCache::GetTextureWidth() const

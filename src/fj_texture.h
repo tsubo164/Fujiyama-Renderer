@@ -6,6 +6,7 @@ See LICENSE and README
 #ifndef FJ_TEXTURE_H
 #define FJ_TEXTURE_H
 
+#include "fj_framebuffer.h"
 #include <string>
 #include <vector>
 
@@ -29,7 +30,7 @@ public:
   bool IsOpen() const;
 
 private:
-  FrameBuffer *fb_;
+  FrameBuffer fb_;
   MipInput *mip_;
   int last_xtile_;
   int last_ytile_;
