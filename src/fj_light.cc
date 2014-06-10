@@ -8,8 +8,7 @@ See LICENSE and README
 #include "fj_framebuffer.h"
 #include "fj_numeric.h"
 #include "fj_texture.h"
-#include "fj_memory.h"
-#include "fj_vector.h"
+#include <cfloat>
 
 namespace fj {
 
@@ -56,7 +55,7 @@ Light::Light() :
   sample_intensity_(intensity_ / sample_count_),
 
   environment_map_(NULL),
-  dome_samples_(NULL),
+  dome_samples_(),
 
   GetSampleCount_(NULL),
   GetSamples_(NULL),
@@ -68,9 +67,6 @@ Light::Light() :
 
 Light::~Light()
 {
-  if (dome_samples_ != NULL) {
-    FJ_MEM_FREE(dome_samples_);
-  }
 }
 
 void Light::SetLightType(int light_type)
@@ -213,11 +209,10 @@ static int point_light_get_sample_count(const Light *light)
 static void point_light_get_samples(const Light *light,
     LightSample *samples, int max_samples)
 {
-  Transform transform_interp;
-
   if (max_samples == 0)
     return;
 
+  Transform transform_interp;
   // TODO time sampling
   XfmLerpTransformSample(&light->transform_samples_, 0, &transform_interp);
 
@@ -355,7 +350,8 @@ static void dome_light_get_samples(const Light *light,
   for (int i = 0; i < nsamples; i++) {
     const DomeSample *dome_sample = &light->dome_samples_[i];
 
-    Vector P_sample = dome_sample->dir * REAL_MAX;
+    // TODO CHANGE IT TO REAL_MAX WHEN FINISHING IT TO OTHERS
+    Vector P_sample = dome_sample->dir * FLT_MAX;
     Vector N_sample = -1 * dome_sample->dir;
 
     // TODO cancel translate and scale
@@ -378,20 +374,15 @@ static void dome_light_illuminate(const Light *light,
 
 static int dome_light_preprocess(Light *light)
 {
-  if (light->dome_samples_ != NULL) {
-    FJ_MEM_FREE(light->dome_samples_);
-  }
-
   const int NSAMPLES = light->GetSampleCount();
-  light->dome_samples_ = FJ_MEM_ALLOC_ARRAY(DomeSample, NSAMPLES);
+  DomeSample init_sample;
+  init_sample.uv = TexCoord(1./NSAMPLES, 1./NSAMPLES);
+  init_sample.color = Color(1, .63, .63);
+  init_sample.dir = Vector(1./NSAMPLES, 1, 1./NSAMPLES);
+  Normalize(&init_sample.dir);
 
-  for (int i = 0; i < NSAMPLES; i++) {
-    DomeSample *sample = &light->dome_samples_[i];
-    sample->uv = TexCoord(1./NSAMPLES, 1./NSAMPLES);
-    sample->color = Color(1, .63, .63);
-    sample->dir = Vector(1./NSAMPLES, 1, 1./NSAMPLES);
-    Normalize(&sample->dir);
-  }
+  light->dome_samples_.resize(NSAMPLES, init_sample);
+  std::vector<DomeSample>(light->dome_samples_).swap(light->dome_samples_);
 
   if (light->environment_map_ == NULL) {
     // TODO should be an error?
@@ -407,15 +398,15 @@ static int dome_light_preprocess(Light *light)
   if (0) {
     ImportanceSampling(light->environment_map_, 0,
         XRES, YRES,
-        light->dome_samples_, NSAMPLES);
+        &light->dome_samples_[0], NSAMPLES);
   } else if (1) {
     StratifiedImportanceSampling(light->environment_map_, 0,
         XRES, YRES,
-        light->dome_samples_, NSAMPLES);
+        &light->dome_samples_[0], NSAMPLES);
   } else {
     StructuredImportanceSampling(light->environment_map_, 0,
         XRES, YRES,
-        light->dome_samples_, NSAMPLES);
+        &light->dome_samples_[0], NSAMPLES);
   }
 
   return 0;

@@ -12,6 +12,7 @@ See LICENSE and README
 #include "fj_vector.h"
 #include "fj_color.h"
 #include "fj_types.h"
+#include <vector>
 
 namespace fj {
 
@@ -80,7 +81,7 @@ public: // TODO ONCE FINISHING INHERITANCE MAKE IT PRAIVATE
 
   Texture *environment_map_;
   // TODO tmp solution for dome light data
-  DomeSample *dome_samples_;
+  std::vector<DomeSample> dome_samples_;
 
   // TODO USE INHERITANCE
   // functions
