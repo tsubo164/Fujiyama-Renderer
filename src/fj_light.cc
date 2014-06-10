@@ -11,8 +11,6 @@ See LICENSE and README
 #include "fj_memory.h"
 #include "fj_vector.h"
 
-#include <cfloat>
-
 namespace fj {
 
 static int point_light_get_sample_count(const Light *light);
@@ -126,14 +124,14 @@ void Light::SetColor(float r, float g, float b)
 void Light::SetIntensity(float intensity)
 {
   intensity_ = intensity;
-  /* TODO temp */
+  // TODO temp
   sample_intensity_ = intensity_ / sample_count_;
 }
 
 void Light::SetSampleCount(int sample_count)
 {
   sample_count_ = Max(sample_count, 1);
-  /* TODO temp */
+  // TODO temp
   sample_intensity_ = intensity_ / sample_count_;
 }
 
@@ -147,17 +145,17 @@ void Light::SetEnvironmentMap(Texture *texture)
   environment_map_ = texture;
 }
 
-void Light::SetTranslate(double tx, double ty, double tz, double time)
+void Light::SetTranslate(Real tx, Real ty, Real tz, Real time)
 {
   XfmPushTranslateSample(&transform_samples_, tx, ty, tz, time);
 }
 
-void Light::SetRotate(double rx, double ry, double rz, double time)
+void Light::SetRotate(Real rx, Real ry, Real rz, Real time)
 {
   XfmPushRotateSample(&transform_samples_, rx, ry, rz, time);
 }
 
-void Light::SetScale(double sx, double sy, double sz, double time)
+void Light::SetScale(Real sx, Real sy, Real sz, Real time)
 {
   XfmPushScaleSample(&transform_samples_, sx, sy, sz, time);
 }
@@ -206,7 +204,7 @@ void LgtFree(Light *light)
   delete light;
 }
 
-/* point light */
+// point light
 static int point_light_get_sample_count(const Light *light)
 {
   return 1;
@@ -220,7 +218,7 @@ static void point_light_get_samples(const Light *light,
   if (max_samples == 0)
     return;
 
-  /* TODO time sampling */
+  // TODO time sampling
   XfmLerpTransformSample(&light->transform_samples_, 0, &transform_interp);
 
   samples[0].P = transform_interp.translate;
@@ -232,12 +230,10 @@ static void point_light_illuminate(const Light *light,
     const LightSample *sample,
     const Vector *Ps, Color *Cl)
 {
-  Cl->r = light->intensity_ * light->color_.r;
-  Cl->g = light->intensity_ * light->color_.g;
-  Cl->b = light->intensity_ * light->color_.b;
+  *Cl = light->intensity_ * light->color_;
 }
 
-/* grid light */
+// grid light
 static int grid_light_get_sample_count(const Light *light)
 {
   return light->sample_count_;
@@ -247,21 +243,20 @@ static void grid_light_get_samples(const Light *light,
     LightSample *samples, int max_samples)
 {
   Transform transform_interp;
-  int nsamples = light->GetSampleCount();
-  Vector N_sample(0, 1, 0);
-  int i;
-
-  /* TODO time sampling */
+  // TODO time sampling
   XfmLerpTransformSample(&light->transform_samples_, 0, &transform_interp);
 
+  Vector N_sample(0, 1, 0);
   XfmTransformVector(&transform_interp, &N_sample);
   Normalize(&N_sample);
 
+  int nsamples = light->GetSampleCount();
   nsamples = Min(nsamples, max_samples);
-  for (i = 0; i < nsamples; i++) {
+
+  for (int i = 0; i < nsamples; i++) {
     XorShift *mutable_xr = (XorShift *) &light->xr_;
-    const double x = (XorNextFloat01(mutable_xr) - .5);
-    const double z = (XorNextFloat01(mutable_xr) - .5);
+    const Real x = (XorNextFloat01(mutable_xr) - .5);
+    const Real z = (XorNextFloat01(mutable_xr) - .5);
     Vector P_sample;
     P_sample.x = x;
     P_sample.z = z;
@@ -278,32 +273,21 @@ static void grid_light_illuminate(const Light *light,
     const LightSample *sample,
     const Vector *Ps, Color *Cl)
 {
-  Vector Ln;
-  double dot = 0;
-
-  Ln.x = Ps->x - sample->P.x;
-  Ln.y = Ps->y - sample->P.y;
-  Ln.z = Ps->z - sample->P.z;
-
+  Vector Ln = *Ps - sample->P;
   Normalize(&Ln);
 
-  dot = Dot(Ln, sample->N);
+  Real dot = Dot(Ln, sample->N);
   if (light->double_sided_) {
     dot = Abs(dot);
   } else {
     dot = Max(dot, 0.);
   }
 
-  Cl->r = light->sample_intensity_ * light->color_.r;
-  Cl->g = light->sample_intensity_ * light->color_.g;
-  Cl->b = light->sample_intensity_ * light->color_.b;
-
-  Cl->r *= dot;
-  Cl->g *= dot;
-  Cl->b *= dot;
+  *Cl = light->sample_intensity_ * light->color_;
+  *Cl *= dot;
 }
 
-/* sphere light */
+// sphere light
 static int sphere_light_get_sample_count(const Light *light)
 {
   return light->sample_count_;
@@ -313,14 +297,13 @@ static void sphere_light_get_samples(const Light *light,
     LightSample *samples, int max_samples)
 {
   Transform transform_interp;
-  int nsamples = light->GetSampleCount();
-  int i;
-
-  /* TODO time sampling */
+  // TODO time sampling
   XfmLerpTransformSample(&light->transform_samples_, 0, &transform_interp);
 
+  int nsamples = light->GetSampleCount();
   nsamples = Min(nsamples, max_samples);
-  for (i = 0; i < nsamples; i++) {
+
+  for (int i = 0; i < nsamples; i++) {
     XorShift *mutable_xr = (XorShift *) &light->xr_;
     Vector P_sample;
     Vector N_sample;
@@ -342,29 +325,18 @@ static void sphere_light_illuminate(const Light *light,
     const LightSample *sample,
     const Vector *Ps, Color *Cl)
 {
-  Vector Ln;
-  double dot = 0;
-
-  Ln.x = Ps->x - sample->P.x;
-  Ln.y = Ps->y - sample->P.y;
-  Ln.z = Ps->z - sample->P.z;
-
+  Vector Ln = *Ps - sample->P;
   Normalize(&Ln);
 
-  dot = Dot(Ln, sample->N);
-
+  const Real dot = Dot(Ln, sample->N);
   if (dot > 0) {
-    Cl->r = light->sample_intensity_ * light->color_.r;
-    Cl->g = light->sample_intensity_ * light->color_.g;
-    Cl->b = light->sample_intensity_ * light->color_.b;
+    *Cl = light->sample_intensity_ * light->color_;
   } else {
-    Cl->r = 0;
-    Cl->g = 0;
-    Cl->b = 0;
+    *Cl = Color();
   }
 }
 
-/* dome light */
+// dome light
 static int dome_light_get_sample_count(const Light *light)
 {
   return light->sample_count_;
@@ -374,26 +346,19 @@ static void dome_light_get_samples(const Light *light,
     LightSample *samples, int max_samples)
 {
   Transform transform_interp;
-  int nsamples = light->GetSampleCount();
-  int i;
-
-  /* TODO time sampling */
+  // TODO time sampling
   XfmLerpTransformSample(&light->transform_samples_, 0, &transform_interp);
 
+  int nsamples = light->GetSampleCount();
   nsamples = Min(nsamples, max_samples);
-  for (i = 0; i < nsamples; i++) {
+
+  for (int i = 0; i < nsamples; i++) {
     const DomeSample *dome_sample = &light->dome_samples_[i];
-    Vector P_sample;
-    Vector N_sample;
 
-    P_sample.x = dome_sample->dir.x * FLT_MAX;
-    P_sample.y = dome_sample->dir.y * FLT_MAX;
-    P_sample.z = dome_sample->dir.z * FLT_MAX;
-    N_sample.x = -1 * dome_sample->dir.x;
-    N_sample.y = -1 * dome_sample->dir.y;
-    N_sample.z = -1 * dome_sample->dir.z;
+    Vector P_sample = dome_sample->dir * REAL_MAX;
+    Vector N_sample = -1 * dome_sample->dir;
 
-    /* TODO cancel translate and scale */
+    // TODO cancel translate and scale
     XfmTransformPoint(&transform_interp, &P_sample);
     XfmTransformVector(&transform_interp, &N_sample);
 
@@ -408,42 +373,34 @@ static void dome_light_illuminate(const Light *light,
     const LightSample *sample,
     const Vector *Ps, Color *Cl)
 {
-  Cl->r = light->sample_intensity_ * sample->color.r;
-  Cl->g = light->sample_intensity_ * sample->color.g;
-  Cl->b = light->sample_intensity_ * sample->color.b;
+  *Cl = light->sample_intensity_ * sample->color;
 }
 
 static int dome_light_preprocess(Light *light)
 {
-  const int NSAMPLES = light->GetSampleCount();
-  int XRES = 200;
-  int YRES = 100;
-  int i;
-
   if (light->dome_samples_ != NULL) {
     FJ_MEM_FREE(light->dome_samples_);
   }
 
+  const int NSAMPLES = light->GetSampleCount();
   light->dome_samples_ = FJ_MEM_ALLOC_ARRAY(DomeSample, NSAMPLES);
-  for (i = 0; i < NSAMPLES; i++) {
+
+  for (int i = 0; i < NSAMPLES; i++) {
     DomeSample *sample = &light->dome_samples_[i];
-    sample->uv.u = 1./NSAMPLES;
-    sample->uv.v = 1./NSAMPLES;
-    sample->color.r = 1;
-    sample->color.g = .63;
-    sample->color.b = .63;
+    sample->uv = TexCoord(1./NSAMPLES, 1./NSAMPLES);
+    sample->color = Color(1, .63, .63);
     sample->dir = Vector(1./NSAMPLES, 1, 1./NSAMPLES);
     Normalize(&sample->dir);
   }
 
   if (light->environment_map_ == NULL) {
-    /* TODO should be an error? */
+    // TODO should be an error?
     return 0;
   }
 
-  XRES = light->environment_map_->GetWidth();
-  YRES = light->environment_map_->GetHeight();
-  /* TODO parameteraize */
+  int XRES = light->environment_map_->GetWidth();
+  int YRES = light->environment_map_->GetHeight();
+  // TODO parameteraize
   XRES /= 8;
   YRES /= 8;
 
@@ -466,7 +423,7 @@ static int dome_light_preprocess(Light *light)
 
 static int no_preprocess(Light *light)
 {
-  /* do nothing */
+  // does nothing
   return 0;
 }
 

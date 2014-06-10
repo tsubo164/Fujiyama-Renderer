@@ -11,6 +11,7 @@ See LICENSE and README
 #include "fj_random.h"
 #include "fj_vector.h"
 #include "fj_color.h"
+#include "fj_types.h"
 
 namespace fj {
 
@@ -50,9 +51,9 @@ public:
   void SetEnvironmentMap(Texture *texture);
 
   // transformation
-  void SetTranslate(double tx, double ty, double tz, double time);
-  void SetRotate(double rx, double ry, double rz, double time);
-  void SetScale(double sx, double sy, double sz, double time);
+  void SetTranslate(Real tx, Real ty, Real tz, Real time);
+  void SetRotate(Real rx, Real ry, Real rz, Real time);
+  void SetScale(Real sx, Real sy, Real sz, Real time);
   void SetTransformOrder(int order);
   void SetRotateOrder(int order);
 
@@ -62,7 +63,7 @@ public:
   Color Illuminate(const LightSample &sample, const Vector &Ps) const;
   int Preprocess();
 
-public:
+public: // TODO ONCE FINISHING INHERITANCE MAKE IT PRAIVATE
   Color color_;
   float intensity_;
 
