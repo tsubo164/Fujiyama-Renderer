@@ -59,4 +59,4 @@ extern void RdrSetTileReportCallback(struct Renderer *renderer, void *data,
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H
