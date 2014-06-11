@@ -8,12 +8,16 @@ See LICENSE and README
 
 namespace fj {
 
-struct Rectangle {
+class Rectangle {
+public:
+  Rectangle() : xmin(0), ymin(0), xmax(0), ymax(0) {}
+  ~Rectangle() {}
+
   int xmin, ymin, xmax, ymax;
 };
 
-extern void RctPrint(const struct Rectangle *rect);
+extern void RctPrint(const Rectangle &rect);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

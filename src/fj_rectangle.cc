@@ -4,17 +4,17 @@ See LICENSE and README
 */
 
 #include "fj_rectangle.h"
-#include <stdio.h>
+#include <cstdio>
 
 namespace fj {
 
-void RctPrint(const struct Rectangle *rect)
+void RctPrint(const Rectangle &rect)
 {
   printf("(%d, %d) (%d, %d)\n",
-      rect->xmin,
-      rect->ymin,
-      rect->xmax,
-      rect->ymax);
+      rect.xmin,
+      rect.ymin,
+      rect.xmax,
+      rect.ymax);
 }
 
 } // namespace xxx
