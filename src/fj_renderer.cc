@@ -40,13 +40,13 @@ static Iteration count_total_samples(const struct Tiler *tiler,
     int x_pixel_samples, int y_pixel_samples,
     float x_filter_width, float y_filter_width)
 {
-  const int tile_count = TlrGetTileCount(tiler);
+  const int tile_count = tiler->GetTileCount();
   int total_sample_count = 0;
   int i;
 
   for (i = 0; i < tile_count; i++) {
-    struct Tile *tile = TlrGetTile(tiler, i);
-    struct Rectangle region;
+    const Tile *tile = tiler->GetTile(i);
+    Rectangle region;
     int samples_in_tile = 0;
 
     region.xmin = tile->xmin;
@@ -639,10 +639,10 @@ static struct Worker *new_worker_list(int worker_count,
 
 static void set_working_region(struct Worker *worker, int region_id)
 {
-  struct Tile *tile = TlrGetTile(worker->tiler, region_id);
+  const Tile *tile = worker->tiler->GetTile(region_id);
 
   worker->region_id = region_id;
-  worker->region_count = TlrGetTileCount(worker->tiler);
+  worker->region_count = worker->tiler->GetTileCount();
   worker->tile_region.xmin = tile->xmin;
   worker->tile_region.ymin = tile->ymin;
   worker->tile_region.xmax = tile->xmax;
@@ -738,7 +738,7 @@ static void render_frame_start(struct Renderer *renderer, const struct Tiler *ti
 {
   struct FrameInfo info;
   info.worker_count = RdrGetThreadCount(renderer);
-  info.tile_count = TlrGetTileCount(tiler);
+  info.tile_count = tiler->GetTileCount();
   info.frame_region = renderer->frame_region;;
   info.framebuffer = renderer->framebuffers;
 
@@ -749,7 +749,7 @@ static void render_frame_done(struct Renderer *renderer, const struct Tiler *til
 {
   struct FrameInfo info;
   info.worker_count = RdrGetThreadCount(renderer);
-  info.tile_count = TlrGetTileCount(tiler);
+  info.tile_count = tiler->GetTileCount();
   info.frame_region = renderer->frame_region;;
   info.framebuffer = renderer->framebuffers;
 
@@ -866,8 +866,8 @@ static int render_scene(struct Renderer *renderer)
     render_state = -1;
     goto cleanup_and_exit;
   }
-  TlrGenerateTiles(tiler, &renderer->frame_region);
-  tile_count = TlrGetTileCount(tiler);
+  tiler->GenerateTiles(renderer->frame_region);
+  tile_count = tiler->GetTileCount();
 
   /* Worker */
   worker_list = new_worker_list(thread_count, renderer, tiler);

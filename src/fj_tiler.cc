@@ -6,86 +6,65 @@ See LICENSE and README
 #include "fj_tiler.h"
 #include "fj_rectangle.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
 
-#include <math.h>
-#include <assert.h>
+#include <cassert>
 
 namespace fj {
 
-struct Tiler {
-  int total_ntiles;
-  int xntiles, yntiles;
-  struct Tile *tiles;
+Tiler::Tiler() :
+  total_ntiles_(0),
+  xntiles_(0),
+  yntiles_(0),
+  tiles_(),
 
-  int xres, yres;
-  int xtile_size, ytile_size;
-};
-
-struct Tiler *TlrNew(int xres, int yres, int xtile_size, int ytile_size)
+  xres_(0),
+  yres_(0),
+  xtile_size_(0),
+  ytile_size_(0)
 {
-  struct Tiler *tiler = FJ_MEM_ALLOC(struct Tiler);
+}
 
-  if (tiler == NULL)
+Tiler::~Tiler()
+{
+}
+
+int Tiler::GetTileCount() const
+{
+  return total_ntiles_;
+}
+
+const Tile *Tiler::GetTile(int index) const
+{
+  if (index < 0 || index >= GetTileCount()) {
     return NULL;
+  }
+  return &tiles_[index];
+}
 
-  tiler->total_ntiles = 0;
-  tiler->xntiles = 0;
-  tiler->yntiles = 0;
-  tiler->tiles = NULL;
-
+void Tiler::Divide(int xres, int yres, int xtile_size, int ytile_size)
+{
   assert(xres > 0);
   assert(yres > 0);
   assert(xtile_size > 0);
   assert(ytile_size > 0);
 
-  tiler->xres = xres;
-  tiler->yres = yres;
-  tiler->xtile_size = xtile_size;
-  tiler->ytile_size = ytile_size;
-
-  return tiler;
+  xres_ = xres;
+  yres_ = yres;
+  xtile_size_ = xtile_size;
+  ytile_size_ = ytile_size;
 }
 
-void TlrFree(struct Tiler *tiler)
+void Tiler::GenerateTiles(const Rectangle &region)
 {
-  if (tiler == NULL)
-    return;
+  const int xres = xres_;
+  const int yres = yres_;
+  const int xtile_size = xtile_size_;
+  const int ytile_size = ytile_size_;
 
-  if (tiler->tiles != NULL)
-    FJ_MEM_FREE(tiler->tiles);
-
-  FJ_MEM_FREE(tiler);
-}
-
-int TlrGetTileCount(const struct Tiler *tiler)
-{
-  return tiler->total_ntiles;
-}
-
-struct Tile *TlrGetTile(const struct Tiler *tiler, int index)
-{
-  if (index < 0 || index >= TlrGetTileCount(tiler)) {
-    return NULL;
-  }
-  return &tiler->tiles[index];
-}
-
-int TlrGenerateTiles(struct Tiler *tiler, const struct Rectangle *region)
-{
-  int id;
-  int x, y;
-  struct Tile *tiles = NULL, *tile = NULL;
-
-  const int xres = tiler->xres;
-  const int yres = tiler->yres;
-  const int xtile_size = tiler->xtile_size;
-  const int ytile_size = tiler->ytile_size;
-
-  const int xmin = region->xmin;
-  const int ymin = region->ymin;
-  const int xmax = region->xmax;
-  const int ymax = region->ymax;
+  const int xmin = region.xmin;
+  const int ymin = region.ymin;
+  const int xmax = region.xmax;
+  const int ymax = region.ymax;
 
   const int XMIN = (int) floor(Max(0, xmin) / (double) xtile_size);
   const int YMIN = (int) floor(Max(0, ymin) / (double) ytile_size);
@@ -99,19 +78,16 @@ int TlrGenerateTiles(struct Tiler *tiler, const struct Rectangle *region)
   assert(xmin < xmax);
   assert(ymin < ymax);
 
-  if (tiler->tiles != NULL) {
-    FJ_MEM_FREE(tiler->tiles);
+  std::vector<Tile> tmp_tiles(total_ntiles);
+  if (tmp_tiles.empty()) {
+    return;
   }
 
-  tiles = FJ_MEM_ALLOC_ARRAY(struct Tile, total_ntiles);
-  if (tiles == NULL) {
-    return -1;
-  }
+  Tile *tile = &tmp_tiles[0];
+  int id = 0;
 
-  tile = tiles;
-  id = 0;
-  for (y = YMIN; y < YMAX; y++) {
-    for (x = XMIN; x < XMAX; x++) {
+  for (int y = YMIN; y < YMAX; y++) {
+    for (int x = XMIN; x < XMAX; x++) {
       tile->id = id;
       tile->xmin = x * xtile_size;
       tile->ymin = y * ytile_size;
@@ -124,17 +100,29 @@ int TlrGenerateTiles(struct Tiler *tiler, const struct Rectangle *region)
 
       tile->xmax = Min(tile->xmax, xmax);
       tile->ymax = Min(tile->ymax, ymax);
+
       tile++;
       id++;
     }
   }
 
-  tiler->total_ntiles = total_ntiles;
-  tiler->xntiles = xntiles;
-  tiler->yntiles = yntiles;
-  tiler->tiles = tiles;
+  // commit
+  total_ntiles_ = total_ntiles;
+  xntiles_ = xntiles;
+  yntiles_ = yntiles;
+  tiles_.swap(tmp_tiles);
+}
 
-  return 0;
+Tiler *TlrNew(int xres, int yres, int xtile_size, int ytile_size)
+{
+  Tiler *tiler = new Tiler();
+  tiler->Divide(xres, yres, xtile_size, ytile_size);
+  return tiler;
+}
+
+void TlrFree(Tiler *tiler)
+{
+  delete tiler;
 }
 
 } // namespace xxx

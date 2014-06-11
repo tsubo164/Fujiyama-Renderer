@@ -6,24 +6,46 @@ See LICENSE and README
 #ifndef FJ_TILER_H
 #define FJ_TILER_H
 
+#include <vector>
+
 namespace fj {
 
-struct Tile {
+class Rectangle;
+
+class Tile {
+public:
+  Tile() : id(0), xmin(0), ymin(0), xmax(0), ymax(0) {}
+  ~Tile() {}
   int id;
   int xmin, ymin, xmax, ymax;
 };
 
-struct Tiler;
-struct Rectangle;
+class Tiler {
+public:
+  Tiler();
+  ~Tiler();
 
-extern struct Tiler *TlrNew(int xres, int yres, int xtile_size, int ytile_size);
-extern void TlrFree(struct Tiler *tiler);
+  int GetTileCount() const;
+  const Tile *GetTile(int index) const;
 
-extern int TlrGetTileCount(const struct Tiler *tiler);
-extern struct Tile *TlrGetTile(const struct Tiler *tiler, int index);
+  void Divide(int xres, int yres, int xtile_size, int ytile_size);
+  void GenerateTiles(const Rectangle &region);
 
-extern int TlrGenerateTiles(struct Tiler *tiler, const struct Rectangle *region);
+public:
+  int total_ntiles_;
+  int xntiles_;
+  int yntiles_;
+  std::vector<Tile> tiles_;
+
+  int xres_;
+  int yres_;
+  int xtile_size_;
+  int ytile_size_;
+};
+
+extern Tiler *TlrNew(int xres, int yres, int xtile_size, int ytile_size);
+extern void TlrFree(Tiler *tiler);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

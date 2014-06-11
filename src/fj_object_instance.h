@@ -65,7 +65,7 @@ public:
   bool RayVolumeIntersect(const Ray &ray, Real time, Interval *interval) const;
   bool GetVolumeSample(const Vector &point, Real time, VolumeSample *sample) const;
 
-public:
+private:
   void update_bounds();
   void merge_sampled_bounds();
 
