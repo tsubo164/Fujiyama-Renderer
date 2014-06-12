@@ -14,7 +14,6 @@ See LICENSE and README
 #include "fj_shading.h"
 #include "fj_camera.h"
 #include "fj_filter.h"
-#include "fj_memory.h"
 #include "fj_vector.h"
 #include "fj_light.h"
 #include "fj_tiler.h"
@@ -214,6 +213,40 @@ public:
 
 Renderer::Renderer()
 {
+  camera_ = NULL;
+  framebuffer_ = NULL;
+  target_objects_ = NULL;
+  target_lights_ = NULL;
+  nlights_ = 0;
+
+  // TODO remove 'this'
+  RdrSetResolution(this, 320, 240);
+  RdrSetPixelSamples(this, 3, 3);
+  RdrSetTileSize(this, 64, 64);
+  RdrSetFilterWidth(this, 2, 2);
+  RdrSetSampleJitter(this, 1);
+  RdrSetSampleTimeRange(this, 0, 1);
+
+  RdrSetShadowEnable(this, 1);
+  RdrSetMaxReflectDepth(this, 3);
+  RdrSetMaxRefractDepth(this, 3);
+
+  RdrSetRaymarchStep(this, .05);
+  RdrSetRaymarchShadowStep(this, .1);
+  RdrSetRaymarchReflectStep(this, .1);
+  RdrSetRaymarchRefractStep(this, .1);
+
+  RdrSetUseMaxThread(this, 0);
+  RdrSetThreadCount(this, 1);
+
+  RdrSetFrameReportCallback(this, &frame_progress_,
+      default_frame_start,
+      default_frame_done);
+
+  RdrSetTileReportCallback(this, &frame_progress_,
+      default_tile_start,
+      default_sample_done,
+      default_tile_done);
 }
 
 Renderer::~Renderer()
@@ -225,54 +258,12 @@ static int render_scene(struct Renderer *renderer);
 
 struct Renderer *RdrNew(void)
 {
-  struct Renderer *renderer = FJ_MEM_ALLOC(struct Renderer);
-  if (renderer == NULL)
-    return NULL;
-
-  renderer->camera_ = NULL;
-  renderer->framebuffer_ = NULL;
-  renderer->target_objects_ = NULL;
-  renderer->target_lights_ = NULL;
-  renderer->nlights_ = 0;
-
-  RdrSetResolution(renderer, 320, 240);
-  RdrSetPixelSamples(renderer, 3, 3);
-  RdrSetTileSize(renderer, 64, 64);
-  RdrSetFilterWidth(renderer, 2, 2);
-  RdrSetSampleJitter(renderer, 1);
-  RdrSetSampleTimeRange(renderer, 0, 1);
-
-  RdrSetShadowEnable(renderer, 1);
-  RdrSetMaxReflectDepth(renderer, 3);
-  RdrSetMaxRefractDepth(renderer, 3);
-
-  RdrSetRaymarchStep(renderer, .05);
-  RdrSetRaymarchShadowStep(renderer, .1);
-  RdrSetRaymarchReflectStep(renderer, .1);
-  RdrSetRaymarchRefractStep(renderer, .1);
-
-  RdrSetUseMaxThread(renderer, 0);
-  RdrSetThreadCount(renderer, 1);
-
-  RdrSetFrameReportCallback(renderer, &renderer->frame_progress_,
-      default_frame_start,
-      default_frame_done);
-
-  RdrSetTileReportCallback(renderer, &renderer->frame_progress_,
-      default_tile_start,
-      default_sample_done,
-      default_tile_done);
-
-  return renderer;
+  return new Renderer();
 }
 
 void RdrFree(struct Renderer *renderer)
 {
-  if (renderer == NULL) {
-    return;
-  }
-
-  FJ_MEM_FREE(renderer);
+  delete renderer;
 }
 
 void RdrSetResolution(struct Renderer *renderer, int xres, int yres)
@@ -644,7 +635,7 @@ static void init_worker(struct Worker *worker, int id,
 static struct Worker *new_worker_list(int worker_count,
     const struct Renderer *renderer, const struct Tiler *tiler)
 {
-  struct Worker *worker_list = FJ_MEM_ALLOC_ARRAY(struct Worker, worker_count);
+  Worker *worker_list = new Worker[worker_count];
   int i;
 
   if (worker_list == NULL) {
@@ -693,7 +684,7 @@ static void free_worker_list(struct Worker *worker_list, int worker_count)
     finish_worker(&worker_list[i]);
   }
 
-  FJ_MEM_FREE(worker_list);
+  delete [] worker_list;
 }
 
 static struct Color4 apply_pixel_filter(struct Worker *worker, int x, int y)
