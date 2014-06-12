@@ -77,6 +77,9 @@ public:
   int RenderScene();
 
 public:
+  int prepare_rendering();
+  int execute_rendering();
+
   struct Camera *camera_;
   struct FrameBuffer *framebuffer_;
   struct ObjectGroup *target_objects_;

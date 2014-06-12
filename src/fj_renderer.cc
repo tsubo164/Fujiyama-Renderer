@@ -156,9 +156,6 @@ static Interrupt default_tile_done(void *data, const struct TileInfo *info)
   return CALLBACK_CONTINUE;
 }
 
-static int prepare_render(struct Renderer *renderer);
-static int render_scene(struct Renderer *renderer);
-
 Renderer::Renderer()
 {
   camera_ = NULL;
@@ -387,19 +384,109 @@ int Renderer::RenderScene()
 {
   int err = 0;
 
-  err = prepare_render(this);
+  err = prepare_rendering();
   if (err) {
     /* TODO error handling */
     return -1;
   }
 
-  err = render_scene(this);
+  err = execute_rendering();
   if (err) {
     /* TODO error handling */
     return -1;
   }
 
   return 0;
+}
+
+// TODO TMP REMOVE LATER
+static int preprocess_camera(const struct Renderer *renderer);
+static int preprocess_framebuffer(const struct Renderer *renderer);
+static int preprocess_lights(struct Renderer *renderer);
+static struct Worker *new_worker_list(int worker_count,
+    const struct Renderer *renderer, const struct Tiler *tiler);
+static void render_frame_start(struct Renderer *renderer, const struct Tiler *tiler);
+static ThreadStatus render_tile(void *data, const struct ThreadContext *context);
+static void render_frame_done(struct Renderer *renderer, const struct Tiler *tiler);
+static void free_worker_list(struct Worker *worker_list, int worker_count);
+
+int Renderer::prepare_rendering()
+{
+  int err = 0;
+
+  err = preprocess_camera(this);
+  if (err) {
+    /* TODO error handling */
+    return -1;
+  }
+
+  err = preprocess_framebuffer(this);
+  if (err) {
+    /* TODO error handling */
+    return -1;
+  }
+
+  err = preprocess_lights(this);
+  if (err) {
+    /* TODO error handling */
+    return -1;
+  }
+
+  return 0;
+}
+
+int Renderer::execute_rendering()
+{
+  struct Worker *worker_list = NULL;
+  struct Tiler *tiler = NULL;
+
+  const int thread_count = GetThreadCount();
+  int render_state = 0;
+  int tile_count = 0;
+
+  const int xres = resolution_[0];
+  const int yres = resolution_[1];
+  const int xtilesize = tilesize_[0];
+  const int ytilesize = tilesize_[1];
+
+  const int xpixelsamples = pixelsamples_[0];
+  const int ypixelsamples = pixelsamples_[1];
+  const float xfilterwidth = filterwidth_[0];
+  const float yfilterwidth = filterwidth_[1];
+
+  // Tiler
+  tiler = TlrNew(xres, yres, xtilesize, ytilesize);
+  if (tiler == NULL) {
+    render_state = -1;
+    goto cleanup_and_exit;
+  }
+  tiler->GenerateTiles(frame_region_);
+  tile_count = tiler->GetTileCount();
+
+  // Worker
+  worker_list = new_worker_list(thread_count, this, tiler);
+  if (worker_list == NULL) {
+    render_state = -1;
+    goto cleanup_and_exit;
+  }
+
+  // FrameProgress
+  init_frame_progress(&frame_progress_, tiler,
+      xpixelsamples, ypixelsamples,
+      xfilterwidth, yfilterwidth);
+
+  // Run sampling
+  render_frame_start(this, tiler);
+
+  MtRunThreadLoop(worker_list, render_tile, thread_count, 0, tile_count);
+
+  render_frame_done(this, tiler);
+
+cleanup_and_exit:
+  TlrFree(tiler);
+  free_worker_list(worker_list, thread_count);
+
+  return render_state;
 }
 
 struct Renderer *RdrNew(void)
@@ -466,31 +553,6 @@ static int preprocess_lights(struct Renderer *renderer)
   elapse = timer.GetElapse();
   printf("# Preprocessing Lights Done\n");
   printf("#   %dh %dm %ds\n\n", elapse.hour, elapse.min, elapse.sec);
-
-  return 0;
-}
-
-static int prepare_render(struct Renderer *renderer)
-{
-  int err = 0;
-
-  err = preprocess_camera(renderer);
-  if (err) {
-    /* TODO error handling */
-    return -1;
-  }
-
-  err = preprocess_framebuffer(renderer);
-  if (err) {
-    /* TODO error handling */
-    return -1;
-  }
-
-  err = preprocess_lights(renderer);
-  if (err) {
-    /* TODO error handling */
-    return -1;
-  }
 
   return 0;
 }
@@ -796,60 +858,6 @@ static ThreadStatus render_tile(void *data, const struct ThreadContext *context)
   }
 
   return THREAD_LOOP_CONTINUE;
-}
-
-static int render_scene(struct Renderer *renderer)
-{
-  struct Worker *worker_list = NULL;
-  struct Tiler *tiler = NULL;
-
-  const int thread_count = renderer->GetThreadCount();
-  int render_state = 0;
-  int tile_count = 0;
-
-  const int xres = renderer->resolution_[0];
-  const int yres = renderer->resolution_[1];
-  const int xtilesize = renderer->tilesize_[0];
-  const int ytilesize = renderer->tilesize_[1];
-
-  const int xpixelsamples = renderer->pixelsamples_[0];
-  const int ypixelsamples = renderer->pixelsamples_[1];
-  const float xfilterwidth = renderer->filterwidth_[0];
-  const float yfilterwidth = renderer->filterwidth_[1];
-
-  /* Tiler */
-  tiler = TlrNew(xres, yres, xtilesize, ytilesize);
-  if (tiler == NULL) {
-    render_state = -1;
-    goto cleanup_and_exit;
-  }
-  tiler->GenerateTiles(renderer->frame_region_);
-  tile_count = tiler->GetTileCount();
-
-  /* Worker */
-  worker_list = new_worker_list(thread_count, renderer, tiler);
-  if (worker_list == NULL) {
-    render_state = -1;
-    goto cleanup_and_exit;
-  }
-
-  /* FrameProgress */
-  init_frame_progress(&renderer->frame_progress_, tiler,
-      xpixelsamples, ypixelsamples,
-      xfilterwidth, yfilterwidth);
-
-  /* Run sampling */
-  render_frame_start(renderer, tiler);
-
-  MtRunThreadLoop(worker_list, render_tile, thread_count, 0, tile_count);
-
-  render_frame_done(renderer, tiler);
-
-cleanup_and_exit:
-  TlrFree(tiler);
-  free_worker_list(worker_list, thread_count);
-
-  return render_state;
 }
 
 } // namespace xxx
