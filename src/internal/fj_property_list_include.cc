@@ -116,86 +116,99 @@ static int set_Turbulence_offset(void *self, const struct PropertyValue *value)
 
 static int set_Renderer_sample_jitter(void *self, const struct PropertyValue *value)
 {
-  RdrSetSampleJitter((struct Renderer *) self, value->vector[0]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetSampleJitter(value->vector[0]);
   return 0;
 }
 
 static int set_Renderer_cast_shadow(void *self, const struct PropertyValue *value)
 {
-  RdrSetShadowEnable((struct Renderer *) self, (int) value->vector[0]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetShadowEnable((int) value->vector[0]);
   return 0;
 }
 
 static int set_Renderer_max_reflect_depth(void *self, const struct PropertyValue *value)
 {
-  RdrSetMaxReflectDepth((struct Renderer *) self, (int) value->vector[0]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetMaxReflectDepth((int) value->vector[0]);
   return 0;
 }
 
 static int set_Renderer_max_refract_depth(void *self, const struct PropertyValue *value)
 {
-  RdrSetMaxRefractDepth((struct Renderer *) self, (int) value->vector[0]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetMaxRefractDepth((int) value->vector[0]);
   return 0;
 }
 
 static int set_Renderer_raymarch_step(void *self, const struct PropertyValue *value)
 {
-  RdrSetRaymarchStep((struct Renderer *) self, value->vector[0]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetRaymarchStep(value->vector[0]);
   return 0;
 }
 
 static int set_Renderer_raymarch_shadow_step(void *self, const struct PropertyValue *value)
 {
-  RdrSetRaymarchShadowStep((struct Renderer *) self, value->vector[0]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetRaymarchShadowStep(value->vector[0]);
   return 0;
 }
 
 static int set_Renderer_raymarch_reflect_step(void *self, const struct PropertyValue *value)
 {
-  RdrSetRaymarchReflectStep((struct Renderer *) self, value->vector[0]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetRaymarchReflectStep(value->vector[0]);
   return 0;
 }
 
 static int set_Renderer_raymarch_refract_step(void *self, const struct PropertyValue *value)
 {
-  RdrSetRaymarchRefractStep((struct Renderer *) self, value->vector[0]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetRaymarchRefractStep(value->vector[0]);
   return 0;
 }
 
 static int set_Renderer_sample_time_range(void *self, const struct PropertyValue *value)
 {
-  RdrSetSampleTimeRange((struct Renderer *) self, value->vector[0], value->vector[1]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetSampleTimeRange(value->vector[0], value->vector[1]);
   return 0;
 }
 
 static int set_Renderer_resolution(void *self, const struct PropertyValue *value)
 {
-  RdrSetResolution((struct Renderer *) self, (int) value->vector[0], (int) value->vector[1]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetResolution((int) value->vector[0], (int) value->vector[1]);
   return 0;
 }
 
 static int set_Renderer_pixelsamples(void *self, const struct PropertyValue *value)
 {
-  RdrSetPixelSamples((struct Renderer *) self,
-      (int) value->vector[0], (int) value->vector[1]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetPixelSamples((int) value->vector[0], (int) value->vector[1]);
   return 0;
 }
 
 static int set_Renderer_tilesize(void *self, const struct PropertyValue *value)
 {
-  RdrSetTileSize((struct Renderer *) self, (int) value->vector[0], (int) value->vector[1]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetTileSize((int) value->vector[0], (int) value->vector[1]);
   return 0;
 }
 
 static int set_Renderer_filterwidth(void *self, const struct PropertyValue *value)
 {
-  RdrSetFilterWidth((struct Renderer *) self, value->vector[0], value->vector[1]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetFilterWidth(value->vector[0], value->vector[1]);
   return 0;
 }
 
 static int set_Renderer_render_region(void *self, const struct PropertyValue *value)
 {
-  RdrSetRenderRegion((struct Renderer *) self,
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetRenderRegion(
       (int) value->vector[0], (int) value->vector[1],
       (int) value->vector[2], (int) value->vector[3]);
   return 0;
@@ -203,13 +216,15 @@ static int set_Renderer_render_region(void *self, const struct PropertyValue *va
 
 static int set_Renderer_use_max_thread(void *self, const struct PropertyValue *value)
 {
-  RdrSetUseMaxThread((struct Renderer *) self, (int) value->vector[0]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetUseMaxThread((int) value->vector[0]);
   return 0;
 }
 
 static int set_Renderer_thread_count(void *self, const struct PropertyValue *value)
 {
-  RdrSetThreadCount((struct Renderer *) self, (int) value->vector[0]);
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetThreadCount((int) value->vector[0]);
   return 0;
 }
 

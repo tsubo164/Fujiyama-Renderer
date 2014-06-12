@@ -205,7 +205,7 @@ Status SiRenderScene(ID renderer)
     return SI_FAIL;
   }
 
-  err = RdrRender(renderer_ptr);
+  err = renderer_ptr->RenderScene();
   if (err) {
     /* TODO error handling */
     return SI_FAIL;
@@ -751,7 +751,7 @@ Status SiAssignCamera(ID renderer, ID camera)
       return SI_FAIL;
   }
 
-  RdrSetCamera(renderer_ptr, camera_ptr);
+  renderer_ptr->SetCamera(camera_ptr);
   return SI_SUCCESS;
 }
 
@@ -780,7 +780,7 @@ Status SiAssignFrameBuffer(ID renderer, ID framebuffer)
       return SI_FAIL;
   }
 
-  RdrSetFrameBuffers(renderer_ptr, framebuffer_ptr);
+  renderer_ptr->SetFrameBuffers(framebuffer_ptr);
   return SI_SUCCESS;
 }
 
@@ -913,7 +913,8 @@ Status SiSetFrameReportCallback(ID id, void *data,
 
   if (entry.type == Type_Renderer) {
     struct Renderer *renderer_ptr = ScnGetRenderer(get_scene(), entry.index);
-    RdrSetFrameReportCallback(renderer_ptr, data,
+    renderer_ptr->SetFrameReportCallback(
+        data,
         frame_start,
         frame_done);
     return SI_SUCCESS;
@@ -931,7 +932,8 @@ Status SiSetTileReportCallback(ID id, void *data,
 
   if (entry.type == Type_Renderer) {
     struct Renderer *renderer_ptr = ScnGetRenderer(get_scene(), entry.index);
-    RdrSetTileReportCallback(renderer_ptr, data,
+    renderer_ptr->SetTileReportCallback(
+        data,
         tile_start,
         sample_done,
         tile_done);
@@ -1018,11 +1020,11 @@ static int create_implicit_groups(void)
   }
 
   renderer = ScnGetRenderer(get_scene(), 0);
-  RdrSetTargetObjects(renderer, all_objects);
+  renderer->SetTargetObjects(all_objects);
   {
     const int nlights = ScnGetLightCount(get_scene());
     struct Light **lightlist = ScnGetLightList(get_scene());
-    RdrSetTargetLights(renderer, lightlist, nlights);
+    renderer->SetTargetLights(lightlist, nlights);
   }
 
   return SI_SUCCESS;

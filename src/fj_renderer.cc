@@ -168,30 +168,30 @@ Renderer::Renderer()
   nlights_ = 0;
 
   // TODO remove 'this'
-  RdrSetResolution(this, 320, 240);
-  RdrSetPixelSamples(this, 3, 3);
-  RdrSetTileSize(this, 64, 64);
-  RdrSetFilterWidth(this, 2, 2);
-  RdrSetSampleJitter(this, 1);
-  RdrSetSampleTimeRange(this, 0, 1);
+  SetResolution(320, 240);
+  SetPixelSamples(3, 3);
+  SetTileSize(64, 64);
+  SetFilterWidth(2, 2);
+  SetSampleJitter(1);
+  SetSampleTimeRange(0, 1);
 
-  RdrSetShadowEnable(this, 1);
-  RdrSetMaxReflectDepth(this, 3);
-  RdrSetMaxRefractDepth(this, 3);
+  SetShadowEnable(1);
+  SetMaxReflectDepth(3);
+  SetMaxRefractDepth(3);
 
-  RdrSetRaymarchStep(this, .05);
-  RdrSetRaymarchShadowStep(this, .1);
-  RdrSetRaymarchReflectStep(this, .1);
-  RdrSetRaymarchRefractStep(this, .1);
+  SetRaymarchStep(.05);
+  SetRaymarchShadowStep(.1);
+  SetRaymarchReflectStep(.1);
+  SetRaymarchRefractStep(.1);
 
-  RdrSetUseMaxThread(this, 0);
-  RdrSetThreadCount(this, 1);
+  SetUseMaxThread(0);
+  SetThreadCount(1);
 
-  RdrSetFrameReportCallback(this, &frame_progress_,
+  SetFrameReportCallback(&frame_progress_,
       default_frame_start,
       default_frame_done);
 
-  RdrSetTileReportCallback(this, &frame_progress_,
+  SetTileReportCallback(&frame_progress_,
       default_tile_start,
       default_sample_done,
       default_tile_done);
@@ -410,207 +410,6 @@ struct Renderer *RdrNew(void)
 void RdrFree(struct Renderer *renderer)
 {
   delete renderer;
-}
-
-void RdrSetResolution(struct Renderer *renderer, int xres, int yres)
-{
-  assert(xres > 0);
-  assert(yres > 0);
-  renderer->resolution_[0] = xres;
-  renderer->resolution_[1] = yres;
-
-  RdrSetRenderRegion(renderer, 0, 0, xres, yres);
-}
-
-void RdrSetRenderRegion(struct Renderer *renderer, int xmin, int ymin, int xmax, int ymax)
-{
-  assert(xmin >= 0);
-  assert(ymin >= 0);
-  assert(xmax >= 0);
-  assert(ymax >= 0);
-  assert(xmin < xmax);
-  assert(ymin < ymax);
-
-  renderer->frame_region_.xmin = xmin;
-  renderer->frame_region_.ymin = ymin;
-  renderer->frame_region_.xmax = xmax;
-  renderer->frame_region_.ymax = ymax;
-}
-
-void RdrSetPixelSamples(struct Renderer *renderer, int xrate, int yrate)
-{
-  assert(xrate > 0);
-  assert(yrate > 0);
-  renderer->pixelsamples_[0] = xrate;
-  renderer->pixelsamples_[1] = yrate;
-}
-
-void RdrSetTileSize(struct Renderer *renderer, int xtilesize, int ytilesize)
-{
-  assert(xtilesize > 0);
-  assert(ytilesize > 0);
-  renderer->tilesize_[0] = xtilesize;
-  renderer->tilesize_[1] = ytilesize;
-}
-
-void RdrSetFilterWidth(struct Renderer *renderer, float xfwidth, float yfwidth)
-{
-  assert(xfwidth > 0);
-  assert(yfwidth > 0);
-  renderer->filterwidth_[0] = xfwidth;
-  renderer->filterwidth_[1] = yfwidth;
-}
-
-void RdrSetSampleJitter(struct Renderer *renderer, float jitter)
-{
-  assert(jitter >= 0 && jitter <= 1);
-  renderer->jitter_ = jitter;
-}
-
-void RdrSetSampleTimeRange(struct Renderer *renderer, double start_time, double end_time)
-{
-  assert(start_time <= end_time);
-
-  renderer->sample_time_start_ = start_time;
-  renderer->sample_time_end_ = end_time;
-}
-
-void RdrSetShadowEnable(struct Renderer *renderer, int enable)
-{
-  assert(enable == 0 || enable == 1);
-  renderer->cast_shadow_ = enable;
-}
-
-void RdrSetMaxReflectDepth(struct Renderer *renderer, int max_depth)
-{
-  assert(max_depth >= 0);
-  renderer->max_reflect_depth_ = max_depth;
-}
-
-void RdrSetMaxRefractDepth(struct Renderer *renderer, int max_depth)
-{
-  assert(max_depth >= 0);
-  renderer->max_refract_depth_ = max_depth;
-}
-
-void RdrSetRaymarchStep(struct Renderer *renderer, double step)
-{
-  assert(step > 0);
-  renderer->raymarch_step_ = Max(step, .001);
-}
-
-void RdrSetRaymarchShadowStep(struct Renderer *renderer, double step)
-{
-  assert(step > 0);
-  renderer->raymarch_shadow_step_ = Max(step, .001);
-}
-
-void RdrSetRaymarchReflectStep(struct Renderer *renderer, double step)
-{
-  assert(step > 0);
-  renderer->raymarch_reflect_step_ = Max(step, .001);
-}
-
-void RdrSetRaymarchRefractStep(struct Renderer *renderer, double step)
-{
-  assert(step > 0);
-  renderer->raymarch_refract_step_ = Max(step, .001);
-}
-
-void RdrSetCamera(struct Renderer *renderer, struct Camera *cam)
-{
-  assert(cam != NULL);
-  renderer->camera_ = cam;
-}
-
-void RdrSetFrameBuffers(struct Renderer *renderer, struct FrameBuffer *fb)
-{
-  assert(fb != NULL);
-  renderer->framebuffer_ = fb;
-}
-
-void RdrSetTargetObjects(struct Renderer *renderer, struct ObjectGroup *grp)
-{
-  assert(grp != NULL);
-  renderer->target_objects_ = grp;
-}
-
-void RdrSetTargetLights(struct Renderer *renderer, struct Light **lights, int nlights)
-{
-  assert(lights != NULL);
-  assert(nlights > 0);
-  renderer->target_lights_ = lights;
-  renderer->nlights_ = nlights;
-}
-
-void RdrSetUseMaxThread(struct Renderer *renderer, int use_max_thread)
-{
-  renderer->use_max_thread_ = (use_max_thread != 0);
-}
-
-void RdrSetThreadCount(struct Renderer *renderer, int thread_count)
-{
-  const int max_thread_count = MtGetMaxThreadCount();
-
-  if (thread_count < 1) {
-    renderer->thread_count_ = 1;
-  } else if (thread_count > max_thread_count) {
-    renderer->thread_count_ = max_thread_count;
-  } else {
-    renderer->thread_count_ = thread_count;
-  }
-}
-
-int RdrGetThreadCount(const struct Renderer *renderer)
-{
-  const int max_thread_count = MtGetMaxThreadCount();
-
-  if (renderer->use_max_thread_) {
-    return max_thread_count;
-  } else {
-    return renderer->thread_count_;
-  }
-}
-
-int RdrRender(struct Renderer *renderer)
-{
-  int err = 0;
-
-  err = prepare_render(renderer);
-  if (err) {
-    /* TODO error handling */
-    return -1;
-  }
-
-  err = render_scene(renderer);
-  if (err) {
-    /* TODO error handling */
-    return -1;
-  }
-
-  return 0;
-}
-
-void RdrSetFrameReportCallback(struct Renderer *renderer, void *data,
-    FrameStartCallback frame_start,
-    FrameDoneCallback frame_done)
-{
-  CbSetFrameReport(&renderer->frame_report_,
-      data,
-      frame_start,
-      frame_done);
-}
-
-void RdrSetTileReportCallback(struct Renderer *renderer, void *data,
-    TileStartCallback tile_start,
-    SampleDoneCallback sample_done,
-    TileDoneCallback tile_done)
-{
-  CbSetTileReport(&renderer->tile_report_,
-      data,
-      tile_start,
-      sample_done,
-      tile_done);
 }
 
 static int preprocess_camera(const struct Renderer *renderer)
@@ -895,7 +694,7 @@ static void reconstruct_image(struct Worker *worker)
 static void render_frame_start(struct Renderer *renderer, const struct Tiler *tiler)
 {
   struct FrameInfo info;
-  info.worker_count = RdrGetThreadCount(renderer);
+  info.worker_count = renderer->GetThreadCount();
   info.tile_count = tiler->GetTileCount();
   info.frame_region = renderer->frame_region_;;
   info.framebuffer = renderer->framebuffer_;
@@ -906,7 +705,7 @@ static void render_frame_start(struct Renderer *renderer, const struct Tiler *ti
 static void render_frame_done(struct Renderer *renderer, const struct Tiler *tiler)
 {
   struct FrameInfo info;
-  info.worker_count = RdrGetThreadCount(renderer);
+  info.worker_count = renderer->GetThreadCount();
   info.tile_count = tiler->GetTileCount();
   info.frame_region = renderer->frame_region_;;
   info.framebuffer = renderer->framebuffer_;
@@ -1004,7 +803,7 @@ static int render_scene(struct Renderer *renderer)
   struct Worker *worker_list = NULL;
   struct Tiler *tiler = NULL;
 
-  const int thread_count = RdrGetThreadCount(renderer);
+  const int thread_count = renderer->GetThreadCount();
   int render_state = 0;
   int tile_count = 0;
 
