@@ -7,7 +7,6 @@ See LICENSE and README
 #include "fj_multi_thread.h"
 #include "fj_framebuffer.h"
 #include "fj_rectangle.h"
-#include "fj_progress.h"
 #include "fj_property.h"
 #include "fj_numeric.h"
 #include "fj_sampler.h"
@@ -17,7 +16,6 @@ See LICENSE and README
 #include "fj_vector.h"
 #include "fj_light.h"
 #include "fj_tiler.h"
-#include "fj_timer.h"
 #include "fj_ray.h"
 #include "fj_box.h"
 
@@ -27,21 +25,6 @@ See LICENSE and README
 #include <float.h>
 
 namespace fj {
-
-class FrameProgress {
-public:
-  FrameProgress() :
-      timer(),
-      progress(),
-      iteration_list(),
-      current_segment(0) {}
-  ~FrameProgress() {}
-
-  Timer timer;
-  Progress progress;
-  Iteration iteration_list[10]; // one for 10% 100% in total
-  int current_segment;
-};
 
 static Iteration count_total_samples(const struct Tiler *tiler,
     int x_pixel_samples, int y_pixel_samples,
@@ -173,43 +156,8 @@ static Interrupt default_tile_done(void *data, const struct TileInfo *info)
   return CALLBACK_CONTINUE;
 }
 
-class Renderer {
-public:
-  Renderer();
-  ~Renderer();
-
-public:
-  struct Camera *camera_;
-  struct FrameBuffer *framebuffer_;
-  struct ObjectGroup *target_objects_;
-  struct Light **target_lights_;
-  int nlights_;
-
-  int resolution_[2];
-  struct Rectangle frame_region_;
-  int pixelsamples_[2];
-  int tilesize_[2];
-  float filterwidth_[2];
-  float jitter_;
-  double sample_time_start_;
-  double sample_time_end_;
-
-  int cast_shadow_;
-  int max_reflect_depth_;
-  int max_refract_depth_;
-
-  double raymarch_step_;
-  double raymarch_shadow_step_;
-  double raymarch_reflect_step_;
-  double raymarch_refract_step_;
-
-  int use_max_thread_;
-  int thread_count_;
-
-  struct FrameReport frame_report_;
-  struct TileReport tile_report_;
-  struct FrameProgress frame_progress_;
-};
+static int prepare_render(struct Renderer *renderer);
+static int render_scene(struct Renderer *renderer);
 
 Renderer::Renderer()
 {
@@ -253,8 +201,206 @@ Renderer::~Renderer()
 {
 }
 
-static int prepare_render(struct Renderer *renderer);
-static int render_scene(struct Renderer *renderer);
+void Renderer::SetResolution(int xres, int yres)
+{
+  assert(xres > 0);
+  assert(yres > 0);
+  resolution_[0] = xres;
+  resolution_[1] = yres;
+
+  Renderer::SetRenderRegion(0, 0, xres, yres);
+}
+
+void Renderer::SetRenderRegion(int xmin, int ymin, int xmax, int ymax)
+{
+  assert(xmin >= 0);
+  assert(ymin >= 0);
+  assert(xmax >= 0);
+  assert(ymax >= 0);
+  assert(xmin < xmax);
+  assert(ymin < ymax);
+
+  frame_region_.xmin = xmin;
+  frame_region_.ymin = ymin;
+  frame_region_.xmax = xmax;
+  frame_region_.ymax = ymax;
+}
+
+void Renderer::SetPixelSamples(int xrate, int yrate)
+{
+  assert(xrate > 0);
+  assert(yrate > 0);
+  pixelsamples_[0] = xrate;
+  pixelsamples_[1] = yrate;
+}
+
+void Renderer::SetTileSize(int xtilesize, int ytilesize)
+{
+  assert(xtilesize > 0);
+  assert(ytilesize > 0);
+  tilesize_[0] = xtilesize;
+  tilesize_[1] = ytilesize;
+}
+
+void Renderer::SetFilterWidth(float xfwidth, float yfwidth)
+{
+  assert(xfwidth > 0);
+  assert(yfwidth > 0);
+  filterwidth_[0] = xfwidth;
+  filterwidth_[1] = yfwidth;
+}
+
+void Renderer::SetSampleJitter(float jitter)
+{
+  assert(jitter >= 0 && jitter <= 1);
+  jitter_ = jitter;
+}
+
+void Renderer::SetSampleTimeRange(double start_time, double end_time)
+{
+  assert(start_time <= end_time);
+
+  sample_time_start_ = start_time;
+  sample_time_end_ = end_time;
+}
+
+void Renderer::SetShadowEnable(int enable)
+{
+  assert(enable == 0 || enable == 1);
+  cast_shadow_ = enable;
+}
+
+void Renderer::SetMaxReflectDepth(int max_depth)
+{
+  assert(max_depth >= 0);
+  max_reflect_depth_ = max_depth;
+}
+
+void Renderer::SetMaxRefractDepth(int max_depth)
+{
+  assert(max_depth >= 0);
+  max_refract_depth_ = max_depth;
+}
+
+void Renderer::SetRaymarchStep(double step)
+{
+  assert(step > 0);
+  raymarch_step_ = Max(step, .001);
+}
+
+void Renderer::SetRaymarchShadowStep(double step)
+{
+  assert(step > 0);
+  raymarch_shadow_step_ = Max(step, .001);
+}
+
+void Renderer::SetRaymarchReflectStep(double step)
+{
+  assert(step > 0);
+  raymarch_reflect_step_ = Max(step, .001);
+}
+
+void Renderer::SetRaymarchRefractStep(double step)
+{
+  assert(step > 0);
+  raymarch_refract_step_ = Max(step, .001);
+}
+
+void Renderer::SetCamera(struct Camera *cam)
+{
+  assert(cam != NULL);
+  camera_ = cam;
+}
+
+void Renderer::SetFrameBuffers(struct FrameBuffer *fb)
+{
+  assert(fb != NULL);
+  framebuffer_ = fb;
+}
+
+void Renderer::SetTargetObjects(struct ObjectGroup *grp)
+{
+  assert(grp != NULL);
+  target_objects_ = grp;
+}
+
+void Renderer::SetTargetLights(struct Light **lights, int nlights)
+{
+  assert(lights != NULL);
+  assert(nlights > 0);
+  target_lights_ = lights;
+  nlights_ = nlights;
+}
+
+void Renderer::SetUseMaxThread(int use_max_thread)
+{
+  use_max_thread_ = (use_max_thread != 0);
+}
+
+void Renderer::SetThreadCount(int thread_count)
+{
+  const int max_thread_count = MtGetMaxThreadCount();
+
+  if (thread_count < 1) {
+    thread_count_ = 1;
+  } else if (thread_count > max_thread_count) {
+    thread_count_ = max_thread_count;
+  } else {
+    thread_count_ = thread_count;
+  }
+}
+
+int Renderer::GetThreadCount() const
+{
+  const int max_thread_count = MtGetMaxThreadCount();
+
+  if (use_max_thread_) {
+    return max_thread_count;
+  } else {
+    return thread_count_;
+  }
+}
+
+void Renderer::SetFrameReportCallback(void *data,
+    FrameStartCallback frame_start,
+    FrameDoneCallback frame_done)
+{
+  CbSetFrameReport(&frame_report_,
+      data,
+      frame_start,
+      frame_done);
+}
+
+void Renderer::SetTileReportCallback(void *data,
+    TileStartCallback tile_start,
+    SampleDoneCallback sample_done,
+    TileDoneCallback tile_done)
+{
+  CbSetTileReport(&tile_report_,
+      data,
+      tile_start,
+      sample_done,
+      tile_done);
+}
+
+int Renderer::RenderScene()
+{
+  int err = 0;
+
+  err = prepare_render(this);
+  if (err) {
+    /* TODO error handling */
+    return -1;
+  }
+
+  err = render_scene(this);
+  if (err) {
+    /* TODO error handling */
+    return -1;
+  }
+
+  return 0;
+}
 
 struct Renderer *RdrNew(void)
 {
