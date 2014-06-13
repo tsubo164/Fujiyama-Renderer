@@ -164,7 +164,6 @@ Renderer::Renderer()
   target_lights_ = NULL;
   nlights_ = 0;
 
-  // TODO remove 'this'
   SetResolution(320, 240);
   SetPixelSamples(3, 3);
   SetTileSize(64, 64);
@@ -400,9 +399,6 @@ int Renderer::RenderScene()
 }
 
 // TODO TMP REMOVE LATER
-static int preprocess_camera(const struct Renderer *renderer);
-static int preprocess_framebuffer(const struct Renderer *renderer);
-static int preprocess_lights(struct Renderer *renderer);
 static struct Worker *new_worker_list(int worker_count,
     const struct Renderer *renderer, const struct Tiler *tiler);
 static void render_frame_start(struct Renderer *renderer, const struct Tiler *tiler);
@@ -414,19 +410,19 @@ int Renderer::prepare_rendering()
 {
   int err = 0;
 
-  err = preprocess_camera(this);
+  err = preprocess_camera();
   if (err) {
     /* TODO error handling */
     return -1;
   }
 
-  err = preprocess_framebuffer(this);
+  err = preprocess_framebuffer();
   if (err) {
     /* TODO error handling */
     return -1;
   }
 
-  err = preprocess_lights(this);
+  err = preprocess_lights();
   if (err) {
     /* TODO error handling */
     return -1;
@@ -489,59 +485,42 @@ cleanup_and_exit:
   return render_state;
 }
 
-struct Renderer *RdrNew(void)
+int Renderer::preprocess_camera() const
 {
-  return new Renderer();
-}
-
-void RdrFree(struct Renderer *renderer)
-{
-  delete renderer;
-}
-
-static int preprocess_camera(const struct Renderer *renderer)
-{
-  struct Camera *cam = renderer->camera_;
-  int xres, yres;
-
-  if (cam == NULL)
+  if (camera_ == NULL)
     return -1;
 
-  xres = renderer->resolution_[0];
-  yres = renderer->resolution_[1];
-  cam->SetAspect(xres/(double)yres);
+  const int xres = resolution_[0];
+  const int yres = resolution_[1];
+  camera_->SetAspect(xres/(double)yres);
 
   return 0;
 }
 
-static int preprocess_framebuffer(const struct Renderer *renderer)
+int Renderer::preprocess_framebuffer() const
 {
-  struct FrameBuffer *fb = renderer->framebuffer_;
-  int xres, yres;
-
-  if (fb == NULL)
+  if (framebuffer_ == NULL)
     return -1;
 
-  xres = renderer->resolution_[0];
-  yres = renderer->resolution_[1];
-  fb->Resize(xres, yres, 4);
+  const int xres = resolution_[0];
+  const int yres = resolution_[1];
+  framebuffer_->Resize(xres, yres, 4);
 
   return 0;
 }
 
-static int preprocess_lights(struct Renderer *renderer)
+int Renderer::preprocess_lights()
 {
-  Timer timer;
-  Elapse elapse;
-  const int NLIGHTS = renderer->nlights_;
-  int i;
+  const int NLIGHTS = nlights_;
 
   printf("# Preprocessing Lights\n");
   printf("#   Light Count: %d\n", NLIGHTS);
+
+  Timer timer;
   timer.Start();
 
-  for (i = 0; i < NLIGHTS; i++) {
-    struct Light *light = renderer->target_lights_[i];
+  for (int i = 0; i < NLIGHTS; i++) {
+    struct Light *light = target_lights_[i];
     const int err = light->Preprocess();
 
     if (err) {
@@ -550,11 +529,21 @@ static int preprocess_lights(struct Renderer *renderer)
     }
   }
 
-  elapse = timer.GetElapse();
+  const Elapse elapse = timer.GetElapse();
   printf("# Preprocessing Lights Done\n");
   printf("#   %dh %dm %ds\n\n", elapse.hour, elapse.min, elapse.sec);
 
   return 0;
+}
+
+struct Renderer *RdrNew(void)
+{
+  return new Renderer();
+}
+
+void RdrFree(struct Renderer *renderer)
+{
+  delete renderer;
 }
 
 struct Worker {

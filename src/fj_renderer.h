@@ -80,6 +80,10 @@ public:
   int prepare_rendering();
   int execute_rendering();
 
+  int preprocess_camera() const;
+  int preprocess_framebuffer() const;
+  int preprocess_lights();
+
   struct Camera *camera_;
   struct FrameBuffer *framebuffer_;
   struct ObjectGroup *target_objects_;
