@@ -433,9 +433,6 @@ int Renderer::prepare_rendering()
 
 int Renderer::execute_rendering()
 {
-  struct Worker *worker_list = NULL;
-  struct Tiler *tiler = NULL;
-
   const int thread_count = GetThreadCount();
   int render_state = 0;
   int tile_count = 0;
@@ -451,35 +448,31 @@ int Renderer::execute_rendering()
   const float yfilterwidth = filterwidth_[1];
 
   // Tiler
-  tiler = TlrNew(xres, yres, xtilesize, ytilesize);
-  if (tiler == NULL) {
-    render_state = -1;
-    goto cleanup_and_exit;
-  }
-  tiler->GenerateTiles(frame_region_);
-  tile_count = tiler->GetTileCount();
+  Tiler tiler;
+  tiler.Divide(xres, yres, xtilesize, ytilesize);
+  tiler.GenerateTiles(frame_region_);
+  tile_count = tiler.GetTileCount();
 
   // Worker
-  worker_list = new_worker_list(thread_count, this, tiler);
+  Worker *worker_list = new_worker_list(thread_count, this, &tiler);
   if (worker_list == NULL) {
     render_state = -1;
     goto cleanup_and_exit;
   }
 
   // FrameProgress
-  init_frame_progress(&frame_progress_, tiler,
+  init_frame_progress(&frame_progress_, &tiler,
       xpixelsamples, ypixelsamples,
       xfilterwidth, yfilterwidth);
 
   // Run sampling
-  render_frame_start(this, tiler);
+  render_frame_start(this, &tiler);
 
   MtRunThreadLoop(worker_list, render_tile, thread_count, 0, tile_count);
 
-  render_frame_done(this, tiler);
+  render_frame_done(this, &tiler);
 
 cleanup_and_exit:
-  TlrFree(tiler);
   free_worker_list(worker_list, thread_count);
 
   return render_state;
