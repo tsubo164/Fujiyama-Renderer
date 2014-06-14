@@ -16,6 +16,16 @@ public:
   int xmin, ymin, xmax, ymax;
 };
 
+inline int SizeX(const Rectangle &rect)
+{
+  return rect.xmax - rect.xmin;
+}
+
+inline int SizeY(const Rectangle &rect)
+{
+  return rect.ymax - rect.ymin;
+}
+
 extern void RctPrint(const Rectangle &rect);
 
 } // namespace xxx
