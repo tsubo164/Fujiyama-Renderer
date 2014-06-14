@@ -8,11 +8,11 @@ See LICENSE and README
 
 #include "fj_vector.h"
 #include "fj_types.h"
+#include <vector>
 
 namespace fj {
 
 struct Rectangle;
-struct Array;
 
 class Sample {
 public:
@@ -54,7 +54,7 @@ public:
   int xrate_, yrate_;
   float xfwidth_, yfwidth_;
   float jitter_;
-  Array *samples_;
+  std::vector<Sample> samples_;
 
   int xnsamples_, ynsamples_;
   int xpixel_start_, ypixel_start_;

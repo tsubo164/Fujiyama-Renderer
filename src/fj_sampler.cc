@@ -7,7 +7,6 @@ See LICENSE and README
 #include "fj_rectangle.h"
 #include "fj_numeric.h"
 #include "fj_random.h"
-#include "fj_array.h"
 #include "fj_box.h"
 
 #include <cassert>
@@ -17,8 +16,6 @@ namespace fj {
 
 #define SIZE_X(rect) ((rect)->xmax-(rect)->xmin)
 #define SIZE_Y(rect) ((rect)->ymax-(rect)->ymin)
-
-#define SAMPLE_ARRAY(sampler) ((Sample *)(sampler)->samples_->data)
 
 static void count_samples_in_pixels(Sampler *sampler);
 static int allocate_samples_for_region(Sampler *sampler, const Rectangle *region);
@@ -35,7 +32,7 @@ Sampler::Sampler() :
   yfwidth_(1),
   jitter_(1),
 
-  samples_(NULL),
+  samples_(),
 
   xnsamples_(1),
   ynsamples_(1),
@@ -58,7 +55,6 @@ Sampler::Sampler() :
 
 Sampler::~Sampler()
 {
-  ArrFree(samples_);
 }
 
 void Sampler::Initialize(int xres, int yres,
@@ -79,7 +75,7 @@ void Sampler::Initialize(int xres, int yres,
   yfwidth_ = yfwidth;
   SetJitter(1);
   SetSampleTimeRange(0, 1);
-  samples_ = ArrNew(sizeof(Sample));
+  samples_.clear();
 
   current_index_ = 0;
 
@@ -132,7 +128,7 @@ int Sampler::GenerateSamples(const Rectangle &pixel_bounds)
   xoffset = xpixel_start_ * xrate_ - xmargin_;
   yoffset = ypixel_start_ * yrate_ - ymargin_;
 
-  sample = SAMPLE_ARRAY(this);
+  sample = &samples_[0];
   for (y = 0; y < ynsamples_; y++) {
     for (x = 0; x < xnsamples_; x++) {
       sample->uv.x =     (.5 + x + xoffset) * udelta;
@@ -169,7 +165,7 @@ int Sampler::GenerateSamples(const Rectangle &pixel_bounds)
 
 int Sampler::GetSampleCount() const
 {
-  return samples_->nelems;
+  return samples_.size();
 }
 
 Sample *Sampler::GetNextSample()
@@ -179,7 +175,7 @@ Sample *Sampler::GetNextSample()
   if (current_index_ >= GetSampleCount())
     return NULL;
 
-  sample = SAMPLE_ARRAY(this) + current_index_;
+  sample = &samples_[current_index_];
   current_index_++;
 
   return sample;
@@ -195,7 +191,7 @@ void Sampler::GetPixelSamples(Sample *pixelsamples, int pixel_x, int pixel_y) co
   const int OFFSET =
     YPIXEL_OFFSET * yrate_ * XNSAMPLES +
     XPIXEL_OFFSET * xrate_;
-  Sample *src = SAMPLE_ARRAY(this) + OFFSET;
+  const Sample *src = &samples_[OFFSET];
   Sample *dst = pixelsamples;
 
   for (y = 0; y < ynpxlsmps_; y++) {
@@ -276,7 +272,7 @@ static int allocate_samples_for_region(Sampler *sampler, const Rectangle *region
   const int XPIXEL_START = region->xmin;
   const int YPIXEL_START = region->ymin;
 
-  ArrResize(sampler->samples_, NEW_NSAMPLES);
+  sampler->samples_.resize(NEW_NSAMPLES);
 
   sampler->xnsamples_ = XNSAMPLES;
   sampler->ynsamples_ = YNSAMPLES;
@@ -286,17 +282,6 @@ static int allocate_samples_for_region(Sampler *sampler, const Rectangle *region
   sampler->current_index_ = 0;
 
   return 0;
-}
-
-int SmpGetSampleCountForRegion(const Rectangle *region,
-    int xrate, int yrate, float xfwidth, float yfwidth)
-{
-  const int xmargin = get_pixel_margin(xrate, xfwidth);
-  const int ymargin = get_pixel_margin(yrate, yfwidth);
-  const int xnsamples = get_sample_count_for_region(xrate, SIZE_X(region), xmargin);
-  const int ynsamples = get_sample_count_for_region(yrate, SIZE_Y(region), ymargin);
-
-  return xnsamples * ynsamples;
 }
 
 } // namespace xxx
