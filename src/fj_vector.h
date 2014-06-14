@@ -37,6 +37,31 @@ public:
   Real x, y;
 };
 
+class Vector4 {
+public:
+  Vector4() : e_() {}
+  Vector4(Real x, Real y, Real z, Real w)
+  {
+    e_[0] = x;
+    e_[1] = y;
+    e_[2] = z;
+    e_[3] = w;
+  }
+  ~Vector4() {}
+
+  const Real &operator[](int i) const
+  {
+    return e_[i];
+  }
+  Real &operator[](int i)
+  {
+    return e_[i];
+  }
+
+private:
+  Real e_[4];
+};
+
 class Vector {
 public:
   Vector() : x(0), y(0), z(0) {}

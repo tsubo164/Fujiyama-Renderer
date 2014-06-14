@@ -100,34 +100,28 @@ void Sampler::SetSampleTimeRange(Real start_time, Real end_time)
 
 int Sampler::GenerateSamples(const Rectangle &pixel_bounds)
 {
-  int x, y;
-  int err = 0;
-  int xoffset = 0;
-  int yoffset = 0;
-  Real udelta = 0;
-  Real vdelta = 0;
-  Sample *sample = NULL;
-  XorShift xr; /* random number generator */
-  XorShift rng_time; /* for time sampling jitter */
-  XorInit(&rng_time);
-  XorInit(&xr);
-
-  err = allocate_samples_for_region(this, pixel_bounds);
+  const int err = allocate_samples_for_region(this, pixel_bounds);
   if (err) {
     return -1;
   }
 
-  /* uv delta */
-  udelta = 1./(xrate_ * xres_ + 2 * xmargin_);
-  vdelta = 1./(yrate_ * yres_ + 2 * ymargin_);
+  XorShift xr; // random number generator
+  XorShift rng_time; // for time sampling jitter
+  XorInit(&rng_time);
+  XorInit(&xr);
 
-  /* xy offset */
-  xoffset = xpixel_start_ * xrate_ - xmargin_;
-  yoffset = ypixel_start_ * yrate_ - ymargin_;
+  // uv delta
+  const Real udelta = 1./(xrate_ * xres_ + 2 * xmargin_);
+  const Real vdelta = 1./(yrate_ * yres_ + 2 * ymargin_);
 
-  sample = &samples_[0];
-  for (y = 0; y < ynsamples_; y++) {
-    for (x = 0; x < xnsamples_; x++) {
+  // xy offset
+  const int xoffset = xpixel_start_ * xrate_ - xmargin_;
+  const int yoffset = ypixel_start_ * yrate_ - ymargin_;
+
+  Sample *sample = &samples_[0];
+
+  for (int y = 0; y < ynsamples_; y++) {
+    for (int x = 0; x < xnsamples_; x++) {
       sample->uv.x =     (.5 + x + xoffset) * udelta;
       sample->uv.y = 1 - (.5 + y + yoffset) * vdelta;
 
@@ -140,20 +134,13 @@ int Sampler::GenerateSamples(const Rectangle &pixel_bounds)
       }
 
       if (need_time_sampling_) {
-        sample->time = XorNextFloat01(&rng_time);
-        sample->time = Fit(sample->time,
-            0,
-            1,
-            sample_time_start_,
-            sample_time_end_);
+        const Real rnd = XorNextFloat01(&rng_time);
+        sample->time = Fit(rnd, 0, 1, sample_time_start_, sample_time_end_);
       } else {
         sample->time = 0;
       }
 
-      sample->data[0] = 0;
-      sample->data[1] = 0;
-      sample->data[2] = 0;
-      sample->data[3] = 0;
+      sample->data = Vector4();
       sample++;
     }
   }

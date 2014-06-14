@@ -21,7 +21,8 @@ public:
 
   Vector2 uv;
   Real time;
-  Real data[4];
+  //Real data[4];
+  Vector4 data;
 };
 
 class Sampler {
