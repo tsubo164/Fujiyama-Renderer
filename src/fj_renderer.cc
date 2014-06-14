@@ -44,7 +44,8 @@ static Iteration count_total_samples(const struct Tiler *tiler,
     region.xmax = tile->xmax;
     region.ymax = tile->ymax;
 
-    samples_in_tile = SmpGetSampleCountForRegion(&region,
+    samples_in_tile = Sampler::GetSampleCountForRegion(
+        region,
         x_pixel_samples,
         y_pixel_samples,
         x_filter_width,
@@ -587,10 +588,10 @@ static void init_worker(struct Worker *worker, int id,
     goto cleanup_and_exit;
     */
   }
-  SmpSetJitter(worker->sampler, renderer->jitter_);
-  SmpSetSampleTimeRange(worker->sampler,
+  worker->sampler->SetJitter(renderer->jitter_);
+  worker->sampler->SetSampleTimeRange(
       renderer->sample_time_start_, renderer->sample_time_end_);
-  worker->pixel_samples = SmpAllocatePixelSamples(worker->sampler);
+  worker->pixel_samples = worker->sampler->AllocatePixelSamples();
 
   /* Filter */
   worker->filter = FltNew(FLT_GAUSSIAN, xfwidth, yfwidth);
@@ -649,14 +650,14 @@ static void set_working_region(struct Worker *worker, int region_id)
   worker->tile_region.xmax = tile->xmax;
   worker->tile_region.ymax = tile->ymax;
 
-  if (SmpGenerateSamples(worker->sampler, &worker->tile_region)) {
+  if (worker->sampler->GenerateSamples(worker->tile_region)) {
     /* TODO error handling */
   }
 }
 
 static void finish_worker(struct Worker *worker)
 {
-  SmpFreePixelSamples(worker->pixel_samples);
+  worker->sampler->FreePixelSamples(worker->pixel_samples);
   SmpFree(worker->sampler);
   FltFree(worker->filter);
 }
@@ -678,7 +679,7 @@ static void free_worker_list(struct Worker *worker_list, int worker_count)
 
 static struct Color4 apply_pixel_filter(struct Worker *worker, int x, int y)
 {
-  const int nsamples = SmpGetSampleCountForPixel(worker->sampler);
+  const int nsamples = worker->sampler->GetSampleCountForPixel();
   const int xres = worker->xres;
   const int yres = worker->yres;
   struct Sample *pixel_samples = worker->pixel_samples;
@@ -727,7 +728,7 @@ static void reconstruct_image(struct Worker *worker)
     for (x = xmin; x < xmax; x++) {
       struct Color4 pixel;
 
-      SmpGetPixelSamples(worker->sampler, worker->pixel_samples, x, y);
+      worker->sampler->GetPixelSamples(worker->pixel_samples, x, y);
       pixel = apply_pixel_filter(worker, x, y);
 
       fb->SetColor(x, y, pixel);
@@ -763,7 +764,7 @@ static void render_tile_start(struct Worker *worker)
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
-  info.total_sample_count = SmpGetSampleCount(worker->sampler);
+  info.total_sample_count = worker->sampler->GetSampleCount();
   info.tile_region = worker->tile_region;
   info.framebuffer = worker->framebuffer;
 
@@ -776,7 +777,7 @@ static void render_tile_done(struct Worker *worker)
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
-  info.total_sample_count = SmpGetSampleCount(worker->sampler);
+  info.total_sample_count = worker->sampler->GetSampleCount();
   info.tile_region = worker->tile_region;
   info.framebuffer = worker->framebuffer;
 
@@ -789,7 +790,7 @@ static int integrate_samples(struct Worker *worker)
   struct TraceContext cxt = worker->context;
   struct Ray ray;
 
-  while ((smp = SmpGetNextSample(worker->sampler)) != NULL) {
+  while ((smp = worker->sampler->GetNextSample()) != NULL) {
     struct Color4 C_trace;
     double t_hit = FLT_MAX;
     int hit = 0;

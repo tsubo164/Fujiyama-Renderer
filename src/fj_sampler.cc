@@ -6,50 +6,64 @@ See LICENSE and README
 #include "fj_sampler.h"
 #include "fj_rectangle.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
 #include "fj_random.h"
 #include "fj_array.h"
 #include "fj_box.h"
 
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
 
 namespace fj {
 
-struct Sampler {
-  int xres, yres;
-  int xrate, yrate;
-  float xfwidth, yfwidth;
-  float jitter;
-  struct Array *samples;
+#define SIZE_X(rect) ((rect)->xmax-(rect)->xmin)
+#define SIZE_Y(rect) ((rect)->ymax-(rect)->ymin)
 
-  int xnsamples, ynsamples;
-  int xpixel_start, ypixel_start;
-  int xmargin, ymargin;
-  int xnpxlsmps, ynpxlsmps;
+#define SAMPLE_ARRAY(sampler) ((Sample *)(sampler)->samples_->data)
 
-  int current_index;
+static void count_samples_in_pixels(Sampler *sampler);
+static int allocate_samples_for_region(Sampler *sampler, const Rectangle *region);
 
-  int need_jitter;
-  int need_time_sampling;
+static int get_pixel_margin(int rate, float fwidth);
+static int get_sample_count_for_region(int rate, int regionsize, int margin);
 
-  double sample_time_start;
-  double sample_time_end;
-};
+Sampler::Sampler() :
+  xres_(1),
+  yres_(1),
+  xrate_(1),
+  yrate_(1),
+  xfwidth_(1),
+  yfwidth_(1),
+  jitter_(1),
 
-#define SAMPLE_ARRAY(sampler) ((struct Sample *)(sampler)->samples->data)
+  samples_(NULL),
 
-static void count_samples_in_pixels(struct Sampler *sampler);
-static int allocate_samples_for_region(struct Sampler *sampler, const struct Rectangle *region);
+  xnsamples_(1),
+  ynsamples_(1),
+  xpixel_start_(0),
+  ypixel_start_(0),
+  xmargin_(0),
+  ymargin_(0),
+  xnpxlsmps_(1),
+  ynpxlsmps_(1),
 
-struct Sampler *SmpNew(int xres, int yres,
+  current_index_(0),
+
+  need_jitter_(true),
+  need_time_sampling_(false),
+
+  sample_time_start_(0),
+  sample_time_end_(0)
+{
+}
+
+Sampler::~Sampler()
+{
+  ArrFree(samples_);
+}
+
+void Sampler::Initialize(int xres, int yres,
     int xsamples, int ysamples, float xfwidth, float yfwidth)
 {
-  struct Sampler *sampler = FJ_MEM_ALLOC(struct Sampler);
-
-  if (sampler == NULL)
-    return NULL;
-
   assert(xres > 0);
   assert(yres > 0);
   assert(xsamples > 0);
@@ -57,110 +71,88 @@ struct Sampler *SmpNew(int xres, int yres,
   assert(xfwidth > 0);
   assert(yfwidth > 0);
 
-  sampler->xres = xres;
-  sampler->yres = yres;
-  sampler->xrate = xsamples;
-  sampler->yrate = ysamples;
-  sampler->xfwidth = xfwidth;
-  sampler->yfwidth = yfwidth;
-  SmpSetJitter(sampler, 1);
-  SmpSetSampleTimeRange(sampler, 0, 1);
-  sampler->samples = ArrNew(sizeof(struct Sample));
+  xres_ = xres;
+  yres_ = yres;
+  xrate_ = xsamples;
+  yrate_ = ysamples;
+  xfwidth_ = xfwidth;
+  yfwidth_ = yfwidth;
+  SetJitter(1);
+  SetSampleTimeRange(0, 1);
+  samples_ = ArrNew(sizeof(Sample));
 
-  sampler->current_index = 0;
+  current_index_ = 0;
 
-  count_samples_in_pixels(sampler);
-  return sampler;
+  count_samples_in_pixels(this);
 }
 
-void SmpFree(struct Sampler *sampler)
-{
-  if (sampler == NULL)
-    return;
-  ArrFree(sampler->samples);
-  FJ_MEM_FREE(sampler);
-}
-
-void SmpSetJitter(struct Sampler *sampler, float jitter)
+void Sampler::SetJitter(float jitter)
 {
   assert(jitter >= 0 && jitter <= 1);
 
-  sampler->jitter = jitter;
-  sampler->need_jitter = sampler->jitter > 0 ? 1 : 0;
+  jitter_ = jitter;
+  need_jitter_ = jitter_ > 0 ? 1 : 0;
 }
 
-void SmpSetSampleTimeRange(struct Sampler *sampler, double start_time, double end_time)
+void Sampler::SetSampleTimeRange(Real start_time, Real end_time)
 {
   assert(start_time <= end_time);
 
-  sampler->sample_time_start = start_time;
-  sampler->sample_time_end = end_time;
+  sample_time_start_ = start_time;
+  sample_time_end_ = end_time;
 
-  /* TODO need this member? */
-  sampler->need_time_sampling = 1;
+  // TODO need this member?
+  need_time_sampling_ = true;
 }
 
-struct Sample *SmpGetNextSample(struct Sampler *sampler)
-{
-  struct Sample *sample = NULL;
-
-  if (sampler->current_index >= SmpGetSampleCount(sampler))
-    return NULL;
-
-  sample = SAMPLE_ARRAY(sampler) + sampler->current_index;
-  sampler->current_index++;
-
-  return sample;
-}
-
-int SmpGenerateSamples(struct Sampler *sampler, const struct Rectangle *pixel_bounds)
+int Sampler::GenerateSamples(const Rectangle &pixel_bounds)
 {
   int x, y;
   int err = 0;
   int xoffset = 0;
   int yoffset = 0;
-  double udelta = 0;
-  double vdelta = 0;
-  struct Sample *sample = NULL;
-  struct XorShift xr; /* random number generator */
-  struct XorShift rng_time; /* for time sampling jitter */
+  Real udelta = 0;
+  Real vdelta = 0;
+  Sample *sample = NULL;
+  XorShift xr; /* random number generator */
+  XorShift rng_time; /* for time sampling jitter */
   XorInit(&rng_time);
   XorInit(&xr);
 
-  err = allocate_samples_for_region(sampler, pixel_bounds);
+  err = allocate_samples_for_region(this, &pixel_bounds);
   if (err) {
     return -1;
   }
 
   /* uv delta */
-  udelta = 1./(sampler->xrate * sampler->xres + 2 * sampler->xmargin);
-  vdelta = 1./(sampler->yrate * sampler->yres + 2 * sampler->ymargin);
+  udelta = 1./(xrate_ * xres_ + 2 * xmargin_);
+  vdelta = 1./(yrate_ * yres_ + 2 * ymargin_);
 
   /* xy offset */
-  xoffset = sampler->xpixel_start * sampler->xrate - sampler->xmargin;
-  yoffset = sampler->ypixel_start * sampler->yrate - sampler->ymargin;
+  xoffset = xpixel_start_ * xrate_ - xmargin_;
+  yoffset = ypixel_start_ * yrate_ - ymargin_;
 
-  sample = SAMPLE_ARRAY(sampler);
-  for (y = 0; y < sampler->ynsamples; y++) {
-    for (x = 0; x < sampler->xnsamples; x++) {
+  sample = SAMPLE_ARRAY(this);
+  for (y = 0; y < ynsamples_; y++) {
+    for (x = 0; x < xnsamples_; x++) {
       sample->uv.x =     (.5 + x + xoffset) * udelta;
       sample->uv.y = 1 - (.5 + y + yoffset) * vdelta;
 
-      if (sampler->need_jitter) {
-        const double u_jitter = XorNextFloat01(&xr) * sampler->jitter;
-        const double v_jitter = XorNextFloat01(&xr) * sampler->jitter;
+      if (need_jitter_) {
+        const Real u_jitter = XorNextFloat01(&xr) * jitter_;
+        const Real v_jitter = XorNextFloat01(&xr) * jitter_;
 
         sample->uv.x += udelta * (u_jitter - .5);
         sample->uv.y += vdelta * (v_jitter - .5);
       }
 
-      if (sampler->need_time_sampling) {
+      if (need_time_sampling_) {
         sample->time = XorNextFloat01(&rng_time);
         sample->time = Fit(sample->time,
             0,
             1,
-            sampler->sample_time_start,
-            sampler->sample_time_end);
+            sample_time_start_,
+            sample_time_end_);
       } else {
         sample->time = 0;
       }
@@ -175,50 +167,85 @@ int SmpGenerateSamples(struct Sampler *sampler, const struct Rectangle *pixel_bo
   return 0;
 }
 
-int SmpGetSampleCount(const struct Sampler *sampler)
+int Sampler::GetSampleCount() const
 {
-  return sampler->samples->nelems;
+  return samples_->nelems;
 }
 
-void SmpGetPixelSamples(struct Sampler *sampler, struct Sample *pixelsamples,
-    int pixel_x, int pixel_y)
+Sample *Sampler::GetNextSample()
+{
+  Sample *sample = NULL;
+
+  if (current_index_ >= GetSampleCount())
+    return NULL;
+
+  sample = SAMPLE_ARRAY(this) + current_index_;
+  current_index_++;
+
+  return sample;
+}
+
+void Sampler::GetPixelSamples(Sample *pixelsamples, int pixel_x, int pixel_y) const
 {
   int x, y;
-  const int XPIXEL_OFFSET = pixel_x - sampler->xpixel_start;
-  const int YPIXEL_OFFSET = pixel_y - sampler->ypixel_start;
+  const int XPIXEL_OFFSET = pixel_x - xpixel_start_;
+  const int YPIXEL_OFFSET = pixel_y - ypixel_start_;
 
-  const int XNSAMPLES = sampler->xnsamples;
+  const int XNSAMPLES = xnsamples_;
   const int OFFSET =
-    YPIXEL_OFFSET * sampler->yrate * XNSAMPLES +
-    XPIXEL_OFFSET * sampler->xrate;
-  struct Sample *src = SAMPLE_ARRAY(sampler) + OFFSET;
-  struct Sample *dst = pixelsamples;
+    YPIXEL_OFFSET * yrate_ * XNSAMPLES +
+    XPIXEL_OFFSET * xrate_;
+  Sample *src = SAMPLE_ARRAY(this) + OFFSET;
+  Sample *dst = pixelsamples;
 
-  for (y = 0; y < sampler->ynpxlsmps; y++) {
-    for (x = 0; x < sampler->xnpxlsmps; x++) {
-      dst[y * sampler->xnpxlsmps + x] = src[y * XNSAMPLES + x];
+  for (y = 0; y < ynpxlsmps_; y++) {
+    for (x = 0; x < xnpxlsmps_; x++) {
+      dst[y * xnpxlsmps_ + x] = src[y * XNSAMPLES + x];
     }
   }
 }
 
-struct Sample *SmpAllocatePixelSamples(struct Sampler *sampler)
+// TODO REMOVE THIS OR MAKE FREE FUNCTION
+Sample *Sampler::AllocatePixelSamples()
 {
-  const int sample_count = SmpGetSampleCountForPixel(sampler);
-  struct Sample *samples = FJ_MEM_ALLOC_ARRAY(struct Sample, sample_count);
-
-  return samples;
+  const int sample_count = GetSampleCountForPixel();
+  return new Sample[sample_count];
 }
 
-int SmpGetSampleCountForPixel(const struct Sampler *sampler)
+int Sampler::GetSampleCountForPixel() const
 {
-  return sampler->xnpxlsmps * sampler->ynpxlsmps;
+  return xnpxlsmps_ * ynpxlsmps_;
 }
 
-void SmpFreePixelSamples(struct Sample *samples)
+// TODO REMOVE THIS OR MAKE FREE FUNCTION
+void Sampler::FreePixelSamples(Sample *samples) const
 {
-  if (samples == NULL)
-    return;
-  FJ_MEM_FREE(samples);
+  delete [] samples;
+}
+
+// TODO REMOVE THIS OR MAKE FREE FUNCTION
+int Sampler::GetSampleCountForRegion(const Rectangle &region,
+    int xrate, int yrate, float xfwidth, float yfwidth)
+{
+  const int xmargin = get_pixel_margin(xrate, xfwidth);
+  const int ymargin = get_pixel_margin(yrate, yfwidth);
+  const int xnsamples = get_sample_count_for_region(xrate, SIZE_X(&region), xmargin);
+  const int ynsamples = get_sample_count_for_region(yrate, SIZE_Y(&region), ymargin);
+
+  return xnsamples * ynsamples;
+}
+
+Sampler *SmpNew(int xres, int yres,
+    int xsamples, int ysamples, float xfwidth, float yfwidth)
+{
+  Sampler *sampler = new Sampler();
+  sampler->Initialize(xres, yres, xsamples, ysamples, xfwidth, yfwidth);
+  return sampler;
+}
+
+void SmpFree(Sampler *sampler)
+{
+  delete sampler;
 }
 
 static int get_pixel_margin(int rate, float fwidth)
@@ -226,45 +253,42 @@ static int get_pixel_margin(int rate, float fwidth)
   return (int) ceil(((fwidth - 1) * rate) * .5);
 }
 
-static void count_samples_in_pixels(struct Sampler *sampler)
+static void count_samples_in_pixels(Sampler *sampler)
 {
-  sampler->xmargin = get_pixel_margin(sampler->xrate, sampler->xfwidth);
-  sampler->ymargin = get_pixel_margin(sampler->yrate, sampler->yfwidth);;
-  sampler->xnpxlsmps = sampler->xrate + 2 * sampler->xmargin;
-  sampler->ynpxlsmps = sampler->yrate + 2 * sampler->ymargin;
+  sampler->xmargin_ = get_pixel_margin(sampler->xrate_, sampler->xfwidth_);
+  sampler->ymargin_ = get_pixel_margin(sampler->yrate_, sampler->yfwidth_);;
+  sampler->xnpxlsmps_ = sampler->xrate_ + 2 * sampler->xmargin_;
+  sampler->ynpxlsmps_ = sampler->yrate_ + 2 * sampler->ymargin_;
 }
-
-#define SIZE_X(rect) ((rect)->xmax-(rect)->xmin)
-#define SIZE_Y(rect) ((rect)->ymax-(rect)->ymin)
 
 static int get_sample_count_for_region(int rate, int regionsize, int margin)
 {
   return rate * regionsize + 2 * margin;
 }
 
-static int allocate_samples_for_region(struct Sampler *sampler, const struct Rectangle *region)
+static int allocate_samples_for_region(Sampler *sampler, const Rectangle *region)
 {
   const int XNSAMPLES = get_sample_count_for_region(
-      sampler->xrate, SIZE_X(region), sampler->xmargin);
+      sampler->xrate_, SIZE_X(region), sampler->xmargin_);
   const int YNSAMPLES = get_sample_count_for_region(
-      sampler->yrate, SIZE_Y(region), sampler->ymargin);
+      sampler->yrate_, SIZE_Y(region), sampler->ymargin_);
   const int NEW_NSAMPLES = XNSAMPLES * YNSAMPLES;
   const int XPIXEL_START = region->xmin;
   const int YPIXEL_START = region->ymin;
 
-  ArrResize(sampler->samples, NEW_NSAMPLES);
+  ArrResize(sampler->samples_, NEW_NSAMPLES);
 
-  sampler->xnsamples = XNSAMPLES;
-  sampler->ynsamples = YNSAMPLES;
-  sampler->xpixel_start = XPIXEL_START;
-  sampler->ypixel_start = YPIXEL_START;
+  sampler->xnsamples_ = XNSAMPLES;
+  sampler->ynsamples_ = YNSAMPLES;
+  sampler->xpixel_start_ = XPIXEL_START;
+  sampler->ypixel_start_ = YPIXEL_START;
 
-  sampler->current_index = 0;
+  sampler->current_index_ = 0;
 
   return 0;
 }
 
-int SmpGetSampleCountForRegion(const struct Rectangle *region,
+int SmpGetSampleCountForRegion(const Rectangle *region,
     int xrate, int yrate, float xfwidth, float yfwidth)
 {
   const int xmargin = get_pixel_margin(xrate, xfwidth);
