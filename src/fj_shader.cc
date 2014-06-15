@@ -28,28 +28,28 @@ struct Shader *ShdNew(const struct Plugin *plugin)
   const void *tmpvtbl;
   void *tmpobj;
 
-  if (!PlgTypeMatch(plugin, SHADER_PLUGIN_TYPE)) {
+  if (!plugin->TypeMatch(SHADER_PLUGIN_TYPE)) {
     set_error(SHD_ERR_TYPE_NOT_MATCH);
     return NULL;
   }
 
-  tmpobj = PlgCreateInstance(plugin);
+  tmpobj = plugin->CreateInstance();
   if (tmpobj == NULL) {
     set_error(SHD_ERR_NOOBJ);
     return NULL;
   }
 
-  tmpvtbl = PlgGetVtable(plugin);
+  tmpvtbl = plugin->GetVtable();
   if (tmpvtbl == NULL) {
     set_error(SHD_ERR_NOVTBL);
-    PlgDeleteInstance(plugin, tmpobj);
+    plugin->DeleteInstance(tmpobj);
     return NULL;
   }
 
   shader = FJ_MEM_ALLOC(struct Shader);
   if (shader == NULL) {
     set_error(SHD_ERR_NOMEM);
-    PlgDeleteInstance(plugin, tmpobj);
+    plugin->DeleteInstance(tmpobj);
     return NULL;
   }
 
@@ -67,7 +67,7 @@ void ShdFree(struct Shader *shader)
   if (shader == NULL)
     return;
 
-  PlgDeleteInstance(shader->plugin, shader->self);
+  shader->plugin->DeleteInstance(shader->self);
   FJ_MEM_FREE(shader);
 }
 
@@ -84,7 +84,7 @@ void ShdEvaluate(const struct Shader *shader, const struct TraceContext *cxt,
 
 const struct Property *ShdGetPropertyList(const struct Shader *shader)
 {
-  return PlgGetPropertyList(shader->plugin);
+  return shader->plugin->GetPropertyList();
 }
 
 int ShdSetProperty(struct Shader *shader,

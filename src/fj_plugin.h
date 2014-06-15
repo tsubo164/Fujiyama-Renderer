@@ -13,12 +13,11 @@ See LICENSE and README
 
 namespace fj {
 
-struct Plugin;
-struct PluginInfo;
-struct Property;
-struct MetaInfo;
+class PluginInfo;
+class Property;
+class MetaInfo;
 
-typedef int (*PlgInitializeFn)(struct PluginInfo *info);
+typedef int (*PlgInitializeFn)(PluginInfo *info);
 typedef void *(*PlgCreateInstanceFn)(void);
 typedef void (*PlgDeleteInstanceFn)(void *obj);
 
@@ -52,8 +51,8 @@ public:
   PlgCreateInstanceFn create_instance;
   PlgDeleteInstanceFn delete_instance;
   const void *vtbl;
-  const struct Property *properties;
-  const struct MetaInfo *meta;
+  const Property *properties;
+  const MetaInfo *meta;
 };
 
 class MetaInfo {
@@ -93,28 +92,18 @@ public:
   PluginInfo info_;
 };
 
-extern struct Plugin *PlgOpen(const char *filename);
-extern int PlgClose(struct Plugin *plugin);
+extern Plugin *PlgOpen(const char *filename);
+extern int PlgClose(Plugin *plugin);
 
-extern void *PlgCreateInstance(const struct Plugin *plugin);
-extern void PlgDeleteInstance(const struct Plugin *plugin, void *obj);
-
-extern const struct Property *PlgGetPropertyList(const struct Plugin *plugin);
-extern const struct MetaInfo *PlgMetainfo(const struct Plugin *plugin);
-extern const void *PlgGetVtable(const struct Plugin *plugin);
-extern const char *PlgGetName(const struct Plugin *plugin);
-extern const char *PlgGetType(const struct Plugin *plugin);
-extern int PlgTypeMatch(const struct Plugin *plugin, const char *type);
-
-extern int PlgSetupInfo(struct PluginInfo *info,
+extern int PlgSetupInfo(PluginInfo *info,
     int api_version,
     const char *plugin_type,
     const char *plugin_name,
     PlgCreateInstanceFn create_instance,
     PlgDeleteInstanceFn delete_instance,
     const void *vtbl,
-    const struct Property *properties,
-    const struct MetaInfo *meta);
+    const Property *properties,
+    const MetaInfo *meta);
 
 extern int PlgGetErrorNo(void);
 

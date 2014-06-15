@@ -29,28 +29,28 @@ struct Procedure *PrcNew(const struct Plugin *plugin)
   const void *tmpvtbl = NULL;
   void *tmpobj = NULL;
 
-  if (!PlgTypeMatch(plugin, PROCEDURE_PLUGIN_TYPE)) {
+  if (!plugin->TypeMatch(PROCEDURE_PLUGIN_TYPE)) {
     set_error(PRC_ERR_TYPE_NOT_MATCH);
     return NULL;
   }
 
-  tmpobj = PlgCreateInstance(plugin);
+  tmpobj = plugin->CreateInstance();
   if (tmpobj == NULL) {
     set_error(PRC_ERR_NOOBJ);
     return NULL;
   }
 
-  tmpvtbl = PlgGetVtable(plugin);
+  tmpvtbl = plugin->GetVtable();
   if (tmpvtbl == NULL) {
     set_error(PRC_ERR_NOVTBL);
-    PlgDeleteInstance(plugin, tmpobj);
+    plugin->DeleteInstance(tmpobj);
     return NULL;
   }
 
   procedure = FJ_MEM_ALLOC(struct Procedure);
   if (procedure == NULL) {
     set_error(PRC_ERR_NOMEM);
-    PlgDeleteInstance(plugin, tmpobj);
+    plugin->DeleteInstance(tmpobj);
     return NULL;
   }
 
@@ -68,7 +68,7 @@ void PrcFree(struct Procedure *procedure)
   if (procedure == NULL)
     return;
 
-  PlgDeleteInstance(procedure->plugin, procedure->self);
+  procedure->plugin->DeleteInstance(procedure->self);
   FJ_MEM_FREE(procedure);
 }
 
@@ -99,7 +99,7 @@ int PrcRun(struct Procedure *procedure)
 
 const struct Property *PrcGetPropertyList(const struct Procedure *procedure)
 {
-  return PlgGetPropertyList(procedure->plugin);
+  return procedure->plugin->GetPropertyList();
 }
 
 int PrcSetProperty(struct Procedure *procedure,

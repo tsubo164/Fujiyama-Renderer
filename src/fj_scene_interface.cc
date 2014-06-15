@@ -442,7 +442,7 @@ ID SiNewProcedure(const char *plugin_name)
   int i = 0;
 
   for (i = 0; i < N; i++) {
-    if (strcmp(plugin_name, PlgGetName(plugins[i])) == 0) {
+    if (strcmp(plugin_name, plugins[i]->GetName()) == 0) {
       found = plugins[i];
       break;
     }
@@ -511,7 +511,7 @@ ID SiNewShader(const char *plugin_name)
   int i = 0;
 
   for (i = 0; i < N; i++) {
-    if (strcmp(plugin_name, PlgGetName(plugins[i])) == 0) {
+    if (strcmp(plugin_name, plugins[i]->GetName()) == 0) {
       found = plugins[i];
       break;
     }

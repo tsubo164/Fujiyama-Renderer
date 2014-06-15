@@ -13,7 +13,7 @@ See LICENSE and README
 namespace fj {
 
 static int error_no = PLG_ERR_NONE;
-static int is_valid_pluginfo(const struct PluginInfo *info);
+static int is_valid_pluginfo(const PluginInfo *info);
 static void set_errno(int err_no);
 
 Plugin::Plugin() : dso_(NULL), info_()
@@ -113,68 +113,28 @@ int Plugin::TypeMatch(const char *type) const
   return strcmp(GetType(), type) == 0;
 }
 
-struct Plugin *PlgOpen(const char *filename)
+Plugin *PlgOpen(const char *filename)
 {
   Plugin *plugin = new Plugin();
   plugin->Open(filename);
   return plugin;
 }
 
-int PlgClose(struct Plugin *plugin)
+int PlgClose(Plugin *plugin)
 {
   delete plugin;
   return 0;
 }
 
-void *PlgCreateInstance(const struct Plugin *plugin)
-{
-  return plugin->info_.create_instance();
-}
-
-void PlgDeleteInstance(const struct Plugin *plugin, void *obj)
-{
-  plugin->info_.delete_instance(obj);
-}
-
-const struct Property *PlgGetPropertyList(const struct Plugin *plugin)
-{
-  return plugin->info_.properties;
-}
-
-const struct MetaInfo *PlgMetainfo(const struct Plugin *plugin)
-{
-  return plugin->info_.meta;
-}
-
-const void *PlgGetVtable(const struct Plugin *plugin)
-{
-  return plugin->info_.vtbl;
-}
-
-const char *PlgGetName(const struct Plugin *plugin)
-{
-  return plugin->info_.plugin_name;
-}
-
-const char *PlgGetType(const struct Plugin *plugin)
-{
-  return plugin->info_.plugin_type;
-}
-
-int PlgTypeMatch(const struct Plugin *plugin, const char *type)
-{
-  return strcmp(PlgGetType(plugin), type) == 0;
-}
-
-int PlgSetupInfo(struct PluginInfo *info,
+int PlgSetupInfo(PluginInfo *info,
     int api_version,
     const char *plugin_type,
     const char *plugin_name,
     PlgCreateInstanceFn create_instance,
     PlgDeleteInstanceFn delete_instance,
     const void *vtbl,
-    const struct Property *properties,
-    const struct MetaInfo *meta)
+    const Property *properties,
+    const MetaInfo *meta)
 {
   info->api_version = api_version;
   info->plugin_type = plugin_type;
@@ -201,7 +161,7 @@ static void set_errno(int err_no)
   error_no = err_no;
 }
 
-static int is_valid_pluginfo(const struct PluginInfo *info)
+static int is_valid_pluginfo(const PluginInfo *info)
 {
   if (info->api_version != PLUGIN_API_VERSION ||
     info->plugin_type == NULL ||

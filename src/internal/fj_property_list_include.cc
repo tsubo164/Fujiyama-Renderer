@@ -554,7 +554,7 @@ static const struct Property *get_property_list(const char *type_name)
     int i;
 
     for (i = 0; i < N; i++) {
-      if (strcmp(plugin_name, PlgGetName(plugins[i])) == 0) {
+      if (strcmp(plugin_name, plugins[i]->GetName()) == 0) {
         found = plugins[i];
         break;
       }
@@ -563,7 +563,7 @@ static const struct Property *get_property_list(const char *type_name)
     if (found == NULL) {
       return NULL;
     } else {
-      return PlgGetPropertyList(found);
+      return found->GetPropertyList();
     }
   }
 }
