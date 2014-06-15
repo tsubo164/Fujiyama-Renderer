@@ -14,9 +14,6 @@ See LICENSE and README
 
 namespace fj {
 
-static void count_samples_in_pixels(Sampler *sampler);
-static int allocate_samples_for_region(Sampler *sampler, const Rectangle &region);
-
 static int get_pixel_margin(int rate, float fwidth);
 static int get_sample_count_for_region(int rate, int regionsize, int margin);
 
@@ -76,7 +73,7 @@ void Sampler::Initialize(int xres, int yres,
 
   current_index_ = 0;
 
-  count_samples_in_pixels(this);
+  count_samples_in_pixels();
 }
 
 void Sampler::SetJitter(float jitter)
@@ -100,7 +97,7 @@ void Sampler::SetSampleTimeRange(Real start_time, Real end_time)
 
 int Sampler::GenerateSamples(const Rectangle &pixel_bounds)
 {
-  const int err = allocate_samples_for_region(this, pixel_bounds);
+  const int err = allocate_samples_for_region(pixel_bounds);
   if (err) {
     return -1;
   }
@@ -231,12 +228,12 @@ static int get_pixel_margin(int rate, float fwidth)
   return (int) ceil(((fwidth - 1) * rate) * .5);
 }
 
-static void count_samples_in_pixels(Sampler *sampler)
+void Sampler::count_samples_in_pixels()
 {
-  sampler->xmargin_ = get_pixel_margin(sampler->xrate_, sampler->xfwidth_);
-  sampler->ymargin_ = get_pixel_margin(sampler->yrate_, sampler->yfwidth_);;
-  sampler->xnpxlsmps_ = sampler->xrate_ + 2 * sampler->xmargin_;
-  sampler->ynpxlsmps_ = sampler->yrate_ + 2 * sampler->ymargin_;
+  xmargin_ = get_pixel_margin(xrate_, xfwidth_);
+  ymargin_ = get_pixel_margin(yrate_, yfwidth_);;
+  xnpxlsmps_ = xrate_ + 2 * xmargin_;
+  ynpxlsmps_ = yrate_ + 2 * ymargin_;
 }
 
 static int get_sample_count_for_region(int rate, int regionsize, int margin)
@@ -244,24 +241,22 @@ static int get_sample_count_for_region(int rate, int regionsize, int margin)
   return rate * regionsize + 2 * margin;
 }
 
-static int allocate_samples_for_region(Sampler *sampler, const Rectangle &region)
+int Sampler::allocate_samples_for_region(const Rectangle &region)
 {
-  const int XNSAMPLES = get_sample_count_for_region(
-      sampler->xrate_, SizeX(region), sampler->xmargin_);
-  const int YNSAMPLES = get_sample_count_for_region(
-      sampler->yrate_, SizeY(region), sampler->ymargin_);
+  const int XNSAMPLES = get_sample_count_for_region(xrate_, SizeX(region), xmargin_);
+  const int YNSAMPLES = get_sample_count_for_region(yrate_, SizeY(region), ymargin_);
   const int NEW_NSAMPLES = XNSAMPLES * YNSAMPLES;
   const int XPIXEL_START = region.xmin;
   const int YPIXEL_START = region.ymin;
 
-  sampler->samples_.resize(NEW_NSAMPLES);
+  samples_.resize(NEW_NSAMPLES);
 
-  sampler->xnsamples_ = XNSAMPLES;
-  sampler->ynsamples_ = YNSAMPLES;
-  sampler->xpixel_start_ = XPIXEL_START;
-  sampler->ypixel_start_ = YPIXEL_START;
+  xnsamples_ = XNSAMPLES;
+  ynsamples_ = YNSAMPLES;
+  xpixel_start_ = XPIXEL_START;
+  ypixel_start_ = YPIXEL_START;
 
-  sampler->current_index_ = 0;
+  current_index_ = 0;
 
   return 0;
 }

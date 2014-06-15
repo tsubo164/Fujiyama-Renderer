@@ -21,7 +21,6 @@ public:
 
   Vector2 uv;
   Real time;
-  //Real data[4];
   Vector4 data;
 };
 
@@ -50,7 +49,10 @@ public:
   static int GetSampleCountForRegion(const Rectangle &region,
       int xrate, int yrate, float xfwidth, float yfwidth);
 
-public:
+private:
+  void count_samples_in_pixels();
+  int allocate_samples_for_region(const Rectangle &region);
+
   int xres_, yres_;
   int xrate_, yrate_;
   float xfwidth_, yfwidth_;
