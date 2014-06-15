@@ -6,6 +6,9 @@ See LICENSE and README
 #ifndef FJ_PLUGIN_H
 #define FJ_PLUGIN_H
 
+#include <string>
+#include <cstddef>
+
 #define PLUGIN_API_VERSION 1
 
 namespace fj {
@@ -29,7 +32,20 @@ enum PlgErrorNo {
   PLG_ERR_NO_MEMORY
 };
 
-struct PluginInfo {
+class PluginInfo {
+public:
+  PluginInfo() :
+      api_version(0),
+      plugin_type(NULL),
+      plugin_name(NULL),
+      create_instance(NULL),
+      delete_instance(NULL),
+      vtbl(NULL),
+      properties(NULL),
+      meta(NULL)
+  {}
+  ~PluginInfo() {}
+  
   int api_version;
   const char *plugin_type;
   const char *plugin_name;
@@ -40,9 +56,41 @@ struct PluginInfo {
   const struct MetaInfo *meta;
 };
 
-struct MetaInfo {
+class MetaInfo {
+public:
+#if 0
+  MetaInfo() :
+      name(NULL),
+      data(NULL)
+  {}
+  ~MetaInfo() {}
+#endif
+
   const char *name;
   const char *data;
+};
+
+class Plugin {
+public:
+  Plugin();
+  ~Plugin();
+
+  int Open(const std::string &filename);
+  int Close();
+
+  void *CreateInstance() const;
+  void DeleteInstance(void *instance) const;
+
+  const Property *GetPropertyList() const;
+  const MetaInfo *Metainfo() const;
+  const void *GetVtable() const;
+  const char *GetName() const;
+  const char *GetType() const;
+  int TypeMatch(const char *type) const;
+
+public:
+  void *dso_;
+  PluginInfo info_;
 };
 
 extern struct Plugin *PlgOpen(const char *filename);
@@ -72,4 +120,4 @@ extern int PlgGetErrorNo(void);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

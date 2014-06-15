@@ -8,8 +8,8 @@ See LICENSE and README
 #include "fj_memory.h"
 #include "fj_os.h"
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 namespace fj {
 
@@ -18,10 +18,109 @@ static void clear_pluginfo(struct PluginInfo *info);
 static int is_valid_pluginfo(const struct PluginInfo *info);
 static void set_errno(int err_no);
 
-struct Plugin {
-  void *dso;
-  struct PluginInfo info;
-};
+Plugin::Plugin() : dso_(NULL), info_()
+{
+}
+
+Plugin::~Plugin()
+{
+}
+
+int Plugin::Open(const std::string &filename)
+{
+  set_errno(PLG_ERR_NONE);
+
+  void *tmpdso = OsDlopen(filename.c_str());
+  if (tmpdso == NULL) {
+    set_errno(PLG_ERR_PLUGIN_NOT_FOUND);
+    OsDlclose(tmpdso);
+    return -1;
+  }
+
+  // ISO C forbids conversion of object pointer to function pointer type.
+  // This does void pointer -> uintptr_t -> function pointer
+  PlgInitializeFn initialize_plugin =
+      (PlgInitializeFn) (uintptr_t) OsDlsym(tmpdso, "Initialize");
+  if (initialize_plugin == NULL) {
+    set_errno(PLG_ERR_INIT_PLUGIN_FUNC_NOT_EXIST);
+    OsDlclose(tmpdso);
+    return -1;
+  }
+
+  PluginInfo info;
+
+  const int err = initialize_plugin(&info);
+  if (err) {
+    set_errno(PLG_ERR_INIT_PLUGIN_FUNC_FAIL);
+    OsDlclose(tmpdso);
+    return -1;
+  }
+
+  // TODO this is checked in initialize_plugin
+  if (!is_valid_pluginfo(&info)) {
+    set_errno(PLG_ERR_BAD_PLUGIN_INFO);
+    OsDlclose(tmpdso);
+    return -1;
+  }
+
+  // commit
+  dso_ = tmpdso;
+  info_ = info;
+  return 0;
+}
+
+int Plugin::Close()
+{
+  const int err = OsDlclose(dso_);
+
+  if (err) {
+    set_errno(PLG_ERR_CLOSE_PLUGIN_FAIL);
+    return -1;
+  } else {
+    set_errno(PLG_ERR_NONE);
+    return 0;
+  }
+}
+
+void *Plugin::CreateInstance() const
+{
+  return info_.create_instance();
+}
+
+void Plugin::DeleteInstance(void *instance) const
+{
+  info_.delete_instance(instance);
+}
+
+const Property *Plugin::GetPropertyList() const
+{
+  return info_.properties;
+}
+
+const MetaInfo *Plugin::Metainfo() const
+{
+  return info_.meta;
+}
+
+const void *Plugin::GetVtable() const
+{
+  return info_.vtbl;
+}
+
+const char *Plugin::GetName() const
+{
+  return info_.plugin_name;
+}
+
+const char *Plugin::GetType() const
+{
+  return info_.plugin_type;
+}
+
+int Plugin::TypeMatch(const char *type) const
+{
+  return strcmp(GetType(), type) == 0;
+}
 
 struct Plugin *PlgOpen(const char *filename)
 {
@@ -68,8 +167,8 @@ struct Plugin *PlgOpen(const char *filename)
   }
 
   /* commit */
-  plugin->dso = tmpdso;
-  plugin->info = info;
+  plugin->dso_ = tmpdso;
+  plugin->info_ = info;
   return plugin;
 
 plugin_error:
@@ -79,7 +178,7 @@ plugin_error:
 
 int PlgClose(struct Plugin *plugin)
 {
-  const int err = OsDlclose(plugin->dso);
+  const int err = OsDlclose(plugin->dso_);
 
   FJ_MEM_FREE(plugin);
 
@@ -94,37 +193,37 @@ int PlgClose(struct Plugin *plugin)
 
 void *PlgCreateInstance(const struct Plugin *plugin)
 {
-  return plugin->info.create_instance();
+  return plugin->info_.create_instance();
 }
 
 void PlgDeleteInstance(const struct Plugin *plugin, void *obj)
 {
-  plugin->info.delete_instance(obj);
+  plugin->info_.delete_instance(obj);
 }
 
 const struct Property *PlgGetPropertyList(const struct Plugin *plugin)
 {
-  return plugin->info.properties;
+  return plugin->info_.properties;
 }
 
 const struct MetaInfo *PlgMetainfo(const struct Plugin *plugin)
 {
-  return plugin->info.meta;
+  return plugin->info_.meta;
 }
 
 const void *PlgGetVtable(const struct Plugin *plugin)
 {
-  return plugin->info.vtbl;
+  return plugin->info_.vtbl;
 }
 
 const char *PlgGetName(const struct Plugin *plugin)
 {
-  return plugin->info.plugin_name;
+  return plugin->info_.plugin_name;
 }
 
 const char *PlgGetType(const struct Plugin *plugin)
 {
-  return plugin->info.plugin_type;
+  return plugin->info_.plugin_type;
 }
 
 int PlgTypeMatch(const struct Plugin *plugin, const char *type)
