@@ -87,7 +87,7 @@ public:
   const char *GetType() const;
   int TypeMatch(const char *type) const;
 
-public:
+private:
   void *dso_;
   PluginInfo info_;
 };

@@ -4,7 +4,6 @@ See LICENSE and README
 */
 
 #include "fj_plugin.h"
-#include "fj_compatibility.h"
 #include "fj_os.h"
 
 #include <cstdio>
@@ -32,14 +31,11 @@ int Plugin::Open(const std::string &filename)
   void *tmpdso = OsDlopen(filename.c_str());
   if (tmpdso == NULL) {
     set_errno(PLG_ERR_PLUGIN_NOT_FOUND);
-    OsDlclose(tmpdso);
     return -1;
   }
 
-  // ISO C forbids conversion of object pointer to function pointer type.
-  // This does void pointer -> uintptr_t -> function pointer
   PlgInitializeFn initialize_plugin =
-      (PlgInitializeFn) (uintptr_t) OsDlsym(tmpdso, "Initialize");
+      reinterpret_cast<PlgInitializeFn>(OsDlsym(tmpdso, "Initialize"));
   if (initialize_plugin == NULL) {
     set_errno(PLG_ERR_INIT_PLUGIN_FUNC_NOT_EXIST);
     OsDlclose(tmpdso);
@@ -176,4 +172,4 @@ static int is_valid_pluginfo(const PluginInfo *info)
     return 1;
 }
 
-} // namespace fj
+} // namespace xxx
