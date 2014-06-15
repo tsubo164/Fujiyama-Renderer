@@ -5,7 +5,6 @@ See LICENSE and README
 
 #include "fj_plugin.h"
 #include "fj_compatibility.h"
-#include "fj_memory.h"
 #include "fj_os.h"
 
 #include <cstdio>
@@ -14,7 +13,6 @@ See LICENSE and README
 namespace fj {
 
 static int error_no = PLG_ERR_NONE;
-static void clear_pluginfo(struct PluginInfo *info);
 static int is_valid_pluginfo(const struct PluginInfo *info);
 static void set_errno(int err_no);
 
@@ -24,6 +22,7 @@ Plugin::Plugin() : dso_(NULL), info_()
 
 Plugin::~Plugin()
 {
+  Close();
 }
 
 int Plugin::Open(const std::string &filename)
@@ -69,17 +68,9 @@ int Plugin::Open(const std::string &filename)
   return 0;
 }
 
-int Plugin::Close()
+void Plugin::Close()
 {
-  const int err = OsDlclose(dso_);
-
-  if (err) {
-    set_errno(PLG_ERR_CLOSE_PLUGIN_FAIL);
-    return -1;
-  } else {
-    set_errno(PLG_ERR_NONE);
-    return 0;
-  }
+  OsDlclose(dso_);
 }
 
 void *Plugin::CreateInstance() const
@@ -124,71 +115,15 @@ int Plugin::TypeMatch(const char *type) const
 
 struct Plugin *PlgOpen(const char *filename)
 {
-  int err = 0;
-  void *tmpdso = NULL;
-  struct Plugin *plugin = NULL;
-  struct PluginInfo info;
-  PlgInitializeFn initialize_plugin = NULL;
-
-  set_errno(PLG_ERR_NONE);
-  tmpdso = OsDlopen(filename);
-  if (tmpdso == NULL) {
-    set_errno(PLG_ERR_PLUGIN_NOT_FOUND);
-    goto plugin_error;
-  }
-
-  /*
-  ISO C forbids conversion of object pointer to function pointer type.
-  This does void pointer -> uintptr_t -> function pointer
-  */
-  initialize_plugin = (PlgInitializeFn) (uintptr_t) OsDlsym(tmpdso, "Initialize");
-  if (initialize_plugin == NULL) {
-    set_errno(PLG_ERR_INIT_PLUGIN_FUNC_NOT_EXIST);
-    goto plugin_error;
-  }
-
-  clear_pluginfo(&info);
-  err = initialize_plugin(&info);
-  if (err) {
-    set_errno(PLG_ERR_INIT_PLUGIN_FUNC_FAIL);
-    goto plugin_error;
-  }
-
-  /* TODO this is checked in initialize_plugin */
-  if (!is_valid_pluginfo(&info)) {
-    set_errno(PLG_ERR_BAD_PLUGIN_INFO);
-    goto plugin_error;
-  }
-
-  plugin = FJ_MEM_ALLOC(struct Plugin);
-  if (plugin == NULL) {
-    set_errno(PLG_ERR_NO_MEMORY);
-    goto plugin_error;
-  }
-
-  /* commit */
-  plugin->dso_ = tmpdso;
-  plugin->info_ = info;
+  Plugin *plugin = new Plugin();
+  plugin->Open(filename);
   return plugin;
-
-plugin_error:
-  OsDlclose(tmpdso);
-  return NULL;
 }
 
 int PlgClose(struct Plugin *plugin)
 {
-  const int err = OsDlclose(plugin->dso_);
-
-  FJ_MEM_FREE(plugin);
-
-  if (err) {
-    set_errno(PLG_ERR_CLOSE_PLUGIN_FAIL);
-    return -1;
-  } else {
-    set_errno(PLG_ERR_NONE);
-    return 0;
-  }
+  delete plugin;
+  return 0;
 }
 
 void *PlgCreateInstance(const struct Plugin *plugin)
@@ -264,18 +199,6 @@ int PlgGetErrorNo(void)
 static void set_errno(int err_no)
 {
   error_no = err_no;
-}
-
-static void clear_pluginfo(struct PluginInfo *info)
-{
-  info->api_version = 0;
-  info->plugin_type = NULL;
-  info->plugin_name = NULL;
-  info->create_instance = NULL;
-  info->delete_instance = NULL;
-  info->vtbl = NULL;
-  info->properties = NULL;
-  info->meta = NULL;
 }
 
 static int is_valid_pluginfo(const struct PluginInfo *info)

@@ -76,7 +76,7 @@ public:
   ~Plugin();
 
   int Open(const std::string &filename);
-  int Close();
+  void Close();
 
   void *CreateInstance() const;
   void DeleteInstance(void *instance) const;
