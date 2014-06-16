@@ -7,69 +7,112 @@ See LICENSE and README
 #include "fj_memory.h"
 #include "fj_timer.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstring>
+#include <cassert>
 
 namespace fj {
 
 static int error_no = PRC_ERR_NOERR;
-
-struct Procedure {
-  void *self;
-  const struct ProcedureFunctionTable *vptr;
-  const struct Plugin *plugin;
-};
-
 static void set_error(int err);
 
-struct Procedure *PrcNew(const struct Plugin *plugin)
+Procedure::Procedure() :
+  self_(NULL),
+  vptr_(NULL),
+  plugin_(NULL)
 {
-  struct Procedure *procedure = NULL;
-  const void *tmpvtbl = NULL;
-  void *tmpobj = NULL;
+}
 
+Procedure::~Procedure()
+{
+  // TODO need NullPlugin?
+  if (plugin_ != NULL) {
+    plugin_->DeleteInstance(self_);
+  }
+}
+
+int Procedure::Initialize(const Plugin *plugin)
+{
   if (!plugin->TypeMatch(PROCEDURE_PLUGIN_TYPE)) {
     set_error(PRC_ERR_TYPE_NOT_MATCH);
-    return NULL;
+    return -1;
   }
 
-  tmpobj = plugin->CreateInstance();
+  void *tmpobj = plugin->CreateInstance();
   if (tmpobj == NULL) {
     set_error(PRC_ERR_NOOBJ);
-    return NULL;
+    return -1;
   }
 
-  tmpvtbl = plugin->GetVtable();
+  const void *tmpvtbl = plugin->GetVtable();
   if (tmpvtbl == NULL) {
     set_error(PRC_ERR_NOVTBL);
     plugin->DeleteInstance(tmpobj);
-    return NULL;
+    return -1;
   }
 
-  procedure = FJ_MEM_ALLOC(struct Procedure);
-  if (procedure == NULL) {
-    set_error(PRC_ERR_NOMEM);
-    plugin->DeleteInstance(tmpobj);
-    return NULL;
-  }
-
-  /* commit */
-  procedure->self = tmpobj;
-  procedure->vptr = (const struct ProcedureFunctionTable *) tmpvtbl;
-  procedure->plugin = plugin;
+  // commit
+  self_ = tmpobj;
+  vptr_ = (const struct ProcedureFunctionTable *) tmpvtbl;
+  plugin_ = plugin;
   set_error(PRC_ERR_NOERR);
 
+  return 0;
+}
+
+int Procedure::Run()
+{
+  /* TODO come up with the best place to put message */
+  printf("Running Procedure ...\n");
+
+  Timer timer;
+  timer.Start();
+
+  const int err = vptr_->MyRun(self_);
+
+  Elapse elapse = timer.GetElapse();
+
+  if (err) {
+    printf("Error: %dh %dm %ds\n", elapse.hour, elapse.min, elapse.sec);
+    return -1;
+  } else {
+    printf("Done: %dh %dm %ds\n", elapse.hour, elapse.min, elapse.sec);
+    return 0;
+  }
+}
+
+const Property *Procedure::GetPropertyList() const
+{
+  // TODO need NullPlugin?
+  if (plugin_ == NULL)
+    return NULL;
+
+  return plugin_->GetPropertyList();
+}
+
+int Procedure::SetProperty(const std::string &prop_name, const PropertyValue &src_data)
+{
+  const Property *prc_props = GetPropertyList();
+  const Property *dst_prop  = PropFind(prc_props, src_data.type, prop_name.c_str());
+
+  if (dst_prop == NULL) {
+    return -1;
+  }
+
+  assert(dst_prop->SetProperty != NULL);
+  return dst_prop->SetProperty(self_, &src_data);
+}
+
+struct Procedure *PrcNew(const struct Plugin *plugin)
+{
+  Procedure *procedure = new Procedure();
+  procedure->Initialize(plugin);
   return procedure;
 }
 
 void PrcFree(struct Procedure *procedure)
 {
-  if (procedure == NULL)
-    return;
-
-  procedure->plugin->DeleteInstance(procedure->self);
-  FJ_MEM_FREE(procedure);
+  delete procedure;
 }
 
 int PrcRun(struct Procedure *procedure)
@@ -82,7 +125,7 @@ int PrcRun(struct Procedure *procedure)
   /* TODO come up with the best place to put message */
   printf("Running Procedure ...\n");
 
-  err = procedure->vptr->MyRun(procedure->self);
+  err = procedure->vptr_->MyRun(procedure->self_);
 
   elapse = timer.GetElapse();
 
@@ -99,7 +142,7 @@ int PrcRun(struct Procedure *procedure)
 
 const struct Property *PrcGetPropertyList(const struct Procedure *procedure)
 {
-  return procedure->plugin->GetPropertyList();
+  return procedure->plugin_->GetPropertyList();
 }
 
 int PrcSetProperty(struct Procedure *procedure,
@@ -114,7 +157,7 @@ int PrcSetProperty(struct Procedure *procedure,
     return -1;
 
   assert(dst_prop->SetProperty != NULL);
-  return dst_prop->SetProperty(procedure->self, src_data);
+  return dst_prop->SetProperty(procedure->self_, src_data);
 }
 
 static void set_error(int err)

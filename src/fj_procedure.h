@@ -13,8 +13,6 @@ See LICENSE and README
 
 namespace fj {
 
-struct Procedure;
-
 struct ProcedureFunctionTable {
   int (*MyRun)(void *self);
 };
@@ -25,6 +23,23 @@ enum PrcErrorNo {
   PRC_ERR_NOOBJ,
   PRC_ERR_NOVTBL,
   PRC_ERR_NOMEM
+};
+
+class Procedure {
+public:
+  Procedure();
+  ~Procedure();
+
+  int Initialize(const Plugin *plugin);
+  int Run();
+
+  const Property *GetPropertyList() const;
+  int SetProperty(const std::string &prop_name, const PropertyValue &src_data);
+
+public:
+  void *self_;
+  const ProcedureFunctionTable *vptr_;
+  const Plugin *plugin_;
 };
 
 extern struct Procedure *PrcNew(const struct Plugin *plugin);
@@ -38,4 +53,4 @@ extern int PrcSetProperty(struct Procedure *procedure,
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H
