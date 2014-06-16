@@ -255,7 +255,7 @@ Status SiRunProcedure(ID procedure)
   if (procedure_ptr == NULL)
     return SI_FAIL;
 
-  err = PrcRun(procedure_ptr);
+  err = procedure_ptr->Run();
   if (err) {
     /* TODO error handling */
     return SI_FAIL;
@@ -1157,7 +1157,7 @@ static int set_property(const struct Entry *entry,
     if (procedure == NULL)
       return SI_FAIL;
 
-    return PrcSetProperty(procedure, name, value);
+    return procedure->SetProperty(name, *value);
   }
   else if (entry->type == Type_Shader) {
     struct Shader *shader = ScnGetShader(get_scene(), entry->index);

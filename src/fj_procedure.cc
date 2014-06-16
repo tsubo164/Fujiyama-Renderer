@@ -1,14 +1,10 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_procedure.h"
-#include "fj_memory.h"
 #include "fj_timer.h"
 
 #include <cstdio>
-#include <cstring>
 #include <cassert>
 
 namespace fj {
@@ -53,7 +49,7 @@ int Procedure::Initialize(const Plugin *plugin)
 
   // commit
   self_ = tmpobj;
-  vptr_ = (const struct ProcedureFunctionTable *) tmpvtbl;
+  vptr_ = (const ProcedureFunctionTable *) tmpvtbl;
   plugin_ = plugin;
   set_error(PRC_ERR_NOERR);
 
@@ -103,61 +99,16 @@ int Procedure::SetProperty(const std::string &prop_name, const PropertyValue &sr
   return dst_prop->SetProperty(self_, &src_data);
 }
 
-struct Procedure *PrcNew(const struct Plugin *plugin)
+Procedure *PrcNew(const Plugin *plugin)
 {
   Procedure *procedure = new Procedure();
   procedure->Initialize(plugin);
   return procedure;
 }
 
-void PrcFree(struct Procedure *procedure)
+void PrcFree(Procedure *procedure)
 {
   delete procedure;
-}
-
-int PrcRun(struct Procedure *procedure)
-{
-  Timer timer;
-  Elapse elapse;
-  int err = 0;
-
-  timer.Start();
-  /* TODO come up with the best place to put message */
-  printf("Running Procedure ...\n");
-
-  err = procedure->vptr_->MyRun(procedure->self_);
-
-  elapse = timer.GetElapse();
-
-  if (err) {
-    printf("Error: %dh %dm %ds\n", elapse.hour, elapse.min, elapse.sec);
-
-    return -1;
-  } else {
-    printf("Done: %dh %dm %ds\n", elapse.hour, elapse.min, elapse.sec);
-
-    return 0;
-  }
-}
-
-const struct Property *PrcGetPropertyList(const struct Procedure *procedure)
-{
-  return procedure->plugin_->GetPropertyList();
-}
-
-int PrcSetProperty(struct Procedure *procedure,
-    const char *prop_name, const struct PropertyValue *src_data)
-{
-  const struct Property *prc_props;
-  const struct Property *dst_prop;
-
-  prc_props = PrcGetPropertyList(procedure);
-  dst_prop = PropFind(prc_props, src_data->type, prop_name);
-  if (dst_prop == NULL)
-    return -1;
-
-  assert(dst_prop->SetProperty != NULL);
-  return dst_prop->SetProperty(procedure->self_, src_data);
 }
 
 static void set_error(int err)

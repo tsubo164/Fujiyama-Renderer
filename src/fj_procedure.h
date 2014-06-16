@@ -1,19 +1,19 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_PROCEDURE_H
 #define FJ_PROCEDURE_H
 
 #include "fj_property.h"
 #include "fj_plugin.h"
+#include <string>
 
 #define PROCEDURE_PLUGIN_TYPE "Procedure"
 
 namespace fj {
 
-struct ProcedureFunctionTable {
+class ProcedureFunctionTable {
+public:
   int (*MyRun)(void *self);
 };
 
@@ -42,14 +42,8 @@ public:
   const Plugin *plugin_;
 };
 
-extern struct Procedure *PrcNew(const struct Plugin *plugin);
-extern void PrcFree(struct Procedure *procedure);
-
-extern int PrcRun(struct Procedure *procedure);
-
-extern const struct Property *PrcGetPropertyList(const struct Procedure *procedure);
-extern int PrcSetProperty(struct Procedure *procedure,
-    const char *prop_name, const struct PropertyValue *src_data);
+extern Procedure *PrcNew(const Plugin *plugin);
+extern void PrcFree(Procedure *procedure);
 
 } // namespace xxx
 
