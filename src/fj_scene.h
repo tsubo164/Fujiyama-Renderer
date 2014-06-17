@@ -29,106 +29,106 @@ enum AcceleratorType {
   ACC_BVH
 };
 
-struct Scene;
+class Scene;
 
 // Scene
-extern struct Scene *ScnNew(void);
-extern void ScnFree(struct Scene *scene);
+extern Scene *ScnNew(void);
+extern void ScnFree(Scene *scene);
 
 // ObjectInstance
-extern struct ObjectInstance *ScnNewObjectInstance(struct Scene *scene);
-extern struct ObjectInstance **ScnGetObjectInstanceList(const struct Scene *scene);
-extern struct ObjectInstance *ScnGetObjectInstance(const struct Scene *scene, int index);
-extern size_t ScnGetObjectInstanceCount(const struct Scene *scene);
+extern ObjectInstance *ScnNewObjectInstance(Scene *scene);
+extern ObjectInstance **ScnGetObjectInstanceList(const Scene *scene);
+extern ObjectInstance *ScnGetObjectInstance(const Scene *scene, int index);
+extern size_t ScnGetObjectInstanceCount(const Scene *scene);
 
 // Accelerator
-extern struct Accelerator *ScnNewAccelerator(struct Scene *scene, int accelerator_type);
-extern struct Accelerator **ScnGetAcceleratorList(const struct Scene *scene);
-extern struct Accelerator *ScnGetAccelerator(const struct Scene *scene, int index);
-extern size_t ScnGetAcceleratorCount(const struct Scene *scene);
+extern Accelerator *ScnNewAccelerator(Scene *scene, int accelerator_type);
+extern Accelerator **ScnGetAcceleratorList(const Scene *scene);
+extern Accelerator *ScnGetAccelerator(const Scene *scene, int index);
+extern size_t ScnGetAcceleratorCount(const Scene *scene);
 
 // FrameBuffer
-extern struct FrameBuffer *ScnNewFrameBuffer(struct Scene *scene);
-extern struct FrameBuffer **ScnGetFrameBufferList(const struct Scene *scene);
-extern struct FrameBuffer *ScnGetFrameBuffer(const struct Scene *scene, int index);
-extern size_t ScnGetFrameBufferCount(const struct Scene *scene);
+extern FrameBuffer *ScnNewFrameBuffer(Scene *scene);
+extern FrameBuffer **ScnGetFrameBufferList(const Scene *scene);
+extern FrameBuffer *ScnGetFrameBuffer(const Scene *scene, int index);
+extern size_t ScnGetFrameBufferCount(const Scene *scene);
 
 // ObjectGroup
-extern struct ObjectGroup *ScnNewObjectGroup(struct Scene *scene);
-extern struct ObjectGroup **ScnGetObjectGroupList(const struct Scene *scene);
-extern struct ObjectGroup *ScnGetObjectGroup(const struct Scene *scene, int index);
-extern size_t ScnGetObjectGroupCount(const struct Scene *scene);
+extern ObjectGroup *ScnNewObjectGroup(Scene *scene);
+extern ObjectGroup **ScnGetObjectGroupList(const Scene *scene);
+extern ObjectGroup *ScnGetObjectGroup(const Scene *scene, int index);
+extern size_t ScnGetObjectGroupCount(const Scene *scene);
 
 // PointCloud
-extern struct PointCloud *ScnNewPointCloud(struct Scene *scene);
-extern struct PointCloud **ScnGetPointCloudList(const struct Scene *scene);
-extern struct PointCloud *ScnGetPointCloud(const struct Scene *scene, int index);
-extern size_t ScnGetPointCloudCount(const struct Scene *scene);
+extern PointCloud *ScnNewPointCloud(Scene *scene);
+extern PointCloud **ScnGetPointCloudList(const Scene *scene);
+extern PointCloud *ScnGetPointCloud(const Scene *scene, int index);
+extern size_t ScnGetPointCloudCount(const Scene *scene);
 
 // Turbulence
-extern struct Turbulence *ScnNewTurbulence(struct Scene *scene);
-extern struct Turbulence **ScnGetTurbulenceList(const struct Scene *scene);
-extern struct Turbulence *ScnGetTurbulence(const struct Scene *scene, int index);
-extern size_t ScnGetTurbulenceCount(const struct Scene *scene);
+extern Turbulence *ScnNewTurbulence(Scene *scene);
+extern Turbulence **ScnGetTurbulenceList(const Scene *scene);
+extern Turbulence *ScnGetTurbulence(const Scene *scene, int index);
+extern size_t ScnGetTurbulenceCount(const Scene *scene);
 
 // Procedure
-extern struct Procedure *ScnNewProcedure(struct Scene *scene, const struct Plugin *plugin);
-extern struct Procedure **ScnGetProcedureList(const struct Scene *scene);
-extern struct Procedure *ScnGetProcedure(const struct Scene *scene, int index);
-extern size_t ScnGetProcedureCount(const struct Scene *scene);
+extern Procedure *ScnNewProcedure(Scene *scene, const Plugin *plugin);
+extern Procedure **ScnGetProcedureList(const Scene *scene);
+extern Procedure *ScnGetProcedure(const Scene *scene, int index);
+extern size_t ScnGetProcedureCount(const Scene *scene);
 
 // Renderer
-extern struct Renderer *ScnNewRenderer(struct Scene *scene);
-extern struct Renderer **ScnGetRendererList(const struct Scene *scene);
-extern struct Renderer *ScnGetRenderer(const struct Scene *scene, int index);
-extern size_t ScnGetRendererCount(const struct Scene *scene);
+extern Renderer *ScnNewRenderer(Scene *scene);
+extern Renderer **ScnGetRendererList(const Scene *scene);
+extern Renderer *ScnGetRenderer(const Scene *scene, int index);
+extern size_t ScnGetRendererCount(const Scene *scene);
 
 // Texture
-extern struct Texture *ScnNewTexture(struct Scene *scene);
-extern struct Texture **ScnGetTextureList(const struct Scene *scene);
-extern struct Texture *ScnGetTexture(const struct Scene *scene, int index);
-extern size_t ScnGetTextureCount(const struct Scene *scene);
+extern Texture *ScnNewTexture(Scene *scene);
+extern Texture **ScnGetTextureList(const Scene *scene);
+extern Texture *ScnGetTexture(const Scene *scene, int index);
+extern size_t ScnGetTextureCount(const Scene *scene);
 
 // Camera
-extern struct Camera *ScnNewCamera(struct Scene *scene, const char *type);
-extern struct Camera **ScnGetCameraList(const struct Scene *scene);
-extern struct Camera *ScnGetCamera(const struct Scene *scene, int index);
-extern size_t ScnGetCameraCount(const struct Scene *scene);
+extern Camera *ScnNewCamera(Scene *scene, const char *type);
+extern Camera **ScnGetCameraList(const Scene *scene);
+extern Camera *ScnGetCamera(const Scene *scene, int index);
+extern size_t ScnGetCameraCount(const Scene *scene);
 
 // Plugin
-extern struct Plugin *ScnOpenPlugin(struct Scene *scene, const char *filename);
-extern struct Plugin **ScnGetPluginList(const struct Scene *scene);
-extern size_t ScnGetPluginCount(const struct Scene *scene);
+extern Plugin *ScnOpenPlugin(Scene *scene, const char *filename);
+extern Plugin **ScnGetPluginList(const Scene *scene);
+extern size_t ScnGetPluginCount(const Scene *scene);
 
 // Shader
-extern struct Shader *ScnNewShader(struct Scene *scene, const struct Plugin *plugin);
-extern struct Shader **ScnGetShaderList(const struct Scene *scene);
-extern struct Shader *ScnGetShader(const struct Scene *scene, int index);
-extern size_t ScnGetShaderCount(const struct Scene *scene);
+extern Shader *ScnNewShader(Scene *scene, const Plugin *plugin);
+extern Shader **ScnGetShaderList(const Scene *scene);
+extern Shader *ScnGetShader(const Scene *scene, int index);
+extern size_t ScnGetShaderCount(const Scene *scene);
 
 // Volume
-extern struct Volume *ScnNewVolume(struct Scene *scene);
-extern struct Volume **ScnGetVolumeList(const struct Scene *scene);
-extern struct Volume *ScnGetVolume(const struct Scene *scene, int index);
-extern size_t ScnGetVolumeCount(const struct Scene *scene);
+extern Volume *ScnNewVolume(Scene *scene);
+extern Volume **ScnGetVolumeList(const Scene *scene);
+extern Volume *ScnGetVolume(const Scene *scene, int index);
+extern size_t ScnGetVolumeCount(const Scene *scene);
 
 // Curve
-extern struct Curve *ScnNewCurve(struct Scene *scene);
-extern struct Curve **ScnGetCurveList(const struct Scene *scene);
-extern struct Curve *ScnGetCurve(const struct Scene *scene, int index);
-extern size_t ScnGetCurveCount(const struct Scene *scene);
+extern Curve *ScnNewCurve(Scene *scene);
+extern Curve **ScnGetCurveList(const Scene *scene);
+extern Curve *ScnGetCurve(const Scene *scene, int index);
+extern size_t ScnGetCurveCount(const Scene *scene);
 
 // Light
-extern struct Light *ScnNewLight(struct Scene *scene, int light_type);
-extern struct Light **ScnGetLightList(const struct Scene *scene);
-extern struct Light *ScnGetLight(const struct Scene *scene, int index);
-extern size_t ScnGetLightCount(const struct Scene *scene);
+extern Light *ScnNewLight(Scene *scene, int light_type);
+extern Light **ScnGetLightList(const Scene *scene);
+extern Light *ScnGetLight(const Scene *scene, int index);
+extern size_t ScnGetLightCount(const Scene *scene);
 
 // Mesh
-extern struct Mesh *ScnNewMesh(struct Scene *scene);
-extern struct Mesh **ScnGetMeshList(const struct Scene *scene);
-extern struct Mesh *ScnGetMesh(const struct Scene *scene, int index);
-extern size_t ScnGetMeshCount(const struct Scene *scene);
+extern Mesh *ScnNewMesh(Scene *scene);
+extern Mesh **ScnGetMeshList(const Scene *scene);
+extern Mesh *ScnGetMesh(const Scene *scene, int index);
+extern size_t ScnGetMeshCount(const Scene *scene);
 
 } // namespace xxx
 

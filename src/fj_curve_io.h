@@ -16,7 +16,11 @@ struct TexCoord;
 struct Vector;
 struct Color;
 
-struct CurveInput {
+class CurveInput {
+public:
+  CurveInput() {}
+  ~CurveInput() {}
+
   FILE *file;
   int version;
   int nverts;

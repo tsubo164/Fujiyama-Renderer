@@ -56,7 +56,9 @@ static void set_error(int err)
 /* curve input file interfaces */
 struct CurveInput *CrvOpenInputFile(const char *filename)
 {
-  struct CurveInput *in = FJ_MEM_ALLOC(struct CurveInput);
+  // TODO QUICK FIX
+  CurveInput *in = new CurveInput();
+  //struct CurveInput *in = FJ_MEM_ALLOC(struct CurveInput);
   if (in == NULL) {
     set_error(ERR_CRV_NOMEM);
     return NULL;
@@ -98,7 +100,9 @@ void CrvCloseInputFile(struct CurveInput *in)
   if (in->file != NULL) {
     fclose(in->file);
   }
-  FJ_MEM_FREE(in);
+  // TODO QUICK FIX
+  delete in;
+  //FJ_MEM_FREE(in);
 }
 
 int CrvReadHeader(struct CurveInput *in)
