@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_scene.h"
 #include "fj_memory.h"
@@ -10,6 +8,8 @@ See LICENSE and README
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
+
+#include <vector>
 
 #include "fj_grid_accelerator.h"
 #include "fj_bvh_accelerator.h"
@@ -63,11 +63,52 @@ struct Type *ScnGet##Type(const struct Scene *scene, int index) \
   return ScnGet##Type##List((scene))[(index)]; \
 }
 
+#define DEFINE_LIST_FUNCTIONS_(Type) \
+size_t ScnGet##Type##Count(const Scene *scene) \
+{ \
+  return (scene)->Type##List.size(); \
+} \
+Type **ScnGet##Type##List(const Scene *scene) \
+{ \
+  return (Type **) &(scene)->Type##List[0]; \
+} \
+Type *ScnGet##Type(const Scene *scene, int index) \
+{ \
+  if((index) < 0 || (index) >= (int) ScnGet##Type##Count((scene))) return NULL; \
+  return ScnGet##Type##List((scene))[(index)]; \
+}
+
 namespace fj {
 
-struct Scene {
+static void new_all_node_list(struct Scene *scene);
+static void free_all_node_list(struct Scene *scene);
+static void *push_entry(struct Array *array, void *entry);
+
+template<typename T>
+static inline
+void delete_entries(std::vector<T *> &entry_list)
+{
+  for (size_t i = 0; i < entry_list.size(); i++) {
+    delete entry_list[i];
+  }
+}
+
+template<typename T>
+static inline
+T *push_entry_(std::vector<T *> &entry_list, T *entry)
+{
+  entry_list.push_back(entry);
+  return entry;
+}
+
+class Scene {
+public:
+  Scene();
+  ~Scene();
+
+public:
   struct Array *ObjectInstanceList;
-  struct Array *AcceleratorList;
+  std::vector<Accelerator *> AcceleratorList;
   struct Array *FrameBufferList;
   struct Array *ObjectGroupList;
   struct Array *PointCloudList;
@@ -85,38 +126,34 @@ struct Scene {
   struct Array *MeshList;
 };
 
-static void new_all_node_list(struct Scene *scene);
-static void free_all_node_list(struct Scene *scene);
-static void *push_entry(struct Array *array, void *entry);
+Scene::Scene()
+{
+  new_all_node_list(this);
+}
 
-/* Scene */
+Scene::~Scene()
+{
+  free_all_node_list(this);
+}
+
+// Scene
 struct Scene *ScnNew(void)
 {
-  struct Scene *scene = FJ_MEM_ALLOC(struct Scene);
-
-  if (scene == NULL)
-    return NULL;
-
-  new_all_node_list(scene);
-  return scene;
+  return new Scene();
 }
 
 void ScnFree(struct Scene *scene)
 {
-  if (scene == NULL)
-    return;
-
-  free_all_node_list(scene);
-  FJ_MEM_FREE(scene);
+  delete scene;
 }
 
-/* ObjectInstance */
+// ObjectInstance
 struct ObjectInstance *ScnNewObjectInstance(struct Scene *scene)
 {
   return (struct ObjectInstance *) push_entry(scene->ObjectInstanceList, ObjNew());
 }
 
-/* Accelerator */
+// Accelerator
 struct Accelerator *ScnNewAccelerator(struct Scene *scene, int accelerator_type)
 {
   Accelerator *acc = NULL;
@@ -131,101 +168,96 @@ struct Accelerator *ScnNewAccelerator(struct Scene *scene, int accelerator_type)
     assert(!"invalid accelerator type");
     break;
   }
-  return (struct Accelerator *) push_entry(scene->AcceleratorList, acc);
-#if 0
-  Accelerator *acc = AccNew();
-  AccCreateDerived(acc, accelerator_type);
-  return (struct Accelerator *) push_entry(scene->AcceleratorList, acc);
-  //return (struct Accelerator *) push_entry(scene->AcceleratorList, AccNew(accelerator_type));
-#endif
+  return push_entry_(scene->AcceleratorList, acc);
 }
 
-/* FrameBuffer */
+// FrameBuffer
 struct FrameBuffer *ScnNewFrameBuffer(struct Scene *scene)
 {
   return (struct FrameBuffer *) push_entry(scene->FrameBufferList, FbNew());
 }
 
-/* ObjectGroup */
+// ObjectGroup
 struct ObjectGroup *ScnNewObjectGroup(struct Scene *scene)
 {
   return (struct ObjectGroup *) push_entry(scene->ObjectGroupList, ObjGroupNew());
 }
 
-/* PointCloud */
+// PointCloud
 struct PointCloud *ScnNewPointCloud(struct Scene *scene)
 {
   return (struct PointCloud *) push_entry(scene->PointCloudList, PtcNew());
 }
 
-/* Turbulence */
+// Turbulence
 struct Turbulence *ScnNewTurbulence(struct Scene *scene)
 {
   return (struct Turbulence *) push_entry(scene->TurbulenceList, TrbNew());
 }
 
-/* Procedure */
+// Procedure
 struct Procedure *ScnNewProcedure(struct Scene *scene, const struct Plugin *plugin)
 {
   return (struct Procedure *) push_entry(scene->ProcedureList, PrcNew(plugin));
 }
 
-/* Renderer */
+// Renderer
 struct Renderer *ScnNewRenderer(struct Scene *scene)
 {
   return (struct Renderer *) push_entry(scene->RendererList, RdrNew());
 }
 
-/* Texture */
+// Texture
 struct Texture *ScnNewTexture(struct Scene *scene)
 {
   return (struct Texture *) push_entry(scene->TextureList, TexNew());
 }
 
-/* Camera */
+// Camera
 struct Camera *ScnNewCamera(struct Scene *scene, const char *type)
 {
   return (struct Camera *) push_entry(scene->CameraList, CamNew(type));
 }
 
-/* Plugin */
+// Plugin
 struct Plugin *ScnOpenPlugin(struct Scene *scene, const char *filename)
 {
   return (struct Plugin *) push_entry(scene->PluginList, PlgOpen(filename));
 }
 
-/* Shader */
+// Shader
 struct Shader *ScnNewShader(struct Scene *scene, const struct Plugin *plugin)
 {
   return (struct Shader *) push_entry(scene->ShaderList, ShdNew(plugin));
 }
 
-/* Volume */
+// Volume
 struct Volume *ScnNewVolume(struct Scene *scene)
 {
   return (struct Volume *) push_entry(scene->VolumeList, VolNew());
 }
 
-/* Curve */
+// Curve
 struct Curve *ScnNewCurve(struct Scene *scene)
 {
   return (struct Curve *) push_entry(scene->CurveList, CrvNew());
 }
 
-/* Light */
+// Light
 struct Light *ScnNewLight(struct Scene *scene, int light_type)
 {
   return (struct Light *) push_entry(scene->LightList, LgtNew(light_type));
 }
 
-/* Mesh */
+// Mesh
 struct Mesh *ScnNewMesh(struct Scene *scene)
 {
   return (struct Mesh *) push_entry(scene->MeshList, MshNew());
 }
 
 DEFINE_LIST_FUNCTIONS(ObjectInstance)
-DEFINE_LIST_FUNCTIONS(Accelerator)
+//DEFINE_LIST_FUNCTIONS(Accelerator)
+DEFINE_LIST_FUNCTIONS_(Accelerator)
 DEFINE_LIST_FUNCTIONS(FrameBuffer)
 DEFINE_LIST_FUNCTIONS(ObjectGroup)
 DEFINE_LIST_FUNCTIONS(PointCloud)
@@ -244,7 +276,7 @@ DEFINE_LIST_FUNCTIONS(Mesh)
 static void new_all_node_list(struct Scene *scene)
 {
   NEW_LIST(scene, ObjectInstance);
-  NEW_LIST(scene, Accelerator);
+  //NEW_LIST(scene, Accelerator);
   NEW_LIST(scene, FrameBuffer);
   NEW_LIST(scene, ObjectGroup);
   NEW_LIST(scene, PointCloud);
@@ -264,8 +296,7 @@ static void new_all_node_list(struct Scene *scene)
 static void free_all_node_list(struct Scene *scene)
 {
   FREE_LIST(scene, ObjectInstance, ObjFree);
-  //FREE_LIST(scene, Accelerator, AccFree);
-  FREE_LIST__(scene, Accelerator);
+  delete_entries(scene->AcceleratorList);
   FREE_LIST(scene, FrameBuffer, FbFree);
   FREE_LIST(scene, ObjectGroup, ObjGroupFree);
   FREE_LIST(scene, PointCloud, PtcFree);
@@ -280,7 +311,7 @@ static void free_all_node_list(struct Scene *scene)
   FREE_LIST(scene, Light, LgtFree);
   FREE_LIST(scene, Mesh, MshFree);
 
-  /* plugins should be freed the last since they contain freeing functions for others */
+  // plugins should be freed the last since they contain freeing functions for others
   FREE_LIST(scene, Plugin, PlgClose);
 }
 
