@@ -1,105 +1,102 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_shader.h"
-#include "fj_memory.h"
 #include "fj_vector.h"
-#include <string.h>
-#include <assert.h>
+#include <cassert>
 
 namespace fj {
 
+static const Color NO_SHADER_COLOR(.5, 1., 0.);
 static int error_no = SHD_ERR_NOERR;
-static const struct Color NO_SHADER_COLOR(.5, 1., 0.);
-
-struct Shader {
-  void *self;
-  const struct ShaderFunctionTable *vptr;
-  const struct Plugin *plugin;
-};
-
 static void set_error(int err);
 
-struct Shader *ShdNew(const struct Plugin *plugin)
+Shader::Shader() :
+    self_(NULL),
+    vptr_(NULL),
+    plugin_(NULL)
 {
-  struct Shader *shader;
-  const void *tmpvtbl;
-  void *tmpobj;
+}
 
+Shader::~Shader()
+{
+  // TODO need NullPlugin?
+  if (plugin_ != NULL) {
+    plugin_->DeleteInstance(self_);
+  }
+}
+
+int Shader::Initialize(const Plugin *plugin)
+{
   if (!plugin->TypeMatch(SHADER_PLUGIN_TYPE)) {
     set_error(SHD_ERR_TYPE_NOT_MATCH);
-    return NULL;
+    return -1;
   }
 
-  tmpobj = plugin->CreateInstance();
+  void *tmpobj = plugin->CreateInstance();
   if (tmpobj == NULL) {
     set_error(SHD_ERR_NOOBJ);
-    return NULL;
+    return -1;
   }
 
-  tmpvtbl = plugin->GetVtable();
+  const void *tmpvtbl = plugin->GetVtable();
   if (tmpvtbl == NULL) {
     set_error(SHD_ERR_NOVTBL);
     plugin->DeleteInstance(tmpobj);
-    return NULL;
+    return -1;
   }
 
-  shader = FJ_MEM_ALLOC(struct Shader);
-  if (shader == NULL) {
-    set_error(SHD_ERR_NOMEM);
-    plugin->DeleteInstance(tmpobj);
-    return NULL;
-  }
-
-  /* commit */
-  shader->self = tmpobj;
-  shader->vptr = (struct ShaderFunctionTable *) tmpvtbl;
-  shader->plugin = plugin;
+  // commit
+  self_ = tmpobj;
+  vptr_ = reinterpret_cast<const ShaderFunctionTable *>(tmpvtbl);
+  plugin_ = plugin;
   set_error(SHD_ERR_NOERR);
 
-  return shader;
+  return 0;
 }
 
-void ShdFree(struct Shader *shader)
+void Shader::Evaluate(const TraceContext &cxt, const SurfaceInput &in,
+    SurfaceOutput *out) const
 {
-  if (shader == NULL)
-    return;
-
-  shader->plugin->DeleteInstance(shader->self);
-  FJ_MEM_FREE(shader);
-}
-
-void ShdEvaluate(const struct Shader *shader, const struct TraceContext *cxt,
-    const struct SurfaceInput *in, struct SurfaceOutput *out)
-{
-  if (shader == NULL) {
+  if (vptr_ == NULL) {
     out->Cs = NO_SHADER_COLOR;
     out->Os = 1;
     return;
   }
-  shader->vptr->MyEvaluate(shader->self, cxt, in, out);
+  vptr_->MyEvaluate(self_, &cxt, &in, out);
 }
 
-const struct Property *ShdGetPropertyList(const struct Shader *shader)
+const Property *Shader::GetPropertyList() const
 {
-  return shader->plugin->GetPropertyList();
+  // TODO need NullPlugin?
+  if (plugin_ == NULL)
+    return NULL;
+
+  return plugin_->GetPropertyList();
 }
 
-int ShdSetProperty(struct Shader *shader,
-    const char *prop_name, const struct PropertyValue *src_data)
+int Shader::SetProperty(const std::string &prop_name, const PropertyValue &src_data) const
 {
-  const struct Property *shd_props;
-  const struct Property *dst_prop;
+  const Property *shd_props = GetPropertyList();
+  const Property *dst_prop = PropFind(shd_props, src_data.type, prop_name.c_str());
 
-  shd_props = ShdGetPropertyList(shader);
-  dst_prop = PropFind(shd_props, src_data->type, prop_name);
   if (dst_prop == NULL)
     return -1;
 
   assert(dst_prop->SetProperty != NULL);
-  return dst_prop->SetProperty(shader->self, src_data);
+  return dst_prop->SetProperty(self_, &src_data);
+}
+
+Shader *ShdNew(const Plugin *plugin)
+{
+  Shader *shader = new Shader();
+  shader->Initialize(plugin);
+  return shader;
+}
+
+void ShdFree(Shader *shader)
+{
+  delete shader;
 }
 
 static void set_error(int err)

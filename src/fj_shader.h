@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_SHADER_H
 #define FJ_SHADER_H
@@ -11,17 +9,16 @@ See LICENSE and README
 #include "fj_texture.h"
 #include "fj_plugin.h"
 #include "fj_light.h"
-#include <stddef.h>
+#include <string>
 
 #define SHADER_PLUGIN_TYPE "Shader"
 
 namespace fj {
 
-struct Shader;
-
-struct ShaderFunctionTable {
-  void (*MyEvaluate)(const void *self, const struct TraceContext *cxt,
-      const struct SurfaceInput *in, struct SurfaceOutput *out);
+class ShaderFunctionTable {
+public:
+  void (*MyEvaluate)(const void *self, const TraceContext *cxt,
+      const SurfaceInput *in, SurfaceOutput *out);
 };
 
 enum ShdErrorNo {
@@ -32,16 +29,26 @@ enum ShdErrorNo {
   SHD_ERR_NOMEM
 };
 
-extern struct Shader *ShdNew(const struct Plugin *plg);
-extern void ShdFree(struct Shader *shader);
+class Shader {
+public:
+  Shader();
+  ~Shader();
 
-extern void ShdEvaluate(const struct Shader *shader, const struct TraceContext *cxt,
-    const struct SurfaceInput *in, struct SurfaceOutput *out);
+  int Initialize(const Plugin *plugin);
+  void Evaluate(const TraceContext &cxt, const SurfaceInput &in, SurfaceOutput *out) const;
 
-extern const struct Property *ShdGetPropertyList(const struct Shader *shader);
-extern int ShdSetProperty(struct Shader *shader,
-    const char *prop_name, const struct PropertyValue *src_data);
+  const Property *GetPropertyList() const;
+  int SetProperty(const std::string &prop_name, const PropertyValue &src_data) const;
 
-} // namespace fj
+public:
+  void *self_;
+  const ShaderFunctionTable *vptr_;
+  const Plugin *plugin_;
+};
 
-#endif /* FJ_XXX_H */
+extern Shader *ShdNew(const Plugin *plg);
+extern void ShdFree(Shader *shader);
+
+} // namespace xxx
+
+#endif // FJ_XXX_H

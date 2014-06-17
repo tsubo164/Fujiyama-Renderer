@@ -13,9 +13,9 @@ static int error_no = PRC_ERR_NOERR;
 static void set_error(int err);
 
 Procedure::Procedure() :
-  self_(NULL),
-  vptr_(NULL),
-  plugin_(NULL)
+    self_(NULL),
+    vptr_(NULL),
+    plugin_(NULL)
 {
 }
 
@@ -49,7 +49,7 @@ int Procedure::Initialize(const Plugin *plugin)
 
   // commit
   self_ = tmpobj;
-  vptr_ = (const ProcedureFunctionTable *) tmpvtbl;
+  vptr_ = reinterpret_cast<const ProcedureFunctionTable *>(tmpvtbl);
   plugin_ = plugin;
   set_error(PRC_ERR_NOERR);
 

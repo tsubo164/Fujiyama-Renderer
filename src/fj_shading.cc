@@ -530,7 +530,7 @@ static int trace_surface(const struct TraceContext *cxt, const struct Ray &ray,
     struct SurfaceOutput out;
 
     setup_surface_input(&isect, &ray, &in);
-    ShdEvaluate(isect.object->GetShader(), cxt, &in, &out);
+    isect.object->GetShader()->Evaluate(*cxt, in, &out);
 
     out.Os = Clamp(out.Os, 0, 1);
     out_rgba->r = out.Cs.r;
@@ -632,7 +632,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
           in.shaded_object = interval->object;
           in.P = P;
           in.N = Vector(0, 0, 0);
-          ShdEvaluate(interval->object->GetShader(), cxt, &in, &out);
+          interval->object->GetShader()->Evaluate(*cxt, in, &out);
 
           color.r = out.Cs.r * opacity;
           color.g = out.Cs.g * opacity;

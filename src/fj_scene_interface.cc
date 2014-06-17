@@ -1164,7 +1164,7 @@ static int set_property(const struct Entry *entry,
     if (shader == NULL)
       return SI_FAIL;
 
-    return ShdSetProperty(shader, name, value);
+    return shader->SetProperty(name, *value);
   }
 
   /* builtin type properties */
