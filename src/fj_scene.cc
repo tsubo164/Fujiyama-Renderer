@@ -4,23 +4,21 @@
 #include "fj_scene.h"
 #include "fj_grid_accelerator.h"
 #include "fj_bvh_accelerator.h"
-
-#include <vector>
 #include <cassert>
 
 #define DEFINE_LIST_FUNCTIONS(Type) \
-size_t ScnGet##Type##Count(const Scene *scene) \
+size_t Scene::Get##Type##Count() const \
 { \
-  return (scene)->Type##List.size(); \
+  return Type##List.size(); \
 } \
-Type **ScnGet##Type##List(const Scene *scene) \
+Type **Scene::Get##Type##List() const \
 { \
-  return (Type **) &(scene)->Type##List[0]; \
+  return (Type **) &Type##List[0]; \
 } \
-Type *ScnGet##Type(const Scene *scene, int index) \
+Type *Scene::Get##Type(int index) const \
 { \
-  if((index) < 0 || (index) >= (int) ScnGet##Type##Count((scene))) return NULL; \
-  return ScnGet##Type##List((scene))[(index)]; \
+  if((index) < 0 || (index) >= (int) Get##Type##Count()) return NULL; \
+  return Get##Type##List()[(index)]; \
 }
 
 namespace fj {
@@ -42,32 +40,6 @@ T *push_entry_(std::vector<T *> &entry_list, T *entry)
   return entry;
 }
 
-class Scene {
-public:
-  Scene();
-  ~Scene();
-
-public:
-  void free_all_node_list();
-
-  std::vector<ObjectInstance *> ObjectInstanceList;
-  std::vector<Accelerator *> AcceleratorList;
-  std::vector<FrameBuffer *> FrameBufferList;
-  std::vector<ObjectGroup *> ObjectGroupList;
-  std::vector<PointCloud *> PointCloudList;
-  std::vector<Turbulence *> TurbulenceList;
-  std::vector<Procedure *> ProcedureList;
-  std::vector<Renderer *> RendererList;
-  std::vector<Texture *> TextureList;
-  std::vector<Camera *> CameraList;
-  std::vector<Plugin *> PluginList;
-  std::vector<Shader *> ShaderList;
-  std::vector<Volume *> VolumeList;
-  std::vector<Curve *> CurveList;
-  std::vector<Light *> LightList;
-  std::vector<Mesh *> MeshList;
-};
-
 Scene::Scene()
 {
 }
@@ -77,26 +49,15 @@ Scene::~Scene()
   free_all_node_list();
 }
 
-// Scene
-Scene *ScnNew(void)
-{
-  return new Scene();
-}
-
-void ScnFree(Scene *scene)
-{
-  delete scene;
-}
-
 // ObjectInstance
-ObjectInstance *ScnNewObjectInstance(Scene *scene)
+ObjectInstance *Scene::NewObjectInstance()
 {
   ObjectInstance *object = new ObjectInstance();
-  return push_entry_(scene->ObjectInstanceList, object);
+  return push_entry_(ObjectInstanceList, object);
 }
 
 // Accelerator
-Accelerator *ScnNewAccelerator(Scene *scene, int accelerator_type)
+Accelerator *Scene::NewAccelerator(int accelerator_type)
 {
   Accelerator *acc = NULL;
   switch (accelerator_type) {
@@ -110,109 +71,120 @@ Accelerator *ScnNewAccelerator(Scene *scene, int accelerator_type)
     assert(!"invalid accelerator type");
     break;
   }
-  return push_entry_(scene->AcceleratorList, acc);
+  return push_entry_(AcceleratorList, acc);
 }
 
 // FrameBuffer
-FrameBuffer *ScnNewFrameBuffer(Scene *scene)
+FrameBuffer *Scene::NewFrameBuffer()
 {
   FrameBuffer *framebuffer = new FrameBuffer();
-  return push_entry_(scene->FrameBufferList, framebuffer);
+  return push_entry_(FrameBufferList, framebuffer);
 }
 
 // ObjectGroup
-ObjectGroup *ScnNewObjectGroup(Scene *scene)
+ObjectGroup *Scene::NewObjectGroup()
 {
   ObjectGroup *group = new ObjectGroup();
-  return push_entry_(scene->ObjectGroupList, group);
+  return push_entry_(ObjectGroupList, group);
 }
 
 // PointCloud
-PointCloud *ScnNewPointCloud(Scene *scene)
+PointCloud *Scene::NewPointCloud()
 {
   PointCloud *ptc = new PointCloud();
-  return push_entry_(scene->PointCloudList, ptc);
+  return push_entry_(PointCloudList, ptc);
 }
 
 // Turbulence
-Turbulence *ScnNewTurbulence(Scene *scene)
+Turbulence *Scene::NewTurbulence()
 {
   Turbulence *turbulence = new Turbulence();
-  return push_entry_(scene->TurbulenceList, turbulence);
+  return push_entry_(TurbulenceList, turbulence);
 }
 
 // Procedure
-Procedure *ScnNewProcedure(Scene *scene, const Plugin *plugin)
+Procedure *Scene::NewProcedure(const Plugin *plugin)
 {
   Procedure *procedure = new Procedure();
   procedure->Initialize(plugin);
-  return push_entry_(scene->ProcedureList, procedure);
+  return push_entry_(ProcedureList, procedure);
 }
 
 // Renderer
-Renderer *ScnNewRenderer(Scene *scene)
+Renderer *Scene::NewRenderer()
 {
   Renderer *renderer = new Renderer();
-  return push_entry_(scene->RendererList, renderer);
+  return push_entry_(RendererList, renderer);
 }
 
 // Texture
-Texture *ScnNewTexture(Scene *scene)
+Texture *Scene::NewTexture()
 {
   Texture *texture = new Texture();
-  return push_entry_(scene->TextureList, texture);
+  return push_entry_(TextureList, texture);
 }
 
 // Camera
-Camera *ScnNewCamera(Scene *scene, const char *type)
+Camera *Scene::NewCamera(const char *type)
 {
   Camera *camera = new Camera();
-  return push_entry_(scene->CameraList, camera);
+  return push_entry_(CameraList, camera);
 }
 
 // Plugin
-Plugin *ScnOpenPlugin(Scene *scene, const char *filename)
+Plugin *Scene::OpenPlugin(const char *filename)
 {
   Plugin *plugin = new Plugin();
   plugin->Open(filename);
-  return push_entry_(scene->PluginList, plugin);
+  return push_entry_(PluginList, plugin);
 }
 
 // Shader
-Shader *ScnNewShader(Scene *scene, const Plugin *plugin)
+Shader *Scene::NewShader(const Plugin *plugin)
 {
   Shader *shader = new Shader();
   shader->Initialize(plugin);
-  return push_entry_(scene->ShaderList, shader);
+  return push_entry_(ShaderList, shader);
 }
 
 // Volume
-Volume *ScnNewVolume(Scene *scene)
+Volume *Scene::NewVolume()
 {
   Volume *volume = new Volume();
-  return push_entry_(scene->VolumeList, volume);
+  return push_entry_(VolumeList, volume);
 }
 
 // Curve
-Curve *ScnNewCurve(Scene *scene)
+Curve *Scene::NewCurve()
 {
   Curve *curve = new Curve();
-  return push_entry_(scene->CurveList, curve);
+  return push_entry_(CurveList, curve);
 }
 
 // Light
-Light *ScnNewLight(Scene *scene, int light_type)
+Light *Scene::NewLight(int light_type)
 {
   Light *light = new Light();
   light->SetLightType(light_type);
-  return push_entry_(scene->LightList, light);
+  return push_entry_(LightList, light);
 }
 
 // Mesh
-Mesh *ScnNewMesh(Scene *scene)
+Mesh *Scene::NewMesh()
 {
   Mesh *mesh = new Mesh();
-  return push_entry_(scene->MeshList, mesh);
+  return push_entry_(MeshList, mesh);
+}
+
+// Scene
+Scene *ScnNew(void)
+{
+  return new Scene();
+}
+
+void ScnFree(Scene *scene)
+{
+  delete scene;
 }
 
 DEFINE_LIST_FUNCTIONS(ObjectInstance)

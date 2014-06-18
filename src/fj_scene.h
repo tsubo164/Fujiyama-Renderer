@@ -20,6 +20,7 @@
 #include "fj_curve.h"
 #include "fj_light.h"
 #include "fj_mesh.h"
+#include <vector>
 
 namespace fj {
 
@@ -29,106 +30,131 @@ enum AcceleratorType {
   ACC_BVH
 };
 
-class Scene;
+class Scene {
+public:
+  Scene();
+  ~Scene();
+
+  // ObjectInstance
+  ObjectInstance *NewObjectInstance();
+  ObjectInstance **GetObjectInstanceList() const;
+  ObjectInstance *GetObjectInstance(int index) const;
+  size_t GetObjectInstanceCount() const;
+
+  // Accelerator
+  Accelerator *NewAccelerator(int accelerator_type);
+  Accelerator **GetAcceleratorList() const;
+  Accelerator *GetAccelerator(int index) const;
+  size_t GetAcceleratorCount() const;
+
+  // FrameBuffer
+  FrameBuffer *NewFrameBuffer();
+  FrameBuffer **GetFrameBufferList() const;
+  FrameBuffer *GetFrameBuffer(int index) const;
+  size_t GetFrameBufferCount() const;
+
+  // ObjectGroup
+  ObjectGroup *NewObjectGroup();
+  ObjectGroup **GetObjectGroupList() const;
+  ObjectGroup *GetObjectGroup(int index) const;
+  size_t GetObjectGroupCount() const;
+
+  // PointCloud
+  PointCloud *NewPointCloud();
+  PointCloud **GetPointCloudList() const;
+  PointCloud *GetPointCloud(int index) const;
+  size_t GetPointCloudCount() const;
+
+  // Turbulence
+  Turbulence *NewTurbulence();
+  Turbulence **GetTurbulenceList() const;
+  Turbulence *GetTurbulence(int index) const;
+  size_t GetTurbulenceCount() const;
+
+  // Procedure
+  Procedure *NewProcedure(const Plugin *plugin);
+  Procedure **GetProcedureList() const;
+  Procedure *GetProcedure(int index) const;
+  size_t GetProcedureCount() const;
+
+  // Renderer
+  Renderer *NewRenderer();
+  Renderer **GetRendererList() const;
+  Renderer *GetRenderer(int index) const;
+  size_t GetRendererCount() const;
+
+  // Texture
+  Texture *NewTexture();
+  Texture **GetTextureList() const;
+  Texture *GetTexture(int index) const;
+  size_t GetTextureCount() const;
+
+  // Camera
+  Camera *NewCamera(const char *type);
+  Camera **GetCameraList() const;
+  Camera *GetCamera(int index) const;
+  size_t GetCameraCount() const;
+
+  // Plugin
+  Plugin *OpenPlugin(const char *filename);
+  Plugin **GetPluginList() const;
+  Plugin *GetPlugin(int index) const;
+  size_t GetPluginCount() const;
+
+  // Shader
+  Shader *NewShader(const Plugin *plugin);
+  Shader **GetShaderList() const;
+  Shader *GetShader(int index) const;
+  size_t GetShaderCount() const;
+
+  // Volume
+  Volume *NewVolume();
+  Volume **GetVolumeList() const;
+  Volume *GetVolume(int index) const;
+  size_t GetVolumeCount() const;
+
+  // Curve
+  Curve *NewCurve();
+  Curve **GetCurveList() const;
+  Curve *GetCurve(int index) const;
+  size_t GetCurveCount() const;
+
+  // Light
+  Light *NewLight(int light_type);
+  Light **GetLightList() const;
+  Light *GetLight(int index) const;
+  size_t GetLightCount() const;
+
+  // Mesh
+  Mesh *NewMesh();
+  Mesh **GetMeshList() const;
+  Mesh *GetMesh(int index) const;
+  size_t GetMeshCount() const;
+
+private:
+  void free_all_node_list();
+
+  std::vector<ObjectInstance *> ObjectInstanceList;
+  std::vector<Accelerator *> AcceleratorList;
+  std::vector<FrameBuffer *> FrameBufferList;
+  std::vector<ObjectGroup *> ObjectGroupList;
+  std::vector<PointCloud *> PointCloudList;
+  std::vector<Turbulence *> TurbulenceList;
+  std::vector<Procedure *> ProcedureList;
+  std::vector<Renderer *> RendererList;
+  std::vector<Texture *> TextureList;
+  std::vector<Camera *> CameraList;
+  std::vector<Plugin *> PluginList;
+  std::vector<Shader *> ShaderList;
+  std::vector<Volume *> VolumeList;
+  std::vector<Curve *> CurveList;
+  std::vector<Light *> LightList;
+  std::vector<Mesh *> MeshList;
+};
 
 // Scene
 extern Scene *ScnNew(void);
 extern void ScnFree(Scene *scene);
-
-// ObjectInstance
-extern ObjectInstance *ScnNewObjectInstance(Scene *scene);
-extern ObjectInstance **ScnGetObjectInstanceList(const Scene *scene);
-extern ObjectInstance *ScnGetObjectInstance(const Scene *scene, int index);
-extern size_t ScnGetObjectInstanceCount(const Scene *scene);
-
-// Accelerator
-extern Accelerator *ScnNewAccelerator(Scene *scene, int accelerator_type);
-extern Accelerator **ScnGetAcceleratorList(const Scene *scene);
-extern Accelerator *ScnGetAccelerator(const Scene *scene, int index);
-extern size_t ScnGetAcceleratorCount(const Scene *scene);
-
-// FrameBuffer
-extern FrameBuffer *ScnNewFrameBuffer(Scene *scene);
-extern FrameBuffer **ScnGetFrameBufferList(const Scene *scene);
-extern FrameBuffer *ScnGetFrameBuffer(const Scene *scene, int index);
-extern size_t ScnGetFrameBufferCount(const Scene *scene);
-
-// ObjectGroup
-extern ObjectGroup *ScnNewObjectGroup(Scene *scene);
-extern ObjectGroup **ScnGetObjectGroupList(const Scene *scene);
-extern ObjectGroup *ScnGetObjectGroup(const Scene *scene, int index);
-extern size_t ScnGetObjectGroupCount(const Scene *scene);
-
-// PointCloud
-extern PointCloud *ScnNewPointCloud(Scene *scene);
-extern PointCloud **ScnGetPointCloudList(const Scene *scene);
-extern PointCloud *ScnGetPointCloud(const Scene *scene, int index);
-extern size_t ScnGetPointCloudCount(const Scene *scene);
-
-// Turbulence
-extern Turbulence *ScnNewTurbulence(Scene *scene);
-extern Turbulence **ScnGetTurbulenceList(const Scene *scene);
-extern Turbulence *ScnGetTurbulence(const Scene *scene, int index);
-extern size_t ScnGetTurbulenceCount(const Scene *scene);
-
-// Procedure
-extern Procedure *ScnNewProcedure(Scene *scene, const Plugin *plugin);
-extern Procedure **ScnGetProcedureList(const Scene *scene);
-extern Procedure *ScnGetProcedure(const Scene *scene, int index);
-extern size_t ScnGetProcedureCount(const Scene *scene);
-
-// Renderer
-extern Renderer *ScnNewRenderer(Scene *scene);
-extern Renderer **ScnGetRendererList(const Scene *scene);
-extern Renderer *ScnGetRenderer(const Scene *scene, int index);
-extern size_t ScnGetRendererCount(const Scene *scene);
-
-// Texture
-extern Texture *ScnNewTexture(Scene *scene);
-extern Texture **ScnGetTextureList(const Scene *scene);
-extern Texture *ScnGetTexture(const Scene *scene, int index);
-extern size_t ScnGetTextureCount(const Scene *scene);
-
-// Camera
-extern Camera *ScnNewCamera(Scene *scene, const char *type);
-extern Camera **ScnGetCameraList(const Scene *scene);
-extern Camera *ScnGetCamera(const Scene *scene, int index);
-extern size_t ScnGetCameraCount(const Scene *scene);
-
-// Plugin
-extern Plugin *ScnOpenPlugin(Scene *scene, const char *filename);
-extern Plugin **ScnGetPluginList(const Scene *scene);
-extern size_t ScnGetPluginCount(const Scene *scene);
-
-// Shader
-extern Shader *ScnNewShader(Scene *scene, const Plugin *plugin);
-extern Shader **ScnGetShaderList(const Scene *scene);
-extern Shader *ScnGetShader(const Scene *scene, int index);
-extern size_t ScnGetShaderCount(const Scene *scene);
-
-// Volume
-extern Volume *ScnNewVolume(Scene *scene);
-extern Volume **ScnGetVolumeList(const Scene *scene);
-extern Volume *ScnGetVolume(const Scene *scene, int index);
-extern size_t ScnGetVolumeCount(const Scene *scene);
-
-// Curve
-extern Curve *ScnNewCurve(Scene *scene);
-extern Curve **ScnGetCurveList(const Scene *scene);
-extern Curve *ScnGetCurve(const Scene *scene, int index);
-extern size_t ScnGetCurveCount(const Scene *scene);
-
-// Light
-extern Light *ScnNewLight(Scene *scene, int light_type);
-extern Light **ScnGetLightList(const Scene *scene);
-extern Light *ScnGetLight(const Scene *scene, int index);
-extern size_t ScnGetLightCount(const Scene *scene);
-
-// Mesh
-extern Mesh *ScnNewMesh(Scene *scene);
-extern Mesh **ScnGetMeshList(const Scene *scene);
-extern Mesh *ScnGetMesh(const Scene *scene, int index);
-extern size_t ScnGetMeshCount(const Scene *scene);
 
 } // namespace xxx
 

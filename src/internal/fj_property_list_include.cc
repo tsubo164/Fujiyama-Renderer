@@ -478,7 +478,7 @@ struct property_desc {
 
 #define GET_FUNC(type) \
 void *get_##type(const struct Scene *scene, int index) { \
-  return (void *) ScnGet##type(scene, index); \
+  return (void *) scene->Get##type(index); \
 }
 #define DESC(type) {Type_##type, #type, type##_properties, get_##type}
 GET_FUNC(ObjectInstance)
@@ -548,9 +548,9 @@ static const struct Property *get_property_list(const char *type_name)
   /* plugin type properties */
   {
     const char *plugin_name = type_name;
-    struct Plugin **plugins = ScnGetPluginList(get_scene());
+    struct Plugin **plugins = get_scene()->GetPluginList();
     struct Plugin *found = NULL;
-    const int N = (int) ScnGetPluginCount(get_scene());
+    const int N = (int) get_scene()->GetPluginCount();
     int i;
 
     for (i = 0; i < N; i++) {

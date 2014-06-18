@@ -20,7 +20,7 @@ See LICENSE and README
 #include <string.h>
 #include <assert.h>
 
-#define GET_LAST_ADDED_ID(Type) (ScnGet##Type##Count(get_scene()) - 1)
+#define GET_LAST_ADDED_ID(Type) (get_scene()->Get##Type##Count() - 1)
 
 namespace fj {
 
@@ -128,7 +128,7 @@ int SiGetErrorNo(void)
 /* Plugin interfaces */
 Status SiOpenPlugin(const char *filename)
 {
-  if (ScnOpenPlugin(get_scene(), filename) == NULL) {
+  if (get_scene()->OpenPlugin(filename) == NULL) {
     /* TODO make a mapping function */
     switch (PlgGetErrorNo()) {
     case PLG_ERR_PLUGIN_NOT_FOUND:
@@ -193,7 +193,7 @@ Status SiRenderScene(ID renderer)
     return SI_FAIL;
   }
 
-  renderer_ptr = ScnGetRenderer(get_scene(), entry.index);
+  renderer_ptr = get_scene()->GetRenderer(entry.index);
   if (renderer_ptr == NULL) {
     /* TODO error handling */
     return SI_FAIL;
@@ -226,7 +226,7 @@ Status SiSaveFrameBuffer(ID framebuffer, const char *filename)
     return SI_FAIL;
   }
 
-  framebuffer_ptr = ScnGetFrameBuffer(get_scene(), entry.index);
+  framebuffer_ptr = get_scene()->GetFrameBuffer(entry.index);
   if (framebuffer_ptr == NULL) {
     /* TODO error handling */
     return SI_FAIL;
@@ -251,7 +251,7 @@ Status SiRunProcedure(ID procedure)
   if (entry.type != Type_Procedure)
     return SI_FAIL;
 
-  procedure_ptr = ScnGetProcedure(get_scene(), entry.index);
+  procedure_ptr = get_scene()->GetProcedure(entry.index);
   if (procedure_ptr == NULL)
     return SI_FAIL;
 
@@ -275,7 +275,7 @@ Status SiAddObjectToGroup(ID group, ID object)
     if (entry.type != Type_ObjectGroup)
       return SI_FAIL;
 
-    group_ptr = ScnGetObjectGroup(get_scene(), entry.index);
+    group_ptr = get_scene()->GetObjectGroup(entry.index);
     if (group_ptr == NULL)
       return SI_FAIL;
   }
@@ -284,7 +284,7 @@ Status SiAddObjectToGroup(ID group, ID object)
     if (entry.type != Type_ObjectInstance)
       return SI_FAIL;
 
-    object_ptr = ScnGetObjectInstance(get_scene(), entry.index);
+    object_ptr = get_scene()->GetObjectInstance(entry.index);
     if (object_ptr == NULL)
       return SI_FAIL;
   }
@@ -305,13 +305,13 @@ ID SiNewObjectInstance(ID primset_id)
     struct Accelerator *acc = NULL;
     int err = 0;
 
-    acc = ScnGetAccelerator(get_scene(), entry.index);
+    acc = get_scene()->GetAccelerator(entry.index);
     if (acc == NULL) {
       set_errno(SI_ERR_BADTYPE);
       return SI_BADID;
     }
 
-    object = ScnNewObjectInstance(get_scene());
+    object = get_scene()->NewObjectInstance();
     if (object == NULL) {
       set_errno(SI_ERR_NO_MEMORY);
       return SI_BADID;
@@ -329,13 +329,13 @@ ID SiNewObjectInstance(ID primset_id)
     struct Volume *volume = NULL;
     int err = 0;
 
-    volume = ScnGetVolume(get_scene(), entry.index);
+    volume = get_scene()->GetVolume(entry.index);
     if (volume == NULL) {
       set_errno(SI_ERR_BADTYPE);
       return SI_BADID;
     }
 
-    object = ScnNewObjectInstance(get_scene());
+    object = get_scene()->NewObjectInstance();
     if (object == NULL) {
       set_errno(SI_ERR_NO_MEMORY);
       return SI_BADID;
@@ -359,7 +359,7 @@ ID SiNewObjectInstance(ID primset_id)
 
 ID SiNewFrameBuffer(const char *arg)
 {
-  if (ScnNewFrameBuffer(get_scene()) == NULL) {
+  if (get_scene()->NewFrameBuffer() == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
   }
@@ -370,7 +370,7 @@ ID SiNewFrameBuffer(const char *arg)
 
 ID SiNewObjectGroup(void)
 {
-  if (ScnNewObjectGroup(get_scene()) == NULL) {
+  if (get_scene()->NewObjectGroup() == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
   }
@@ -387,7 +387,7 @@ ID SiNewPointCloud(const char *filename)
   ID ptc_id = SI_BADID;
   ID accel_id = SI_BADID;
 
-  ptc = ScnNewPointCloud(get_scene());
+  ptc = get_scene()->NewPointCloud();
   if (ptc == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -405,7 +405,7 @@ ID SiNewPointCloud(const char *filename)
   }
   */
 
-  acc = ScnNewAccelerator(get_scene(), ACC_GRID);
+  acc = get_scene()->NewAccelerator(ACC_GRID);
   if (acc == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -423,7 +423,7 @@ ID SiNewPointCloud(const char *filename)
 
 ID SiNewTurbulence(void)
 {
-  struct Turbulence *turb = ScnNewTurbulence(get_scene());
+  struct Turbulence *turb = get_scene()->NewTurbulence();
   if (turb == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -436,9 +436,9 @@ ID SiNewTurbulence(void)
 
 ID SiNewProcedure(const char *plugin_name)
 {
-  struct Plugin **plugins = ScnGetPluginList(get_scene());
+  struct Plugin **plugins = get_scene()->GetPluginList();
   struct Plugin *found = NULL;
-  const int N = (int) ScnGetPluginCount(get_scene());
+  const int N = (int) get_scene()->GetPluginCount();
   int i = 0;
 
   for (i = 0; i < N; i++) {
@@ -451,7 +451,7 @@ ID SiNewProcedure(const char *plugin_name)
     set_errno(SI_ERR_FAILNEW);
     return SI_BADID;
   }
-  if (ScnNewProcedure(get_scene(), found) == NULL) {
+  if (get_scene()->NewProcedure(found) == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
   }
@@ -462,7 +462,7 @@ ID SiNewProcedure(const char *plugin_name)
 
 ID SiNewRenderer(void)
 {
-  struct Renderer *renderer = ScnNewRenderer(get_scene());
+  struct Renderer *renderer = get_scene()->NewRenderer();
   if (renderer == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -475,7 +475,7 @@ ID SiNewRenderer(void)
 
 ID SiNewTexture(const char *filename)
 {
-  struct Texture *tex = ScnNewTexture(get_scene());
+  struct Texture *tex = get_scene()->NewTexture();
 
   if (tex == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
@@ -492,7 +492,7 @@ ID SiNewTexture(const char *filename)
 
 ID SiNewCamera(const char *arg)
 {
-  struct Camera *camera = ScnNewCamera(get_scene(), arg);
+  struct Camera *camera = get_scene()->NewCamera(arg);
   if (camera == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -505,9 +505,9 @@ ID SiNewCamera(const char *arg)
 
 ID SiNewShader(const char *plugin_name)
 {
-  struct Plugin **plugins = ScnGetPluginList(get_scene());
+  struct Plugin **plugins = get_scene()->GetPluginList();
   struct Plugin *found = NULL;
-  const int N = (int) ScnGetPluginCount(get_scene());
+  const int N = (int) get_scene()->GetPluginCount();
   int i = 0;
 
   for (i = 0; i < N; i++) {
@@ -520,7 +520,7 @@ ID SiNewShader(const char *plugin_name)
     set_errno(SI_ERR_FAILNEW);
     return SI_BADID;
   }
-  if (ScnNewShader(get_scene(), found) == NULL) {
+  if (get_scene()->NewShader(found) == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
   }
@@ -531,7 +531,7 @@ ID SiNewShader(const char *plugin_name)
 
 ID SiNewVolume(void)
 {
-  struct Volume *volume = ScnNewVolume(get_scene());
+  struct Volume *volume = get_scene()->NewVolume();
   ID volume_id = SI_BADID;
 
   if (volume == NULL) {
@@ -557,7 +557,7 @@ ID SiNewCurve(const char *filename)
   ID curve_id = SI_BADID;
   ID accel_id = SI_BADID;
 
-  curve = ScnNewCurve(get_scene());
+  curve = get_scene()->NewCurve();
   if (curve == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -567,7 +567,7 @@ ID SiNewCurve(const char *filename)
     return SI_BADID;
   }
 
-  acc = ScnNewAccelerator(get_scene(), ACC_GRID);
+  acc = get_scene()->NewAccelerator(ACC_GRID);
   if (acc == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -606,7 +606,7 @@ ID SiNewLight(int light_type)
     break;
   };
 
-  light = ScnNewLight(get_scene(), type);
+  light = get_scene()->NewLight(type);
   if (light == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -625,7 +625,7 @@ ID SiNewMesh(const char *filename)
   ID mesh_id = SI_BADID;
   ID accel_id = SI_BADID;
 
-  mesh = ScnNewMesh(get_scene());
+  mesh = get_scene()->NewMesh();
   if (mesh == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -639,7 +639,7 @@ ID SiNewMesh(const char *filename)
     }
   }
 
-  acc = ScnNewAccelerator(get_scene(), ACC_GRID);
+  acc = get_scene()->NewAccelerator(ACC_GRID);
   if (acc == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -665,7 +665,7 @@ Status SiAssignShader(ID object, ID shader)
     if (entry.type != Type_ObjectInstance)
       return SI_FAIL;
 
-    object_ptr = ScnGetObjectInstance(get_scene(), entry.index);
+    object_ptr = get_scene()->GetObjectInstance(entry.index);
     if (object_ptr == NULL)
       return SI_FAIL;
   }
@@ -675,7 +675,7 @@ Status SiAssignShader(ID object, ID shader)
     if (entry.type != Type_Shader)
       return SI_FAIL;
 
-    shader_ptr = ScnGetShader(get_scene(), entry.index);
+    shader_ptr = get_scene()->GetShader(entry.index);
     if (shader_ptr == NULL)
       return SI_FAIL;
   }
@@ -695,7 +695,7 @@ Status SiAssignObjectGroup(ID id, const char *name, ID group)
   if (group_ent.type != Type_ObjectGroup)
     return SI_FAIL;
 
-  group_ptr = ScnGetObjectGroup(get_scene(), group_ent.index);
+  group_ptr = get_scene()->GetObjectGroup(group_ent.index);
   if (group_ptr == NULL)
     return SI_FAIL;
 
@@ -716,7 +716,7 @@ Status SiAssignTexture(ID id, const char *name, ID texture)
   if (texture_ent.type != Type_Texture)
     return SI_FAIL;
 
-  texture_ptr = ScnGetTexture(get_scene(), texture_ent.index);
+  texture_ptr = get_scene()->GetTexture(texture_ent.index);
   if (texture_ptr == NULL)
     return SI_FAIL;
 
@@ -736,7 +736,7 @@ Status SiAssignCamera(ID renderer, ID camera)
     if (entry.type != Type_Renderer)
       return SI_FAIL;
 
-    renderer_ptr = ScnGetRenderer(get_scene(), entry.index);
+    renderer_ptr = get_scene()->GetRenderer(entry.index);
     if (renderer_ptr == NULL)
       return SI_FAIL;
   }
@@ -746,7 +746,7 @@ Status SiAssignCamera(ID renderer, ID camera)
     if (entry.type != Type_Camera)
       return SI_FAIL;
 
-    camera_ptr = ScnGetCamera(get_scene(), entry.index);
+    camera_ptr = get_scene()->GetCamera(entry.index);
     if (camera_ptr == NULL)
       return SI_FAIL;
   }
@@ -765,7 +765,7 @@ Status SiAssignFrameBuffer(ID renderer, ID framebuffer)
     if (entry.type != Type_Renderer)
       return SI_FAIL;
 
-    renderer_ptr = ScnGetRenderer(get_scene(), entry.index);
+    renderer_ptr = get_scene()->GetRenderer(entry.index);
     if (renderer_ptr == NULL)
       return SI_FAIL;
   }
@@ -775,7 +775,7 @@ Status SiAssignFrameBuffer(ID renderer, ID framebuffer)
     if (entry.type != Type_FrameBuffer)
       return SI_FAIL;
 
-    framebuffer_ptr = ScnGetFrameBuffer(get_scene(), entry.index);
+    framebuffer_ptr = get_scene()->GetFrameBuffer(entry.index);
     if (framebuffer_ptr == NULL)
       return SI_FAIL;
   }
@@ -853,7 +853,7 @@ Status SiAssignTurbulence(ID id, const char *name, ID turbulence)
   if (turbulence_ent.type != Type_Turbulence)
     return SI_FAIL;
 
-  turbulence_ptr = ScnGetTurbulence(get_scene(), turbulence_ent.index);
+  turbulence_ptr = get_scene()->GetTurbulence(turbulence_ent.index);
   if (turbulence_ptr == NULL)
     return SI_FAIL;
 
@@ -874,7 +874,7 @@ Status SiAssignVolume(ID id, const char *name, ID volume)
   if (volume_ent.type != Type_Volume)
     return SI_FAIL;
 
-  volume_ptr = ScnGetVolume(get_scene(), volume_ent.index);
+  volume_ptr = get_scene()->GetVolume(volume_ent.index);
   if (volume_ptr == NULL)
     return SI_FAIL;
 
@@ -895,7 +895,7 @@ Status SiAssignMesh(ID id, const char *name, ID mesh)
   if (mesh_ent.type != Type_Mesh)
     return SI_FAIL;
 
-  mesh_ptr = ScnGetMesh(get_scene(), mesh_ent.index);
+  mesh_ptr = get_scene()->GetMesh(mesh_ent.index);
   if (mesh_ptr == NULL)
     return SI_FAIL;
 
@@ -912,7 +912,7 @@ Status SiSetFrameReportCallback(ID id, void *data,
   const struct Entry entry = decode_id(id);
 
   if (entry.type == Type_Renderer) {
-    struct Renderer *renderer_ptr = ScnGetRenderer(get_scene(), entry.index);
+    struct Renderer *renderer_ptr = get_scene()->GetRenderer(entry.index);
     renderer_ptr->SetFrameReportCallback(
         data,
         frame_start,
@@ -931,7 +931,7 @@ Status SiSetTileReportCallback(ID id, void *data,
   const struct Entry entry = decode_id(id);
 
   if (entry.type == Type_Renderer) {
-    struct Renderer *renderer_ptr = ScnGetRenderer(get_scene(), entry.index);
+    struct Renderer *renderer_ptr = get_scene()->GetRenderer(entry.index);
     renderer_ptr->SetTileReportCallback(
         data,
         tile_start,
@@ -979,24 +979,24 @@ static int create_implicit_groups(void)
   int N = 0;
   int i;
 
-  all_objects = ScnNewObjectGroup(get_scene());
+  all_objects = get_scene()->NewObjectGroup();
   if (all_objects == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_FAIL;
   }
 
-  N = ScnGetObjectInstanceCount(get_scene());
+  N = get_scene()->GetObjectInstanceCount();
   for (i = 0; i < N; i++) {
-    struct ObjectInstance *obj = ScnGetObjectInstance(get_scene(), i);
+    struct ObjectInstance *obj = get_scene()->GetObjectInstance(i);
     all_objects->AddObject(obj);
   }
 
   /* Preparing ObjectInstance */
-  N = ScnGetObjectInstanceCount(get_scene());
+  N = get_scene()->GetObjectInstanceCount();
   for (i = 0; i < N; i++) {
-    struct ObjectInstance *obj = ScnGetObjectInstance(get_scene(), i);
-    const struct Light **lightlist = (const struct Light **) ScnGetLightList(get_scene());
-    int nlights = ScnGetLightCount(get_scene());
+    struct ObjectInstance *obj = get_scene()->GetObjectInstance(i);
+    const struct Light **lightlist = (const struct Light **) get_scene()->GetLightList();
+    int nlights = get_scene()->GetLightCount();
     obj->SetLightList(lightlist, nlights);
 
     if (obj->GetReflectTarget() == NULL)
@@ -1010,7 +1010,7 @@ static int create_implicit_groups(void)
 
     {
       /* self hit group */
-      struct ObjectGroup *self_group = ScnNewObjectGroup(get_scene());
+      struct ObjectGroup *self_group = get_scene()->NewObjectGroup();
       if (self_group == NULL) {
         /* TODO error handling */
       }
@@ -1019,11 +1019,11 @@ static int create_implicit_groups(void)
     }
   }
 
-  renderer = ScnGetRenderer(get_scene(), 0);
+  renderer = get_scene()->GetRenderer(0);
   renderer->SetTargetObjects(all_objects);
   {
-    const int nlights = ScnGetLightCount(get_scene());
-    struct Light **lightlist = ScnGetLightList(get_scene());
+    const int nlights = get_scene()->GetLightCount();
+    struct Light **lightlist = get_scene()->GetLightList();
     renderer->SetTargetLights(lightlist, nlights);
   }
 
@@ -1035,21 +1035,21 @@ static void compute_objects_bounds(void)
   int N = 0;
   int i;
 
-  N = ScnGetAcceleratorCount(get_scene());
+  N = get_scene()->GetAcceleratorCount();
   for (i = 0; i < N; i++) {
-    struct Accelerator *acc = ScnGetAccelerator(get_scene(), i);
+    struct Accelerator *acc = get_scene()->GetAccelerator(i);
     acc->ComputeBounds();
   }
 
-  N = ScnGetObjectInstanceCount(get_scene());
+  N = get_scene()->GetObjectInstanceCount();
   for (i = 0; i < N; i++) {
-    struct ObjectInstance *obj = ScnGetObjectInstance(get_scene(), i);
+    struct ObjectInstance *obj = get_scene()->GetObjectInstance(i);
     obj->ComputeBounds();
   }
 
-  N = ScnGetObjectGroupCount(get_scene());
+  N = get_scene()->GetObjectGroupCount();
   for (i = 0; i < N; i++) {
-    struct ObjectGroup *grp = ScnGetObjectGroup(get_scene(), i);
+    struct ObjectGroup *grp = get_scene()->GetObjectGroup(i);
     grp->ComputeBounds();
   }
 }
@@ -1062,20 +1062,20 @@ static void build_accelerators(void)
   int NGROUPS = 0;
   int i;
 
-  NOBJTECTS = ScnGetAcceleratorCount(get_scene());
-  NGROUPS = ScnGetObjectGroupCount(get_scene());
+  NOBJTECTS = get_scene()->GetAcceleratorCount();
+  NGROUPS = get_scene()->GetObjectGroupCount();
 
   printf("# Building Accelerators\n");
   printf("#   Accelerator Count: %d\n", NOBJTECTS + NGROUPS);
   timer.Start();
 
   for (i = 0; i < NOBJTECTS; i++) {
-    struct Accelerator *acc = ScnGetAccelerator(get_scene(), i);
+    struct Accelerator *acc = get_scene()->GetAccelerator(i);
     acc->Build();
   }
 
   for (i = 0; i < NGROUPS; i++) {
-    struct ObjectGroup *grp = ScnGetObjectGroup(get_scene(), i);
+    struct ObjectGroup *grp = get_scene()->GetObjectGroup(i);
     struct Accelerator *mutable_acc = NULL;
     struct VolumeAccelerator *mutable_volume_acc = NULL;
 
@@ -1153,14 +1153,14 @@ static int set_property(const struct Entry *entry,
 
   /* procedure and shader type properties */
   if (entry->type == Type_Procedure) {
-    struct Procedure *procedure = ScnGetProcedure(get_scene(), entry->index);
+    struct Procedure *procedure = get_scene()->GetProcedure(entry->index);
     if (procedure == NULL)
       return SI_FAIL;
 
     return procedure->SetProperty(name, *value);
   }
   else if (entry->type == Type_Shader) {
-    struct Shader *shader = ScnGetShader(get_scene(), entry->index);
+    struct Shader *shader = get_scene()->GetShader(entry->index);
     if (shader == NULL)
       return SI_FAIL;
 
