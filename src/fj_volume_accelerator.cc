@@ -1,65 +1,84 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_volume_accelerator.h"
 #include "fj_intersection.h"
 #include "fj_interval.h"
-#include "fj_memory.h"
 #include "fj_volume.h"
-#include "fj_box.h"
 #include "fj_ray.h"
 
-#include <assert.h>
-#include <float.h>
-#include <stdio.h>
+#include <vector>
+#include <cassert>
+#include <cstdio>
 
 #define EXPAND .0001
 #define HALF_EXPAND (.5*EXPAND)
 
 namespace fj {
 
-struct VolumeAccelerator {
-  const char *name;
-  struct Box bounds;
-  int has_built;
+VolumeAccelerator::VolumeAccelerator() :
+    name_(NULL),
+    bounds_(),
+    has_built_(false),
 
-  /* TODO should make struct PrimitiveSet? */
-  const void *volume_set;
-  int num_volumes;
-  struct Box volume_set_bounds;
-  VolumeIntersectFunction VolumeIntersect;
-  VolumeBoundsFunction VolumeBounds;
+    volume_set_(NULL),
+    num_volumes_(0),
+    volume_set_bounds_(),
+    VolumeIntersect_(NULL),
+    VolumeBounds_(NULL),
 
-  /* private */
-  char *derived;
-  void (*FreeDerived)(struct VolumeAccelerator *acc);
-  int (*Build)(struct VolumeAccelerator *acc);
-  int (*Intersect)(const struct VolumeAccelerator *acc, double time, const struct Ray *ray,
-      struct IntervalList *intervals);
-};
+    derived_(NULL),
+    FreeDerived_(NULL),
+    Build_(NULL),
+    Intersect_(NULL)
+{
+}
+
+VolumeAccelerator::~VolumeAccelerator()
+{
+}
+
+const Box &VolumeAccelerator::GetBounds() const
+{
+  return bounds_;
+}
+
+int VolumeAccelerator::Build()
+{
+  return build();
+}
+
+bool VolumeAccelerator::Intersect(const Ray &ray, double time,
+    IntervalList *intervals) const
+{
+  return intersect(ray, time, intervals);
+}
 
 /* -------------------------------------------------------------------------- */
 /* VolumeAccelerator */
-static int ray_volume_intersect(const struct VolumeAccelerator *acc, int volume_id,
-  double time, const struct Ray *ray, struct IntervalList *intervals);
+static int ray_volume_intersect(const VolumeAccelerator *acc, int volume_id,
+  double time, const Ray *ray, IntervalList *intervals);
 #if 0
-static void swap_isect_ptr(struct IntervalList **isect0, struct IntervalList **isect1);
+static void swap_isect_ptr(IntervalList **isect0, IntervalList **isect1);
 #endif
 
 /* -------------------------------------------------------------------------- */
 /* VolumeBruteForceAccelerator */
-struct VolumeBruteForceAccelerator {
-  struct Volume **volume_list;
+class VolumeBruteForceAccelerator {
+public:
+  VolumeBruteForceAccelerator() {}
+  ~VolumeBruteForceAccelerator() {}
+
+public:
+  Volume **volume_list;
   int nvolumes;
 };
 
-static struct VolumeBruteForceAccelerator *new_bruteforce_accel(void);
-static void free_bruteforce_accel(struct VolumeAccelerator *acc);
-static int build_bruteforce_accel(struct VolumeAccelerator *acc);
-static int intersect_bruteforce_accel(const struct VolumeAccelerator *acc, double time,
-    const struct Ray *ray, struct IntervalList *intervals);
+static VolumeBruteForceAccelerator *new_bruteforce_accel(void);
+static void free_bruteforce_accel(VolumeAccelerator *acc);
+static int build_bruteforce_accel(VolumeAccelerator *acc);
+static int intersect_bruteforce_accel(const VolumeAccelerator *acc, double time,
+    const Ray *ray, IntervalList *intervals);
 
 /* -------------------------------------------------------------------------- */
 /* VolumeBVHAccelerator */
@@ -73,49 +92,74 @@ enum {
 };
 #endif
 
-struct VolumePrimitive {
-  struct Box bounds;
-  struct Vector centroid;
+class VolumePrimitive {
+public:
+  VolumePrimitive() : bounds(), centroid(), index(0) {}
+  ~VolumePrimitive() {}
+
+  Box bounds;
+  Vector centroid;
   int index;
 };
 
-struct VolumeBVHNode {
-  struct VolumeBVHNode *left;
-  struct VolumeBVHNode *right;
-  struct Box bounds;
+class VolumeBVHNode {
+public:
+  VolumeBVHNode() : left(NULL), right(NULL), bounds(), volume_id(-1) {}
+  ~VolumeBVHNode() {}
+
+  bool is_leaf() const
+  {
+    return (
+      left == NULL &&
+      right == NULL &&
+      volume_id != -1);
+  }
+
+  VolumeBVHNode *left;
+  VolumeBVHNode *right;
+  Box bounds;
   int volume_id;
 };
 
 #if 0
-struct VolumeBVHNodeStack {
+class VolumeBVHNodeStack {
+public:
+  VolumeBVHNodeStack() {}
+  ~VolumeBVHNodeStack() {}
+
   int depth;
-  const struct VolumeBVHNode *node[BVH_STACKSIZE];
+  const VolumeBVHNode *node[BVH_STACKSIZE];
 };
 #endif
 
-struct VolumeBVHAccelerator {
-  struct VolumeBVHNode *root;
+class VolumeBVHAccelerator {
+public:
+  VolumeBVHAccelerator();
+  ~VolumeBVHAccelerator();
+
+public:
+  VolumeBVHNode *root_;
 };
 
-static struct VolumeBVHAccelerator *new_bvh_accel(void);
-static void free_bvh_accel(struct VolumeAccelerator *acc);
-static int build_bvh_accel(struct VolumeAccelerator *acc);
-static int intersect_bvh_accel(const struct VolumeAccelerator *acc, double time,
-    const struct Ray *ray, struct IntervalList *intervals);
+static VolumeBVHAccelerator *new_bvh_accel(void);
+static void free_bvh_accel(VolumeAccelerator *acc);
+static int build_bvh_accel(VolumeAccelerator *acc);
+static int intersect_bvh_accel(const VolumeAccelerator *acc, double time,
+    const Ray *ray, IntervalList *intervals);
 
-static int intersect_bvh_recursive(const struct VolumeAccelerator *acc,
-    const struct VolumeBVHNode *node, double time,
-    const struct Ray *ray, struct IntervalList *intervals);
+static int intersect_bvh_recursive(const VolumeAccelerator *acc,
+    const VolumeBVHNode *node, double time,
+    const Ray *ray, IntervalList *intervals);
 #if 0
-static int intersect_bvh_loop(const struct VolumeAccelerator *acc, const struct VolumeBVHNode *root,
-    const struct Ray *ray, struct IntervalList *intervals);
+static int intersect_bvh_loop(const VolumeAccelerator *acc, const VolumeBVHNode *root,
+    const Ray *ray, IntervalList *intervals);
 #endif
 
-static struct VolumeBVHNode *new_bvhnode(void);
-static void free_bvhnode_recursive(struct VolumeBVHNode *node);
-static struct VolumeBVHNode *build_bvh(struct VolumePrimitive **volumes, int begin, int end, int axis);
-static int is_bvh_leaf(const struct VolumeBVHNode *node);
-static int find_median(struct VolumePrimitive **volumes, int begin, int end, int axis);
+static VolumeBVHNode *new_bvhnode(void);
+static void free_bvhnode_recursive(VolumeBVHNode *node);
+static VolumeBVHNode *build_bvh(VolumePrimitive **volumes, int begin, int end, int axis);
+static int is_bvh_leaf(const VolumeBVHNode *node);
+static int find_median(VolumePrimitive **volumes, int begin, int end, int axis);
 
 static int compare_double(double x, double y);
 static int volume_compare_x(const void *a, const void *b);
@@ -123,136 +167,136 @@ static int volume_compare_y(const void *a, const void *b);
 static int volume_compare_z(const void *a, const void *b);
 
 #if 0
-static int is_empty(const struct VolumeBVHNodeStack *stack);
-static void push_node(struct VolumeBVHNodeStack *stack, const struct VolumeBVHNode *node);
-static const struct VolumeBVHNode *pop_node(struct VolumeBVHNodeStack *stack);
+static int is_empty(const VolumeBVHNodeStack *stack);
+static void push_node(VolumeBVHNodeStack *stack, const VolumeBVHNode *node);
+static const VolumeBVHNode *pop_node(VolumeBVHNodeStack *stack);
 #endif
 
-struct VolumeAccelerator *VolumeAccNew(int accelerator_type)
+VolumeBVHAccelerator::VolumeBVHAccelerator() : root_(NULL)
 {
-  struct VolumeAccelerator *acc = FJ_MEM_ALLOC(struct VolumeAccelerator);
+}
+
+VolumeBVHAccelerator::~VolumeBVHAccelerator()
+{
+  free_bvhnode_recursive(root_);
+}
+
+VolumeAccelerator *VolumeAccNew(int accelerator_type)
+{
+  VolumeAccelerator *acc = new VolumeAccelerator();
   if (acc == NULL)
     return NULL;
 
   switch (accelerator_type) {
   case VOLACC_BRUTEFORCE:
-    acc->derived = (char *) new_bruteforce_accel();
-    if (acc->derived == NULL) {
+    acc->derived_ = (char *) new_bruteforce_accel();
+    if (acc->derived_ == NULL) {
       VolumeAccFree(acc);
       return NULL;
     }
-    acc->FreeDerived = free_bruteforce_accel;
-    acc->Build = build_bruteforce_accel;
-    acc->Intersect = intersect_bruteforce_accel;
-    acc->name = "Brute Force";
+    acc->FreeDerived_ = free_bruteforce_accel;
+    acc->Build_ = build_bruteforce_accel;
+    acc->Intersect_ = intersect_bruteforce_accel;
+    acc->name_ = "Brute Force";
     break;
   case VOLACC_BVH:
-    acc->derived = (char *) new_bvh_accel();
-    if (acc->derived == NULL) {
+    acc->derived_ = (char *) new_bvh_accel();
+    if (acc->derived_ == NULL) {
       VolumeAccFree(acc);
       return NULL;
     }
-    acc->FreeDerived = free_bvh_accel;
-    acc->Build = build_bvh_accel;
-    acc->Intersect = intersect_bvh_accel;
-    acc->name = "Volume BVH";
+    acc->FreeDerived_ = free_bvh_accel;
+    acc->Build_ = build_bvh_accel;
+    acc->Intersect_ = intersect_bvh_accel;
+    acc->name_ = "Volume BVH";
     break;
   default:
     assert(!"invalid accelerator type");
     break;
   }
 
-  acc->has_built = 0;
+  acc->has_built_ = 0;
 
-  acc->volume_set = NULL;
-  acc->num_volumes = 0;
-  acc->VolumeIntersect = NULL;
-  acc->VolumeBounds = NULL;
+  acc->volume_set_ = NULL;
+  acc->num_volumes_ = 0;
+  acc->VolumeIntersect_ = NULL;
+  acc->VolumeBounds_ = NULL;
 
-  //BOX3_SET(&acc->bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-  BoxReverseInfinite(&acc->bounds);
-  //BOX3_SET(&acc->volume_set_bounds, FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-  BoxReverseInfinite(&acc->volume_set_bounds);
+  BoxReverseInfinite(&acc->bounds_);
+  BoxReverseInfinite(&acc->volume_set_bounds_);
 
   return acc;
 }
 
-void VolumeAccFree(struct VolumeAccelerator *acc)
+void VolumeAccFree(VolumeAccelerator *acc)
 {
   if (acc == NULL)
     return;
-  if (acc->derived == NULL)
+  if (acc->derived_ == NULL)
     return;
 
-  acc->FreeDerived(acc);
-  FJ_MEM_FREE(acc);
+  acc->FreeDerived_(acc);
+  delete acc;
 }
 
-void VolumeAccGetBounds(const struct VolumeAccelerator *acc, struct Box *bounds)
-{
-  *bounds = acc->bounds;
-}
-
-int VolumeAccBuild(struct VolumeAccelerator *acc)
+int VolumeAccBuild(VolumeAccelerator *acc)
 {
   int err;
 
-  if (acc->has_built)
+  if (acc->has_built_)
     return -1;
 
-  err = acc->Build(acc);
+  err = acc->Build_(acc);
   if (err)
     return -1;
 
-  acc->has_built = 1;
+  acc->has_built_ = 1;
   return 0;
 }
 
-int VolumeAccIntersect(const struct VolumeAccelerator *acc, double time,
-    const struct Ray *ray, struct IntervalList *intervals)
+int VolumeAccIntersect(const VolumeAccelerator *acc, double time,
+    const Ray *ray, IntervalList *intervals)
 {
   double boxhit_tmin;
   double boxhit_tmax;
 
   /* check intersection with overall bounds */
-  if (!BoxRayIntersect(acc->bounds, ray->orig, ray->dir, ray->tmin, ray->tmax,
+  if (!BoxRayIntersect(acc->bounds_, ray->orig, ray->dir, ray->tmin, ray->tmax,
         &boxhit_tmin, &boxhit_tmax)) {
     return 0;
   }
 
-  if (!acc->has_built) {
+  if (!acc->has_built_) {
     /* dynamic build */
-    printf("\nbuilding %s accelerator ...\n", acc->name);
-    VolumeAccBuild((struct VolumeAccelerator *) acc);
+    printf("\nbuilding %s accelerator ...\n", acc->name_);
+    VolumeAccBuild((VolumeAccelerator *) acc);
     fflush(stdout);
   }
 
-  return acc->Intersect(acc, time, ray, intervals);
+  return acc->Intersect_(acc, time, ray, intervals);
 }
 
-void VolumeAccSetTargetGeometry(struct VolumeAccelerator *acc,
-  const void *volume_set, int num_volumes, const struct Box *volume_set_bounds,
+void VolumeAccSetTargetGeometry(VolumeAccelerator *acc,
+  const void *volume_set, int num_volumes, const Box *volume_set_bounds,
   VolumeIntersectFunction volume_intersect_function,
   VolumeBoundsFunction volume_bounds_function)
 {
-  acc->volume_set = volume_set;
-  acc->num_volumes = num_volumes;
-  acc->VolumeIntersect = volume_intersect_function;
-  acc->VolumeBounds = volume_bounds_function;
-  acc->volume_set_bounds = *volume_set_bounds;
+  acc->volume_set_ = volume_set;
+  acc->num_volumes_ = num_volumes;
+  acc->VolumeIntersect_ = volume_intersect_function;
+  acc->VolumeBounds_ = volume_bounds_function;
+  acc->volume_set_bounds_ = *volume_set_bounds;
 
   /* accelerator's bounds */
-  acc->bounds = *volume_set_bounds;
-  BoxExpand(&acc->bounds, EXPAND);
+  acc->bounds_ = *volume_set_bounds;
+  BoxExpand(&acc->bounds_, EXPAND);
 }
 
 /* -------------------------------------------------------------------------- */
 /* VolumeBruteForceAccelerator */
-static struct VolumeBruteForceAccelerator *new_bruteforce_accel(void)
+static VolumeBruteForceAccelerator *new_bruteforce_accel(void)
 {
-  struct VolumeBruteForceAccelerator *bruteforce;
-
-  bruteforce = FJ_MEM_ALLOC(struct VolumeBruteForceAccelerator);
+  VolumeBruteForceAccelerator *bruteforce = new VolumeBruteForceAccelerator();
   if (bruteforce == NULL)
     return NULL;
 
@@ -262,26 +306,25 @@ static struct VolumeBruteForceAccelerator *new_bruteforce_accel(void)
   return bruteforce;
 }
 
-static void free_bruteforce_accel(struct VolumeAccelerator *acc)
+static void free_bruteforce_accel(VolumeAccelerator *acc)
 {
-  struct VolumeBruteForceAccelerator *bruteforce =
-      (struct VolumeBruteForceAccelerator *) acc->derived;
-  FJ_MEM_FREE(bruteforce);
+  VolumeBruteForceAccelerator *bruteforce = (VolumeBruteForceAccelerator *) acc->derived_;
+  delete bruteforce;
 }
 
-static int build_bruteforce_accel(struct VolumeAccelerator *acc)
+static int build_bruteforce_accel(VolumeAccelerator *acc)
 {
   return 0;
 }
 
-static int intersect_bruteforce_accel(const struct VolumeAccelerator *acc, double time,
-    const struct Ray *ray, struct IntervalList *intervals)
+static int intersect_bruteforce_accel(const VolumeAccelerator *acc, double time,
+    const Ray *ray, IntervalList *intervals)
 {
   int hit;
   int i;
 
   hit = 0;
-  for (i = 0; i < acc->num_volumes; i++) {
+  for (i = 0; i < acc->num_volumes_; i++) {
     hit += ray_volume_intersect(acc, i, time, ray, intervals);
   }
 
@@ -290,86 +333,62 @@ static int intersect_bruteforce_accel(const struct VolumeAccelerator *acc, doubl
 
 /* -------------------------------------------------------------------------- */
 /* VolumeBVHAccelerator */
-static struct VolumeBVHAccelerator *new_bvh_accel(void)
+static VolumeBVHAccelerator *new_bvh_accel(void)
 {
-  struct VolumeBVHAccelerator *bvh = FJ_MEM_ALLOC(struct VolumeBVHAccelerator);
-  if (bvh == NULL)
-    return NULL;
-
-  bvh->root = NULL;
-
-  return bvh;
+  return new VolumeBVHAccelerator();
 }
 
-static void free_bvh_accel(struct VolumeAccelerator *acc)
+static void free_bvh_accel(VolumeAccelerator *acc)
 {
-  struct VolumeBVHAccelerator *bvh = (struct VolumeBVHAccelerator *) acc->derived;
+  VolumeBVHAccelerator *bvh = (VolumeBVHAccelerator *) acc->derived_;
 
-  free_bvhnode_recursive(bvh->root);
-  FJ_MEM_FREE(bvh);
+  delete bvh;
 }
 
-static int build_bvh_accel(struct VolumeAccelerator *acc)
+static int build_bvh_accel(VolumeAccelerator *acc)
 {
-  struct VolumeBVHAccelerator *bvh = (struct VolumeBVHAccelerator *) acc->derived;
-  struct VolumePrimitive *volumes;
-  struct VolumePrimitive **volume_ptr;
-  const int NPRIMS = acc->num_volumes;
-  int i;
+  VolumeBVHAccelerator *bvh = (VolumeBVHAccelerator *) acc->derived_;
+  const int NPRIMS = acc->num_volumes_;
 
   if (NPRIMS == 0) {
     return -1;
   }
 
-  volumes = FJ_MEM_ALLOC_ARRAY(struct VolumePrimitive, NPRIMS);
-  if (volumes == NULL)
-    return -1;
+  std::vector<VolumePrimitive> volumes(NPRIMS);
+  std::vector<VolumePrimitive *> volume_ptr(NPRIMS);
 
-  volume_ptr = FJ_MEM_ALLOC_ARRAY(struct VolumePrimitive *, NPRIMS);
-  if (volume_ptr == NULL) {
-    FJ_MEM_FREE(volumes);
-    return -1;
-  }
-
-  for (i = 0; i < NPRIMS; i++) {
-    acc->VolumeBounds(acc->volume_set, i, &volumes[i].bounds);
-    /* TODO use BoxCentroid */
-    volumes[i].centroid.x = (volumes[i].bounds.max.x + volumes[i].bounds.min.x) / 2;
-    volumes[i].centroid.y = (volumes[i].bounds.max.y + volumes[i].bounds.min.y) / 2;
-    volumes[i].centroid.z = (volumes[i].bounds.max.z + volumes[i].bounds.min.z) / 2;
+  for (int i = 0; i < NPRIMS; i++) {
+    acc->VolumeBounds_(acc->volume_set_, i, &volumes[i].bounds);
+    volumes[i].centroid = BoxCentroid(volumes[i].bounds);
     volumes[i].index = i;
 
     volume_ptr[i] = &volumes[i];
   }
 
-  bvh->root = build_bvh(volume_ptr, 0, NPRIMS, 0);
-  if (bvh->root == NULL) {
-    FJ_MEM_FREE(volume_ptr);
-    FJ_MEM_FREE(volumes);
+  bvh->root_ = build_bvh(&volume_ptr[0], 0, NPRIMS, 0);
+  if (bvh->root_ == NULL) {
     return -1;
   }
 
-  FJ_MEM_FREE(volume_ptr);
-  FJ_MEM_FREE(volumes);
   return 0;
 }
 
-static int intersect_bvh_accel(const struct VolumeAccelerator *acc, double time,
-    const struct Ray *ray, struct IntervalList *intervals)
+static int intersect_bvh_accel(const VolumeAccelerator *acc, double time,
+    const Ray *ray, IntervalList *intervals)
 {
-  const struct VolumeBVHAccelerator *bvh = (const struct VolumeBVHAccelerator *) acc->derived;
+  const VolumeBVHAccelerator *bvh = (const VolumeBVHAccelerator *) acc->derived_;
 
 #if 0
   if (1)
-    return intersect_bvh_loop(acc, bvh->root, ray, intervals);
+    return intersect_bvh_loop(acc, bvh->root_, ray, intervals);
   else
 #endif
-    return intersect_bvh_recursive(acc, bvh->root, time, ray, intervals);
+    return intersect_bvh_recursive(acc, bvh->root_, time, ray, intervals);
 }
 
-static int intersect_bvh_recursive(const struct VolumeAccelerator *acc,
-    const struct VolumeBVHNode *node, double time,
-    const struct Ray *ray, struct IntervalList *intervals)
+static int intersect_bvh_recursive(const VolumeAccelerator *acc,
+    const VolumeBVHNode *node, double time,
+    const Ray *ray, IntervalList *intervals)
 {
   double boxhit_tmin;
   double boxhit_tmax;
@@ -394,18 +413,18 @@ static int intersect_bvh_recursive(const struct VolumeAccelerator *acc,
 }
 
 #if 0
-static int intersect_bvh_loop(const struct VolumeAccelerator *acc, const struct VolumeBVHNode *root,
-    const struct Ray *ray, struct IntervalList *intervals)
+static int intersect_bvh_loop(const VolumeAccelerator *acc, const VolumeBVHNode *root,
+    const Ray *ray, IntervalList *intervals)
 {
   int hit, hittmp;
   int whichhit;
   int hit_left, hit_right;
   double boxhit_tmin, boxhit_tmax;
-  struct IntervalList isect_candidates[2];
-  struct IntervalList *isect_min, *isect_tmp;
+  IntervalList isect_candidates[2];
+  IntervalList *isect_min, *isect_tmp;
 
-  const struct VolumeBVHNode *node;
-  struct VolumeBVHNodeStack stack = {0, {NULL}};
+  const VolumeBVHNode *node;
+  VolumeBVHNodeStack stack = {0, {NULL}};
 
   node = root;
   hit = 0;
@@ -428,11 +447,11 @@ static int intersect_bvh_loop(const struct VolumeAccelerator *acc, const struct 
       continue;
     }
 
-    hit_left = BoxRayIntersect(node->left->bounds,
+    hit_left = BoxRayIntersect(node->left->bounds_,
         ray->orig, ray->dir, ray->tmin, ray->tmax,
         &boxhit_tmin, &boxhit_tmax);
 
-    hit_right = BoxRayIntersect(node->right->bounds,
+    hit_right = BoxRayIntersect(node->right->bounds_,
         ray->orig, ray->dir, ray->tmin, ray->tmax,
         &boxhit_tmin, &boxhit_tmax);
 
@@ -475,9 +494,9 @@ loop_exit:
 }
 #endif
 
-static struct VolumeBVHNode *build_bvh(struct VolumePrimitive **volume_ptr, int begin, int end, int axis)
+static VolumeBVHNode *build_bvh(VolumePrimitive **volume_ptr, int begin, int end, int axis)
 {
-  struct VolumeBVHNode *node = NULL;
+  VolumeBVHNode *node = NULL;
   const int NPRIMS = end - begin;
   int median;
   int new_axis;
@@ -511,7 +530,7 @@ static struct VolumeBVHNode *build_bvh(struct VolumePrimitive **volume_ptr, int 
       break;
   }
 
-  qsort(volume_ptr + begin, NPRIMS, sizeof(struct VolumePrimitive *), volume_compare);
+  qsort(volume_ptr + begin, NPRIMS, sizeof(VolumePrimitive *), volume_compare);
   median = find_median(volume_ptr, begin, end, axis);
 
   node->left  = build_bvh(volume_ptr, begin, median, new_axis);
@@ -528,9 +547,9 @@ static struct VolumeBVHNode *build_bvh(struct VolumePrimitive **volume_ptr, int 
   return node;
 }
 
-static struct VolumeBVHNode *new_bvhnode(void)
+static VolumeBVHNode *new_bvhnode(void)
 {
-  struct VolumeBVHNode *node = FJ_MEM_ALLOC(struct VolumeBVHNode);
+  VolumeBVHNode *node = new VolumeBVHNode();
   if (node == NULL)
     return NULL;
 
@@ -542,27 +561,18 @@ static struct VolumeBVHNode *new_bvhnode(void)
   return node;
 }
 
-static void free_bvhnode_recursive(struct VolumeBVHNode *node)
+static void free_bvhnode_recursive(VolumeBVHNode *node)
 {
   if (node == NULL)
     return;
 
-  if (is_bvh_leaf(node)) {
-    FJ_MEM_FREE(node);
-    return;
-  }
-
-  assert(node->left != NULL);
-  assert(node->right != NULL);
-  assert(node->volume_id == -1);
-
   free_bvhnode_recursive(node->left);
   free_bvhnode_recursive(node->right);
 
-  FJ_MEM_FREE(node);
+  delete node;
 }
 
-static int is_bvh_leaf(const struct VolumeBVHNode *node)
+static int is_bvh_leaf(const VolumeBVHNode *node)
 {
   return (
     node->left == NULL &&
@@ -570,7 +580,7 @@ static int is_bvh_leaf(const struct VolumeBVHNode *node)
     node->volume_id != -1);
 }
 
-static int find_median(struct VolumePrimitive **volumes, int begin, int end, int axis)
+static int find_median(VolumePrimitive **volumes, int begin, int end, int axis)
 {
   int low, high, mid;
   double key = 0;
@@ -622,32 +632,32 @@ static int compare_double(double x, double y)
 
 static int volume_compare_x(const void *a, const void *b)
 {
-  struct VolumePrimitive **A = (struct VolumePrimitive **) a;
-  struct VolumePrimitive **B = (struct VolumePrimitive **) b;
+  VolumePrimitive **A = (VolumePrimitive **) a;
+  VolumePrimitive **B = (VolumePrimitive **) b;
   return compare_double((*A)->centroid.x, (*B)->centroid.x);
 }
 
 static int volume_compare_y(const void *a, const void *b)
 {
-  struct VolumePrimitive **A = (struct VolumePrimitive **) a;
-  struct VolumePrimitive **B = (struct VolumePrimitive **) b;
+  VolumePrimitive **A = (VolumePrimitive **) a;
+  VolumePrimitive **B = (VolumePrimitive **) b;
   return compare_double((*A)->centroid.y, (*B)->centroid.y);
 }
 
 static int volume_compare_z(const void *a, const void *b)
 {
-  struct VolumePrimitive **A = (struct VolumePrimitive **) a;
-  struct VolumePrimitive **B = (struct VolumePrimitive **) b;
+  VolumePrimitive **A = (VolumePrimitive **) a;
+  VolumePrimitive **B = (VolumePrimitive **) b;
   return compare_double((*A)->centroid.z, (*B)->centroid.z);
 }
 
-static int ray_volume_intersect (const struct VolumeAccelerator *acc, int volume_id,
-  double time, const struct Ray *ray, struct IntervalList *intervals)
+static int ray_volume_intersect (const VolumeAccelerator *acc, int volume_id,
+  double time, const Ray *ray, IntervalList *intervals)
 {
-  struct Interval interval;
+  Interval interval;
   int hit;
 
-  hit = acc->VolumeIntersect(acc->volume_set, volume_id, time, ray, &interval);
+  hit = acc->VolumeIntersect_(acc->volume_set_, volume_id, time, ray, &interval);
   if (!hit) {
     return 0;
   }
@@ -661,25 +671,25 @@ static int ray_volume_intersect (const struct VolumeAccelerator *acc, int volume
 }
 
 #if 0
-static void swap_isect_ptr(struct IntervalList **isect0, struct IntervalList **isect1)
+static void swap_isect_ptr(IntervalList **isect0, IntervalList **isect1)
 {
-  struct IntervalList *isect_swp = *isect0;
+  IntervalList *isect_swp = *isect0;
   *isect0 = *isect1;
   *isect1 = isect_swp;
 }
 
-static int is_empty(const struct VolumeBVHNodeStack *stack)
+static int is_empty(const VolumeBVHNodeStack *stack)
 {
   return (stack->depth == 0);
 }
 
-static void push_node(struct VolumeBVHNodeStack *stack, const struct VolumeBVHNode *node)
+static void push_node(VolumeBVHNodeStack *stack, const VolumeBVHNode *node)
 {
   stack->node[stack->depth++] = node;
   assert(stack->depth < BVH_STACKSIZE);
 }
 
-static const struct VolumeBVHNode *pop_node(struct VolumeBVHNodeStack *stack)
+static const VolumeBVHNode *pop_node(VolumeBVHNodeStack *stack)
 {
   assert(!is_empty(stack));
   return stack->node[--stack->depth];
