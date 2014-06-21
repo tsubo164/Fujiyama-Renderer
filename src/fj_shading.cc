@@ -548,7 +548,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
     struct Color4 *out_rgba)
 {
   const struct VolumeAccelerator *acc = NULL;
-  struct IntervalList *intervals = NULL;
+  IntervalList intervals;
   int hit = 0;
 
   out_rgba->r = 0;
@@ -556,17 +556,10 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
   out_rgba->b = 0;
   out_rgba->a = 0;
 
-  intervals = IntervalListNew();
-  if (intervals == NULL) {
-    /* TODO error handling */
-    return 0;
-  }
-
   acc = cxt->trace_target->GetVolumeAccelerator();
-  hit = VolumeAccIntersect(acc, cxt->time, ray, intervals);
+  hit = VolumeAccIntersect(acc, cxt->time, ray, &intervals);
 
   if (!hit) {
-    IntervalListFree(intervals);
     return 0;
   }
 
@@ -594,10 +587,10 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
       t_delta = cxt->raymarch_step;
       break;
     }
-    t_limit = IntervalListGetMaxT(intervals);
+    t_limit = intervals.GetMaxT();
     t_limit = Min(t_limit, ray->tmax);
 
-    t_start = IntervalListGetMinT(intervals);
+    t_start = intervals.GetMinT();
     if (t_start < 0) {
       t_start = t_delta;
     }
@@ -613,7 +606,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 
     /* raymarch */
     while (t <= t_limit && out_rgba->a < opacity_threshold) {
-      const struct Interval *interval = IntervalListGetHead(intervals);
+      const struct Interval *interval = intervals.GetHead();
       struct Color color;
       float opacity = 0;
 
@@ -658,7 +651,6 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
   }
   out_rgba->a = Clamp(out_rgba->a, 0, 1);
 
-  IntervalListFree(intervals);
   return hit;
 }
 

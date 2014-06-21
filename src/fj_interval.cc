@@ -1,138 +1,98 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_interval.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
-
-#include <float.h>
 
 namespace fj {
 
-struct IntervalList {
-  struct Interval root;
-  int num_nodes;
-  double tmin;
-  double tmax;
-};
+static void free_interval_nodes(Interval *head);
+static int closer_than(const Interval *interval, const Interval *other);
+static Interval *dup_interval(const Interval &src);
+static void free_interval(Interval *interval);
 
-static void free_interval_nodes(struct Interval *head);
-static int closer_than(const struct Interval *interval, const struct Interval *other);
-static struct Interval *dup_interval(const struct Interval *src);
-static void free_interval(struct Interval *interval);
-
-struct IntervalList *IntervalListNew(void)
+IntervalList::IntervalList() :
+    root_(),
+    num_nodes_(0),
+    tmin_(REAL_MAX),
+    tmax_(-REAL_MAX)
 {
-  struct IntervalList *intervals = FJ_MEM_ALLOC(struct IntervalList);
-
-  if (intervals == NULL)
-    return NULL;
-
-  intervals->root.tmin = -FLT_MAX;
-  intervals->root.tmax = FLT_MAX;
-  intervals->root.object = NULL;
-  intervals->root.next = NULL;
-
-  intervals->num_nodes = 0;
-  intervals->tmin = FLT_MAX;
-  intervals->tmax = -FLT_MAX;
-
-  return intervals;
 }
 
-void IntervalListFree(struct IntervalList *intervals)
+IntervalList::~IntervalList()
 {
-  if (intervals == NULL)
-    return;
-
-  free_interval_nodes(intervals->root.next);
-  FJ_MEM_FREE(intervals);
+  free_interval_nodes(root_.next);
 }
 
-void IntervalListPush(struct IntervalList *intervals, const struct Interval *interval)
+void IntervalList::Push(const Interval &interval)
 {
-  struct Interval *new_node = NULL;
-  struct Interval *current = NULL;
+  Interval *new_node = dup_interval(interval);
+  Interval *current = NULL;
 
-  new_node = dup_interval(interval);
-  if (new_node == NULL) {
-    /* TODO error handling */
-    return;
-  }
-
-  for (current = &intervals->root; current != NULL; current = current->next) {
-    if (closer_than(interval, current->next)) {
+  for (current = &root_; current != NULL; current = current->next) {
+    if (current->next == NULL || closer_than(&interval, current->next)) {
       new_node->next = current->next;
       current->next = new_node;
       break;
     }
   }
-  intervals->num_nodes++;
-  intervals->tmin = Min(intervals->tmin, interval->tmin);
-  intervals->tmax = Max(intervals->tmax, interval->tmax);
+  num_nodes_++;
+  tmin_ = Min(tmin_, interval.tmin);
+  tmax_ = Max(tmax_, interval.tmax);
 }
 
-int IntervalListGetCount(const struct IntervalList *intervals)
+int IntervalList::GetCount() const
 {
-  return intervals->num_nodes;
+  return num_nodes_;
 }
 
-double IntervalListGetMinT(const struct IntervalList *intervals)
+Real IntervalList::GetMinT() const
 {
-  return intervals->tmin;
+  return tmin_;
 }
 
-double IntervalListGetMaxT(const struct IntervalList *intervals)
+Real IntervalList::GetMaxT() const
 {
-  return intervals->tmax;
+  return tmax_;
 }
 
-const struct Interval *IntervalListGetHead(const struct IntervalList *intervals)
+const Interval *IntervalList::GetHead() const
 {
-  return intervals->root.next;
+  return root_.next;
 }
 
-static void free_interval_nodes(struct Interval *head)
+static void free_interval_nodes(Interval *head)
 {
-  struct Interval *current = head;
+  Interval *current = head;
 
   while (current != NULL) {
-    struct Interval *kill = current;
-    struct Interval *next = current->next;
+    Interval *kill = current;
+    Interval *next = current->next;
     free_interval(kill);
     current = next;
   }
 }
 
-static int closer_than(const struct Interval *interval, const struct Interval *other)
+static int closer_than(const Interval *interval, const Interval *other)
 {
-  if (other == NULL || interval->tmin < other->tmin)
+  if (interval->tmin < other->tmin)
     return 1;
   else
     return 0;
 }
 
-static struct Interval *dup_interval(const struct Interval *src)
+static Interval *dup_interval(const Interval &src)
 {
-  struct Interval *new_node = FJ_MEM_ALLOC(struct Interval);
+  Interval *new_interval = new Interval(src);
 
-  if (new_node == NULL)
-    return NULL;
+  new_interval->next = NULL;
 
-  *new_node = *src;
-  new_node->next = NULL;
-
-  return new_node;
+  return new_interval;
 }
 
-static void free_interval(struct Interval *interval)
+static void free_interval(Interval *interval)
 {
-  if (interval == NULL)
-    return;
-
-  FJ_MEM_FREE(interval);
+  delete interval;
 }
 
 } // namespace xxx

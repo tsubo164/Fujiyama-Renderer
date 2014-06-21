@@ -667,7 +667,7 @@ static int ray_volume_intersect (const VolumeAccelerator *acc, int volume_id,
     return 0;
   }
 
-  IntervalListPush(intervals, &interval);
+  intervals->Push(interval);
   return 1;
 }
 
