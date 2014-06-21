@@ -1,15 +1,12 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_io.h"
-#include "fj_memory.h"
 #include "fj_vector.h"
-#include "fj_array.h"
 
-#include <stdio.h>
-#include <string.h>
+#include <vector>
+#include <cstdio>
+#include <cstring>
 
 namespace fj {
 
@@ -22,7 +19,19 @@ typedef unsigned char NameSize;
 enum { MAGIC_SIZE = 4 };
 enum { ELEMENT_NAME_SIZE = 64 };
 
-struct ChunkData {
+class ChunkData {
+public:
+  ChunkData() :
+      element_name(),
+      element_type(ELM_NONE),
+      element_count(0),
+      src_data(NULL),
+      dst_data(NULL)
+  {
+  }
+  ~ChunkData() {}
+
+public:
   char element_name[ELEMENT_NAME_SIZE];
   ElmType element_type;
   int element_count;
@@ -30,16 +39,15 @@ struct ChunkData {
   src_ptr src_data;
   dst_ptr dst_data;
 };
-#define INIT_CHUNK {{'\0'}, ELM_NONE, 0, NULL, NULL}
 
-static struct ChunkData input_chunk_data(
+static ChunkData input_chunk_data(
     void *dst_data,
     const char *element_name,
     ElmType element_type,
     int element_count)
 {
   const size_t len = strlen(element_name);
-  struct ChunkData chunk = INIT_CHUNK;
+  ChunkData chunk;
 
   if (len > ELEMENT_NAME_SIZE - 1) {
     return chunk;
@@ -53,14 +61,14 @@ static struct ChunkData input_chunk_data(
   return chunk;
 }
 
-static struct ChunkData output_chunk_data(
+static ChunkData output_chunk_data(
     const void *src_data,
     const char *element_name,
     ElmType element_type,
     int element_count)
 {
   const size_t len = strlen(element_name);
-  struct ChunkData chunk = INIT_CHUNK;
+  ChunkData chunk;
 
   if (len > ELEMENT_NAME_SIZE - 1) {
     return chunk;
@@ -74,18 +82,18 @@ static struct ChunkData output_chunk_data(
   return chunk;
 }
 
-/* ChunkData */
-const char *ChkGetElementName(const struct ChunkData *chunk)
+// ChunkData
+const char *ChkGetElementName(const ChunkData *chunk)
 {
   return chunk->element_name;
 }
 
-int ChkGetElementType(const struct ChunkData *chunk)
+int ChkGetElementType(const ChunkData *chunk)
 {
   return chunk->element_type;
 }
 
-int ChkGetElementCount(const struct ChunkData *chunk)
+int ChkGetElementCount(const ChunkData *chunk)
 {
   return chunk->element_count;
 }
@@ -95,36 +103,46 @@ typedef unsigned char FmtVer;
 enum { IO_LITTLE_ENDIAN = 0x00, IO_BIG_ENDIAN = 0x01 };
 #define INFO_N_PADDINGS (12-2)
 #define INFO_PADDING '*'
-struct FileInfo {
+class FileInfo {
+public:
+  FileInfo() {}
+  ~FileInfo() {}
+
+public:
   char magic[MAGIC_SIZE];
   Endian endian;
   FmtVer fmtver;
 };
 static int copy_magic_number(char *dst, const char *src);
 
-static int read_file_info(FILE *file, struct FileInfo *info);
-static int write_file_info(FILE *file, struct FileInfo *info);
+static int read_file_info(FILE *file, FileInfo *info);
+static int write_file_info(FILE *file, FileInfo *info);
 
-static int read_chunk_info(FILE *file, struct ChunkData *chunk);
-static int write_chunk_info(FILE *file, const struct ChunkData *chunk);
+static int read_chunk_info(FILE *file, ChunkData *chunk);
+static int write_chunk_info(FILE *file, const ChunkData *chunk);
 
-static int read_chunk_data(FILE *file, struct ChunkData *chunk);
-static int write_chunk_data(FILE *file, const struct ChunkData *chunk);
+static int read_chunk_data(FILE *file, ChunkData *chunk);
+static int write_chunk_data(FILE *file, const ChunkData *chunk);
 
-/* InputFile */
-struct InputFile {
+// InputFile
+class InputFile {
+public:
+  InputFile() {}
+  ~InputFile() {}
+
+public:
   FILE *file;
-  struct FileInfo info;
+  FileInfo info;
 
-  struct Array *header_chunks;
-  struct Array *data_chunks;
+  std::vector<ChunkData> header_chunks;
+  std::vector<ChunkData> data_chunks;
   int is_header_ended;
 };
 
-struct InputFile *IOOpenInputFile(const char *filename, const char *magic)
+InputFile *IOOpenInputFile(const char *filename, const char *magic)
 {
   int err = 0;
-  struct InputFile *in = FJ_MEM_ALLOC(struct InputFile);
+  InputFile *in = new InputFile();
 
   if (in == NULL) {
     return NULL;
@@ -132,12 +150,10 @@ struct InputFile *IOOpenInputFile(const char *filename, const char *magic)
 
   in->file = fopen(filename, "rb");
   if (in->file == NULL) {
-    FJ_MEM_FREE(in);
+    delete in;
     return NULL;
   }
 
-  in->header_chunks = ArrNew(sizeof(struct ChunkData));
-  in->data_chunks = ArrNew(sizeof(struct ChunkData));
   in->is_header_ended = 0;
 
   err = read_file_info(in->file, &in->info);
@@ -153,7 +169,7 @@ struct InputFile *IOOpenInputFile(const char *filename, const char *magic)
   return in;
 }
 
-void IOCloseInputFile(struct InputFile *in)
+void IOCloseInputFile(InputFile *in)
 {
   if (in == NULL) {
     return;
@@ -163,48 +179,46 @@ void IOCloseInputFile(struct InputFile *in)
     fclose(in->file);
   }
 
-  ArrFree(in->header_chunks);
-  ArrFree(in->data_chunks);
-  FJ_MEM_FREE(in);
+  delete in;
 }
 
-int IOGetInputHeaderChunkCount(const struct InputFile *in)
+int IOGetInputHeaderChunkCount(const InputFile *in)
 {
-  return in->header_chunks->nelems;
+  return in->header_chunks.size();
 }
 
-int IOGetInputDataChunkCount(const struct InputFile *in)
+int IOGetInputDataChunkCount(const InputFile *in)
 {
-  return in->data_chunks->nelems;
+  return in->data_chunks.size();
 }
 
-const struct ChunkData *IOGetInputHeaderChunk(const struct InputFile *in, int index)
+const ChunkData *IOGetInputHeaderChunk(const InputFile *in, int index)
 {
   if (index < 0 || index > IOGetInputHeaderChunkCount(in)) {
     return NULL;
   }
-  return (const struct ChunkData *) ArrGet(in->header_chunks, index);
+  return &in->header_chunks[index];
 }
 
-const struct ChunkData *IOGetInputDataChunk(const struct InputFile *in, int index)
+const ChunkData *IOGetInputDataChunk(const InputFile *in, int index)
 {
   if (index < 0 || index >= IOGetInputDataChunkCount(in)) {
     return NULL;
   }
-  return (const struct ChunkData *) ArrGet(in->data_chunks, index);
+  return &in->data_chunks[index];
 }
 
-int IOGetInputFileFormatVersion(const struct InputFile *in)
+int IOGetInputFileFormatVersion(const InputFile *in)
 {
   return in->info.fmtver;
 }
 
-void IOEndInputHeader(struct InputFile *in)
+void IOEndInputHeader(InputFile *in)
 {
   in->is_header_ended = 1;
 }
 
-int IOReadInputHeader(struct InputFile *in)
+int IOReadInputHeader(InputFile *in)
 {
   int header_chunk_count = 0;
   int data_chunk_count = 0;
@@ -213,31 +227,31 @@ int IOReadInputHeader(struct InputFile *in)
 
   nreads = fread(&header_chunk_count, sizeof(header_chunk_count), 1, in->file);
   if (nreads != 1) {
-    /* TODO error handling */
+    // TODO error handling
     return -1;
   }
 
   nreads = fread(&data_chunk_count, sizeof(data_chunk_count), 1, in->file);
   if (nreads != 1) {
-    /* TODO error handling */
+    // TODO error handling
     return -1;
   }
 
   for (i = 0; i < IOGetInputHeaderChunkCount(in); i++) {
-    struct ChunkData *chunk = (struct ChunkData *) ArrGet(in->header_chunks, i);
+    ChunkData *chunk = &in->header_chunks[i];
     read_chunk_data(in->file, chunk);
   }
 
   for (i = 0; i < data_chunk_count; i++) {
-    struct ChunkData chunk = INIT_CHUNK;
+    ChunkData chunk;
     read_chunk_info(in->file, &chunk);
-    ArrPush(in->data_chunks, &chunk);
+    in->data_chunks.push_back(chunk);
   }
 
   return 0;
 }
 
-int IOReadInputData(struct InputFile *in)
+int IOReadInputData(InputFile *in)
 {
   int data_chunk_count = 0;
   int i;
@@ -253,28 +267,33 @@ int IOReadInputData(struct InputFile *in)
   data_chunk_count = IOGetInputDataChunkCount(in);
 
   for (i = 0; i < data_chunk_count; i++) {
-    struct ChunkData *chunk = (struct ChunkData *) ArrGet(in->data_chunks, i);
+    ChunkData *chunk = &in->data_chunks[i];
     read_chunk_data(in->file, chunk);
   }
 
   return 0;
 }
 
-/* OutputFile */
-struct OutputFile {
-  FILE *file;
-  struct FileInfo info;
+// OutputFile
+class OutputFile {
+public:
+  OutputFile() {}
+  ~OutputFile() {}
 
-  struct Array *header_chunks;
-  struct Array *data_chunks;
+public:
+  FILE *file;
+  FileInfo info;
+
+  std::vector<ChunkData> header_chunks;
+  std::vector<ChunkData> data_chunks;
   int is_header_ended;
   int is_written;
 };
 
-struct OutputFile *IOOpenOutputFile(const char *filename,
+OutputFile *IOOpenOutputFile(const char *filename,
     const char *magic, int format_version)
 {
-  struct OutputFile *out = FJ_MEM_ALLOC(struct OutputFile);
+  OutputFile *out = new OutputFile();
 
   if (out == NULL) {
     return NULL;
@@ -282,12 +301,10 @@ struct OutputFile *IOOpenOutputFile(const char *filename,
 
   out->file = fopen(filename, "wb");
   if (out->file == NULL) {
-    FJ_MEM_FREE(out);
+    delete out;
     return NULL;
   }
 
-  out->header_chunks = ArrNew(sizeof(struct ChunkData));
-  out->data_chunks = ArrNew(sizeof(struct ChunkData));
   out->is_header_ended = 0;
   out->is_written = 0;
 
@@ -295,7 +312,7 @@ struct OutputFile *IOOpenOutputFile(const char *filename,
     IOCloseOutputFile(out);
     return NULL;
   }
-  /* TODO detect endian */
+  // TODO detect endian
   out->info.endian = IO_LITTLE_ENDIAN;
   out->info.fmtver = format_version;
   if (format_version > 127) {
@@ -306,7 +323,7 @@ struct OutputFile *IOOpenOutputFile(const char *filename,
   return out;
 }
 
-void IOCloseOutputFile(struct OutputFile *out)
+void IOCloseOutputFile(OutputFile *out)
 {
   if (out == NULL) {
     return;
@@ -320,17 +337,15 @@ void IOCloseOutputFile(struct OutputFile *out)
     fclose(out->file);
   }
 
-  ArrFree(out->header_chunks);
-  ArrFree(out->data_chunks);
-  FJ_MEM_FREE(out);
+  delete out;
 }
 
-void IOEndOutputHeader(struct OutputFile *out)
+void IOEndOutputHeader(OutputFile *out)
 {
   out->is_header_ended = 1;
 }
 
-int IOWriteOutputHeader(struct OutputFile *out)
+int IOWriteOutputHeader(OutputFile *out)
 {
   int header_chunk_count = 0;
   int data_chunk_count = 0;
@@ -350,21 +365,19 @@ int IOWriteOutputHeader(struct OutputFile *out)
     return -1;
   }
 
-  header_chunk_count = out->header_chunks->nelems;
+  header_chunk_count = out->header_chunks.size();
   fwrite(&header_chunk_count, sizeof(header_chunk_count), 1, out->file);
 
-  data_chunk_count = out->data_chunks->nelems;
+  data_chunk_count = out->data_chunks.size();
   fwrite(&data_chunk_count, sizeof(data_chunk_count), 1, out->file);
 
   for (i = 0; i < header_chunk_count; i++) {
-    const struct ChunkData *chunk =
-        (const struct ChunkData *) ArrGet(out->header_chunks, i);
+    const ChunkData *chunk = &out->header_chunks[i];
     write_chunk_data(out->file, chunk);
   }
 
   for (i = 0; i < data_chunk_count; i++) {
-    const struct ChunkData *chunk =
-        (const struct ChunkData *) ArrGet(out->data_chunks, i);
+    const ChunkData *chunk = &out->data_chunks[i];
     write_chunk_info(out->file, chunk);
   }
 
@@ -373,7 +386,7 @@ int IOWriteOutputHeader(struct OutputFile *out)
   return 0;
 }
 
-int IOWriteOutputData(struct OutputFile *out)
+int IOWriteOutputData(OutputFile *out)
 {
   int data_chunk_count = 0;
   int i;
@@ -386,18 +399,17 @@ int IOWriteOutputData(struct OutputFile *out)
     return -1;
   }
 
-  data_chunk_count = out->data_chunks->nelems;
+  data_chunk_count = out->data_chunks.size();
 
   for (i = 0; i < data_chunk_count; i++) {
-    const struct ChunkData *chunk =
-        (const struct ChunkData *) ArrGet(out->data_chunks, i);
+    const ChunkData *chunk = &out->data_chunks[i];
     write_chunk_data(out->file, chunk);
   }
 
   return 0;
 }
 
-void IOSetInputInt(struct InputFile *in,
+void IOSetInputInt(InputFile *in,
     const char *element_name,
     int *dst_data,
     int element_count)
@@ -405,23 +417,23 @@ void IOSetInputInt(struct InputFile *in,
   if (in->is_header_ended) {
     int i;
     for (i = 0; i < IOGetInputDataChunkCount(in); i++) {
-      struct ChunkData *chk = (struct ChunkData *) ArrGet(in->data_chunks, i);
+      ChunkData *chk = &in->data_chunks[i];
       if (strcmp(chk->element_name, element_name) == 0) {
         chk->dst_data = (dst_ptr) dst_data;
         break;
       }
     }
   } else {
-    const struct ChunkData chunk = input_chunk_data(
+    const ChunkData chunk = input_chunk_data(
         dst_data,
         element_name,
         ELM_INT,
         element_count);
-    ArrPush(in->header_chunks, &chunk);
+    in->header_chunks.push_back(chunk);
   }
 }
 
-void IOSetInputDouble(struct InputFile *in,
+void IOSetInputDouble(InputFile *in,
     const char *element_name,
     double *dst_data,
     int element_count)
@@ -429,97 +441,97 @@ void IOSetInputDouble(struct InputFile *in,
   if (in->is_header_ended) {
     int i;
     for (i = 0; i < IOGetInputDataChunkCount(in); i++) {
-      struct ChunkData *chk = (struct ChunkData *) ArrGet(in->data_chunks, i);
+      ChunkData *chk = &in->data_chunks[i];
       if (strcmp(chk->element_name, element_name) == 0) {
         chk->dst_data = (dst_ptr) dst_data;
         return;
       }
     }
   } else {
-    const struct ChunkData chunk = input_chunk_data(
+    const ChunkData chunk = input_chunk_data(
         dst_data,
         element_name,
         ELM_DOUBLE,
         element_count);
-    ArrPush(in->header_chunks, &chunk);
+    in->header_chunks.push_back(chunk);
   }
 }
 
-void IOSetInputVector3(struct InputFile *in,
+void IOSetInputVector3(InputFile *in,
     const char *element_name,
-    struct Vector *dst_data,
+    Vector *dst_data,
     int element_count)
 {
   if (in->is_header_ended) {
     int i;
     for (i = 0; i < IOGetInputDataChunkCount(in); i++) {
-      struct ChunkData *chk = (struct ChunkData *) ArrGet(in->data_chunks, i);
+      ChunkData *chk = &in->data_chunks[i];
       if (strcmp(chk->element_name, element_name) == 0) {
         chk->dst_data = (dst_ptr) dst_data;
         break;
       }
     }
   } else {
-    const struct ChunkData chunk = input_chunk_data(
+    const ChunkData chunk = input_chunk_data(
         dst_data,
         element_name,
         ELM_VECTOR3,
         element_count);
-    ArrPush(in->header_chunks, &chunk);
+    in->header_chunks.push_back(chunk);
   }
 }
 
-void IOSetOutputInt(struct OutputFile *out,
+void IOSetOutputInt(OutputFile *out,
     const char *element_name,
     const int *src_data,
     int element_count)
 {
-  const struct ChunkData chunk = output_chunk_data(
+  const ChunkData chunk = output_chunk_data(
       src_data,
       element_name,
       ELM_INT,
       element_count);
 
   if (out->is_header_ended) {
-    ArrPush(out->data_chunks, &chunk);
+    out->data_chunks.push_back(chunk);
   } else {
-    ArrPush(out->header_chunks, &chunk);
+    out->header_chunks.push_back(chunk);
   }
 }
 
-void IOSetOutputDouble(struct OutputFile *out,
+void IOSetOutputDouble(OutputFile *out,
     const char *element_name,
     const double *src_data,
     int element_count)
 {
-  const struct ChunkData chunk = output_chunk_data(
+  const ChunkData chunk = output_chunk_data(
       src_data,
       element_name,
       ELM_DOUBLE,
       element_count);
 
   if (out->is_header_ended) {
-    ArrPush(out->data_chunks, &chunk);
+    out->data_chunks.push_back(chunk);
   } else {
-    ArrPush(out->header_chunks, &chunk);
+    out->header_chunks.push_back(chunk);
   }
 }
 
-void IOSetOutputVector3(struct OutputFile *out,
+void IOSetOutputVector3(OutputFile *out,
     const char *element_name,
-    const struct Vector *src_data,
+    const Vector *src_data,
     int element_count)
 {
-  const struct ChunkData chunk = output_chunk_data(
+  const ChunkData chunk = output_chunk_data(
       src_data,
       element_name,
       ELM_VECTOR3,
       element_count);
 
   if (out->is_header_ended) {
-    ArrPush(out->data_chunks, &chunk);
+    out->data_chunks.push_back(chunk);
   } else {
-    ArrPush(out->header_chunks, &chunk);
+    out->header_chunks.push_back(chunk);
   }
 }
 
@@ -535,7 +547,7 @@ static int copy_magic_number(char *dst, const char *src)
   return 0;
 }
 
-static int read_file_info(FILE *file, struct FileInfo *info)
+static int read_file_info(FILE *file, FileInfo *info)
 {
   size_t nreads = 0;
   int err = 0;
@@ -555,17 +567,17 @@ static int read_file_info(FILE *file, struct FileInfo *info)
     return -1;
   }
 
-  /* skip padding */
+  // skip padding
   err = fseek(file, INFO_N_PADDINGS, SEEK_CUR);
   if (err) {
-    /* TODO error handling */
+    // TODO error handling
     return -1;
   }
 
   return 0;
 }
 
-static int write_file_info(FILE *file, struct FileInfo *info)
+static int write_file_info(FILE *file, FileInfo *info)
 {
   size_t nwrotes = 0;
   int i;
@@ -577,13 +589,13 @@ static int write_file_info(FILE *file, struct FileInfo *info)
 
   nwrotes = fwrite(&info->endian, sizeof(info->endian), 1, file);
   if (nwrotes != 1) {
-    /* TODO error handling */
+    // TODO error handling
     return -1;
   }
 
   nwrotes = fwrite(&info->fmtver, sizeof(info->fmtver), 1, file);
   if (nwrotes != 1) {
-    /* TODO error handling */
+    // TODO error handling
     return -1;
   }
 
@@ -591,7 +603,7 @@ static int write_file_info(FILE *file, struct FileInfo *info)
     char c = INFO_PADDING;
     nwrotes = fwrite(&c, sizeof(c), 1, file);
     if (nwrotes != 1) {
-      /* TODO error handling */
+      // TODO error handling
       return -1;
     }
   }
@@ -599,36 +611,36 @@ static int write_file_info(FILE *file, struct FileInfo *info)
   return 0;
 }
 
-static int read_chunk_info(FILE *file, struct ChunkData *chunk)
+static int read_chunk_info(FILE *file, ChunkData *chunk)
 {
   size_t nreads = 0;
   NameSize namesize = 0;
 
   nreads = fread(&namesize, sizeof(namesize), 1, file);
   if (nreads != 1) {
-    /* TODO error handling */
+    // TODO error handling
     return -1;
   }
   nreads = fread(chunk->element_name, sizeof(char), namesize, file);
   if (nreads != namesize) {
-    /* TODO error handling */
+    // TODO error handling
     return -1;
   }
   nreads = fread(&chunk->element_type, sizeof(chunk->element_type), 1, file);
   if (nreads != 1) {
-    /* TODO error handling */
+    // TODO error handling
     return -1;
   }
   nreads = fread(&chunk->element_count, sizeof(chunk->element_count), 1, file);
   if (nreads != 1) {
-    /* TODO error handling */
+    // TODO error handling
     return -1;
   }
 
   return 0;
 }
 
-static int write_chunk_info(FILE *file, const struct ChunkData *chunk)
+static int write_chunk_info(FILE *file, const ChunkData *chunk)
 {
   const NameSize namesize = (NameSize) strlen(chunk->element_name) + 1;
 
@@ -640,7 +652,7 @@ static int write_chunk_info(FILE *file, const struct ChunkData *chunk)
   return 0;
 }
 
-static int read_chunk_data(FILE *file, struct ChunkData *chunk)
+static int read_chunk_data(FILE *file, ChunkData *chunk)
 {
   const int NELEMS = chunk->element_count;
   int i;
@@ -657,7 +669,7 @@ static int read_chunk_data(FILE *file, struct ChunkData *chunk)
     for (i = 0; i < NELEMS; i++) {
       nreads = fread(&dst_data[i], sizeof(*dst_data), 1, file);
       if (nreads != 1) {
-        /* TODO error handling */
+        // TODO error handling
         return -1;
       }
     }
@@ -670,7 +682,7 @@ static int read_chunk_data(FILE *file, struct ChunkData *chunk)
     for (i = 0; i < NELEMS; i++) {
       nreads = fread(&dst_data[i], sizeof(*dst_data), 1, file);
       if (nreads != 1) {
-        /* TODO error handling */
+        // TODO error handling
         return -1;
       }
     }
@@ -679,21 +691,21 @@ static int read_chunk_data(FILE *file, struct ChunkData *chunk)
 
   case ELM_VECTOR3: {
     size_t nreads = 0;
-    struct Vector *dst_data = (struct Vector *) chunk->dst_data;
+    Vector *dst_data = (Vector *) chunk->dst_data;
     for (i = 0; i < NELEMS; i++) {
       nreads = fread(&dst_data[i].x, sizeof(dst_data[i].x), 1, file);
       if (nreads != 1) {
-        /* TODO error handling */
+        // TODO error handling
         return -1;
       }
       nreads = fread(&dst_data[i].y, sizeof(dst_data[i].y), 1, file);
       if (nreads != 1) {
-        /* TODO error handling */
+        // TODO error handling
         return -1;
       }
       nreads = fread(&dst_data[i].z, sizeof(dst_data[i].z), 1, file);
       if (nreads != 1) {
-        /* TODO error handling */
+        // TODO error handling
         return -1;
       }
     }
@@ -707,7 +719,7 @@ static int read_chunk_data(FILE *file, struct ChunkData *chunk)
   return 0;
 }
 
-static int write_chunk_data(FILE *file, const struct ChunkData *chunk)
+static int write_chunk_data(FILE *file, const ChunkData *chunk)
 {
   const int NELEMS = chunk->element_count;
   int i;
@@ -731,7 +743,7 @@ static int write_chunk_data(FILE *file, const struct ChunkData *chunk)
     break;
 
   case ELM_VECTOR3: {
-    const struct Vector *src_data = (const struct Vector *) chunk->src_data;
+    const Vector *src_data = (const Vector *) chunk->src_data;
     for (i = 0; i < NELEMS; i++) {
       fwrite(&src_data[i].x, sizeof(src_data[i].x), 1, file);
       fwrite(&src_data[i].y, sizeof(src_data[i].y), 1, file);

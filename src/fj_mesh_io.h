@@ -1,20 +1,20 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_MESHIO_H
 #define FJ_MESHIO_H
 
-#include <stdio.h>
+#include <vector>
+#include <string>
+#include <cstdio>
 
 namespace fj {
 
-struct TexCoord;
-struct Index3;
-struct Vector;
-struct Color;
-struct Mesh;
+class TexCoord;
+class Index3;
+class Vector;
+class Color;
+class Mesh;
 
 enum MshErrorNo {
   MSH_ERR_NONE = 0,
@@ -25,7 +25,12 @@ enum MshErrorNo {
   MSH_ERR_NO_MEMORY
 };
 
-struct MeshInput {
+class MeshInput {
+public:
+  MeshInput() {}
+  ~MeshInput() {}
+
+public:
   FILE *file;
   int version;
   int nverts;
@@ -33,13 +38,17 @@ struct MeshInput {
   int nfaces;
   int nface_attrs;
 
-  char *data_buffer;
-  size_t buffer_size;
+  std::vector<char> data_buffer;
 
-  char **attr_names;
+  std::vector<std::string> attr_names;
 };
 
-struct MeshOutput {
+class MeshOutput {
+public:
+  MeshOutput() {}
+  ~MeshOutput() {}
+
+public:
   FILE *file;
   int version;
   int nverts;
@@ -55,23 +64,23 @@ struct MeshOutput {
   Index3 *indices;
 };
 
-/* mesh input file interfaces */
-extern struct MeshInput *MshOpenInputFile(const char *filename);
-extern void MshCloseInputFile(struct MeshInput *in);
-extern int MshReadHeader(struct MeshInput *in);
+// mesh input file interfaces
+extern MeshInput *MshOpenInputFile(const char *filename);
+extern void MshCloseInputFile(MeshInput *in);
+extern int MshReadHeader(MeshInput *in);
 
-/* mesh output file interfaces */
-extern struct MeshOutput *MshOpenOutputFile(const char *filename);
-extern void MshCloseOutputFile(struct MeshOutput *out);
-extern void MshWriteFile(struct MeshOutput *out);
+// mesh output file interfaces
+extern MeshOutput *MshOpenOutputFile(const char *filename);
+extern void MshCloseOutputFile(MeshOutput *out);
+extern void MshWriteFile(MeshOutput *out);
 
-/* high level interface for loading mesh file */
-/* TODO AUTOMATICALLY ADD AND COMPUTE N IF NOT EXIST */
-extern int MshLoadFile(struct Mesh *mesh, const char *filename);
+// high level interface for loading mesh file
+// TODO AUTOMATICALLY ADD AND COMPUTE N IF NOT EXIST
+extern int MshLoadFile(Mesh *mesh, const char *filename);
 
-/* error no interfaces */
+// error no interfaces
 extern int MshGetErrorNo(void);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

@@ -1,17 +1,13 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_mesh_io.h"
-#include "fj_string_function.h"
 #include "fj_tex_coord.h"
-#include "fj_memory.h"
 #include "fj_vector.h"
 #include "fj_color.h"
 #include "fj_mesh.h"
 
-#include <string.h>
+#include <cstring>
 
 #define MSH_FILE_VERSION 1
 #define MSH_FILE_MAGIC "MESH"
@@ -21,15 +17,15 @@ See LICENSE and README
 namespace fj {
 
 static int error_no = MSH_ERR_NONE;
-static size_t write_attriname(struct MeshOutput *out, const char *name);
-static size_t write_attridata(struct MeshOutput *out, const char *name);
+static size_t write_attriname(struct MeshOutput *out, const std::string &name);
+static size_t write_attridata(struct MeshOutput *out, const std::string &name);
 static size_t read_attridata(struct MeshInput *in);
 static void set_error(int err);
 
-/* mesh input file interfaces */
+// mesh input file interfaces
 struct MeshInput *MshOpenInputFile(const char *filename)
 {
-  struct MeshInput *in = FJ_MEM_ALLOC(struct MeshInput);
+  struct MeshInput *in = new MeshInput();
 
   if (in == NULL) {
     set_error(MSH_ERR_NO_MEMORY);
@@ -39,7 +35,7 @@ struct MeshInput *MshOpenInputFile(const char *filename)
   in->file = fopen(filename, "rb");
   if (in->file == NULL) {
     set_error(MSH_ERR_FILE_NOT_EXIST);
-    FJ_MEM_FREE(in);
+    delete in;
     return NULL;
   }
 
@@ -48,38 +44,20 @@ struct MeshInput *MshOpenInputFile(const char *filename)
   in->nvert_attrs = 0;
   in->nfaces = 0;
   in->nface_attrs = 0;
-  in->data_buffer = NULL;
-  in->buffer_size = 0;
-
-  in->attr_names = NULL;
 
   return in;
 }
 
 void MshCloseInputFile(struct MeshInput *in)
 {
-  char **name = NULL;
   if (in == NULL)
     return;
-
-  if (in->attr_names != NULL) {
-    /* make sure in->attr_names is not NULL because
-    need to dereference like *name != NULL */
-    for (name = in->attr_names; *name != NULL; name++) {
-      *name = StrFree(*name);
-    }
-    FJ_MEM_FREE(in->attr_names);
-  }
 
   if (in->file != NULL) {
     fclose(in->file);
   }
 
-  if (in->data_buffer != NULL) {
-    FJ_MEM_FREE(in->data_buffer);
-  }
-
-  FJ_MEM_FREE(in);
+  delete in;
 }
 
 int MshReadHeader(struct MeshInput *in)
@@ -105,11 +83,8 @@ int MshReadHeader(struct MeshInput *in)
   nreads += fread(&in->nfaces, sizeof(int), 1, in->file);
   nreads += fread(&in->nface_attrs, sizeof(int), 1, in->file);
 
-  nattrs_alloc = in->nvert_attrs + in->nface_attrs + 1; /* for sentinel */
-  in->attr_names = FJ_MEM_ALLOC_ARRAY(char *, nattrs_alloc);
-  for (i = 0; i < nattrs_alloc; i++) {
-    in->attr_names[i] = NULL;
-  }
+  nattrs_alloc = in->nvert_attrs + in->nface_attrs;
+  in->attr_names.resize(nattrs_alloc, "");
 
   for (i = 0; i < in->nvert_attrs + in->nface_attrs; i++) {
     char attrname[MAX_ATTRNAME_SIZE] = {'\0'};
@@ -120,16 +95,16 @@ int MshReadHeader(struct MeshInput *in)
       return -1;
     }
     nreads += fread(attrname, sizeof(char), namesize, in->file);
-    in->attr_names[i] = StrDup(attrname);
+    in->attr_names[i] = attrname;
   }
 
   return 0;
 }
 
-/* mesh output file interfaces */
+// mesh output file interfaces
 struct MeshOutput *MshOpenOutputFile(const char *filename)
 {
-  struct MeshOutput *out = FJ_MEM_ALLOC(struct MeshOutput);
+  struct MeshOutput *out = new MeshOutput();
 
   if (out == NULL) {
     set_error(MSH_ERR_NO_MEMORY);
@@ -139,7 +114,7 @@ struct MeshOutput *MshOpenOutputFile(const char *filename)
   out->file = fopen(filename, "wb");
   if (out->file == NULL) {
     set_error(MSH_ERR_FILE_NOT_EXIST);
-    FJ_MEM_FREE(out);
+    delete out;
     return NULL;
   }
 
@@ -166,14 +141,14 @@ void MshCloseOutputFile(struct MeshOutput *out)
   if (out->file != NULL) {
     fclose(out->file);
   }
-  FJ_MEM_FREE(out);
+  delete out;
 }
 
 void MshWriteFile(struct MeshOutput *out)
 {
   char magic[] = MSH_FILE_MAGIC;
 
-  /* counts nvert_attrs automatically */
+  // counts nvert_attrs automatically
   out->nvert_attrs = 0;
   if (out->P != NULL) out->nvert_attrs++;
   if (out->N != NULL) out->nvert_attrs++;
@@ -224,14 +199,13 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
   TOTAL_ATTR_COUNT = in->nvert_attrs + in->nface_attrs;
 
   for (i = 0; i < TOTAL_ATTR_COUNT; i++) {
-    const char *attrname;
-    attrname = in->attr_names[i];
-    if (strcmp(attrname, "P") == 0) {
+    const std::string &attrname = in->attr_names[i];
+    if (attrname == "P") {
       mesh->SetVertexCount(in->nverts);
       mesh->AddVertexPosition();
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
-        const double *data = (const double *) in->data_buffer;
+        const double *data = (const double *) &in->data_buffer[0];
         struct Vector P;
         P.x = data[3*j + 0];
         P.y = data[3*j + 1];
@@ -239,12 +213,12 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
         mesh->SetVertexPosition(j, P);
       }
     }
-    else if (strcmp(attrname, "N") == 0) {
+    else if (attrname == "N") {
       mesh->SetVertexCount(in->nverts);
       mesh->AddVertexNormal();
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
-        const double *data = (const double *) in->data_buffer;
+        const double *data = (const double *) &in->data_buffer[0];
         struct Vector N;
         N.x = data[3*j + 0];
         N.y = data[3*j + 1];
@@ -252,12 +226,12 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
         mesh->SetVertexNormal(j, N);
       }
     }
-    else if (strcmp(attrname, "Cd") == 0) {
+    else if (attrname == "Cd") {
       mesh->SetVertexCount(in->nverts);
       mesh->AddVertexColor();
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
-        const float *data = (const float *) in->data_buffer;
+        const float *data = (const float *) &in->data_buffer[0];
         struct Color Cd;
         Cd.r = data[3*j + 0];
         Cd.g = data[3*j + 1];
@@ -265,24 +239,24 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
         mesh->SetVertexColor(j, Cd);
       }
     }
-    else if (strcmp(attrname, "uv") == 0) {
+    else if (attrname == "uv") {
       mesh->SetVertexCount(in->nverts);
       mesh->AddVertexTexture();
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
-        const float *data = (const float *) in->data_buffer;
+        const float *data = (const float *) &in->data_buffer[0];
         struct TexCoord texcoord;
         texcoord.u = data[2*j + 0];
         texcoord.v = data[2*j + 1];
         mesh->SetVertexTexture(j, texcoord);
       }
     }
-    else if (strcmp(attrname, "velocity") == 0) {
+    else if (attrname == "velocity") {
       mesh->SetVertexCount(in->nverts);
       mesh->AddVertexVelocity();
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
-        const double *data = (const double *) in->data_buffer;
+        const double *data = (const double *) &in->data_buffer[0];
         struct Vector velocity;
         velocity.x = data[3*j + 0];
         velocity.y = data[3*j + 1];
@@ -290,12 +264,12 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
         mesh->SetVertexVelocity(j, velocity);
       }
     }
-    else if (strcmp(attrname, "indices") == 0) {
+    else if (attrname == "indices") {
       mesh->SetFaceCount(in->nfaces);
       mesh->AddFaceIndices();
       read_attridata(in);
       for (j = 0; j < in->nfaces; j++) {
-        const Index *data = (const Index *) in->data_buffer;
+        const Index *data = (const Index *) &in->data_buffer[0];
         Index3 tri_index;
         tri_index.i0 = data[3*j + 0];
         tri_index.i1 = data[3*j + 1];
@@ -321,45 +295,45 @@ static void set_error(int err)
   error_no = err;
 }
 
-static size_t write_attriname(struct MeshOutput *out, const char *name)
+static size_t write_attriname(struct MeshOutput *out, const std::string &name)
 {
   size_t namesize;
   size_t nwrotes;
 
-  if (strcmp(name, "P") == 0 && out->P == NULL) {
+  if (name == "P" && out->P == NULL) {
     return 0;
   }
-  else if (strcmp(name, "N") == 0 && out->N == NULL) {
+  else if (name == "N" && out->N == NULL) {
     return 0;
   }
-  else if (strcmp(name, "Cd") == 0 && out->Cd == NULL) {
+  else if (name == "Cd" && out->Cd == NULL) {
     return 0;
   }
-  else if (strcmp(name, "uv") == 0 && out->uv == NULL) {
+  else if (name == "uv" && out->uv == NULL) {
     return 0;
   }
-  else if (strcmp(name, "velocity") == 0 && out->velocity == NULL) {
+  else if (name == "velocity" && out->velocity == NULL) {
     return 0;
   }
-  else if (strcmp(name, "indices") == 0 && out->indices == NULL) {
+  else if (name == "indices" && out->indices == NULL) {
     return 0;
   }
 
   nwrotes = 0;
-  namesize = strlen(name) + 1;
+  namesize = name.length() + 1;
   nwrotes += fwrite(&namesize, sizeof(size_t), 1, out->file);
-  nwrotes += fwrite(name, sizeof(char), namesize, out->file);
+  nwrotes += fwrite(&name[0], sizeof(char), namesize, out->file);
 
   return nwrotes;
 }
 
-static size_t write_attridata(struct MeshOutput *out, const char *name)
+static size_t write_attridata(struct MeshOutput *out, const std::string &name)
 {
   size_t datasize = 0;
   size_t nwrotes = 0;
   int i;
 
-  if (strcmp(name, "P") == 0) {
+  if (name == "P") {
     if (out->P == NULL)
       return 0;
     datasize = 3 * sizeof(double) * out->nverts;
@@ -372,7 +346,7 @@ static size_t write_attridata(struct MeshOutput *out, const char *name)
       nwrotes += fwrite(P, sizeof(double), 3, out->file);
     }
   }
-  else if (strcmp(name, "N") == 0) {
+  else if (name == "N") {
     if (out->N == NULL)
       return 0;
     datasize = 3 * sizeof(double) * out->nverts;
@@ -385,7 +359,7 @@ static size_t write_attridata(struct MeshOutput *out, const char *name)
       nwrotes += fwrite(N, sizeof(double), 3, out->file);
     }
   }
-  else if (strcmp(name, "Cd") == 0) {
+  else if (name == "Cd") {
     if (out->Cd == NULL)
       return 0;
     datasize = 3 * sizeof(float) * out->nverts;
@@ -398,7 +372,7 @@ static size_t write_attridata(struct MeshOutput *out, const char *name)
       nwrotes += fwrite(Cd, sizeof(float), 3, out->file);
     }
   }
-  else if (strcmp(name, "uv") == 0) {
+  else if (name == "uv") {
     if (out->uv == NULL)
       return 0;
     datasize = 2 * sizeof(float) * out->nverts;
@@ -410,7 +384,7 @@ static size_t write_attridata(struct MeshOutput *out, const char *name)
       nwrotes += fwrite(uv, sizeof(float), 2, out->file);
     }
   }
-  else if (strcmp(name, "velocity") == 0) {
+  else if (name == "velocity") {
     if (out->velocity == NULL)
       return 0;
     datasize = 3 * sizeof(double) * out->nverts;
@@ -423,7 +397,7 @@ static size_t write_attridata(struct MeshOutput *out, const char *name)
       nwrotes += fwrite(velocity, sizeof(double), 3, out->file);
     }
   }
-  else if (strcmp(name, "indices") == 0) {
+  else if (name == "indices") {
     if (out->indices == NULL)
       return 0;
     datasize = 3 * sizeof(int) * out->nfaces;
@@ -445,12 +419,9 @@ static size_t read_attridata(struct MeshInput *in)
   size_t datasize = 0;
   nreads += fread(&datasize, sizeof(size_t), 1, in->file);
 
-  if (in->buffer_size < datasize) {
-    in->data_buffer = FJ_MEM_REALLOC_ARRAY(in->data_buffer, char, datasize);
-    in->buffer_size = datasize;
-  }
+  in->data_buffer.resize(datasize);
 
-  nreads += fread(in->data_buffer, sizeof(char), datasize, in->file);
+  nreads += fread(&in->data_buffer[0], sizeof(char), datasize, in->file);
 
   return nreads;
 }

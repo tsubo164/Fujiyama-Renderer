@@ -1,18 +1,15 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_framebuffer_io.h"
 #include "fj_framebuffer.h"
 #include "fj_file_io.h"
-#include "fj_memory.h"
 #include "fj_vector.h"
 #include "fj_box.h"
 
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
 
 #define FB_FILE_VERSION 1
 #define FB_FILE_MAGIC "FBUF"
@@ -32,11 +29,11 @@ int FbGetErrorNo(void)
 const char *FbGetErrorMessage(int err)
 {
   static const char *errmsg[] = {
-    "",                      /* ERR_FB_NOERR */
-    "No memory for FbInput", /* ERR_FB_NOMEM */
-    "No such file",          /* ERR_FB_NOFILE */
-    "Not framebuffer file",  /* ERR_FB_NOTFB */
-    "Invalid file version"   /* ERR_FB_BADVER */
+    "",                      // ERR_FB_NOERR
+    "No memory for FbInput", // ERR_FB_NOMEM
+    "No such file",          // ERR_FB_NOFILE
+    "Not framebuffer file",  // ERR_FB_NOTFB
+    "Invalid file version"   // ERR_FB_BADVER
   };
   static const int nerrs = (int )sizeof(errmsg)/sizeof(errmsg[0]);
 
@@ -47,9 +44,9 @@ const char *FbGetErrorMessage(int err)
   return errmsg[err];
 }
 
-struct FbInput *FbOpenInputFile(const char *filename)
+FbInput *FbOpenInputFile(const char *filename)
 {
-  struct FbInput *in = FJ_MEM_ALLOC(struct FbInput);
+  FbInput *in = new FbInput();
 
   if (in == NULL) {
     set_error(ERR_FB_NOMEM);
@@ -60,7 +57,7 @@ struct FbInput *FbOpenInputFile(const char *filename)
   in->file = fopen(filename, "rb");
   if (in->file == NULL) {
     set_error(ERR_FB_NOFILE);
-    FJ_MEM_FREE(in);
+    delete in;
     return NULL;
   }
 
@@ -75,7 +72,7 @@ struct FbInput *FbOpenInputFile(const char *filename)
   return in;
 }
 
-void FbCloseInputFile(struct FbInput *in)
+void FbCloseInputFile(FbInput *in)
 {
   if (in == NULL)
     return;
@@ -83,10 +80,10 @@ void FbCloseInputFile(struct FbInput *in)
   if (in->file != NULL) {
     fclose(in->file);
   }
-  FJ_MEM_FREE(in);
+  delete in;
 }
 
-int FbReadHeader(struct FbInput *in)
+int FbReadHeader(FbInput *in)
 {
   int8_t magic[FB_MAGIC_SIZE] = {'\0'};
   int err = 0;
@@ -108,13 +105,13 @@ int FbReadHeader(struct FbInput *in)
   err |= FjFile_ReadInt32(in->file, in->viewbox, 4);
   err |= FjFile_ReadInt32(in->file, in->databox, 4);
   if (err) {
-    /* TODO error handling */
+    // TODO error handling
   }
 
   return 0;
 }
 
-int FbReadData(struct FbInput *in)
+int FbReadData(FbInput *in)
 {
   int err = 0;
 
@@ -123,14 +120,14 @@ int FbReadData(struct FbInput *in)
 
   err = FjFile_ReadFloat(in->file, in->data, in->width * in->height * in->nchannels);
   if (err) {
-    /* TODO error handling */
+    // TODO error handling
   }
   return 0;
 }
 
-struct FbOutput *FbOpenOutputFile(const char *filename)
+FbOutput *FbOpenOutputFile(const char *filename)
 {
-  struct FbOutput *out = FJ_MEM_ALLOC(struct FbOutput);
+  FbOutput *out = new FbOutput();
 
   if (out == NULL) {
     set_error(ERR_FB_NOMEM);
@@ -140,7 +137,7 @@ struct FbOutput *FbOpenOutputFile(const char *filename)
   out->file = fopen(filename, "wb");
   if (out->file == NULL) {
     set_error(ERR_FB_NOFILE);
-    FJ_MEM_FREE(out);
+    delete out;
     return NULL;
   }
 
@@ -155,7 +152,7 @@ struct FbOutput *FbOpenOutputFile(const char *filename)
   return out;
 }
 
-void FbCloseOutputFile(struct FbOutput *out)
+void FbCloseOutputFile(FbOutput *out)
 {
   if (out == NULL)
     return;
@@ -163,10 +160,10 @@ void FbCloseOutputFile(struct FbOutput *out)
   if (out->file != NULL) {
     fclose(out->file);
   }
-  FJ_MEM_FREE(out);
+  delete out;
 }
 
-void FbWriteFile(struct FbOutput *out)
+void FbWriteFile(FbOutput *out)
 {
   int8_t magic[] = FB_FILE_MAGIC;
   int err = 0;
@@ -180,18 +177,18 @@ void FbWriteFile(struct FbOutput *out)
   err |= FjFile_WriteInt32(out->file, out->databox, 4);
   err |= FjFile_WriteFloat(out->file, out->data, out->width * out->height * out->nchannels);
   if (err) {
-    /* TODO error handling */
+    // TODO error handling
   }
 }
 
-int FbSaveCroppedData(struct FrameBuffer *fb, const char *filename)
+int FbSaveCroppedData(FrameBuffer *fb, const char *filename)
 {
   int x, y;
   int xmin, ymin, xmax, ymax;
   int viewbox[4] = {0, 0, 0, 0};
   int databox[4] = {0, 0, 0, 0};
-  struct FrameBuffer *cropped = NULL;
-  struct FbOutput *out = NULL;
+  FrameBuffer *cropped = NULL;
+  FbOutput *out = NULL;
 
   out = FbOpenOutputFile(filename);
   if (out == NULL) {

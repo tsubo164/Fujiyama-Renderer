@@ -10,6 +10,7 @@
 #include <vector>
 #include <cassert>
 #include <cstdio>
+#include <cstdlib>
 
 #define EXPAND .0001
 #define HALF_EXPAND (.5*EXPAND)

@@ -1,37 +1,40 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_point_cloud_io.h"
 #include "fj_point_cloud.h"
-#include "fj_memory.h"
 #include "fj_vector.h"
 #include "fj_io.h"
 
 #include <vector>
+#include <cstddef>
 
 #define PTC_FILE_VERSION 1
 #define PTC_FILE_MAGIC "PTCD"
 
 namespace fj {
 
-struct PtcInputFile {
-  struct InputFile *file;
+class PtcInputFile {
+public:
+  PtcInputFile() {}
+  ~PtcInputFile() {}
+
+public:
+  InputFile *file;
 
   int point_count;
 };
 
-struct PtcInputFile *PtcOpenInputFile(const char *filename)
+PtcInputFile *PtcOpenInputFile(const char *filename)
 {
-  struct PtcInputFile *in = FJ_MEM_ALLOC(struct PtcInputFile);
-
+  PtcInputFile *in = new PtcInputFile();
   if (in == NULL) {
     return NULL;
   }
 
   in->file = IOOpenInputFile(filename, PTC_FILE_MAGIC);
   if (in->file == NULL) {
+    PtcCloseInputFile(in);
     return NULL;
   }
 
@@ -42,69 +45,74 @@ struct PtcInputFile *PtcOpenInputFile(const char *filename)
   return in;
 }
 
-void PtcCloseInputFile(struct PtcInputFile *in)
+void PtcCloseInputFile(PtcInputFile *in)
 {
   if (in == NULL) {
     return;
   }
 
   IOCloseInputFile(in->file);
-  FJ_MEM_FREE(in);
+  delete in;
 }
 
-void PtcReadHeader(struct PtcInputFile *in)
+void PtcReadHeader(PtcInputFile *in)
 {
   IOReadInputHeader(in->file);
 }
 
-void PtcReadData(struct PtcInputFile *in)
+void PtcReadData(PtcInputFile *in)
 {
   IOReadInputData(in->file);
 }
 
-int PtcGetInputPointCount(const struct PtcInputFile *in)
+int PtcGetInputPointCount(const PtcInputFile *in)
 {
   return in->point_count;
 }
 
-void PtcSetInputPosition(struct PtcInputFile *in, struct Vector *P)
+void PtcSetInputPosition(PtcInputFile *in, Vector *P)
 {
   IOSetInputVector3(in->file, "P", P, PtcGetInputPointCount(in));
 }
 
-void PtcSetInputAttributeDouble(struct PtcInputFile *in,
+void PtcSetInputAttributeDouble(PtcInputFile *in,
     const char *attr_name, double *attr_data)
 {
   IOSetInputDouble(in->file, attr_name, attr_data, PtcGetInputPointCount(in));
 }
 
-void PtcSetInputAttributeVector3(struct PtcInputFile *in,
-    const char *attr_name, struct Vector *attr_data)
+void PtcSetInputAttributeVector3(PtcInputFile *in,
+    const char *attr_name, Vector *attr_data)
 {
   IOSetInputVector3(in->file, attr_name, attr_data, PtcGetInputPointCount(in));
 }
 
-int PtcGetInputAttributeCount(const struct PtcInputFile *in)
+int PtcGetInputAttributeCount(const PtcInputFile *in)
 {
   return IOGetInputDataChunkCount(in->file);
 }
 
-struct PtcOutputFile {
-  struct OutputFile *file;
+class PtcOutputFile {
+public:
+  PtcOutputFile() {}
+  ~PtcOutputFile() {}
+
+public:
+  OutputFile *file;
 
   int point_count;
 };
 
-struct PtcOutputFile *PtcOpenOutputFile(const char *filename)
+PtcOutputFile *PtcOpenOutputFile(const char *filename)
 {
-  struct PtcOutputFile *out = FJ_MEM_ALLOC(struct PtcOutputFile);
-
+  PtcOutputFile *out = new PtcOutputFile();
   if (out == NULL) {
     return NULL;
   }
 
   out->file = IOOpenOutputFile(filename, PTC_FILE_MAGIC, PTC_FILE_VERSION);
   if (out->file == NULL) {
+    PtcCloseOutputFile(out);
     return NULL;
   }
 
@@ -115,50 +123,50 @@ struct PtcOutputFile *PtcOpenOutputFile(const char *filename)
   return out;
 }
 
-void PtcCloseOutputFile(struct PtcOutputFile *out)
+void PtcCloseOutputFile(PtcOutputFile *out)
 {
   if (out == NULL) {
     return;
   }
 
   IOCloseOutputFile(out->file);
-  FJ_MEM_FREE(out);
+  delete out;
 }
 
-void PtcSetOutputPosition(struct PtcOutputFile *out, 
-    const struct Vector *P, int point_count)
+void PtcSetOutputPosition(PtcOutputFile *out, 
+    const Vector *P, int point_count)
 {
   out->point_count = point_count;
   IOSetOutputVector3 (out->file, "P", P, out->point_count);
 }
 
-void PtcSetOutputAttributeDouble(struct PtcOutputFile *out, 
+void PtcSetOutputAttributeDouble(PtcOutputFile *out, 
     const char *attr_name, const double *attr_data)
 {
   IOSetOutputDouble(out->file, attr_name, attr_data, out->point_count);
 }
 
-void PtcSetOutputAttributeVector3(struct PtcOutputFile *out, 
-    const char *attr_name, const struct Vector *attr_data)
+void PtcSetOutputAttributeVector3(PtcOutputFile *out, 
+    const char *attr_name, const Vector *attr_data)
 {
   IOSetOutputVector3(out->file, attr_name, attr_data, out->point_count);
 }
 
-void PtcWriteFile(struct PtcOutputFile *out)
+void PtcWriteFile(PtcOutputFile *out)
 {
   IOWriteOutputHeader(out->file);
   IOWriteOutputData(out->file);
 }
 
-int PtcLoadFile(struct PointCloud *ptc, const char *filename)
+int PtcLoadFile(PointCloud *ptc, const char *filename)
 {
-  struct PtcInputFile *in = PtcOpenInputFile(filename);
+  PtcInputFile *in = PtcOpenInputFile(filename);
 
   if (in == NULL) {
     return -1;
   }
 
-  /* read file */
+  // read file
   PtcReadHeader(in);
   const int point_count = PtcGetInputPointCount(in);
 
@@ -174,7 +182,7 @@ int PtcLoadFile(struct PointCloud *ptc, const char *filename)
 
   PtcCloseInputFile(in);
 
-  /* copy data to ptc */
+  // copy data to ptc
   ptc->SetPointCount(point_count);
   ptc->AddPointPosition();
   ptc->AddPointVelocity();
@@ -191,4 +199,4 @@ int PtcLoadFile(struct PointCloud *ptc, const char *filename)
   return 0;
 }
 
-} // namespace fj
+} // namespace xxx

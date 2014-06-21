@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_FRAMEBUFFERIO_H
 #define FJ_FRAMEBUFFERIO_H
@@ -11,9 +9,14 @@ See LICENSE and README
 
 namespace fj {
 
-struct FrameBuffer;
+class FrameBuffer;
 
-struct FbInput {
+class FbInput {
+public:
+  FbInput() {}
+  ~FbInput() {}
+
+public:
   FILE *file;
   int32_t version;
   int32_t width;
@@ -26,7 +29,12 @@ struct FbInput {
   float *data;
 };
 
-struct FbOutput {
+class FbOutput {
+public:
+  FbOutput() {}
+  ~FbOutput() {}
+
+public:
   FILE *file;
   int32_t version;
   int32_t width;
@@ -50,18 +58,18 @@ enum FbErrorNo {
 extern int FbGetErrorNo(void);
 extern const char *FbGetErrorMessage(int err);
 
-extern struct FbInput *FbOpenInputFile(const char *filename);
-extern void FbCloseInputFile(struct FbInput *in);
-extern int FbReadHeader(struct FbInput *in);
-extern int FbReadData(struct FbInput *in);
+extern FbInput *FbOpenInputFile(const char *filename);
+extern void FbCloseInputFile(FbInput *in);
+extern int FbReadHeader(FbInput *in);
+extern int FbReadData(FbInput *in);
 
-extern struct FbOutput *FbOpenOutputFile(const char *filename);
-extern void FbCloseOutputFile(struct FbOutput *out);
-extern void FbWriteFile(struct FbOutput *out);
+extern FbOutput *FbOpenOutputFile(const char *filename);
+extern void FbCloseOutputFile(FbOutput *out);
+extern void FbWriteFile(FbOutput *out);
 
-/* high level interface for saving framebuffer file */
-extern int FbSaveCroppedData(struct FrameBuffer *fb, const char *filename);
+// high level interface for saving framebuffer file
+extern int FbSaveCroppedData(FrameBuffer *fb, const char *filename);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

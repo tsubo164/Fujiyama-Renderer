@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_IO_H
 #define FJ_IO_H
@@ -10,11 +8,11 @@ See LICENSE and README
 
 namespace fj {
 
-struct InputFile;
-struct OutputFile;
-struct ChunkData;
+class InputFile;
+class OutputFile;
+class ChunkData;
 
-struct Vector;
+class Vector;
 
 enum ElementType {
   ELM_NONE = 0,
@@ -23,64 +21,64 @@ enum ElementType {
   ELM_VECTOR3
 };
 
-/* ChunkData */
-extern const char *ChkGetElementName(const struct ChunkData *chunk);
-extern int ChkGetElementType(const struct ChunkData *chunk);
-extern int ChkGetElementCount(const struct ChunkData *chunk);
+// ChunkData
+extern const char *ChkGetElementName(const ChunkData *chunk);
+extern int ChkGetElementType(const ChunkData *chunk);
+extern int ChkGetElementCount(const ChunkData *chunk);
 
-/* InputFile */
-extern struct InputFile *IOOpenInputFile(const char *filename, const char *magic);
-extern void IOCloseInputFile(struct InputFile *in);
+// InputFile
+extern InputFile *IOOpenInputFile(const char *filename, const char *magic);
+extern void IOCloseInputFile(InputFile *in);
 
-extern int IOGetInputHeaderChunkCount(const struct InputFile *in);
-extern int IOGetInputDataChunkCount(const struct InputFile *in);
-extern const struct ChunkData *IOGetInputHeaderChunk(const struct InputFile *in, int index);
-extern const struct ChunkData *IOGetInputDataChunk(const struct InputFile *in, int index);
-extern int IOGetInputFileFormatVersion(const struct InputFile *in);
+extern int IOGetInputHeaderChunkCount(const InputFile *in);
+extern int IOGetInputDataChunkCount(const InputFile *in);
+extern const ChunkData *IOGetInputHeaderChunk(const InputFile *in, int index);
+extern const ChunkData *IOGetInputDataChunk(const InputFile *in, int index);
+extern int IOGetInputFileFormatVersion(const InputFile *in);
 
-extern void IOEndInputHeader(struct InputFile *in);
-extern int IOReadInputHeader(struct InputFile *in);
-extern int IOReadInputData(struct InputFile *in);
+extern void IOEndInputHeader(InputFile *in);
+extern int IOReadInputHeader(InputFile *in);
+extern int IOReadInputData(InputFile *in);
 
-extern void IOSetInputInt(struct InputFile *in,
+extern void IOSetInputInt(InputFile *in,
     const char *element_name,
     int *dst_data,
     int element_count);
 
-extern void IOSetInputDouble(struct InputFile *in,
+extern void IOSetInputDouble(InputFile *in,
     const char *element_name,
     double *dst_data,
     int element_count);
 
-extern void IOSetInputVector3(struct InputFile *in,
+extern void IOSetInputVector3(InputFile *in,
     const char *element_name,
-    struct Vector *dst_data,
+    Vector *dst_data,
     int element_count);
 
-/* OutputFile */
-extern struct OutputFile *IOOpenOutputFile(const char *filename,
+// OutputFile
+extern OutputFile *IOOpenOutputFile(const char *filename,
     const char *magic, int format_version);
-extern void IOCloseOutputFile(struct OutputFile *out);
+extern void IOCloseOutputFile(OutputFile *out);
 
-extern void IOEndOutputHeader(struct OutputFile *out);
-extern int IOWriteOutputHeader(struct OutputFile *out);
-extern int IOWriteOutputData(struct OutputFile *out);
+extern void IOEndOutputHeader(OutputFile *out);
+extern int IOWriteOutputHeader(OutputFile *out);
+extern int IOWriteOutputData(OutputFile *out);
 
-extern void IOSetOutputInt(struct OutputFile *out,
+extern void IOSetOutputInt(OutputFile *out,
     const char *element_name,
     const int *src_data,
     int element_count);
 
-extern void IOSetOutputDouble(struct OutputFile *out,
+extern void IOSetOutputDouble(OutputFile *out,
     const char *element_name,
     const double *src_data,
     int element_count);
 
-extern void IOSetOutputVector3(struct OutputFile *out,
+extern void IOSetOutputVector3(OutputFile *out,
     const char *element_name,
-    const struct Vector *src_data,
+    const Vector *src_data,
     int element_count);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

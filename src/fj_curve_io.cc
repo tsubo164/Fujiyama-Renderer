@@ -1,14 +1,11 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_curve_io.h"
-#include "fj_string_function.h"
-#include "fj_memory.h"
 #include "fj_curve.h"
 
-#include <string.h>
+#include <cstring>
+#include <cstdlib>
 
 #define CRV_FILE_VERSION 1
 #define CRV_FILE_MAGIC "CURV"
@@ -17,13 +14,13 @@ See LICENSE and README
 
 namespace fj {
 
-static size_t write_attriname(struct CurveOutput *out, const char *name);
-static size_t write_attridata(struct CurveOutput *out, const char *name);
+static size_t write_attriname(struct CurveOutput *out, const std::string &name);
+static size_t write_attridata(struct CurveOutput *out, const std::string &name);
 static void set_error(int err);
 
 static int error_no = ERR_CRV_NOERR;
 
-/* error no interfaces */
+// error no interfaces
 int CrvGetErrorNo(void)
 {
   return error_no;
@@ -32,12 +29,12 @@ int CrvGetErrorNo(void)
 const char *CrvGetErrorMessage(int err)
 {
   static const char *errmsg[] = {
-    "",                         /* ERR_CRV_NOERR */
-    "No memory for CurveInput", /* ERR_CRV_NOMEM */
-    "No such file",             /* ERR_CRV_NOFILE */
-    "Not curve file",           /* ERR_CRV_NOTMESH */
-    "Invalid file version",     /* ERR_CRV_BADVER */
-    "Invalid attribute name"    /* ERR_CRV_BADATTRNAME */
+    "",                         // ERR_CRV_NOERR
+    "No memory for CurveInput", // ERR_CRV_NOMEM
+    "No such file",             // ERR_CRV_NOFILE
+    "Not curve file",           // ERR_CRV_NOTMESH
+    "Invalid file version",     // ERR_CRV_BADVER
+    "Invalid attribute name"    // ERR_CRV_BADATTRNAME
   };
   static const int nerrs = (int) sizeof(errmsg)/sizeof(errmsg[0]);
 
@@ -53,12 +50,10 @@ static void set_error(int err)
   error_no = err;
 }
 
-/* curve input file interfaces */
+// curve input file interfaces
 struct CurveInput *CrvOpenInputFile(const char *filename)
 {
-  // TODO QUICK FIX
   CurveInput *in = new CurveInput();
-  //struct CurveInput *in = FJ_MEM_ALLOC(struct CurveInput);
   if (in == NULL) {
     set_error(ERR_CRV_NOMEM);
     return NULL;
@@ -67,7 +62,7 @@ struct CurveInput *CrvOpenInputFile(const char *filename)
   in->file = fopen(filename, "rb");
   if (in->file == NULL) {
     set_error(ERR_CRV_NOFILE);
-    FJ_MEM_FREE(in);
+    delete in;
     return NULL;
   }
 
@@ -88,21 +83,13 @@ struct CurveInput *CrvOpenInputFile(const char *filename)
 
 void CrvCloseInputFile(struct CurveInput *in)
 {
-  char **name;
   if (in == NULL)
     return;
-
-  for (name = in->attr_names; *name != NULL; name++) {
-    *name = StrFree(*name);
-  }
-  FJ_MEM_FREE(in->attr_names);
 
   if (in->file != NULL) {
     fclose(in->file);
   }
-  // TODO QUICK FIX
   delete in;
-  //FJ_MEM_FREE(in);
 }
 
 int CrvReadHeader(struct CurveInput *in)
@@ -128,11 +115,8 @@ int CrvReadHeader(struct CurveInput *in)
   nreads += fread(&in->ncurves, sizeof(int), 1, in->file);
   nreads += fread(&in->ncurve_attrs, sizeof(int), 1, in->file);
 
-  nattrs_alloc = in->nvert_attrs + in->ncurve_attrs + 1; /* for sentinel */
-  in->attr_names = FJ_MEM_ALLOC_ARRAY(char *, nattrs_alloc);
-  for (i = 0; i < nattrs_alloc; i++) {
-    in->attr_names[i] = NULL;
-  }
+  nattrs_alloc = in->nvert_attrs + in->ncurve_attrs;
+  in->attr_names.resize(nattrs_alloc, "");
 
   for (i = 0; i < in->nvert_attrs + in->ncurve_attrs; i++) {
     char attrname[MAX_ATTRNAME_SIZE] = {'\0'};
@@ -143,7 +127,7 @@ int CrvReadHeader(struct CurveInput *in)
       return -1;
     }
     nreads += fread(attrname, sizeof(char), namesize, in->file);
-    in->attr_names[i] = StrDup(attrname);
+    in->attr_names[i] = attrname;
   }
 
   return 0;
@@ -160,10 +144,10 @@ int CrvReadAttribute(struct CurveInput *in)
   return 0;
 }
 
-/* curve output file interfaces */
+// curve output file interfaces
 struct CurveOutput *CrvOpenOutputFile(const char *filename)
 {
-  struct CurveOutput *out = FJ_MEM_ALLOC(struct CurveOutput);
+  CurveOutput *out = new CurveOutput();
   if (out == NULL) {
     set_error(ERR_CRV_NOMEM);
     return NULL;
@@ -172,7 +156,7 @@ struct CurveOutput *CrvOpenOutputFile(const char *filename)
   out->file = fopen(filename, "wb");
   if (out->file == NULL) {
     set_error(ERR_CRV_NOFILE);
-    FJ_MEM_FREE(out);
+    delete out;
     return NULL;
   }
 
@@ -199,14 +183,14 @@ void CrvCloseOutputFile(struct CurveOutput *out)
   if (out->file != NULL) {
     fclose(out->file);
   }
-  FJ_MEM_FREE(out);
+  delete out;
 }
 
 void CrvWriteFile(struct CurveOutput *out)
 {
   char magic[] = CRV_FILE_MAGIC;
 
-  /* counts nvert_attrs automatically */
+  // counts nvert_attrs automatically
   out->nvert_attrs = 0;
   if (out->P != NULL) out->nvert_attrs++;
   if (out->width != NULL) out->nvert_attrs++;
@@ -257,9 +241,8 @@ int CrvLoadFile(struct Curve *curve, const char *filename)
   TOTAL_ATTR_COUNT = in->nvert_attrs + in->ncurve_attrs;
 
   for (i = 0; i < TOTAL_ATTR_COUNT; i++) {
-    const char *attrname;
-    attrname = in->attr_names[i];
-    if (strcmp(attrname, "P") == 0) {
+    const std::string &attrname = in->attr_names[i];
+    if (attrname == "P") {
       curve->SetVertexCount(in->nverts);
       curve->AddVertexPosition();
       CrvReadAttribute(in);
@@ -272,7 +255,7 @@ int CrvLoadFile(struct Curve *curve, const char *filename)
         curve->SetVertexPosition(j, P);
       }
     }
-    else if (strcmp(attrname, "width") == 0) {
+    else if (attrname == "width") {
       curve->SetVertexCount(in->nverts);
       curve->AddVertexWidth();
       CrvReadAttribute(in);
@@ -282,7 +265,7 @@ int CrvLoadFile(struct Curve *curve, const char *filename)
         curve->SetVertexWidth(j, width);
       }
     }
-    else if (strcmp(attrname, "Cd") == 0) {
+    else if (attrname == "Cd") {
       curve->SetVertexCount(in->nverts);
       curve->AddVertexColor();
       CrvReadAttribute(in);
@@ -295,7 +278,7 @@ int CrvLoadFile(struct Curve *curve, const char *filename)
         curve->SetVertexColor(j, Cd);
       }
     }
-    else if (strcmp(attrname, "uv") == 0) {
+    else if (attrname == "uv") {
       curve->SetVertexCount(in->nverts);
       curve->AddVertexTexture();
       CrvReadAttribute(in);
@@ -307,7 +290,7 @@ int CrvLoadFile(struct Curve *curve, const char *filename)
         curve->SetVertexTexture(j, texcoord);
       }
     }
-    else if (strcmp(attrname, "velocity") == 0) {
+    else if (attrname == "velocity") {
       curve->SetVertexCount(in->nverts);
       curve->AddVertexVelocity();
       CrvReadAttribute(in);
@@ -320,7 +303,7 @@ int CrvLoadFile(struct Curve *curve, const char *filename)
         curve->SetVertexVelocity(j, velocity);
       }
     }
-    else if (strcmp(attrname, "indices") == 0) {
+    else if (attrname == "indices") {
       curve->SetCurveCount(in->ncurves);
       curve->AddCurveIndices();
       CrvReadAttribute(in);
@@ -338,80 +321,80 @@ int CrvLoadFile(struct Curve *curve, const char *filename)
   return 0;
 }
 
-static size_t write_attriname(struct CurveOutput *out, const char *name)
+static size_t write_attriname(struct CurveOutput *out, const std::string &name)
 {
   size_t namesize;
   size_t nwrotes;
 
-  if (strcmp(name, "P") == 0 && out->P == NULL) {
+  if (name == "P" && out->P == NULL) {
     return 0;
   }
-  else if (strcmp(name, "width") == 0 && out->width == NULL) {
+  else if (name == "width" && out->width == NULL) {
     return 0;
   }
-  else if (strcmp(name, "Cd") == 0 && out->Cd == NULL) {
+  else if (name == "Cd" && out->Cd == NULL) {
     return 0;
   }
-  else if (strcmp(name, "uv") == 0 && out->uv == NULL) {
+  else if (name == "uv" && out->uv == NULL) {
     return 0;
   }
-  else if (strcmp(name, "velocity") == 0 && out->velocity == NULL) {
+  else if (name == "velocity" && out->velocity == NULL) {
     return 0;
   }
-  else if (strcmp(name, "indices") == 0 && out->indices == NULL) {
+  else if (name == "indices" && out->indices == NULL) {
     return 0;
   }
 
   nwrotes = 0;
-  namesize = strlen(name) + 1;
+  namesize = name.length() + 1;
   nwrotes += fwrite(&namesize, sizeof(size_t), 1, out->file);
-  nwrotes += fwrite(name, sizeof(char), namesize, out->file);
+  nwrotes += fwrite(name.c_str(), sizeof(char), namesize, out->file);
 
   return nwrotes;
 }
 
-static size_t write_attridata(struct CurveOutput *out, const char *name)
+static size_t write_attridata(struct CurveOutput *out, const std::string &name)
 {
   size_t datasize;
   size_t nwrotes;
 
   nwrotes = 0;
-  if (strcmp(name, "P") == 0) {
+  if (name == "P") {
     if (out->P == NULL)
       return 0;
     datasize = 3 * sizeof(double) * out->nverts;
     nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
     nwrotes += fwrite(out->P, sizeof(double), 3 * out->nverts, out->file);
   }
-  else if (strcmp(name, "width") == 0) {
+  else if (name == "width") {
     if (out->width == NULL)
       return 0;
     datasize = 1 * sizeof(double) * out->nverts;
     fwrite(&datasize, sizeof(size_t), 1, out->file);
     fwrite(out->width, sizeof(double), 1 * out->nverts, out->file);
   }
-  else if (strcmp(name, "Cd") == 0) {
+  else if (name == "Cd") {
     if (out->Cd == NULL)
       return 0;
     datasize = 3 * sizeof(float) * out->nverts;
     fwrite(&datasize, sizeof(size_t), 1, out->file);
     fwrite(out->Cd, sizeof(float), 3 * out->nverts, out->file);
   }
-  else if (strcmp(name, "uv") == 0) {
+  else if (name == "uv") {
     if (out->uv == NULL)
       return 0;
     datasize = 2 * sizeof(float) * out->nverts;
     fwrite(&datasize, sizeof(size_t), 1, out->file);
     fwrite(out->uv, sizeof(float), 2 * out->nverts, out->file);
   }
-  else if (strcmp(name, "velocity") == 0) {
+  else if (name == "velocity") {
     if (out->velocity == NULL)
       return 0;
     datasize = 3 * sizeof(double) * out->nverts;
     fwrite(&datasize, sizeof(size_t), 1, out->file);
     fwrite(out->velocity, sizeof(double), 3 * out->nverts, out->file);
   }
-  else if (strcmp(name, "indices") == 0) {
+  else if (name == "indices") {
     if (out->indices == NULL)
       return 0;
     datasize = 1 * sizeof(int) * out->ncurves;

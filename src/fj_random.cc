@@ -140,4 +140,4 @@ double XorGaussianRand(struct XorShift *xr)
     return P.x * sqrt(-2 * log(dot) / dot);
 }
 
-} // namespace fj
+} // namespace xxx
