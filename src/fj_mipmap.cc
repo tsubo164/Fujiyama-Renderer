@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_mipmap.h"
 #include "fj_framebuffer.h"
@@ -62,103 +60,100 @@ const char *MipGetErrorMessage(int err)
   return errmsg[err];
 }
 
-struct MipInput *MipOpenInputFile(const char *filename)
+MipInput::MipInput() :
+    file_(NULL),
+    version_(0),
+    width_(0),
+    height_(0),
+    nchannels_(0),
+    tilesize_(0),
+    xntiles_(0),
+    yntiles_(0),
+    offset_of_header_(0),
+    offset_of_tile_(0)
 {
-  struct MipInput *in = FJ_MEM_ALLOC(struct MipInput);
+}
 
-  if (in == NULL) {
-    set_error(ERR_MIP_NOMEM);
-    return NULL;
-  }
+MipInput::~MipInput()
+{
+  Close();
+}
 
-  errno = 0;
-  in->file = fopen(filename, "rb");
-  if (in->file == NULL) {
+int MipInput::Open(const std::string &filename)
+{
+  file_ = fopen(filename.c_str(), "rb");
+  if (file_ == NULL) {
     set_error(ERR_MIP_NOFILE);
-    MipCloseInputFile(in);
-    return NULL;
+    Close();
+    return -1;
   }
-
-  in->version = 0;
-  in->width = 0;
-  in->height = 0;
-  in->nchannels = 0;
-  in->data = NULL;
-
-  in->tilesize = 0;
-  in->xntiles = 0;
-  in->yntiles = 0;
-
-  in->offset_of_header = 0;
-  in->offset_of_tile = 0;
-
-  return in;
+  return 0;
 }
 
-void MipCloseInputFile(struct MipInput *in)
+void MipInput::Close()
 {
-  if (in == NULL)
-    return;
-
-  if (in->file != NULL) {
-    fclose(in->file);
+  if (file_ != NULL) {
+    fclose(file_);
+    file_ = NULL;
   }
-  FJ_MEM_FREE(in);
 }
 
-int MipReadHeader(struct MipInput *in)
+int MipInput::ReadHeader()
 {
   size_t nreads = 0;
   char magic[MIP_MAGIC_SIZE];
 
-  nreads += sizeof(char) * fread(magic, sizeof(char), MIP_MAGIC_SIZE, in->file);
+  nreads += sizeof(char) * fread(magic, sizeof(char), MIP_MAGIC_SIZE, file_);
   if (memcmp(magic, MIP_FILE_MAGIC, MIP_MAGIC_SIZE) != 0) {
     set_error(ERR_MIP_NOTMIP);
     return -1;
   }
-  nreads += sizeof(int) * fread(&in->version, sizeof(int), 1, in->file);
-  if (in->version != MIP_FILE_VERSION) {
+  nreads += sizeof(int) * fread(&version_, sizeof(int), 1, file_);
+  if (version_ != MIP_FILE_VERSION) {
     set_error(ERR_MIP_BADVER);
     return -1;
   }
-  nreads += sizeof(int) * fread(&in->width, sizeof(int), 1, in->file);
-  nreads += sizeof(int) * fread(&in->height, sizeof(int), 1, in->file);
-  nreads += sizeof(int) * fread(&in->nchannels, sizeof(int), 1, in->file);
-  nreads += sizeof(int) * fread(&in->tilesize, sizeof(int), 1, in->file);
+  nreads += sizeof(int) * fread(&width_, sizeof(int), 1, file_);
+  nreads += sizeof(int) * fread(&height_, sizeof(int), 1, file_);
+  nreads += sizeof(int) * fread(&nchannels_, sizeof(int), 1, file_);
+  nreads += sizeof(int) * fread(&tilesize_, sizeof(int), 1, file_);
 
-  in->xntiles = in->width / in->tilesize;
-  in->yntiles = in->height / in->tilesize;
+  xntiles_ = width_ / tilesize_;
+  yntiles_ = height_ / tilesize_;
 
-  in->offset_of_header = nreads;
-  in->offset_of_tile = sizeof(float) * in->tilesize * in->tilesize * in->nchannels;
+  offset_of_header_ = nreads;
+  offset_of_tile_ = sizeof(float) * tilesize_ * tilesize_ * nchannels_;
 
   return 0;
 }
 
-int MipReadTile(struct MipInput *in, int xtile, int ytile)
+int MipInput::ReadTile(int xtile, int ytile, float *dst)
 {
-  const int TILESIZE = in->tilesize;
-  const int XNTILES = in->width / TILESIZE;
-  const int YNTILES = in->height / TILESIZE;
-  const int TILE_PXLS = TILESIZE * TILESIZE * in->nchannels;
+  const int TILESIZE = tilesize_;
+  const int XNTILES = width_ / TILESIZE;
+  const int YNTILES = height_ / TILESIZE;
+  const int TILE_PXLS = TILESIZE * TILESIZE * nchannels_;
   size_t nread = 0;
-  int tile_index = 0;
-  int x, y;
 
-  /* TODO TEMP out of border handling */
-  x = Clamp(xtile, 0, XNTILES-1);
-  y = Clamp(ytile, 0, YNTILES-1);
-  tile_index = y * XNTILES + x;
+  // TODO TEMP out of border handling
+  const int x = Clamp(xtile, 0, XNTILES-1);
+  const int y = Clamp(ytile, 0, YNTILES-1);
+  const int tile_index = y * XNTILES + x;
 
-  fseek(in->file, in->offset_of_header + sizeof(float) * tile_index * TILE_PXLS , SEEK_SET);
+  fseek(file_, offset_of_header_ + sizeof(float) * tile_index * TILE_PXLS , SEEK_SET);
 
-  nread = fread(in->data, sizeof(float), TILE_PXLS, in->file);
+  nread = fread(dst, sizeof(float), TILE_PXLS, file_);
   if (nread == 0) {
-    /* TODO error handling */
+    // TODO error handling
     return -1;
   }
 
   return 0;
+}
+
+bool MipInput::IsOpen() const
+{
+  return file_ != NULL;
 }
 
 struct MipOutput *MipOpenOutputFile(const char *filename)

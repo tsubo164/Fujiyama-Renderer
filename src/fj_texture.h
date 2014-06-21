@@ -1,12 +1,11 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_TEXTURE_H
 #define FJ_TEXTURE_H
 
 #include "fj_framebuffer.h"
+#include "fj_mipmap.h"
 #include <string>
 #include <vector>
 
@@ -30,7 +29,7 @@ public:
 
 private:
   FrameBuffer fb_;
-  MipInput *mip_;
+  MipInput mip_;
   int last_xtile_;
   int last_ytile_;
   bool is_open_;

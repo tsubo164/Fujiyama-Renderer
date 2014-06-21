@@ -1,34 +1,50 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_MIPMAP_H
 #define FJ_MIPMAP_H
 
-#include <stdio.h>
+#include <string>
+#include <cstdio>
 
 namespace fj {
 
-struct FrameBuffer;
+class FrameBuffer;
 
-struct MipInput {
-  FILE *file;
-  int version;
-  int width;
-  int height;
-  int nchannels;
-  float *data;
+class MipInput {
+public:
+  MipInput();
+  ~MipInput();
 
-  int tilesize;
-  int xntiles;
-  int yntiles;
+  int Open(const std::string &filename);
+  void Close();
 
-  size_t offset_of_header;
-  size_t offset_of_tile;
+  int ReadHeader();
+  int ReadTile(int xtile, int ytile, float *dst);
+
+  bool IsOpen() const;
+
+public:
+  FILE *file_;
+  int version_;
+  int width_;
+  int height_;
+  int nchannels_;
+
+  int tilesize_;
+  int xntiles_;
+  int yntiles_;
+
+  size_t offset_of_header_;
+  size_t offset_of_tile_;
 };
 
-struct MipOutput {
+class MipOutput {
+public:
+  MipOutput() {}
+  ~MipOutput() {}
+
+public:
   FILE *file;
   int version;
   int width;
@@ -36,7 +52,7 @@ struct MipOutput {
   int nchannels;
   int tilesize;
 
-  struct FrameBuffer *fb;
+  FrameBuffer *fb;
 };
 
 enum MipErrorNo {
@@ -50,21 +66,21 @@ enum MipErrorNo {
 extern int MipGetErrorNo(void);
 extern const char *MipGetErrorMessage(int err);
 
-/* MipInput */
-extern struct MipInput *MipOpenInputFile(const char *filename);
-extern void MipCloseInputFile(struct MipInput *in);
+// MipInput
+// extern MipInput *MipOpenInputFile(const char *filename);
+// extern void MipCloseInputFile(MipInput *in);
 
-extern int MipReadHeader(struct MipInput *in);
-extern int MipReadTile(struct MipInput *in, int xtile, int ytile);
+// extern int MipReadHeader(MipInput *in);
+// extern int MipReadTile(MipInput *in, int xtile, int ytile);
 
-/* MipOutput */
-extern struct MipOutput *MipOpenOutputFile(const char *filename);
-extern void MipCloseOutputFile(struct MipOutput *out);
+// MipOutput
+extern MipOutput *MipOpenOutputFile(const char *filename);
+extern void MipCloseOutputFile(MipOutput *out);
 
-extern int MipGenerateFromSourceData(struct MipOutput *out,
+extern int MipGenerateFromSourceData(MipOutput *out,
     const float *pixels, int width, int height, int nchannels);
-extern void MipWriteFile(struct MipOutput *out);
+extern void MipWriteFile(MipOutput *out);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

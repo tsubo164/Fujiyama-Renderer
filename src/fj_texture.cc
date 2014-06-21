@@ -1,13 +1,10 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_texture.h"
 #include "fj_framebuffer_io.h"
 #include "fj_multi_thread.h"
 #include "fj_tex_coord.h"
-#include "fj_mipmap.h"
 #include "fj_vector.h"
 #include "fj_color.h"
 
@@ -19,7 +16,7 @@ static const Color4 NO_TEXTURE_COLOR(1, .63, .63, 1);
 
 TextureCache::TextureCache() :
   fb_(),
-  mip_(NULL),
+  mip_(),
   last_xtile_(-1),
   last_ytile_(-1),
   is_open_(false)
@@ -28,8 +25,6 @@ TextureCache::TextureCache() :
 
 TextureCache::~TextureCache()
 {
-  //FbFree(fb_);
-  MipCloseInputFile(mip_);
 }
 
 int TextureCache::OpenMipmap(const std::string &filename)
@@ -38,23 +33,16 @@ int TextureCache::OpenMipmap(const std::string &filename)
     return -1;
   }
 
-  mip_ = MipOpenInputFile(filename.c_str());
-  if (mip_ == NULL) {
+  mip_.Open(filename.c_str());
+  if (!mip_.IsOpen()) {
     return -1;
   }
 
-#if 0
-  fb_ = FbNew();
-  if (fb_ == NULL) {
-    return -1;
-  }
-#endif
-
-  if (MipReadHeader(mip_)) {
+  if (mip_.ReadHeader()) {
     return -1;
   }
 
-  fb_.Resize(mip_->tilesize, mip_->tilesize, mip_->nchannels);
+  fb_.Resize(mip_.tilesize_, mip_.tilesize_, mip_.nchannels_);
   is_open_ = true;
 
   return 0;
@@ -62,7 +50,7 @@ int TextureCache::OpenMipmap(const std::string &filename)
 
 Color4 TextureCache::LookupTexture(float u, float v)
 {
-  if (mip_ == NULL) {
+  if (!mip_.IsOpen()) {
     return NO_TEXTURE_COLOR;
   }
 
@@ -71,15 +59,14 @@ Color4 TextureCache::LookupTexture(float u, float v)
       v - floor(v));
 
   const TexCoord tile_space(
-           tex_space.u  * mip_->xntiles,
-      (1 - tex_space.v) * mip_->yntiles);
+           tex_space.u  * mip_.xntiles_,
+      (1 - tex_space.v) * mip_.yntiles_);
 
   const int xtile = static_cast<int>(floor(tile_space.u));
   const int ytile = static_cast<int>(floor(tile_space.v));
 
   if (xtile != last_xtile_ || ytile != last_ytile_) {
-    mip_->data = fb_.GetWritable(0, 0, 0);
-    MipReadTile(mip_, xtile, ytile);
+    mip_.ReadTile(xtile, ytile, fb_.GetWritable(0, 0, 0));
     last_xtile_ = xtile;
     last_ytile_ = ytile;
   }
@@ -92,18 +79,18 @@ Color4 TextureCache::LookupTexture(float u, float v)
 
 int TextureCache::GetTextureWidth() const
 {
-  if (mip_ == NULL)
+  if (!mip_.IsOpen())
     return 0;
   else
-    return mip_->width;
+    return mip_.width_;
 }
 
 int TextureCache::GetTextureHeight() const
 {
-  if (mip_ == NULL)
+  if (!mip_.IsOpen())
     return 0;
   else
-    return mip_->height;
+    return mip_.height_;
 }
 
 bool TextureCache::IsOpen() const

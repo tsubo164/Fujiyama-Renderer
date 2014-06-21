@@ -53,21 +53,20 @@ int load_fb(const char *filename, struct FrameBuffer *fb, struct BufferInfo *inf
 
 int load_mip(const char *filename, struct FrameBuffer *fb, struct BufferInfo *info)
 {
-  struct MipInput *in = NULL;
+  MipInput in;
 
   if (fb == NULL)
     return -1;
 
-  in = MipOpenInputFile(filename);
-  if (in == NULL)
+  in.Open(filename);
+  if (!in.IsOpen())
     return -1;
 
-  if (MipReadHeader(in)) {
-    MipCloseInputFile(in);
+  if (in.ReadHeader()) {
     return -1;
   }
 
-  fb->Resize(in->width, in->height, in->nchannels);
+  fb->Resize(in.width_, in.height_, in.nchannels_);
 
   {
     int x, y;
@@ -76,30 +75,27 @@ int load_mip(const char *filename, struct FrameBuffer *fb, struct BufferInfo *in
     if (tilebuf == NULL) {
       /* TODO error handling */
     }
-    tilebuf->Resize(in->tilesize, in->tilesize, in->nchannels);
+    tilebuf->Resize(in.tilesize_, in.tilesize_, in.nchannels_);
 
-    for (y = 0; y < in->yntiles; y++) {
-      for (x = 0; x < in->xntiles; x++) {
+    for (y = 0; y < in.yntiles_; y++) {
+      for (x = 0; x < in.xntiles_; x++) {
         int i;
-        in->data = tilebuf->GetWritable(0, 0, 0);
-        MipReadTile(in, x, y);
-        for (i = 0; i < in->tilesize; i++) {
+        in.ReadTile(x, y, tilebuf->GetWritable(0, 0, 0));
+        for (i = 0; i < in.tilesize_; i++) {
           float *dst;
           const float *src;
-          dst = fb->GetWritable(x * in->tilesize, y * in->tilesize + i, 0);
+          dst = fb->GetWritable(x * in.tilesize_, y * in.tilesize_ + i, 0);
           src = tilebuf->GetReadOnly(0, i, 0);
-          memcpy(dst, src, sizeof(float) * in->tilesize * in->nchannels);
+          memcpy(dst, src, sizeof(float) * in.tilesize_ * in.nchannels_);
         }
       }
     }
     FbFree(tilebuf);
   }
 
-  BOX2_SET(info->viewbox, 0, 0, in->width, in->height);
+  BOX2_SET(info->viewbox, 0, 0, in.width_, in.height_);
   BOX2_COPY(info->databox, info->viewbox);
-  info->tilesize = in->tilesize;
-
-  MipCloseInputFile(in);
+  info->tilesize = in.tilesize_;
 
   return 0;
 }
