@@ -52,7 +52,7 @@ int main(int argc, const char **argv)
   int width = 0;
   int height = 0;
   int nchans = 0;
-  struct MipOutput *mip = NULL;
+  MipOutput mip;
   struct FrameBuffer *fb = NULL;
   int i;
 
@@ -130,19 +130,19 @@ int main(int argc, const char **argv)
   jpeg_destroy_decompress(&cinfo);
   fclose(jpg_file);
 
-  if ((mip = MipOpenOutputFile(argv[2])) == NULL) {
+  mip.Open(argv[2]);
+  if (!mip.IsOpen()) {
     fprintf(stderr, "error: couldn't open output file\n");
     FbFree(fb);
     return -1;
   }
 
-  MipGenerateFromSourceData(mip, fb->GetReadOnly(0, 0, 0), width, height, nchans);
+  mip.GenerateFromSourceData(fb->GetReadOnly(0, 0, 0), width, height, nchans);
   printf("input res: %d, %d\n", width, height);
-  printf("output res: %d, %d\n", mip->width, mip->height);
+  printf("output res: %d, %d\n", mip.width_, mip.height_);
 
-  MipWriteFile(mip);
+  mip.WriteFile();
 
-  MipCloseOutputFile(mip);
   FbFree(fb);
 
   return 0;

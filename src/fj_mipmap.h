@@ -4,6 +4,7 @@
 #ifndef FJ_MIPMAP_H
 #define FJ_MIPMAP_H
 
+#include "fj_framebuffer.h"
 #include <string>
 #include <cstdio>
 
@@ -18,11 +19,10 @@ public:
 
   int Open(const std::string &filename);
   void Close();
+  bool IsOpen() const;
 
   int ReadHeader();
   int ReadTile(int xtile, int ytile, float *dst);
-
-  bool IsOpen() const;
 
 public:
   FILE *file_;
@@ -41,18 +41,25 @@ public:
 
 class MipOutput {
 public:
-  MipOutput() {}
-  ~MipOutput() {}
+  MipOutput();
+  ~MipOutput();
+
+  int Open(const std::string &filename);
+  void Close();
+  bool IsOpen() const;
+
+  int GenerateFromSourceData(const float *pixels, int width, int height, int nchannels);
+  void WriteFile();
 
 public:
-  FILE *file;
-  int version;
-  int width;
-  int height;
-  int nchannels;
-  int tilesize;
+  FILE *file_;
+  int version_;
+  int width_;
+  int height_;
+  int nchannels_;
+  int tilesize_;
 
-  FrameBuffer *fb;
+  FrameBuffer fb_;
 };
 
 enum MipErrorNo {
@@ -62,24 +69,6 @@ enum MipErrorNo {
   ERR_MIP_NOTMIP,
   ERR_MIP_BADVER
 };
-
-extern int MipGetErrorNo(void);
-extern const char *MipGetErrorMessage(int err);
-
-// MipInput
-// extern MipInput *MipOpenInputFile(const char *filename);
-// extern void MipCloseInputFile(MipInput *in);
-
-// extern int MipReadHeader(MipInput *in);
-// extern int MipReadTile(MipInput *in, int xtile, int ytile);
-
-// MipOutput
-extern MipOutput *MipOpenOutputFile(const char *filename);
-extern void MipCloseOutputFile(MipOutput *out);
-
-extern int MipGenerateFromSourceData(MipOutput *out,
-    const float *pixels, int width, int height, int nchannels);
-extern void MipWriteFile(MipOutput *out);
 
 } // namespace xxx
 

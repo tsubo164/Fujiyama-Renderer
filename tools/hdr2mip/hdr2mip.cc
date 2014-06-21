@@ -24,7 +24,7 @@ int main(int argc, const char **argv)
 {
   FILE *fp;
   int width, height;
-  struct MipOutput *mip;
+  struct MipOutput mip;
   struct FrameBuffer *hdr;
   rgbe_header_info info;
 
@@ -63,19 +63,19 @@ int main(int argc, const char **argv)
   }
   RGBE_ReadPixels_RLE(fp, hdr->GetWritable(0, 0, 0), width, height);
 
-  if ((mip = MipOpenOutputFile(argv[2])) == NULL) {
+  mip.Open(argv[2]);
+  if (!mip.IsOpen()) {
     fprintf(stderr, "error: couldn't open output file\n");
     FbFree(hdr);
     return -1;
   }
 
-  MipGenerateFromSourceData(mip, hdr->GetReadOnly(0, 0, 0), width, height, 3);
+  mip.GenerateFromSourceData(hdr->GetReadOnly(0, 0, 0), width, height, 3);
   printf("input res: %d, %d\n", width, height);
-  printf("output res: %d, %d\n", mip->width, mip->height);
+  printf("output res: %d, %d\n", mip.width_, mip.height_);
 
-  MipWriteFile(mip);
+  mip.WriteFile();
 
-  MipCloseOutputFile(mip);
   FbFree(hdr);
   fclose(fp);
 
