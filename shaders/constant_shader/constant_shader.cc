@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_shader.h"
 #include "fj_numeric.h"
@@ -9,8 +7,8 @@ See LICENSE and README
 #include "fj_vector.h"
 #include "fj_color.h"
 
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 
 using namespace fj;
 
@@ -19,9 +17,14 @@ static void MyFree(void *self);
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     const struct SurfaceInput *in, struct SurfaceOutput *out);
 
-struct ConstantShader {
-  struct Color diffuse;
-  struct Texture *texture;
+class ConstantShader {
+public:
+  ConstantShader() {}
+  ~ConstantShader() {}
+
+public:
+  Color diffuse;
+  Texture *texture;
 };
 
 static const char MyPluginName[] = "ConstantShader";
@@ -62,11 +65,7 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-  struct ConstantShader *constant = NULL;
-
-  constant = FJ_MEM_ALLOC(struct ConstantShader);
-  if (constant == NULL)
-    return NULL;
+  ConstantShader *constant = new ConstantShader();
 
   PropSetAllDefaultValues(constant, MyProperties);
 
@@ -78,7 +77,7 @@ static void MyFree(void *self)
   struct ConstantShader *constant = (struct ConstantShader *) self;
   if (constant == NULL)
     return;
-  FJ_MEM_FREE(constant);
+  delete constant;
 }
 
 static void MyEvaluate(const void *self, const struct TraceContext *cxt,
@@ -87,7 +86,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   const struct ConstantShader *constant = (struct ConstantShader *) self;
   struct Color4 C_tex;
 
-  /* C_tex */
+  // C_tex
   if (constant->texture != NULL) {
     C_tex = constant->texture->Lookup(in->uv.u, in->uv.v);
     C_tex.r *= constant->diffuse.r;
@@ -100,7 +99,7 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     C_tex.b = constant->diffuse.b;
   }
 
-  /* Cs */
+  // Cs
   out->Cs.r = C_tex.r;
   out->Cs.g = C_tex.g;
   out->Cs.b = C_tex.b;
