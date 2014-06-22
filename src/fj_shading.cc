@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_shading.h"
 #include "fj_volume_accelerator.h"
@@ -11,16 +9,15 @@ See LICENSE and README
 #include "fj_accelerator.h"
 #include "fj_interval.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
 #include "fj_shader.h"
 #include "fj_volume.h"
 #include "fj_light.h"
 #include "fj_ray.h"
 
-#include <assert.h>
-#include <stdio.h>
-#include <float.h>
-#include <math.h>
+#include <cassert>
+#include <cstdio>
+#include <cfloat>
+#include <cmath>
 
 namespace fj {
 
@@ -57,7 +54,7 @@ double SlFresnel(const struct Vector *I, const struct Vector *N, double ior)
   double eta = 0;
   double cos = 0;
 
-  /* dot(-I, N) */
+  // dot(-I, N)
   cos = -1 * Dot(*I, *N);
   if (cos > 0) {
     eta = ior;
@@ -89,7 +86,7 @@ double SlPhong(const struct Vector *I, const struct Vector *N, const struct Vect
 
 void SlReflect(const struct Vector *I, const struct Vector *N, struct Vector *R)
 {
-  /* dot(-I, N) */
+  // dot(-I, N)
   const double cos = -1 * Dot(*I, *N);
 
   R->x = I->x + 2 * cos * N->x;
@@ -106,7 +103,7 @@ void SlRefract(const struct Vector *I, const struct Vector *N, double ior,
   double cos1 = 0;
   double eta = 0;
 
-  /* dot(-I, N) */
+  // dot(-I, N)
   cos1 = -1 * Dot(*I, *N);
   if (cos1 < 0) {
     cos1 *= -1;
@@ -122,7 +119,7 @@ void SlRefract(const struct Vector *I, const struct Vector *N, double ior,
   radicand = 1 - eta*eta * (1 - cos1*cos1);
 
   if (radicand < 0.) {
-    /* total internal reflection */
+    // total internal reflection
     n.x = -N->x;
     n.y = -N->y;
     n.z = -N->z;
@@ -254,7 +251,7 @@ struct TraceContext SlShadowContext(const struct TraceContext *cxt,
   struct TraceContext shad_cxt = *cxt;
 
   shad_cxt.ray_context = CXT_SHADOW_RAY;
-  /* turn off the secondary trance on occluding objects */
+  // turn off the secondary trance on occluding objects
   shad_cxt.max_reflect_depth = 0;
   shad_cxt.max_refract_depth = 0;
   shad_cxt.trace_target = obj->GetShadowTarget();
@@ -329,8 +326,8 @@ int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *samp
     hit = SlTrace(&shad_cxt, Ps, &out->Ln, .0001, out->distance, &C_occl, &t_hit);
 
     if (hit) {
-      /* return 0; */
-      /* TODO handle light_color for shadow ray */
+      // return 0;
+      // TODO handle light_color for shadow ray
       const float alpha_complement = 1 - C_occl.a;
       light_color.r *= alpha_complement;
       light_color.g *= alpha_complement;
@@ -342,7 +339,7 @@ int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *samp
   return 1;
 }
 
-  /* TODO temp solution compute before rendering */
+  // TODO temp solution compute before rendering
 int SlGetLightSampleCount(const struct SurfaceInput *in)
 {
   const struct Light **lights = in->shaded_object->GetLightList();
@@ -372,11 +369,11 @@ struct LightSample *SlNewLightSamples(const struct SurfaceInput *in)
   struct LightSample *sample = NULL;
 
   if (nsamples == 0) {
-    /* TODO handling */
+    // TODO handling
     return NULL;
   }
 
-  samples = FJ_MEM_ALLOC_ARRAY(struct LightSample, nsamples);
+  samples = new LightSample[nsamples];
   sample = samples;
   for (i = 0; i < nlights; i++) {
     const int nsmp = lights[i]->GetSampleCount();
@@ -391,7 +388,7 @@ void SlFreeLightSamples(struct LightSample * samples)
 {
   if (samples == NULL)
     return;
-  FJ_MEM_FREE(samples);
+  delete [] samples;
 }
 
 #define MUL(a,val) do { \
@@ -421,21 +418,21 @@ void SlBumpMapping(const struct Texture *bump_map,
   du = 1. / xres;
   dv = 1. / yres;
 
-  /* Bu = B(u - du, v) - B(v + du, v) / (2 * du) */
+  // Bu = B(u - du, v) - B(v + du, v) / (2 * du)
   C_tex0 = bump_map->Lookup(texcoord->u - du, texcoord->v);
   C_tex1 = bump_map->Lookup(texcoord->u + du, texcoord->v);
   val0 = Luminance4(C_tex0);
   val1 = Luminance4(C_tex1);
   Bu = (val0 - val1) / (2 * du);
 
-  /* Bv = B(u, v - dv) - B(v, v + dv) / (2 * dv) */
+  // Bv = B(u, v - dv) - B(v, v + dv) / (2 * dv)
   C_tex0 = bump_map->Lookup(texcoord->u, texcoord->v - dv);
   C_tex1 = bump_map->Lookup(texcoord->u, texcoord->v + dv);
   val0 = Luminance4(C_tex0);
   val1 = Luminance4(C_tex1);
   Bv = (val0 - val1) / (2 * dv);
 
-  /* N ~= N + Bv(N x Pu) + Bu(N x Pv) */
+  // N ~= N + Bv(N x Pu) + Bu(N x Pv)
   N_dPdu = Cross(*N, *dPdu);
   N_dPdv = Cross(*N, *dPdv);
   MUL(&N_dPdu, du);
@@ -518,12 +515,12 @@ static int trace_surface(const struct TraceContext *cxt, const struct Ray &ray,
   acc = cxt->trace_target->GetSurfaceAccelerator();
   hit = acc->Intersect(ray, cxt->time, &isect);
 
-  /* TODO handle shadow ray for surface geometry */
-  /*
+  // TODO handle shadow ray for surface geometry
+#if 0
   if (cxt->ray_context == CXT_SHADOW_RAY) {
     return hit;
   }
-  */
+#endif
 
   if (hit) {
     struct SurfaceInput in;
@@ -569,7 +566,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
     double t = 0, t_start = 0, t_delta = 0, t_limit = 0;
     const float opacity_threshold = cxt->opacity_threshold;
 
-    /* t properties */
+    // t properties
     switch (cxt->ray_context) {
     case CXT_CAMERA_RAY:
       t_delta = cxt->raymarch_step;
@@ -604,18 +601,18 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
     ray_delta.z = t_delta * ray->dir.z;
     t = t_start;
 
-    /* raymarch */
+    // raymarch
     while (t <= t_limit && out_rgba->a < opacity_threshold) {
       const struct Interval *interval = intervals.GetHead();
       struct Color color;
       float opacity = 0;
 
-      /* loop over volume candidates at this sample point */
+      // loop over volume candidates at this sample point
       for (; interval != NULL; interval = interval->next) {
         struct VolumeSample sample;
         interval->object->GetVolumeSample(P, cxt->time, &sample);
 
-        /* merge volume with max density */
+        // merge volume with max density
         opacity = Max(opacity, t_delta * sample.density);
 
         if (cxt->ray_context != CXT_SHADOW_RAY) {
@@ -633,13 +630,13 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
         }
       }
 
-      /* composite color */
+      // composite color
       out_rgba->r = out_rgba->r + color.r * (1-out_rgba->a);
       out_rgba->g = out_rgba->g + color.g * (1-out_rgba->a);
       out_rgba->b = out_rgba->b + color.b * (1-out_rgba->a);
       out_rgba->a = out_rgba->a + Clamp(opacity, 0, 1) * (1-out_rgba->a);
 
-      /* advance sample point */
+      // advance sample point
       P.x += ray_delta.x;
       P.y += ray_delta.y;
       P.z += ray_delta.z;

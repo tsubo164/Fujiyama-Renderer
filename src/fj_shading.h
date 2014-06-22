@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_SHADING_H
 #define FJ_SHADING_H
@@ -70,7 +68,7 @@ struct LightOutput {
   double distance;
 };
 
-/* tracing functions */
+// tracing functions
 extern void SlFaceforward(const struct Vector *I, const struct Vector *N, struct Vector *Nf);
 extern double SlFresnel(const struct Vector *I, const struct Vector *N, double ior);
 extern double SlPhong(const struct Vector *I, const struct Vector *N, const struct Vector *L,
@@ -98,7 +96,7 @@ extern struct TraceContext SlShadowContext(const struct TraceContext *cxt,
 extern struct TraceContext SlSelfHitContext(const struct TraceContext *cxt,
     const struct ObjectInstance *obj);
 
-/* lighting functions */
+// lighting functions
 struct LightSample;
 
 extern int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *sample,
@@ -110,7 +108,7 @@ extern int SlGetLightSampleCount(const struct SurfaceInput *in);
 extern struct LightSample *SlNewLightSamples(const struct SurfaceInput *in);
 extern void SlFreeLightSamples(struct LightSample * samples);
 
-/* texture functions */
+// texture functions
 extern void SlBumpMapping(const struct Texture *bump_map,
     const struct Vector *dPdu, const struct Vector *dPdv,
     const struct TexCoord *texcoord, double amplitude,
@@ -118,4 +116,4 @@ extern void SlBumpMapping(const struct Texture *bump_map,
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H
