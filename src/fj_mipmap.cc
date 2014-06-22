@@ -281,6 +281,16 @@ void MipOutput::WriteFile()
   }
 }
 
+int MipOutput::GetWidth() const
+{
+  return width_;
+}
+
+int MipOutput::GetHeight() const
+{
+  return height_;
+}
+
 static void set_error(int err)
 {
   error_no = err;

@@ -72,7 +72,7 @@ int main(int argc, const char **argv)
 
   mip.GenerateFromSourceData(hdr->GetReadOnly(0, 0, 0), width, height, 3);
   printf("input res: %d, %d\n", width, height);
-  printf("output res: %d, %d\n", mip.width_, mip.height_);
+  printf("output res: %d, %d\n", mip.GetWidth(), mip.GetHeight());
 
   mip.WriteFile();
 

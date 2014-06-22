@@ -58,7 +58,10 @@ public:
   int GenerateFromSourceData(const float *pixels, int width, int height, int nchannels);
   void WriteFile();
 
-public:
+  int GetWidth() const;
+  int GetHeight() const;
+
+private:
   FILE *file_;
   int version_;
   int width_;
