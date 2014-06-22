@@ -1,17 +1,15 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_importance_sampling.h"
 #include "fj_numeric.h"
 #include "fj_texture.h"
-#include "fj_memory.h"
 #include "fj_random.h"
 #include "fj_vector.h"
 
-#include <stdio.h>
-#include <float.h>
+#include <vector>
+#include <cstdlib>
+#include <cfloat>
 
 namespace fj {
 
@@ -28,7 +26,7 @@ static void index_to_uv(int xres, int yres, int index, struct TexCoord *uv);
 static void uv_to_dir(float u, float v, struct Vector *dir);
 static void xy_to_uv(int xres, int yres, int x, int y, struct TexCoord *uv);
 
-/* functions for structured importance sampling */
+// functions for structured importance sampling
 static void setup_structured_importance_sampling(struct Texture *texture,
     int sample_xres, int sample_yres,
     double *illum_values, double *whole_illum, double *mean_illum);
@@ -55,8 +53,8 @@ int ImportanceSampling(struct Texture *texture, int seed,
     struct DomeSample *dome_samples, int sample_count)
 {
   const int NPIXELS = sample_xres * sample_yres;
-  double *histgram = FJ_MEM_ALLOC_ARRAY(double, NPIXELS);
-  char *picked = FJ_MEM_ALLOC_ARRAY(char, NPIXELS);
+  std::vector<double> histgram(NPIXELS);
+  std::vector<char> picked(NPIXELS);
 
   struct XorShift xr;
   double sum = 0;
@@ -66,21 +64,19 @@ int ImportanceSampling(struct Texture *texture, int seed,
     picked[i] = 0;
   }
 
-  make_histgram(texture, sample_xres, sample_yres, histgram);
+  make_histgram(texture, sample_xres, sample_yres, &histgram[0]);
   sum = histgram[NPIXELS-1];
 
   XorInit(&xr);
   for (i = 0; i < sample_count; i++) {
     for (;;) {
       const double rand = sum * XorNextFloat01(&xr);
-      const int index = lookup_histgram(histgram, NPIXELS, rand);
+      const int index = lookup_histgram(&histgram[0], NPIXELS, rand);
       struct DomeSample sample = {};
       struct Color4 tex_rgba;
 
       if (picked[index] == 1) {
-        /*
-        continue;
-        */
+        // continue;
       }
 
       index_to_uv(sample_xres, sample_yres, index, &sample.uv);
@@ -96,8 +92,6 @@ int ImportanceSampling(struct Texture *texture, int seed,
     }
   }
 
-  FJ_MEM_FREE(picked);
-  FJ_MEM_FREE(histgram);
   return 0;
 }
 
@@ -106,8 +100,8 @@ int StratifiedImportanceSampling(struct Texture *texture, int seed,
     struct DomeSample *dome_samples, int sample_count)
 {
   const int NPIXELS = sample_xres * sample_yres;
-  double *histgram = FJ_MEM_ALLOC_ARRAY(double, NPIXELS);
-  char *picked = FJ_MEM_ALLOC_ARRAY(char, NPIXELS);
+  std::vector<double> histgram(NPIXELS);
+  std::vector<char> picked(NPIXELS);
 
   struct XorShift xr;
   double sum = 0;
@@ -117,7 +111,7 @@ int StratifiedImportanceSampling(struct Texture *texture, int seed,
     picked[i] = 0;
   }
 
-  make_histgram(texture, sample_xres, sample_yres, histgram);
+  make_histgram(texture, sample_xres, sample_yres, &histgram[0]);
   sum = histgram[NPIXELS-1];
 
   XorInit(&xr);
@@ -128,14 +122,12 @@ int StratifiedImportanceSampling(struct Texture *texture, int seed,
   for (i = 0; i < sample_count; i++) {
     for (;;) {
       const double rand = sum * ((i + XorNextFloat01(&xr)) / sample_count);
-      const int index = lookup_histgram(histgram, NPIXELS, rand);
+      const int index = lookup_histgram(&histgram[0], NPIXELS, rand);
       struct DomeSample sample = {};
       struct Color4 tex_rgba;
 
       if (picked[index] == 1) {
-        /*
-        continue;
-        */
+        // continue;
       }
 
       index_to_uv(sample_xres, sample_yres, index, &sample.uv);
@@ -151,8 +143,6 @@ int StratifiedImportanceSampling(struct Texture *texture, int seed,
     }
   }
 
-  FJ_MEM_FREE(picked);
-  FJ_MEM_FREE(histgram);
   return 0;
 }
 
@@ -165,61 +155,56 @@ int StructuredImportanceSampling(struct Texture *texture, int seed,
   double thresholds[8] = {0};
   const int depth = 6;
 
-  char *strata_id = NULL;
-  int *connected_label = NULL;
-  int *connected_sample_count = NULL;
   int sorted_label_count = 0;
 
-  double *L = NULL;
   double L_whole = 0;
   double L_mean = 0;
   double L_sigma = 0;
   double gamma_whole = 0;
-  int i;
 
-  /* prepare */
-  L = FJ_MEM_ALLOC_ARRAY(double, NPIXELS);
+  // prepare
+  std::vector<double> L(NPIXELS);
   setup_structured_importance_sampling(texture,
       sample_xres, sample_yres,
-      L, &L_whole, &L_mean);
-  L_sigma = standard_deviation(L, NPIXELS, L_mean);
+      &L[0], &L_whole, &L_mean);
+  L_sigma = standard_deviation(&L[0], NPIXELS, L_mean);
 
-  /* thresholds */
-  for (i = 0; i < depth; i++) {
+  // thresholds
+  for (int i = 0; i < depth; i++) {
     thresholds[i] = i * L_sigma;
   }
 
-  /* Gamma_{4 Pi} = L * dOmega_{0}^{1/4} */
+  // Gamma_{4 Pi} = L * dOmega_{0}^{1/4}
   gamma_whole = L_whole * pow(delta_omega0, 1./4);
 
-  /* layers */
-  strata_id = FJ_MEM_ALLOC_ARRAY(char, NPIXELS);
-  divide_into_layers(L, NPIXELS,
+  // layers
+  std::vector<char> strata_id(NPIXELS);
+  divide_into_layers(&L[0], NPIXELS,
       thresholds, depth,
-      strata_id);
+      &strata_id[0]);
 
-  /* connections */
-  connected_label = FJ_MEM_ALLOC_ARRAY(int, NPIXELS);
+  // connections
+  std::vector<int> connected_label(NPIXELS);
   solve_connected_components(
-      sample_xres, sample_yres, strata_id,
-      connected_label);
+      sample_xres, sample_yres, &strata_id[0],
+      &connected_label[0]);
 
-  /* re-map labels like 0, 1, ... */
-  remap_connected_label(NPIXELS, connected_label, &sorted_label_count);
+  // re-map labels like 0, 1, ...
+  remap_connected_label(NPIXELS, &connected_label[0], &sorted_label_count);
 
-  /* sample count for each connection */
-  connected_sample_count = FJ_MEM_ALLOC_ARRAY(int, sorted_label_count);
-  compute_connected_sample_count(L, NPIXELS,
-      connected_label, sorted_label_count,
+  // sample count for each connection
+  std::vector<int> connected_sample_count(sorted_label_count);
+  compute_connected_sample_count(&L[0], NPIXELS,
+      &connected_label[0], sorted_label_count,
       sample_count, gamma_whole,
-      connected_sample_count);
+      &connected_sample_count[0]);
 
   generate_dome_samples(sample_xres, sample_yres,
-      connected_sample_count,
-      connected_label, sorted_label_count,
+      &connected_sample_count[0],
+      &connected_label[0], sorted_label_count,
       dome_samples, sample_count);
 
-  for (i = 0; i < sample_count; i++) {
+  for (int i = 0; i < sample_count; i++) {
     struct DomeSample *sample = &dome_samples[i];
     struct Color4 tex_rgba;
     tex_rgba = texture->Lookup(sample->uv.u, sample->uv.v);
@@ -227,11 +212,6 @@ int StructuredImportanceSampling(struct Texture *texture, int seed,
     sample->color.g = tex_rgba.g;
     sample->color.b = tex_rgba.b;
   }
-
-  FJ_MEM_FREE(connected_sample_count);
-  FJ_MEM_FREE(connected_label);
-  FJ_MEM_FREE(strata_id);
-  FJ_MEM_FREE(L);
 
   return 0;
 }
@@ -352,7 +332,7 @@ static void divide_into_layers(const double *illum_values, int nvalues,
   }
 }
 
-/* Based on Fast Connect Components on Images */
+// Based on Fast Connect Components on Images
 static void solve_connected_components(
     int sample_xres, int sample_yres, const char *strata_id,
     int *connected_label)
@@ -372,7 +352,7 @@ static void solve_connected_components(
 
       if (curr_id == left_id && curr_id == top_id) {
         if (connected_label[left] != connected_label[top]) {
-          /* merge */
+          // merge
           const int left_label = connected_label[left];
           const int top_label = connected_label[top];
           int k;
@@ -402,28 +382,21 @@ static void remap_connected_label(int npixels,
     int *connected_label, int *sorted_max_label)
 {
   const int NPIXELS = npixels;
-  int *label_map = NULL;
   int max_label = 0;
   int label_count = 0;
   int new_label = 0;
-  int i;
 
-  /* find max label */
-  for (i = 0; i < NPIXELS; i++) {
+  // find max label
+  for (int i = 0; i < NPIXELS; i++) {
     if (max_label < connected_label[i]) {
       max_label = connected_label[i];
     }
   }
-  label_count = max_label + 1; /* for 0 */
-  label_map = FJ_MEM_ALLOC_ARRAY(int, label_count);
+  label_count = max_label + 1; // for 0
+  std::vector<int> label_map(label_count, -1);
 
-  /* initialize */
-  for (i = 0; i < label_count; i++) {
-    label_map[i] = -1;
-  }
-
-  /* re-map id from 0 */
-  for (i = 0; i < NPIXELS; i++) {
+  // re-map id from 0
+  for (int i = 0; i < NPIXELS; i++) {
     const int old_label = connected_label[i];
     if (label_map[old_label] == -1) {
       label_map[old_label] = new_label;
@@ -431,7 +404,6 @@ static void remap_connected_label(int npixels,
     }
     connected_label[i] = label_map[old_label];
   }
-  FJ_MEM_FREE(label_map);
   *sorted_max_label = new_label;
 }
 
@@ -440,24 +412,16 @@ static void compute_connected_sample_count(const double *illum_values, int nvalu
     int total_sample_count, double gamma_whole,
     int *connected_sample_count)
 {
-  double *connected_domega = FJ_MEM_ALLOC_ARRAY(double, label_count);
-  double *connected_illumi = FJ_MEM_ALLOC_ARRAY(double, label_count);
-  int *connected_area = FJ_MEM_ALLOC_ARRAY(int, label_count);
+  std::vector<double> connected_domega(label_count, 0);
+  std::vector<double> connected_illumi(label_count, 0);
+  std::vector<int>    connected_area(label_count, 0);
   const double *L = illum_values;
   double dOmega0 = 0;
   int generated_count = 0;
-  int i;
 
-  for (i = 0; i < label_count; i++) {
-    connected_domega[i] = 0;
-    connected_illumi[i] = 0;
-
-    connected_area[i] = 0;
-  }
-
-  /* Gamma_{4 Pi} = L * dOmega_{0}^{1/4} */
+  // Gamma_{4 Pi} = L * dOmega_{0}^{1/4}
   dOmega0 = 1 * pow(4 * PI / nvalues, 1./4);
-  for (i = 0; i < nvalues; i++) {
+  for (int i = 0; i < nvalues; i++) {
     const int label = connected_label[i];
     connected_domega[label] = dOmega0;
     connected_illumi[label] += L[i];
@@ -465,7 +429,7 @@ static void compute_connected_sample_count(const double *illum_values, int nvalu
     connected_area[label]++;
   }
 
-  for (i = 0; i < label_count; i++) {
+  for (int i = 0; i < label_count; i++) {
     const double n = connected_illumi[i] * connected_domega[i] *
         total_sample_count / gamma_whole;
 
@@ -483,7 +447,7 @@ static void compute_connected_sample_count(const double *illum_values, int nvalu
   if (generated_count < total_sample_count) {
     int max_area_index = 0;
     int max_area = -1;
-    for (i = 0; i < label_count; i++) {
+    for (int i = 0; i < label_count; i++) {
       if (max_area < connected_area[i]) {
         max_area = connected_area[i];
         max_area_index = i;
@@ -492,22 +456,18 @@ static void compute_connected_sample_count(const double *illum_values, int nvalu
     connected_sample_count[max_area_index] +=
         total_sample_count - generated_count;
   }
-
-  FJ_MEM_FREE(connected_domega);
-  FJ_MEM_FREE(connected_illumi);
-  FJ_MEM_FREE(connected_area);
 }
 
-/* Hochbaum-Shmoys algorithm */
+// Hochbaum-Shmoys algorithm
 static void generate_dome_samples(int sample_xres, int sample_yres,
     const int *connected_sample_count,
     const int *connected_label, int label_count,
     struct DomeSample *dome_samples, int sample_count)
 {
   const int NPIXELS = sample_xres * sample_yres;
-  struct SamplePoint *samples = FJ_MEM_ALLOC_ARRAY(struct SamplePoint, NPIXELS);
-  int *nsamples = FJ_MEM_ALLOC_ARRAY(int, label_count);
-  int *offsets = FJ_MEM_ALLOC_ARRAY(int, label_count);
+  std::vector<SamplePoint> samples(NPIXELS);
+  std::vector<int>         nsamples(label_count);
+  std::vector<int>         offsets(label_count);
   int next_dome_sample = 0;
   int i;
 
@@ -516,7 +476,8 @@ static void generate_dome_samples(int sample_xres, int sample_yres,
     samples[i].y = (int) (i / sample_xres);
     samples[i].label = connected_label[i];
   }
-  qsort(samples, NPIXELS,
+  // TODO use std::sort
+  qsort(&samples[0], NPIXELS,
       sizeof(struct SamplePoint),
       compare_sample_point);
 
@@ -525,7 +486,7 @@ static void generate_dome_samples(int sample_xres, int sample_yres,
     for (i = 0; i < label_count; i++) {
       const int begin = curr;
       offsets[i] = begin;
-      while (samples[curr].label == i) {
+      while (curr < NPIXELS && samples[curr].label == i) {
         curr++;
       }
       nsamples[i] = curr - begin;
@@ -533,13 +494,13 @@ static void generate_dome_samples(int sample_xres, int sample_yres,
   }
 
   {
-    struct SamplePoint *X = FJ_MEM_ALLOC_ARRAY(struct SamplePoint, sample_count);
+    std::vector<SamplePoint> X(sample_count);
     struct XorShift xr;
     XorInit(&xr);
 
     for (i = 0; i < label_count; i++) {
       const int ngen = connected_sample_count[i];
-      const struct SamplePoint *Y = samples + offsets[i];
+      const struct SamplePoint *Y = &samples[0] + offsets[i];
       const int nY = nsamples[i];
       const int x0 = (int) (nY * XorNextFloat01(&xr));
       int nX = 0;
@@ -593,12 +554,7 @@ static void generate_dome_samples(int sample_xres, int sample_yres,
         }
       }
     }
-    FJ_MEM_FREE(X);
   }
-
-  FJ_MEM_FREE(samples);
-  FJ_MEM_FREE(offsets);
-  FJ_MEM_FREE(nsamples);
 }
 
 static int compare_sample_point(const void *ptr0, const void *ptr1)
