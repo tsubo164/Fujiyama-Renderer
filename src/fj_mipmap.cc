@@ -158,6 +158,36 @@ int MipInput::ReadTile(int xtile, int ytile, float *dst)
   return 0;
 }
 
+int MipInput::GetWidth() const
+{
+  return width_;
+}
+
+int MipInput::GetHeight() const
+{
+  return height_;
+}
+
+int MipInput::GetChannelCount() const
+{
+  return nchannels_;
+}
+
+int MipInput::GetTileCountX() const
+{
+  return xntiles_;
+}
+
+int MipInput::GetTileCountY() const
+{
+  return yntiles_;
+}
+
+int MipInput::GetTileSize() const
+{
+  return tilesize_;
+}
+
 MipOutput::MipOutput() :
     file_(NULL),
     version_(MIP_FILE_VERSION),

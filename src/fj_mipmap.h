@@ -24,7 +24,14 @@ public:
   int ReadHeader();
   int ReadTile(int xtile, int ytile, float *dst);
 
-public:
+  int GetWidth() const;
+  int GetHeight() const;
+  int GetChannelCount() const;
+  int GetTileCountX() const;
+  int GetTileCountY() const;
+  int GetTileSize() const;
+
+private:
   FILE *file_;
   int version_;
   int width_;

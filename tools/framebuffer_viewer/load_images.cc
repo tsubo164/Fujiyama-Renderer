@@ -66,7 +66,7 @@ int load_mip(const char *filename, struct FrameBuffer *fb, struct BufferInfo *in
     return -1;
   }
 
-  fb->Resize(in.width_, in.height_, in.nchannels_);
+  fb->Resize(in.GetWidth(), in.GetHeight(), in.GetChannelCount());
 
   {
     int x, y;
@@ -75,27 +75,27 @@ int load_mip(const char *filename, struct FrameBuffer *fb, struct BufferInfo *in
     if (tilebuf == NULL) {
       /* TODO error handling */
     }
-    tilebuf->Resize(in.tilesize_, in.tilesize_, in.nchannels_);
+    tilebuf->Resize(in.GetTileSize(), in.GetTileSize(), in.GetChannelCount());
 
-    for (y = 0; y < in.yntiles_; y++) {
-      for (x = 0; x < in.xntiles_; x++) {
+    for (y = 0; y < in.GetTileCountY(); y++) {
+      for (x = 0; x < in.GetTileCountX(); x++) {
         int i;
         in.ReadTile(x, y, tilebuf->GetWritable(0, 0, 0));
-        for (i = 0; i < in.tilesize_; i++) {
+        for (i = 0; i < in.GetTileSize(); i++) {
           float *dst;
           const float *src;
-          dst = fb->GetWritable(x * in.tilesize_, y * in.tilesize_ + i, 0);
+          dst = fb->GetWritable(x * in.GetTileSize(), y * in.GetTileSize() + i, 0);
           src = tilebuf->GetReadOnly(0, i, 0);
-          memcpy(dst, src, sizeof(float) * in.tilesize_ * in.nchannels_);
+          memcpy(dst, src, sizeof(float) * in.GetTileSize() * in.GetChannelCount());
         }
       }
     }
     FbFree(tilebuf);
   }
 
-  BOX2_SET(info->viewbox, 0, 0, in.width_, in.height_);
+  BOX2_SET(info->viewbox, 0, 0, in.GetWidth(), in.GetHeight());
   BOX2_COPY(info->databox, info->viewbox);
-  info->tilesize = in.tilesize_;
+  info->tilesize = in.GetTileSize();
 
   return 0;
 }

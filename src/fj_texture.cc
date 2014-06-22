@@ -42,7 +42,7 @@ int TextureCache::OpenMipmap(const std::string &filename)
     return -1;
   }
 
-  fb_.Resize(mip_.tilesize_, mip_.tilesize_, mip_.nchannels_);
+  fb_.Resize(mip_.GetTileSize(), mip_.GetTileSize(), mip_.GetChannelCount());
   is_open_ = true;
 
   return 0;
@@ -59,8 +59,8 @@ Color4 TextureCache::LookupTexture(float u, float v)
       v - floor(v));
 
   const TexCoord tile_space(
-           tex_space.u  * mip_.xntiles_,
-      (1 - tex_space.v) * mip_.yntiles_);
+           tex_space.u  * mip_.GetTileCountX(),
+      (1 - tex_space.v) * mip_.GetTileCountY());
 
   const int xtile = static_cast<int>(floor(tile_space.u));
   const int ytile = static_cast<int>(floor(tile_space.v));
@@ -82,7 +82,7 @@ int TextureCache::GetTextureWidth() const
   if (!mip_.IsOpen())
     return 0;
   else
-    return mip_.width_;
+    return mip_.GetWidth();
 }
 
 int TextureCache::GetTextureHeight() const
@@ -90,7 +90,7 @@ int TextureCache::GetTextureHeight() const
   if (!mip_.IsOpen())
     return 0;
   else
-    return mip_.height_;
+    return mip_.GetHeight();
 }
 
 bool TextureCache::IsOpen() const
