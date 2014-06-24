@@ -1,26 +1,28 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_procedure.h"
 #include "fj_volume_filling.h"
 #include "fj_turbulence.h"
 #include "fj_progress.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
 #include "fj_random.h"
 #include "fj_vector.h"
 #include "fj_volume.h"
 
-#include <string.h>
-#include <float.h>
+#include <cstring>
+#include <cfloat>
 
 using namespace fj;
 
-struct SurfaceWispsProcedure {
-  struct Volume *volume;
-  const struct Turbulence *turbulence;
+class SurfaceWispsProcedure {
+public:
+  SurfaceWispsProcedure() : volume(NULL), turbulence(NULL) {}
+  ~SurfaceWispsProcedure() {}
+
+public:
+  Volume *volume;
+  const Turbulence *turbulence;
 };
 
 static void *MyNew(void);
@@ -28,32 +30,32 @@ static void MyFree(void *self);
 static int MyRun(void *self);
 
 static const char MyPluginName[] = "SurfaceWispsProcedure";
-static const struct ProcedureFunctionTable MyFunctionTable = {
+static const ProcedureFunctionTable MyFunctionTable = {
   MyRun
 };
 
-static int set_volume(void *self, const struct PropertyValue *value);
-static int set_turbulence(void *self, const struct PropertyValue *value);
+static int set_volume(void *self, const PropertyValue *value);
+static int set_turbulence(void *self, const PropertyValue *value);
 
-static int FillWithSpecksOnSurface(struct Volume *volume,
-    const struct WispsControlPoint *cp00, const struct WispsControlPoint *cp10,
-    const struct WispsControlPoint *cp01, const struct WispsControlPoint *cp11,
-    const struct Turbulence *turbulence);
+static int FillWithSpecksOnSurface(Volume *volume,
+    const WispsControlPoint *cp00, const WispsControlPoint *cp10,
+    const WispsControlPoint *cp01, const WispsControlPoint *cp11,
+    const Turbulence *turbulence);
 
-static const struct Property MyProperties[] = {
+static const Property MyProperties[] = {
   {PROP_VOLUME,     "volume",     {0, 0, 0, 0}, set_volume},
   {PROP_TURBULENCE, "turbulence", {0, 0, 0, 0}, set_turbulence},
   {PROP_NONE,       NULL,         {0, 0, 0, 0}, NULL}
 };
 
-static const struct MetaInfo MyMetainfo[] = {
+static const MetaInfo MyMetainfo[] = {
   {"help", "A surface volume procedure."},
   {"plugin_type", "Procedure"},
   {NULL, NULL}
 };
 
 extern "C" {
-int Initialize(struct PluginInfo *info)
+int Initialize(PluginInfo *info)
 {
   return PlgSetupInfo(info,
       PLUGIN_API_VERSION,
@@ -69,30 +71,23 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-  struct SurfaceWispsProcedure *surface;
-
-  surface = FJ_MEM_ALLOC(struct SurfaceWispsProcedure);
-  if (surface == NULL)
-    return NULL;
-
-  surface->volume = NULL;
-  surface->turbulence = NULL;
+  SurfaceWispsProcedure *surface = new SurfaceWispsProcedure();
 
   return surface;
 }
 
 static void MyFree(void *self)
 {
-  struct SurfaceWispsProcedure *surface = (struct SurfaceWispsProcedure *) self;
+  SurfaceWispsProcedure *surface = (SurfaceWispsProcedure *) self;
   if (surface == NULL)
     return;
-  FJ_MEM_FREE(surface);
+  delete surface;
 }
 
 static int MyRun(void *self)
 {
-  struct SurfaceWispsProcedure *surface = (struct SurfaceWispsProcedure *) self;
-  struct WispsControlPoint cp00, cp10, cp01, cp11;
+  SurfaceWispsProcedure *surface = (SurfaceWispsProcedure *) self;
+  WispsControlPoint cp00, cp10, cp01, cp11;
   int err = 0;
 
   if (surface->volume == NULL) {
@@ -134,9 +129,9 @@ static int MyRun(void *self)
   return err;
 }
 
-static int set_volume(void *self, const struct PropertyValue *value)
+static int set_volume(void *self, const PropertyValue *value)
 {
-  struct SurfaceWispsProcedure *surface = (struct SurfaceWispsProcedure *) self;
+  SurfaceWispsProcedure *surface = (SurfaceWispsProcedure *) self;
 
   if (value->volume == NULL)
     return -1;
@@ -146,9 +141,9 @@ static int set_volume(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static int set_turbulence(void *self, const struct PropertyValue *value)
+static int set_turbulence(void *self, const PropertyValue *value)
 {
-  struct SurfaceWispsProcedure *surface = (struct SurfaceWispsProcedure *) self;
+  SurfaceWispsProcedure *surface = (SurfaceWispsProcedure *) self;
 
   if (value->turbulence == NULL)
     return -1;
@@ -158,31 +153,31 @@ static int set_turbulence(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static int FillWithSpecksOnSurface(struct Volume *volume,
-    const struct WispsControlPoint *cp00, const struct WispsControlPoint *cp10,
-    const struct WispsControlPoint *cp01, const struct WispsControlPoint *cp11,
-    const struct Turbulence *turbulence)
+static int FillWithSpecksOnSurface(Volume *volume,
+    const WispsControlPoint *cp00, const WispsControlPoint *cp10,
+    const WispsControlPoint *cp01, const WispsControlPoint *cp11,
+    const Turbulence *turbulence)
 
 {
-  struct XorShift xr;
+  XorShift xr;
   int NSPECKS = 1000;
   int i = 0;
 
-  /* TODO come up with the best place to put progress */
-  struct Progress progress;
+  // TODO come up with the best place to put progress
+  Progress progress;
 
   XorInit(&xr);
-  /* TODO should not be a point attribute? */
+  // TODO should not be a point attribute?
   NSPECKS = cp00->speck_count;
 
   progress.Start(NSPECKS);
 
   for (i = 0; i < NSPECKS; i++) {
-    struct WispsControlPoint cp_t;
-    struct Vector cube;
-    struct Vector P_speck;
-    struct Vector P_noise_space;
-    struct Vector noise;
+    WispsControlPoint cp_t;
+    Vector cube;
+    Vector P_speck;
+    Vector P_noise_space;
+    Vector noise;
     double s = 0;
     double t = 0;
 
@@ -218,4 +213,3 @@ static int FillWithSpecksOnSurface(struct Volume *volume,
 
   return 0;
 }
-

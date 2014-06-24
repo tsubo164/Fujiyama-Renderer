@@ -7,6 +7,7 @@
 #include "fj_box.h"
 
 #include <cstring>
+#include <cstdlib>
 #include <cassert>
 #include <cerrno>
 #include <cmath>

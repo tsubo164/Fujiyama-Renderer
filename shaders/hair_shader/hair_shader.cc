@@ -1,52 +1,54 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_shader.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
 #include "fj_vector.h"
 #include "fj_color.h"
 
-#include <string.h>
-#include <assert.h>
-#include <stdio.h>
-#include <float.h>
+#include <cstring>
+#include <cassert>
+#include <cstdio>
+#include <cfloat>
 
 using namespace fj;
 
-struct HairShader {
-  struct Color diffuse;
-  struct Color specular;
-  struct Color ambient;
+class HairShader {
+public:
+  HairShader() {}
+  ~HairShader() {}
+
+public:
+  Color diffuse;
+  Color specular;
+  Color ambient;
   float roughness;
 
-  struct Color reflect;
+  Color reflect;
 };
 
 static void *MyNew(void);
 static void MyFree(void *self);
-static void MyEvaluate(const void *self, const struct TraceContext *cxt,
-    const struct SurfaceInput *in, struct SurfaceOutput *out);
+static void MyEvaluate(const void *self, const TraceContext *cxt,
+    const SurfaceInput *in, SurfaceOutput *out);
 
 static const char MyPluginName[] = "HairShader";
-static const struct ShaderFunctionTable MyFunctionTable = {
+static const ShaderFunctionTable MyFunctionTable = {
   MyEvaluate
 };
 
-static int set_diffuse(void *self, const struct PropertyValue *value);
-static int set_specular(void *self, const struct PropertyValue *value);
-static int set_ambient(void *self, const struct PropertyValue *value);
-static int set_roughness(void *self, const struct PropertyValue *value);
-static int set_reflect(void *self, const struct PropertyValue *value);
+static int set_diffuse(void *self, const PropertyValue *value);
+static int set_specular(void *self, const PropertyValue *value);
+static int set_ambient(void *self, const PropertyValue *value);
+static int set_roughness(void *self, const PropertyValue *value);
+static int set_reflect(void *self, const PropertyValue *value);
 
-/* hair shading implementations */
-static float kajiya_diffuse(const struct Vector *tangent, const struct Vector *Ln);
-static float kajiya_specular(const struct Vector *tangent,
-    const struct Vector *Ln, const struct Vector *I);
+// hair shading implementations
+static float kajiya_diffuse(const Vector *tangent, const Vector *Ln);
+static float kajiya_specular(const Vector *tangent,
+    const Vector *Ln, const Vector *I);
 
-static const struct Property MyProperties[] = {
+static const Property MyProperties[] = {
   {PROP_VECTOR3, "diffuse",   {1, 1, 1, 0}, set_diffuse},
   {PROP_VECTOR3, "specular",  {1, 1, 1, 0},    set_specular},
   {PROP_VECTOR3, "ambient",   {1, 1, 1, 0},    set_ambient},
@@ -55,14 +57,14 @@ static const struct Property MyProperties[] = {
   {PROP_NONE,    NULL,        {0, 0, 0, 0},    NULL}
 };
 
-static const struct MetaInfo MyMetainfo[] = {
+static const MetaInfo MyMetainfo[] = {
   {"help", "A hair shader."},
   {"plugin_type", "Shader"},
   {NULL, NULL}
 };
 
 extern "C" {
-int Initialize(struct PluginInfo *info)
+int Initialize(PluginInfo *info)
 {
   return PlgSetupInfo(info,
       PLUGIN_API_VERSION,
@@ -78,10 +80,7 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-  struct HairShader *hair = FJ_MEM_ALLOC(struct HairShader);
-
-  if (hair == NULL)
-    return NULL;
+  HairShader *hair = new HairShader();
 
   PropSetAllDefaultValues(hair, MyProperties);
 
@@ -90,29 +89,29 @@ static void *MyNew(void)
 
 static void MyFree(void *self)
 {
-  struct HairShader *hair = (struct HairShader *) self;
+  HairShader *hair = (HairShader *) self;
   if (hair == NULL)
     return;
-  FJ_MEM_FREE(hair);
+  delete hair;
 }
 
-static void MyEvaluate(const void *self, const struct TraceContext *cxt,
-    const struct SurfaceInput *in, struct SurfaceOutput *out)
+static void MyEvaluate(const void *self, const TraceContext *cxt,
+    const SurfaceInput *in, SurfaceOutput *out)
 {
-  const struct HairShader *hair = (struct HairShader *) self;
+  const HairShader *hair = (HairShader *) self;
   int i = 0;
 
-  struct LightSample *samples = NULL;
+  LightSample *samples = NULL;
   const int nsamples = SlGetLightSampleCount(in);
 
-  /* allocate samples */
+  // allocate samples
   samples = SlNewLightSamples(in);
 
   out->Cs = Color();
 
   for (i = 0; i < nsamples; i++) {
-    struct LightOutput Lout = {};
-    struct Vector tangent;
+    LightOutput Lout = {};
+    Vector tangent;
     float diff = 0;
     float spec = 0;
 
@@ -129,16 +128,15 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
     out->Cs.b += (in->Cd.b * hair->diffuse.b * diff + spec) * Lout.Cl.b;
   }
 
-  /* FJ_MEM_FREE samples */
   SlFreeLightSamples(samples);
 
   out->Os = 1;
 }
 
-static int set_diffuse(void *self, const struct PropertyValue *value)
+static int set_diffuse(void *self, const PropertyValue *value)
 {
-  struct HairShader *hair = (struct HairShader *) self;
-  struct Color diffuse;
+  HairShader *hair = (HairShader *) self;
+  Color diffuse;
 
   diffuse.r = Max(0, value->vector[0]);
   diffuse.g = Max(0, value->vector[1]);
@@ -148,10 +146,10 @@ static int set_diffuse(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static int set_specular(void *self, const struct PropertyValue *value)
+static int set_specular(void *self, const PropertyValue *value)
 {
-  struct HairShader *hair = (struct HairShader *) self;
-  struct Color specular;
+  HairShader *hair = (HairShader *) self;
+  Color specular;
 
   specular.r = Max(0, value->vector[0]);
   specular.g = Max(0, value->vector[1]);
@@ -161,10 +159,10 @@ static int set_specular(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static int set_ambient(void *self, const struct PropertyValue *value)
+static int set_ambient(void *self, const PropertyValue *value)
 {
-  struct HairShader *hair = (struct HairShader *) self;
-  struct Color ambient;
+  HairShader *hair = (HairShader *) self;
+  Color ambient;
 
   ambient.r = Max(0, value->vector[0]);
   ambient.g = Max(0, value->vector[1]);
@@ -174,9 +172,9 @@ static int set_ambient(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static int set_roughness(void *self, const struct PropertyValue *value)
+static int set_roughness(void *self, const PropertyValue *value)
 {
-  struct HairShader *hair = (struct HairShader *) self;
+  HairShader *hair = (HairShader *) self;
   float roughness = value->vector[0];
 
   roughness = Max(0, roughness);
@@ -185,10 +183,10 @@ static int set_roughness(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static int set_reflect(void *self, const struct PropertyValue *value)
+static int set_reflect(void *self, const PropertyValue *value)
 {
-  struct HairShader *hair = (struct HairShader *) self;
-  struct Color reflect;
+  HairShader *hair = (HairShader *) self;
+  Color reflect;
 
   reflect.r = Max(0, value->vector[0]);
   reflect.g = Max(0, value->vector[1]);
@@ -198,7 +196,7 @@ static int set_reflect(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static float kajiya_diffuse(const struct Vector *tangent, const struct Vector *Ln)
+static float kajiya_diffuse(const Vector *tangent, const Vector *Ln)
 {
   const float TL = Dot(*tangent, *Ln);
   const float diff = sqrt(1-TL*TL);
@@ -206,8 +204,8 @@ static float kajiya_diffuse(const struct Vector *tangent, const struct Vector *L
   return diff;
 }
 
-static float kajiya_specular(const struct Vector *tangent,
-    const struct Vector *Ln, const struct Vector *I)
+static float kajiya_specular(const Vector *tangent,
+    const Vector *Ln, const Vector *I)
 {
   float spec = 0;
   const float roughness = .05;
@@ -222,4 +220,3 @@ static float kajiya_specular(const struct Vector *tangent,
 
   return spec;
 }
-

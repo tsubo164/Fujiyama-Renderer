@@ -1,49 +1,51 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_shader.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
 #include "fj_vector.h"
 #include "fj_color.h"
 
-#include <string.h>
-#include <stdio.h>
-#include <float.h>
+#include <cstring>
+#include <cstdio>
+#include <cfloat>
 
 using namespace fj;
 
-struct VolumeShader {
-  struct Color diffuse;
+class VolumeShader {
+public:
+  VolumeShader() {}
+  ~VolumeShader() {}
+
+public:
+  Color diffuse;
 };
 
 static void *MyNew(void);
 static void MyFree(void *self);
-static void MyEvaluate(const void *self, const struct TraceContext *cxt,
-    const struct SurfaceInput *in, struct SurfaceOutput *out);
+static void MyEvaluate(const void *self, const TraceContext *cxt,
+    const SurfaceInput *in, SurfaceOutput *out);
 
 static const char MyPluginName[] = "VolumeShader";
-static const struct ShaderFunctionTable MyFunctionTable = {
+static const ShaderFunctionTable MyFunctionTable = {
   MyEvaluate
 };
 
-static int set_diffuse(void *self, const struct PropertyValue *value);
+static int set_diffuse(void *self, const PropertyValue *value);
 
-static const struct Property MyProperties[] = {
+static const Property MyProperties[] = {
   {PROP_VECTOR3, "diffuse", {1, 1, 1, 0}, set_diffuse},
   {PROP_NONE,    NULL,      {0, 0, 0, 0}, NULL}
 };
 
-static const struct MetaInfo MyMetainfo[] = {
+static const MetaInfo MyMetainfo[] = {
   {"help", "A volume shader."},
   {"plugin_type", "Shader"},
   {NULL, NULL}
 };
 
 extern "C" {
-int Initialize(struct PluginInfo *info)
+int Initialize(PluginInfo *info)
 {
   return PlgSetupInfo(info,
       PLUGIN_API_VERSION,
@@ -59,10 +61,7 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-  struct VolumeShader *volume = FJ_MEM_ALLOC(struct VolumeShader);
-
-  if (volume == NULL)
-    return NULL;
+  VolumeShader *volume = new VolumeShader();
 
   PropSetAllDefaultValues(volume, MyProperties);
 
@@ -71,53 +70,52 @@ static void *MyNew(void)
 
 static void MyFree(void *self)
 {
-  struct VolumeShader *volume = (struct VolumeShader *) self;
+  VolumeShader *volume = (VolumeShader *) self;
   if (volume == NULL)
     return;
-  FJ_MEM_FREE(volume);
+  delete volume;
 }
 
-static void MyEvaluate(const void *self, const struct TraceContext *cxt,
-    const struct SurfaceInput *in, struct SurfaceOutput *out)
+static void MyEvaluate(const void *self, const TraceContext *cxt,
+    const SurfaceInput *in, SurfaceOutput *out)
 {
-  const struct VolumeShader *volume = (struct VolumeShader *) self;
-  struct Color diff;
+  const VolumeShader *volume = (VolumeShader *) self;
+  Color diff;
 
-  struct LightSample *samples = NULL;
+  LightSample *samples = NULL;
   const int nsamples = SlGetLightSampleCount(in);
 
   int i = 0;
 
-  /* allocate samples */
+  // allocate samples
   samples = SlNewLightSamples(in);
 
   for (i = 0; i < nsamples; i++) {
-    struct LightOutput Lout;
+    LightOutput Lout;
 
     SlIlluminance(cxt, &samples[i], &in->P, &in->N, PI, in, &Lout);
 
-    /* diff */
+    // diff
     diff.r += Lout.Cl.r;
     diff.g += Lout.Cl.g;
     diff.b += Lout.Cl.b;
   }
 
-  /* FJ_MEM_FREE samples */
   SlFreeLightSamples(samples);
 
-  /* Cs */
+  // Cs
   out->Cs.r = diff.r * volume->diffuse.r;
   out->Cs.g = diff.g * volume->diffuse.g;
   out->Cs.b = diff.b * volume->diffuse.b;
 
-  /* Os */
+  // Os
   out->Os = 1;
 }
 
-static int set_diffuse(void *self, const struct PropertyValue *value)
+static int set_diffuse(void *self, const PropertyValue *value)
 {
-  struct VolumeShader *volume = (struct VolumeShader *) self;
-  struct Color diffuse;
+  VolumeShader *volume = (VolumeShader *) self;
+  Color diffuse;
 
   diffuse.r = Max(0, value->vector[0]);
   diffuse.g = Max(0, value->vector[1]);
@@ -126,4 +124,3 @@ static int set_diffuse(void *self, const struct PropertyValue *value)
 
   return 0;
 }
-

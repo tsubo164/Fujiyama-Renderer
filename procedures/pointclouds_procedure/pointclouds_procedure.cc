@@ -1,25 +1,27 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_procedure.h"
 #include "fj_volume_filling.h"
 #include "fj_turbulence.h"
 #include "fj_progress.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
 #include "fj_vector.h"
 #include "fj_volume.h"
 
-#include <string.h>
-#include <float.h>
+#include <cstring>
+#include <cfloat>
 
 using namespace fj;
 
-struct CloudVolumeProcedure {
-  struct Volume *volume;
-  struct Turbulence *turbulence;
+class CloudVolumeProcedure {
+public:
+  CloudVolumeProcedure() : volume(NULL), turbulence(NULL) {}
+  ~CloudVolumeProcedure() {}
+
+public:
+  Volume *volume;
+  Turbulence *turbulence;
 };
 
 static void *MyNew(void);
@@ -27,30 +29,30 @@ static void MyFree(void *self);
 static int MyRun(void *self);
 
 static const char MyPluginName[] = "PointCloudsProcedure";
-static const struct ProcedureFunctionTable MyFunctionTable = {
+static const ProcedureFunctionTable MyFunctionTable = {
   MyRun
 };
 
-static int set_volume(void *self, const struct PropertyValue *value);
-static int set_turbulence(void *self, const struct PropertyValue *value);
+static int set_volume(void *self, const PropertyValue *value);
+static int set_turbulence(void *self, const PropertyValue *value);
 
-static int FillWithPointClouds(struct Volume *volume,
-    const struct CloudControlPoint *cp, const struct Turbulence *turbulence);
+static int FillWithPointClouds(Volume *volume,
+    const CloudControlPoint *cp, const Turbulence *turbulence);
 
-static const struct Property MyProperties[] = {
+static const Property MyProperties[] = {
   {PROP_VOLUME,     "volume",     {0, 0, 0, 0}, set_volume},
   {PROP_TURBULENCE, "turbulence", {0, 0, 0, 0}, set_turbulence},
   {PROP_NONE,       NULL,         {0, 0, 0, 0}, NULL}
 };
 
-static const struct MetaInfo MyMetainfo[] = {
+static const MetaInfo MyMetainfo[] = {
   {"help", "A cloud volume procedure."},
   {"plugin_type", "Procedure"},
   {NULL, NULL}
 };
 
 extern "C" {
-int Initialize(struct PluginInfo *info)
+int Initialize(PluginInfo *info)
 {
   return PlgSetupInfo(info,
       PLUGIN_API_VERSION,
@@ -66,30 +68,23 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-  struct CloudVolumeProcedure *cloud;
-
-  cloud = FJ_MEM_ALLOC(struct CloudVolumeProcedure);
-  if (cloud == NULL)
-    return NULL;
-
-  cloud->volume = NULL;
-  cloud->turbulence = NULL;
+  CloudVolumeProcedure *cloud = new CloudVolumeProcedure();
 
   return cloud;
 }
 
 static void MyFree(void *self)
 {
-  struct CloudVolumeProcedure *cloud = (struct CloudVolumeProcedure *) self;
+  CloudVolumeProcedure *cloud = (CloudVolumeProcedure *) self;
   if (cloud == NULL)
     return;
-  FJ_MEM_FREE(cloud);
+  delete cloud;
 }
 
 static int MyRun(void *self)
 {
-  struct CloudVolumeProcedure *cloud = (struct CloudVolumeProcedure *) self;
-  struct CloudControlPoint cp;
+  CloudVolumeProcedure *cloud = (CloudVolumeProcedure *) self;
+  CloudControlPoint cp;
   int err = 0;
 
   if (cloud->volume == NULL) {
@@ -110,9 +105,9 @@ static int MyRun(void *self)
   return err;
 }
 
-static int set_volume(void *self, const struct PropertyValue *value)
+static int set_volume(void *self, const PropertyValue *value)
 {
-  struct CloudVolumeProcedure *cloud = (struct CloudVolumeProcedure *) self;
+  CloudVolumeProcedure *cloud = (CloudVolumeProcedure *) self;
 
   if (value->volume == NULL)
     return -1;
@@ -122,9 +117,9 @@ static int set_volume(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static int set_turbulence(void *self, const struct PropertyValue *value)
+static int set_turbulence(void *self, const PropertyValue *value)
 {
-  struct CloudVolumeProcedure *cloud = (struct CloudVolumeProcedure *) self;
+  CloudVolumeProcedure *cloud = (CloudVolumeProcedure *) self;
 
   if (value->turbulence == NULL)
     return -1;
@@ -134,11 +129,11 @@ static int set_turbulence(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static int FillWithPointClouds(struct Volume *volume,
-    const struct CloudControlPoint *cp, const struct Turbulence *turbulence)
+static int FillWithPointClouds(Volume *volume,
+    const CloudControlPoint *cp, const Turbulence *turbulence)
 
 {
-  /* based on Production Volume Rendering (SIGGRAPH 2011) Course notes */
+  // based on Production Volume Rendering (SIGGRAPH 2011) Course notes
   int i, j, k;
   int xres, yres, zres;
   int xmin, ymin, zmin;
@@ -146,8 +141,8 @@ static int FillWithPointClouds(struct Volume *volume,
 
   double thresholdwidth = 0;
 
-  /* TODO come up with the best place to put progress */
-  struct Progress progress;
+  // TODO come up with the best place to put progress
+  Progress progress;
 
   volume->GetResolution(&xres, &yres, &zres);
   thresholdwidth = .5 * volume->GetFilterSize();
@@ -169,9 +164,9 @@ static int FillWithPointClouds(struct Volume *volume,
         double pyro_func = 0;
         double distance = 0;
 
-        struct Vector cell_center;
-        struct Vector P_local_space;
-        struct Vector P_noise_space;
+        Vector cell_center;
+        Vector P_local_space;
+        Vector P_noise_space;
         float pyro_value = 0;
         float value = 0;
 

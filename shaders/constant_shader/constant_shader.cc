@@ -3,7 +3,6 @@
 
 #include "fj_shader.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
 #include "fj_vector.h"
 #include "fj_color.h"
 
@@ -14,8 +13,8 @@ using namespace fj;
 
 static void *MyNew(void);
 static void MyFree(void *self);
-static void MyEvaluate(const void *self, const struct TraceContext *cxt,
-    const struct SurfaceInput *in, struct SurfaceOutput *out);
+static void MyEvaluate(const void *self, const TraceContext *cxt,
+    const SurfaceInput *in, SurfaceOutput *out);
 
 class ConstantShader {
 public:
@@ -29,27 +28,27 @@ public:
 
 static const char MyPluginName[] = "ConstantShader";
 
-static const struct ShaderFunctionTable MyFunctionTable = {
+static const ShaderFunctionTable MyFunctionTable = {
   MyEvaluate
 };
 
-static int set_diffuse(void *self, const struct PropertyValue *value);
-static int set_texture(void *self, const struct PropertyValue *value);
+static int set_diffuse(void *self, const PropertyValue *value);
+static int set_texture(void *self, const PropertyValue *value);
 
-static const struct Property MyProperties[] = {
+static const Property MyProperties[] = {
   {PROP_VECTOR3, "diffuse", {1, 1, 1, 0}, set_diffuse},
   {PROP_TEXTURE, "texture", {0, 0, 0, 0}, set_texture},
   {PROP_NONE,    NULL,      {0, 0, 0, 0}, NULL}
 };
 
-static const struct MetaInfo MyMetainfo[] = {
+static const MetaInfo MyMetainfo[] = {
   {"help", "A constant shader."},
   {"plugin_type", "Shader"},
   {NULL, NULL}
 };
 
 extern "C" {
-int Initialize(struct PluginInfo *info)
+int Initialize(PluginInfo *info)
 {
   return PlgSetupInfo(info,
       PLUGIN_API_VERSION,
@@ -74,17 +73,17 @@ static void *MyNew(void)
 
 static void MyFree(void *self)
 {
-  struct ConstantShader *constant = (struct ConstantShader *) self;
+  ConstantShader *constant = (ConstantShader *) self;
   if (constant == NULL)
     return;
   delete constant;
 }
 
-static void MyEvaluate(const void *self, const struct TraceContext *cxt,
-    const struct SurfaceInput *in, struct SurfaceOutput *out)
+static void MyEvaluate(const void *self, const TraceContext *cxt,
+    const SurfaceInput *in, SurfaceOutput *out)
 {
-  const struct ConstantShader *constant = (struct ConstantShader *) self;
-  struct Color4 C_tex;
+  const ConstantShader *constant = (ConstantShader *) self;
+  Color4 C_tex;
 
   // C_tex
   if (constant->texture != NULL) {
@@ -106,10 +105,10 @@ static void MyEvaluate(const void *self, const struct TraceContext *cxt,
   out->Os = 1;
 }
 
-static int set_diffuse(void *self, const struct PropertyValue *value)
+static int set_diffuse(void *self, const PropertyValue *value)
 {
-  struct ConstantShader *constant = (struct ConstantShader *) self;
-  struct Color diffuse;
+  ConstantShader *constant = (ConstantShader *) self;
+  Color diffuse;
 
   diffuse.r = Max(0, value->vector[0]);
   diffuse.g = Max(0, value->vector[1]);
@@ -119,12 +118,11 @@ static int set_diffuse(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static int set_texture(void *self, const struct PropertyValue *value)
+static int set_texture(void *self, const PropertyValue *value)
 {
-  struct ConstantShader *constant = (struct ConstantShader *) self;
+  ConstantShader *constant = (ConstantShader *) self;
 
   constant->texture = value->texture;
 
   return 0;
 }
-

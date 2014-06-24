@@ -1,26 +1,28 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_procedure.h"
 #include "fj_volume_filling.h"
 #include "fj_turbulence.h"
 #include "fj_progress.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
 #include "fj_random.h"
 #include "fj_vector.h"
 #include "fj_volume.h"
 
-#include <string.h>
-#include <float.h>
+#include <cstring>
+#include <cfloat>
 
 using namespace fj;
 
-struct SplineWispsProcedure {
-  struct Volume *volume;
-  const struct Turbulence *turbulence;
+class SplineWispsProcedure {
+public:
+  SplineWispsProcedure() : volume(NULL), turbulence(NULL) {}
+  ~SplineWispsProcedure() {}
+
+public:
+  Volume *volume;
+  const Turbulence *turbulence;
 };
 
 static void *MyNew(void);
@@ -28,31 +30,31 @@ static void MyFree(void *self);
 static int MyRun(void *self);
 
 static const char MyPluginName[] = "SplineWispsProcedure";
-static const struct ProcedureFunctionTable MyFunctionTable = {
+static const ProcedureFunctionTable MyFunctionTable = {
   MyRun
 };
 
-static int set_volume(void *self, const struct PropertyValue *value);
-static int set_turbulence(void *self, const struct PropertyValue *value);
+static int set_volume(void *self, const PropertyValue *value);
+static int set_turbulence(void *self, const PropertyValue *value);
 
-static int FillWithSpecksAlongLine(struct Volume *volume,
-    const struct WispsControlPoint *cp0, const struct WispsControlPoint *cp1,
-    const struct Turbulence *turbulence);
+static int FillWithSpecksAlongLine(Volume *volume,
+    const WispsControlPoint *cp0, const WispsControlPoint *cp1,
+    const Turbulence *turbulence);
 
-static const struct Property MyProperties[] = {
+static const Property MyProperties[] = {
   {PROP_VOLUME,     "volume",     {0, 0, 0, 0}, set_volume},
   {PROP_TURBULENCE, "turbulence", {0, 0, 0, 0}, set_turbulence},
   {PROP_NONE,       NULL,         {0, 0, 0, 0}, NULL}
 };
 
-static const struct MetaInfo MyMetainfo[] = {
+static const MetaInfo MyMetainfo[] = {
   {"help", "A spline volume procedure."},
   {"plugin_type", "Procedure"},
   {NULL, NULL}
 };
 
 extern "C" {
-int Initialize(struct PluginInfo *info)
+int Initialize(PluginInfo *info)
 {
   return PlgSetupInfo(info,
       PLUGIN_API_VERSION,
@@ -68,30 +70,23 @@ int Initialize(struct PluginInfo *info)
 
 static void *MyNew(void)
 {
-  struct SplineWispsProcedure *spline;
-
-  spline = FJ_MEM_ALLOC(struct SplineWispsProcedure);
-  if (spline == NULL)
-    return NULL;
-
-  spline->volume = NULL;
-  spline->turbulence = NULL;
+  SplineWispsProcedure *spline = new SplineWispsProcedure();
 
   return spline;
 }
 
 static void MyFree(void *self)
 {
-  struct SplineWispsProcedure *spline = (struct SplineWispsProcedure *) self;
+  SplineWispsProcedure *spline = (SplineWispsProcedure *) self;
   if (spline == NULL)
     return;
-  FJ_MEM_FREE(spline);
+  delete spline;
 }
 
 static int MyRun(void *self)
 {
-  struct SplineWispsProcedure *spline = (struct SplineWispsProcedure *) self;
-  struct WispsControlPoint cp0, cp1;
+  SplineWispsProcedure *spline = (SplineWispsProcedure *) self;
+  WispsControlPoint cp0, cp1;
   int err = 0;
 
   if (spline->volume == NULL) {
@@ -138,9 +133,9 @@ static int MyRun(void *self)
   return err;
 }
 
-static int set_volume(void *self, const struct PropertyValue *value)
+static int set_volume(void *self, const PropertyValue *value)
 {
-  struct SplineWispsProcedure *spline = (struct SplineWispsProcedure *) self;
+  SplineWispsProcedure *spline = (SplineWispsProcedure *) self;
 
   if (value->volume == NULL)
     return -1;
@@ -150,9 +145,9 @@ static int set_volume(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static int set_turbulence(void *self, const struct PropertyValue *value)
+static int set_turbulence(void *self, const PropertyValue *value)
 {
-  struct SplineWispsProcedure *spline = (struct SplineWispsProcedure *) self;
+  SplineWispsProcedure *spline = (SplineWispsProcedure *) self;
 
   if (value->turbulence == NULL)
     return -1;
@@ -162,35 +157,35 @@ static int set_turbulence(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static int FillWithSpecksAlongLine(struct Volume *volume,
-    const struct WispsControlPoint *cp0, const struct WispsControlPoint *cp1,
-    const struct Turbulence *turbulence)
+static int FillWithSpecksAlongLine(Volume *volume,
+    const WispsControlPoint *cp0, const WispsControlPoint *cp1,
+    const Turbulence *turbulence)
 {
-  struct XorShift xr;
+  XorShift xr;
   int NSPECKS = 1000;
   int i = 0;
 
-  /* TODO come up with the best place to put progress */
-  struct Progress progress;
+  // TODO come up with the best place to put progress
+  Progress progress;
 
   XorInit(&xr);
-  /* TODO should not be a point attribute? */
+  // TODO should not be a point attribute?
   NSPECKS = cp0->speck_count;
 
   progress.Start(NSPECKS);
 
   for (i = 0; i < NSPECKS; i++) {
-    struct WispsControlPoint cp_t;
-    struct Vector2 disk(0, 0);
-    struct Vector P_speck;
-    struct Vector P_noise_space;
-    struct Vector noise;
+    WispsControlPoint cp_t;
+    Vector2 disk(0, 0);
+    Vector P_speck;
+    Vector P_noise_space;
+    Vector noise;
     double line_t = 0;
 
-    /*
+#if 0
     XorHollowDiskRand(&xr, disk);
     XorGaussianDiskRand(&xr, disk);
-    */
+#endif
     XorSolidDiskRand(&xr, &disk);
     line_t = XorNextFloat01(&xr);
 
@@ -221,4 +216,3 @@ static int FillWithSpecksAlongLine(struct Volume *volume,
 
   return 0;
 }
-
