@@ -1,21 +1,19 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_compatibility.h"
 #include "fj_numeric.h"
 #include "fj_mesh_io.h"
-#include "fj_memory.h"
 #include "fj_vector.h"
 #include "fj_noise.h"
 #include "fj_mesh.h"
 #include "fj_box.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-#include <float.h>
+#include <vector>
+#include <cstdio>
+#include <cstring>
+#include <cassert>
+#include <cfloat>
 
 using namespace fj;
 
@@ -28,15 +26,9 @@ static const char USAGE[] =
 
 int main(int argc, const char **argv)
 {
-  struct MeshOutput *out;
-  struct Mesh *mesh;
+  MeshOutput *out;
   const char *infile;
   const char *outfile;
-
-  struct Vector *P = NULL;
-  struct Vector *N = NULL;
-  struct Vector *velocity = NULL;
-  Index3 *indices = NULL;
 
   int nfaces = 0;
   int nverts = 0;
@@ -58,20 +50,15 @@ int main(int argc, const char **argv)
   outfile = argv[2];
 
   if ((out = MshOpenOutputFile(outfile)) == NULL) {
-    /* TODO ERROR HANDLING */
+    // TODO ERROR HANDLING
     fprintf(stderr, "Could not open output file: %s\n", argv[2]);
     return -1;
   }
 
-  mesh = MshNew();
-  if (mesh == NULL) {
-    fprintf(stderr, "fatal error: MshNew returned NULL.\n");
-    return -1;
-  }
+  Mesh mesh;
 
-  if (MshLoadFile(mesh, infile)) {
+  if (MshLoadFile(&mesh, infile)) {
     const char *err_msg = NULL;
-    MshFree(mesh);
 
     switch (MshGetErrorNo()) {
     case MSH_ERR_NONE:
@@ -100,21 +87,21 @@ int main(int argc, const char **argv)
     return -1;
   }
 
-  nverts = mesh->GetVertexCount();
+  nverts = mesh.GetVertexCount();
   printf("nverts: %d\n", nverts);
-  nfaces = mesh->GetFaceCount();
+  nfaces = mesh.GetFaceCount();
   printf("nfaces: %d\n", nfaces);
 
-  P = VecAlloc(nverts);
-  N = VecAlloc(nverts);
-  velocity = VecAlloc(nverts);
-  indices = FJ_MEM_ALLOC_ARRAY(Index3, nfaces);
+  std::vector<Vector> P(nverts);
+  std::vector<Vector> N(nverts);
+  std::vector<Vector> velocity(nverts);
+  std::vector<Index3> indices(nfaces);
 
   {
-    struct Box bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+    Box bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
     for (i = 0; i < nverts; i++) {
-      struct Vector pos;
-      pos = mesh->GetVertexPosition(i);
+      Vector pos;
+      pos = mesh.GetVertexPosition(i);
       BoxAddPoint(&bounds, pos);
     }
     zmin = bounds.min.z;
@@ -122,17 +109,17 @@ int main(int argc, const char **argv)
   }
 
   for (i = 0; i < nverts; i++) {
-    struct Vector Q;
-    struct Vector noise_vec;
-    struct Vector pos;
-    struct Vector nml;
-    struct Vector vel;
+    Vector Q;
+    Vector noise_vec;
+    Vector pos;
+    Vector nml;
+    Vector vel;
     double vscale = 1;
     double freq = .2;
     double znml = 0;
 
-    pos = mesh->GetVertexPosition(i);
-    nml = mesh->GetVertexNormal(i);
+    pos = mesh.GetVertexPosition(i);
+    nml = mesh.GetVertexNormal(i);
 
     znml = (pos.z - zmin) / (zmax - zmin);
 
@@ -154,29 +141,23 @@ int main(int argc, const char **argv)
   }
 
   for (i = 0; i < nfaces; i++) {
-    indices[i] = mesh->GetFaceIndices(i);
+    indices[i] = mesh.GetFaceIndices(i);
   }
 
-  /* setup MshOutput */
+  // setup MshOutput
   out->nverts = nverts;
   out->nvert_attrs = 2;
-  out->P = P;
-  out->N = N;
+  out->P = &P[0];
+  out->N = &N[0];
   out->Cd = NULL;
   out->uv = NULL;
-  out->velocity = velocity;
+  out->velocity = &velocity[0];
   out->nfaces = nfaces;
   out->nface_attrs = 1;
-  out->indices = indices;
+  out->indices = &indices[0];
 
   MshWriteFile(out);
-
-  /* clean up */
-  MshFree(mesh);
-  VecFree(P);
-  VecFree(N);
-  VecFree(velocity);
-  FJ_MEM_FREE(indices);
+  MshCloseOutputFile(out);
 
   return 0;
 }
