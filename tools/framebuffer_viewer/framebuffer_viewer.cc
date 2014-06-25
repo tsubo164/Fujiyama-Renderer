@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "framebuffer_viewer.h"
 #include "fj_string_function.h"
@@ -9,7 +7,6 @@ See LICENSE and README
 #include "fj_framebuffer.h"
 #include "fj_rectangle.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
 #include "fj_mipmap.h"
 #include "fj_box.h"
 
@@ -18,15 +15,20 @@ See LICENSE and README
 #include "load_images.h"
 #include "draw_image.h"
 
-#include <math.h>
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+#include <cmath>
+#include <cstdio>
+#include <cstring>
+#include <cassert>
 
 namespace fj {
 
-struct FrameBufferViewer {
-  struct FrameBuffer *fb;
+class FrameBufferViewer {
+public:
+  FrameBufferViewer() {}
+  ~FrameBufferViewer() {}
+
+public:
+  FrameBuffer *fb;
   char filename[1024];
 
   int win_width;
@@ -52,15 +54,15 @@ struct FrameBufferViewer {
   int tilesize;
   int draw_tile;
 
-  struct ImageCard image;
+  ImageCard image;
 };
 
-static void clear_image_viewer(struct FrameBufferViewer *v);
-static void setup_image_drawing(struct FrameBufferViewer *v);
-static void set_to_home_position(struct FrameBufferViewer *v);
+static void clear_image_viewer(FrameBufferViewer *v);
+static void setup_image_drawing(FrameBufferViewer *v);
+static void set_to_home_position(FrameBufferViewer *v);
 void GlDrawTileGuide(int width, int height, int tilesize);
 
-static void clear_image_viewer(struct FrameBufferViewer *v)
+static void clear_image_viewer(FrameBufferViewer *v)
 {
   v->fb = NULL;
 
@@ -80,18 +82,15 @@ static void clear_image_viewer(struct FrameBufferViewer *v)
   init_image_drawer(&v->image);
 }
 
-struct FrameBufferViewer *FbvNewViewer(void)
+FrameBufferViewer *FbvNewViewer(void)
 {
-  struct FrameBufferViewer *v = FJ_MEM_ALLOC(struct FrameBufferViewer);
-
-  if (v == NULL)
-    return NULL;
+  FrameBufferViewer *v = new FrameBufferViewer();
   
   clear_image_viewer(v);
   return v;
 }
 
-void FbvFreeViewer(struct FrameBufferViewer *v)
+void FbvFreeViewer(FrameBufferViewer *v)
 {
   if (v == NULL)
     return;
@@ -99,10 +98,10 @@ void FbvFreeViewer(struct FrameBufferViewer *v)
   if (v->fb != NULL)
     FbFree(v->fb);
 
-  FJ_MEM_FREE(v);
+  delete v;
 }
 
-void FbvDraw(const struct FrameBufferViewer *v)
+void FbvDraw(const FrameBufferViewer *v)
 {
   int xmove = 0;
   int ymove = 0;
@@ -125,7 +124,7 @@ void FbvDraw(const struct FrameBufferViewer *v)
   glScalef(v->scale, v->scale, 1.f);
   glTranslatef(-.5 * xviewsize, -.5 * yviewsize, 0.f); 
 
-  /* render background */
+  // render background
   glColor3f(0.f, 0.f, 0.f);
   glBegin(GL_QUADS);
     glVertex3f(v->viewbox[0], v->viewbox[1], 0.f);
@@ -134,7 +133,7 @@ void FbvDraw(const struct FrameBufferViewer *v)
     glVertex3f(v->viewbox[0], v->viewbox[3], 0.f);
   glEnd();
 
-  /* render framebuffer */
+  // render framebuffer
   glTranslatef(0.f, 0.f, 0.1f); 
 
   if (!v->fb->IsEmpty()) {
@@ -142,7 +141,7 @@ void FbvDraw(const struct FrameBufferViewer *v)
     draw_outline(&v->image);
   }
 
-  /* render viewbox line */
+  // render viewbox line
   glTranslatef(0.f, 0.f, 0.1f); 
   glPushAttrib(GL_CURRENT_BIT);
   glLineStipple(1, 0x0F0F);
@@ -155,7 +154,7 @@ void FbvDraw(const struct FrameBufferViewer *v)
   glEnd();
   glPopAttrib();
 
-  /* render tile guide */
+  // render tile guide
   if (v->tilesize > 0 && v->draw_tile == 1) {
     glTranslatef(0.f, 0.f, 0.2f); 
     glPushAttrib(GL_CURRENT_BIT);
@@ -165,10 +164,10 @@ void FbvDraw(const struct FrameBufferViewer *v)
     glPopAttrib();
   }
 
-  /* Not swapping the buffers here is intentional. */
+  // Not swapping the buffers here is intentional.
 }
 
-void FbvResize(struct FrameBufferViewer *v, int width, int height)
+void FbvResize(FrameBufferViewer *v, int width, int height)
 {
   v->win_width = width;
   v->win_height = height;
@@ -182,7 +181,7 @@ void FbvResize(struct FrameBufferViewer *v, int width, int height)
           -1.f, 1.f);
 }
 
-void FbvPressButton(struct FrameBufferViewer *v, MouseButton button, int x, int y)
+void FbvPressButton(FrameBufferViewer *v, MouseButton button, int x, int y)
 {
   v->xpresspos = x;
   v->ypresspos = y;
@@ -208,34 +207,22 @@ void FbvPressButton(struct FrameBufferViewer *v, MouseButton button, int x, int 
       glGetDoublev(GL_PROJECTION_MATRIX, proj);
       y_inv=view[3]-(GLint)y-1;
       printf ("Coordinates at cursor are (%4d, %4d)\n",x, y_inv);
-      /*
-      */
       gluUnProject(x, y_inv, 0., model, proj, view, &wx, &wy, &wz);
       printf ("World coords at z=0.0 are (%g, %g, %g)\n", wx, wy, wz);
-      /*
-      gluUnProject(x, y_inv, 1., model, proj, view, &wx, &wy, &wz);
-      printf ("World coords at z=1.0 are (%g, %g, %g)\n", wx, wy, wz);
-      */
-      /*
-      */
+      //gluUnProject(x, y_inv, 1., model, proj, view, &wx, &wy, &wz);
+      //printf ("World coords at z=1.0 are (%g, %g, %g)\n", wx, wy, wz);
       view_width = v->viewbox[2] - v->viewbox[0];
       bufx = (int) wx - v->viewbox[0];
       bufy = (int) wy - v->viewbox[1] * view_width;
-      /*
-      bufy = (v->databox[3]-v->databox[1]-1) - bufy;
-      printf ("++++++(%d, %d)\n", bufx, (v->databox[3]-v->databox[1]-1) - bufy);
-      */
+      //bufy = (v->databox[3]-v->databox[1]-1) - bufy;
+      //printf ("++++++(%d, %d)\n", bufx, (v->databox[3]-v->databox[1]-1) - bufy);
       bufy = FbGetHeight(v->fb) - bufy - 1;
-      /*
-      printf ("------(%d, %d)\n", bufx, bufy);
-      bufx = CLAMP(bufx, 0, v->databox[2]-v->databox[0]-1);
-      bufy = CLAMP(bufy, 0, v->databox[3]-v->databox[1]-1);
-      */
+      //printf ("------(%d, %d)\n", bufx, bufy);
+      //bufx = CLAMP(bufx, 0, v->databox[2]-v->databox[0]-1);
+      //bufy = CLAMP(bufy, 0, v->databox[3]-v->databox[1]-1);
       bufx = CLAMP(bufx, 0, FbGetWidth(v->fb)-1);
       bufy = CLAMP(bufy, 0, FbGetHeight(v->fb)-1);
-      /*
-      printf ("(%d, %d)\n", bufx, bufy);
-      */
+      //printf ("(%d, %d)\n", bufx, bufy);
       buf = FbGetReadOnly(v->fb, (int) bufx, (int) bufy, 0);
       memcpy(pixel, buf, sizeof(float) * FbGetChannelCount(v->fb));
       printf("R:%g G:%g B:%g A:%g\n", pixel[0], pixel[1], pixel[2], pixel[3]);
@@ -257,12 +244,12 @@ void FbvPressButton(struct FrameBufferViewer *v, MouseButton button, int x, int 
   }
 }
 
-void FbvReleaseButton(struct FrameBufferViewer *v, MouseButton button, int x, int y)
+void FbvReleaseButton(FrameBufferViewer *v, MouseButton button, int x, int y)
 {
   v->pressbutton = MB_NONE;
 }
 
-void FbvMoveMouse(struct FrameBufferViewer *v, int x, int y)
+void FbvMoveMouse(FrameBufferViewer *v, int x, int y)
 {
   const int posx = x;
   const int posy = y;
@@ -284,7 +271,7 @@ void FbvMoveMouse(struct FrameBufferViewer *v, int x, int y)
   }
 }
 
-void FbvPressKey(struct FrameBufferViewer *v, unsigned char key, int mouse_x, int mouse_y)
+void FbvPressKey(FrameBufferViewer *v, unsigned char key, int mouse_x, int mouse_y)
 {
   switch (key) {
   case 'h':
@@ -320,7 +307,7 @@ void FbvPressKey(struct FrameBufferViewer *v, unsigned char key, int mouse_x, in
     setup_image_drawing(v);
     FbvDraw(v);
     break;
-  case '\033': /* ESC ASCII code */
+  case '\033': // ESC ASCII code
     exit(EXIT_SUCCESS);
     break;
   default:
@@ -328,7 +315,7 @@ void FbvPressKey(struct FrameBufferViewer *v, unsigned char key, int mouse_x, in
   }
 }
 
-int FbvLoadImage(struct FrameBufferViewer *v, const char *filename)
+int FbvLoadImage(FrameBufferViewer *v, const char *filename)
 {
   char try_filename[1024] = {'\0'};
   const size_t MAXCPY = 1024-1;
@@ -350,14 +337,14 @@ int FbvLoadImage(struct FrameBufferViewer *v, const char *filename)
   }
 
   if (strcmp(ext, "fb") == 0) {
-    struct BufferInfo info = BUFINFO_INIT;
+    BufferInfo info = BUFINFO_INIT;
     err = load_fb(v->filename, v->fb, &info);
     BOX2_COPY(v->viewbox, info.viewbox);
     BOX2_COPY(v->databox, info.databox);
     v->tilesize = info.tilesize;
   }
   else if (strcmp(ext, "mip") == 0) {
-    struct BufferInfo info = BUFINFO_INIT;
+    BufferInfo info = BUFINFO_INIT;
     err = load_mip(v->filename, v->fb, &info);
     BOX2_COPY(v->viewbox, info.viewbox);
     BOX2_COPY(v->databox, info.databox);
@@ -371,7 +358,7 @@ int FbvLoadImage(struct FrameBufferViewer *v, const char *filename)
   }
 
   {
-    /* TODO define gamma function */
+    // TODO define gamma function
     float *pixel = v->fb->GetWritable(0, 0, 0);
     const int N = v->fb->GetWidth() * v->fb->GetHeight() * v->fb->GetChannelCount();
     int i;
@@ -388,7 +375,7 @@ int FbvLoadImage(struct FrameBufferViewer *v, const char *filename)
   return err;
 }
 
-void FbvGetImageSize(const struct FrameBufferViewer *v,
+void FbvGetImageSize(const FrameBufferViewer *v,
     int databox[4], int viewbox[4], int *nchannels)
 {
   BOX2_COPY(databox, v->databox);
@@ -396,8 +383,8 @@ void FbvGetImageSize(const struct FrameBufferViewer *v,
   *nchannels = v->fb->GetChannelCount();
 }
 
-/*----------------------------------------------------------------------------*/
-static void setup_image_drawing(struct FrameBufferViewer *v)
+//----------------------------------------------------------------------------
+static void setup_image_drawing(FrameBufferViewer *v)
 {
   setup_image_drawer(&v->image, v->fb->GetReadOnly(0, 0, 0),
       v->fb->GetChannelCount(), v->diplay_channel,
@@ -407,7 +394,7 @@ static void setup_image_drawing(struct FrameBufferViewer *v)
       v->databox[3] - v->databox[1]);
 }
 
-static void set_to_home_position(struct FrameBufferViewer *v)
+static void set_to_home_position(FrameBufferViewer *v)
 {
   v->scale = 1.f;
   v->exponent = 0.f;

@@ -1,22 +1,20 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_point_cloud_io.h"
 #include "fj_point_cloud.h"
 #include "fj_triangle.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
 #include "fj_mesh_io.h"
 #include "fj_random.h"
 #include "fj_vector.h"
 #include "fj_noise.h"
 #include "fj_mesh.h"
 
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
+#include <vector>
+#include <cstdio>
+#include <cctype>
+#include <cstring>
 
 using namespace fj;
 
@@ -27,7 +25,7 @@ static const char USAGE[] =
 "  -v             Add velocity attribute\n"
 "\n";
 
-static void noise_position(struct Vector *P, const struct Vector *N, struct Vector *velocity);
+static void noise_position(Vector *P, const Vector *N, Vector *velocity);
 
 int main(int argc, const char **argv)
 {
@@ -57,33 +55,29 @@ int main(int argc, const char **argv)
   }
 
   {
-    struct XorShift xr;
-    struct Mesh *mesh = MshNew();
-    struct PtcOutputFile *out = PtcOpenOutputFile(out_filename);
-    struct Vector *P = NULL;
-    struct Vector *velocity = NULL;
-    double *radius = NULL;
-    int *point_count_list = 0;
+    XorShift xr;
+    PtcOutputFile *out = PtcOpenOutputFile(out_filename);
     int total_point_count = 0;
     int face_count = 0;
     int point_id = 0;
     int i;
 
-    MshLoadFile(mesh, in_filename);
+    Mesh mesh;
+    MshLoadFile(&mesh, in_filename);
 
-    face_count = mesh->GetFaceCount();
-    point_count_list = FJ_MEM_ALLOC_ARRAY(int, face_count);
+    face_count = mesh.GetFaceCount();
+    std::vector<int> point_count_list(face_count);
 
     for (i = 0; i < face_count; i++) {
-      struct Vector P0;
-      struct Vector P1;
-      struct Vector P2;
-      struct Vector center;
+      Vector P0;
+      Vector P1;
+      Vector P2;
+      Vector center;
       double noise_val = 0;
       double area = 0;
       int npt_on_face = 0;
 
-      MshGetFaceVertexPosition(mesh, i, &P0, &P1, &P2);
+      MshGetFaceVertexPosition(&mesh, i, &P0, &P1, &P2);
 
       center.x = (P0.x + P1.x + P2.x) / 3;
       center.y = (P0.y + P1.y + P2.y) / 3;
@@ -108,28 +102,28 @@ int main(int argc, const char **argv)
     }
     printf("total_point_count %d\n", total_point_count);
 
-    P        = VecAlloc(total_point_count);
-    velocity = VecAlloc(total_point_count);
-    radius   = FJ_MEM_ALLOC_ARRAY(double, total_point_count);
+    std::vector<Vector> P(total_point_count);
+    std::vector<Vector> velocity(total_point_count);
+    std::vector<double> radius(total_point_count);
 
     XorInit(&xr);
     point_id = 0;
     for (i = 0; i < face_count; i++) {
-      struct Vector P0;
-      struct Vector P1;
-      struct Vector P2;
-      struct Vector N0;
-      struct Vector N1;
-      struct Vector N2;
+      Vector P0;
+      Vector P1;
+      Vector P2;
+      Vector N0;
+      Vector N1;
+      Vector N2;
       const int npt_on_face = point_count_list[i];
       int j;
 
-      MshGetFaceVertexPosition(mesh, i, &P0, &P1, &P2);
-      MshGetFaceVertexNormal(mesh, i, &N0, &N1, &N2);
+      MshGetFaceVertexPosition(&mesh, i, &P0, &P1, &P2);
+      MshGetFaceVertexNormal(&mesh, i, &N0, &N1, &N2);
 
       for (j = 0; j < npt_on_face; j++) {
-        struct Vector normal;
-        struct Vector *P_out = &P[point_id];
+        Vector normal;
+        Vector *P_out = &P[point_id];
         double u = 0, v = 0, t = 0;
         double offset = 0;
 
@@ -150,13 +144,13 @@ int main(int argc, const char **argv)
         P_out->z += offset * normal.z;
 
         if (add_velocity) {
-          struct Vector vel(0, .05 * 0, 0);
+          Vector vel(0, .05 * 0, 0);
           noise_position(P_out, &normal, &vel);
           velocity[point_id] = vel;
 
           radius[point_id] = .01 * .2 * 3;
         } else {
-          struct Vector vel;
+          Vector vel;
           velocity[point_id] = vel;
 
           radius[point_id] = .01 * .2;
@@ -166,28 +160,21 @@ int main(int argc, const char **argv)
       }
     }
 
-    PtcSetOutputPosition(out, P, total_point_count);
-    PtcSetOutputAttributeDouble(out, "radius", radius);
-    PtcSetOutputAttributeVector3(out, "velocity", velocity);
+    PtcSetOutputPosition(out, &P[0], total_point_count);
+    PtcSetOutputAttributeDouble(out, "radius", &radius[0]);
+    PtcSetOutputAttributeVector3(out, "velocity", &velocity[0]);
 
     PtcWriteFile(out);
-
     PtcCloseOutputFile(out);
-    MshFree(mesh);
-
-    FJ_MEM_FREE(point_count_list);
-    VecFree(P);
-    VecFree(velocity);
-    FJ_MEM_FREE(radius);
   }
 
   return 0;
 }
 
-static void noise_position(struct Vector *P, const struct Vector *N, struct Vector *velocity)
+static void noise_position(Vector *P, const Vector *N, Vector *velocity)
 {
-  struct Vector noise_vec;
-  struct Vector P_offset;
+  Vector noise_vec;
+  Vector P_offset;
   double noise_amp = 0;
 
   noise_vec = PerlinNoise3d(*P, 2, .5, 8);
