@@ -1,14 +1,10 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef OBJPARSER_H
 #define OBJPARSER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace fj {
 
 struct ObjParser;
 
@@ -38,9 +34,6 @@ extern void ObjParserFree(struct ObjParser *parser);
 
 extern int ObjParse(struct ObjParser *parser, const char *filename);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+} // namespace xxx
 
-#endif /* XXX_H */
-
+#endif // FJ_XXX_H

@@ -1,19 +1,17 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "ObjParser.h"
 #include "fj_tex_coord.h"
 #include "fj_triangle.h"
-#include "fj_memory.h"
 #include "fj_mesh_io.h"
 #include "fj_vector.h"
 #include "fj_array.h"
 #include "fj_mesh.h"
 
-#include <stdio.h>
-#include <string.h>
+#include <vector>
+#include <cstdio>
+#include <cstring>
 
 using namespace fj;
 
@@ -23,27 +21,29 @@ static const char USAGE[] =
 "  --help         Display this information\n"
 "\n";
 
-struct ObjBuffer {
-  struct Array *P;
-  struct Array *N;
-  struct Array *uv;
-  struct Array *vertex_indices;
-  struct Array *texture_indices;
-  struct Array *normal_indices;
+class ObjBuffer {
+public:
+  ObjBuffer() : nverts(0), nfaces(0) {}
+  ~ObjBuffer() {}
+
+public:
+  std::vector<Vector>   P;
+  std::vector<Vector>   N;
+  std::vector<TexCoord> uv;
+  std::vector<Index3>   vertex_indices;
+  std::vector<Index3>   texture_indices;
+  std::vector<Index3>   normal_indices;
 
   long nverts;
   long nfaces;
 };
 
-extern struct ObjBuffer *ObjBufferNew(void);
-extern void ObjBufferFree(struct ObjBuffer *buffer);
-extern int ObjBufferFromFile(struct ObjBuffer *buffer, const char *filename);
-extern int ObjBufferToMeshFile(const struct ObjBuffer *buffer, const char *filename);
-extern int ObjBufferComputeNormals(struct ObjBuffer *buffer);
+extern int ObjBufferFromFile(ObjBuffer *buffer, const char *filename);
+extern int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename);
+extern int ObjBufferComputeNormals(ObjBuffer *buffer);
 
 int main(int argc, const char **argv)
 {
-  struct ObjBuffer *buffer = NULL;
   const char *in_filename = NULL;
   const char *out_filename = NULL;
   int err = 0;
@@ -62,70 +62,30 @@ int main(int argc, const char **argv)
   in_filename = argv[1];
   out_filename = argv[2];
 
-  buffer = ObjBufferNew();
-  if (buffer == NULL) {
-    /* TODO error handling */
-    return -1;
-  }
+  ObjBuffer buffer;
 
-  err = ObjBufferFromFile(buffer, in_filename);
+  err = ObjBufferFromFile(&buffer, in_filename);
   if (err) {
-    /* TODO error handling */
+    // TODO error handling
     return -1;
   }
 
-  err = ObjBufferComputeNormals(buffer);
+  err = ObjBufferComputeNormals(&buffer);
   if (err) {
-    /* TODO error handling */
+    // TODO error handling
     return -1;
   }
 
-  err = ObjBufferToMeshFile(buffer, out_filename);
+  err = ObjBufferToMeshFile(&buffer, out_filename);
   if (err) {
-    /* TODO error handling */
+    // TODO error handling
     return -1;
   }
 
-  printf("nverts: %ld\n", buffer->nverts);
-  printf("nfaces: %ld\n", buffer->nfaces);
+  printf("nverts: %ld\n", buffer.nverts);
+  printf("nfaces: %ld\n", buffer.nfaces);
 
-  ObjBufferFree(buffer);
   return 0;
-}
-
-struct ObjBuffer *ObjBufferNew(void)
-{
-  struct ObjBuffer *buffer = FJ_MEM_ALLOC(struct ObjBuffer);
-
-  if (buffer == NULL)
-    return NULL;
-
-  buffer->P = ArrNew(sizeof(struct Vector));
-  buffer->N = ArrNew(sizeof(struct Vector));
-  buffer->uv = ArrNew(sizeof(struct TexCoord));
-  buffer->vertex_indices = ArrNew(sizeof(Index3));
-  buffer->texture_indices = ArrNew(sizeof(Index3));
-  buffer->normal_indices = ArrNew(sizeof(Index3));
-
-  buffer->nverts = 0;
-  buffer->nfaces = 0;
-
-  return buffer;
-}
-
-void ObjBufferFree(struct ObjBuffer *buffer)
-{
-  if (buffer == NULL)
-    return;
-
-  ArrFree(buffer->P);
-  ArrFree(buffer->N);
-  ArrFree(buffer->uv);
-  ArrFree(buffer->vertex_indices);
-  ArrFree(buffer->texture_indices);
-  ArrFree(buffer->normal_indices);
-
-  FJ_MEM_FREE(buffer);
 }
 
 static int read_vertx(
@@ -136,13 +96,13 @@ static int read_vertx(
     double z,
     double w)
 {
-  struct ObjBuffer *buffer = (struct ObjBuffer *) interpreter;
-  struct Vector P;
+  ObjBuffer *buffer = (ObjBuffer *) interpreter;
+  Vector P;
 
   P.x = x;
   P.y = y;
   P.z = z;
-  ArrPush(buffer->P, &P);
+  buffer->P.push_back(P);
 
   buffer->nverts++;
   return 0;
@@ -156,12 +116,12 @@ static int read_texture(
     double z,
     double w)
 {
-  struct ObjBuffer *buffer = (struct ObjBuffer *) interpreter;
-  struct TexCoord uv;
+  ObjBuffer *buffer = (ObjBuffer *) interpreter;
+  TexCoord uv;
 
   uv.u = x;
   uv.v = y;
-  ArrPush(buffer->uv, &uv);
+  buffer->uv.push_back(uv);
 
   return 0;
 }
@@ -174,13 +134,13 @@ static int read_normal(
     double z,
     double w)
 {
-  struct ObjBuffer *buffer = (struct ObjBuffer *) interpreter;
-  struct Vector N;
+  ObjBuffer *buffer = (ObjBuffer *) interpreter;
+  Vector N;
 
   N.x = x;
   N.y = y;
   N.z = z;
-  ArrPush(buffer->N, &N);
+  buffer->N.push_back(N);
 
   return 0;
 }
@@ -192,7 +152,7 @@ static int read_face(
     const long *texture_indices,
     const long *normal_indices)
 {
-  struct ObjBuffer *buffer = (struct ObjBuffer *) interpreter;
+  ObjBuffer *buffer = (ObjBuffer *) interpreter;
   int i;
 
   const int ntriangles = index_count - 2;
@@ -203,7 +163,7 @@ static int read_face(
       tri_index.i0 = vertex_indices[0] - 1;
       tri_index.i1 = vertex_indices[i + 1] - 1;
       tri_index.i2 = vertex_indices[i + 2] - 1;
-      ArrPush(buffer->vertex_indices, &tri_index);
+      buffer->vertex_indices.push_back(tri_index);
     }
 
     if (texture_indices != NULL) {
@@ -211,7 +171,7 @@ static int read_face(
       tri_index.i0 = texture_indices[0] - 1;
       tri_index.i1 = texture_indices[i + 1] - 1;
       tri_index.i2 = texture_indices[i + 2] - 1;
-      ArrPush(buffer->texture_indices, &tri_index);
+      buffer->texture_indices.push_back(tri_index);
     }
 
     if (normal_indices != NULL) {
@@ -219,7 +179,7 @@ static int read_face(
       tri_index.i0 = normal_indices[0] - 1;
       tri_index.i1 = normal_indices[i + 1] - 1;
       tri_index.i2 = normal_indices[i + 2] - 1;
-      ArrPush(buffer->normal_indices, &tri_index);
+      buffer->normal_indices.push_back(tri_index);
     }
   }
 
@@ -227,9 +187,9 @@ static int read_face(
   return 0;
 }
 
-int ObjBufferFromFile(struct ObjBuffer *buffer, const char *filename)
+int ObjBufferFromFile(ObjBuffer *buffer, const char *filename)
 {
-  struct ObjParser *parser = NULL;
+  ObjParser *parser = NULL;
   int err = 0;
 
   if (buffer == NULL)
@@ -254,54 +214,54 @@ int ObjBufferFromFile(struct ObjBuffer *buffer, const char *filename)
   return 0;
 }
 
-int ObjBufferToMeshFile(const struct ObjBuffer *buffer, const char *filename)
+int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename)
 {
-  struct MeshOutput *out = MshOpenOutputFile(filename);
+  MeshOutput *out = MshOpenOutputFile(filename);
   if (out == NULL) {
     return -1;
   }
 
   out->nverts = buffer->nverts;
-  out->P = (struct Vector *) buffer->P->data;
-  out->N = (struct Vector *) buffer->N->data;
-  out->uv = (struct TexCoord *) buffer->uv->data;
+  out->P  = &buffer->P[0];
+  out->N  = &buffer->N[0];
+  out->uv = &buffer->uv[0];
   out->nfaces = buffer->nfaces;
   out->nface_attrs = 1;
-  out->indices = (Index3 *) buffer->vertex_indices->data;
+  out->indices = &buffer->vertex_indices[0];
 
   MshWriteFile(out);
   MshCloseOutputFile(out);
   return 0;
 }
 
-int ObjBufferComputeNormals(struct ObjBuffer *buffer)
+int ObjBufferComputeNormals(ObjBuffer *buffer)
 {
   const int nverts = buffer->nverts;
   const int nfaces = buffer->nfaces;
-  struct Vector *P = (struct Vector *) buffer->P->data;
-  struct Vector *N = (struct Vector *) buffer->N->data;
-  Index3 *indices = (Index3 *) buffer->vertex_indices->data;
+  Vector *P = &buffer->P[0];
+  Vector *N = &buffer->N[0];
+  Index3 *indices = &buffer->vertex_indices[0];
   int i;
 
-  if (P == NULL || indices == NULL)
+  if (buffer->P.empty() || buffer->vertex_indices.empty())
     return -1;
 
-  if (N == NULL) {
-    ArrResize(buffer->N, 3 * nverts);
-    N = (struct Vector *) buffer->N->data;
+  if (buffer->N.empty()) {
+    buffer->N.resize(nverts);
+    N = &buffer->N[0];
   }
 
-  /* initialize N */
+  // initialize N
   for (i = 0; i < nverts; i++) {
-    struct Vector *nml = &N[i];
+    Vector *nml = &N[i];
     *nml = Vector();
   }
 
-  /* compute N */
+  // compute N
   for (i = 0; i < nfaces; i++) {
-    struct Vector *P0, *P1, *P2;
-    struct Vector *N0, *N1, *N2;
-    struct Vector Ng;
+    Vector *P0, *P1, *P2;
+    Vector *N0, *N1, *N2;
+    Vector Ng;
     const int i0 = indices[i].i0;
     const int i1 = indices[i].i1;
     const int i2 = indices[i].i2;
@@ -328,12 +288,11 @@ int ObjBufferComputeNormals(struct ObjBuffer *buffer)
     N2->z += Ng.z;
   }
 
-  /* normalize N */
+  // normalize N
   for (i = 0; i < nverts; i++) {
-    struct Vector *nml = &N[i];
+    Vector *nml = &N[i];
     Normalize(nml);
   }
 
   return 0;
 }
-

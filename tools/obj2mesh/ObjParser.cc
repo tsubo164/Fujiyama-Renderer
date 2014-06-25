@@ -1,14 +1,14 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "ObjParser.h"
-#include "fj_memory.h"
+#include <vector>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
 
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+namespace fj {
 
 enum { INITIAL_INDEX_ALLOC = 8 };
 
@@ -19,37 +19,58 @@ enum TripletType {
   FACE_V_VT_VN
 };
 
-struct VectorValue {
+class VectorValue {
+public:
+  VectorValue() :
+      min_ncomponents(3),
+      max_ncomponents(3),
+      scanned_ncomponents(0),
+      x(0.), y(0.), z(0.), w(0.)
+  {}
+  ~VectorValue() {}
+
+public:
   int min_ncomponents;
   int max_ncomponents;
   int scanned_ncomponents;
   double x, y, z, w;
 };
-#define INIT_VECTOR_VALUE {3, 3, 0, 0., 0., 0., 0.}
 
-struct IndexList {
+class IndexList {
+public:
+  IndexList() :
+      triplet(FACE_V),
+      vertex (INITIAL_INDEX_ALLOC),
+      texture(INITIAL_INDEX_ALLOC),
+      normal (INITIAL_INDEX_ALLOC)
+  {
+  }
+  ~IndexList() {}
+
+public:
   int triplet;
-  long *vertex;
-  long *texture;
-  long *normal;
-  long count;
-  long alloc;
+  std::vector<long> vertex;
+  std::vector<long> texture;
+  std::vector<long> normal;
 };
 
-static struct IndexList *new_index_list(void);
-static void free_index_list(struct IndexList *list);
-static void push_index(struct IndexList *list, long v, long vt, long vn);
-static void clear_index_list(struct IndexList *list);
+static void push_index(IndexList *list, long v, long vt, long vn);
+static void clear_index_list(IndexList *list);
 
-static const char *scan_vector(const char *line, struct VectorValue *vector);
-static const char *scan_index_list(struct IndexList *list, const char *line);
+static const char *scan_vector(const char *line, VectorValue *vector);
+static const char *scan_index_list(IndexList *list, const char *line);
 static int detect_triplet(const char *line);
 
 static char *trim_line(char *line);
 static int is_separator(int c);
 static int match_token(const char *line, const char *token);
 
-struct ObjParser {
+class ObjParser {
+public:
+  ObjParser() {}
+  ~ObjParser() {}
+
+public:
   void *interpreter;
   ReadVertxFunction ReadVertex;
   ReadVertxFunction ReadTexture;
@@ -57,17 +78,14 @@ struct ObjParser {
   ReadFaceFunction  ReadFace;
 };
 
-struct ObjParser *ObjParserNew(
+ObjParser *ObjParserNew(
     void *interpreter,
     ReadVertxFunction read_vertex_function,
     ReadVertxFunction read_texture_function,
     ReadVertxFunction read_normal_function,
     ReadFaceFunction read_face_function)
 {
-  struct ObjParser *parser = FJ_MEM_ALLOC(struct ObjParser);
-
-  if (parser == NULL)
-    return NULL;
+  ObjParser *parser = new ObjParser();
 
   parser->interpreter = interpreter;
   parser->ReadVertex = read_vertex_function;
@@ -78,17 +96,17 @@ struct ObjParser *ObjParserNew(
   return parser;
 }
 
-void ObjParserFree(struct ObjParser *parser)
+void ObjParserFree(ObjParser *parser)
 {
   if (parser == NULL)
     return;
 
-  FJ_MEM_FREE(parser);
+  delete parser;
 }
 
-int ObjParse(struct ObjParser *parser, const char *filename)
+int ObjParse(ObjParser *parser, const char *filename)
 {
-  struct IndexList *list = new_index_list();
+  IndexList list;
   FILE *file = fopen(filename, "r");
   char buf[4096] = {'\0'};
   int err = 0;
@@ -101,14 +119,14 @@ int ObjParse(struct ObjParser *parser, const char *filename)
     const char *line = trim_line(buf);
 
     if (match_token(line, "v")) {
-      struct VectorValue vector = INIT_VECTOR_VALUE;
+      VectorValue vector;
       vector.min_ncomponents = 3;
       vector.max_ncomponents = 4;
       if (parser->ReadVertex == NULL) {
         continue;
       }
 
-      line += 1; /* skip "v" */
+      line += 1; // skip "v"
       line = scan_vector(line, &vector);
       if (line == NULL) {
         goto parse_error;
@@ -126,14 +144,14 @@ int ObjParse(struct ObjParser *parser, const char *filename)
       }
     }
     else if (match_token(line, "vt")) {
-      struct VectorValue vector = INIT_VECTOR_VALUE;
+      VectorValue vector;
       vector.min_ncomponents = 1;
       vector.max_ncomponents = 3;
       if (parser->ReadTexture == NULL) {
         continue;
       }
 
-      line += 2; /* skip "vt" */
+      line += 2; // skip "vt"
       line = scan_vector(line, &vector);
       if (line == NULL) {
         goto parse_error;
@@ -151,14 +169,14 @@ int ObjParse(struct ObjParser *parser, const char *filename)
       }
     }
     else if (match_token(line, "vn")) {
-      struct VectorValue vector = INIT_VECTOR_VALUE;
+      VectorValue vector;
       vector.min_ncomponents = 3;
       vector.max_ncomponents = 3;
       if (parser->ReadNormal == NULL) {
         continue;
       }
 
-      line += 2; /* skip "vn" */
+      line += 2; // skip "vn"
       line = scan_vector(line, &vector);
       if (line == NULL) {
         goto parse_error;
@@ -183,34 +201,34 @@ int ObjParse(struct ObjParser *parser, const char *filename)
         continue;
       }
 
-      line += 1; /* skip "f" */
-      line = scan_index_list(list, line);
+      line += 1; // skip "f"
+      line = scan_index_list(&list, line);
       if (line == NULL) {
         goto parse_error;
       }
 
-      switch(list->triplet) {
+      switch(list.triplet) {
       case FACE_V:
-        vertex  = list->vertex;
+        vertex  = &list.vertex[0];
         break;
       case FACE_V_VT:
-        vertex  = list->vertex;
-        texture = list->texture;
+        vertex  = &list.vertex[0];
+        texture = &list.texture[0];
         break;
       case FACE_V__VN:
-        vertex  = list->vertex;
+        vertex  = &list.vertex[0];
         break;
       case FACE_V_VT_VN:
-        vertex  = list->vertex;
-        texture = list->texture;
-        normal  = list->normal;
+        vertex  = &list.vertex[0];
+        texture = &list.texture[0];
+        normal  = &list.normal[0];
         break;
       default:
         break;
       }
 
       err = parser->ReadFace(parser->interpreter,
-          list->count,
+          list.vertex.size(),
           vertex,
           texture,
           normal);
@@ -220,17 +238,15 @@ int ObjParse(struct ObjParser *parser, const char *filename)
     }
   }
 
-  free_index_list(list);
   fclose(file);
   return 0;
 
 parse_error:
-  free_index_list(list);
   fclose(file);
   return -1;
 }
 
-static const char *scan_vector(const char *line, struct VectorValue *vector)
+static const char *scan_vector(const char *line, VectorValue *vector)
 {
   double vec[4] = {0, 0, 0, 0};
   const char *next = line;
@@ -265,7 +281,7 @@ static const char *scan_vector(const char *line, struct VectorValue *vector)
   return next;
 }
 
-static const char *scan_index_list(struct IndexList *list, const char *line)
+static const char *scan_index_list(IndexList *list, const char *line)
 {
   const char *next = line;
   char *end = NULL;
@@ -296,7 +312,7 @@ static const char *scan_index_list(struct IndexList *list, const char *line)
         break;
       }
 
-      next = end + 1; /* end[0] == '/' */
+      next = end + 1; // end[0] == '/'
       vt = strtol(next, &end, 0);
       if (next == end) {
         break;
@@ -314,7 +330,7 @@ static const char *scan_index_list(struct IndexList *list, const char *line)
         break;
       }
 
-      next = end + 2; /* end[0] == "//" */
+      next = end + 2; // end[0] == "//"
       vn = strtol(next, &end, 0);
       if (next == end) {
         break;
@@ -332,13 +348,13 @@ static const char *scan_index_list(struct IndexList *list, const char *line)
         break;
       }
 
-      next = end + 1; /* end[0] == '/' */
+      next = end + 1; // end[0] == '/'
       vt = strtol(next, &end, 0);
       if (next == end) {
         break;
       }
 
-      next = end + 1; /* end[0] == '/' */
+      next = end + 1; // end[0] == '/'
       vn = strtol(next, &end, 0);
       if (next == end) {
         break;
@@ -353,7 +369,7 @@ static const char *scan_index_list(struct IndexList *list, const char *line)
     break;
   }
 
-  if (list->count == 0) {
+  if (list->vertex.empty()) {
     return NULL;
   }
   return next;
@@ -383,60 +399,19 @@ static int detect_triplet(const char *line)
     return FACE_V_VT;
 }
 
-static struct IndexList *new_index_list(void)
+static void push_index(IndexList *list, long v, long vt, long vn)
 {
-  struct IndexList *list = FJ_MEM_ALLOC(struct IndexList);
-
-  if (list == NULL)
-    return NULL;
-
-  list->triplet = FACE_V;
-  list->count = 0;
-  list->alloc = INITIAL_INDEX_ALLOC;
-  list->vertex  = FJ_MEM_ALLOC_ARRAY(long, list->alloc);
-  list->texture = FJ_MEM_ALLOC_ARRAY(long, list->alloc);
-  list->normal  = FJ_MEM_ALLOC_ARRAY(long, list->alloc);
-
-  return list;
+  list->vertex.push_back(v);
+  list->texture.push_back(vt);
+  list->normal.push_back(vn);
 }
 
-static void free_index_list(struct IndexList *list)
-{
-  if (list == NULL)
-    return;
-
-  if (list->vertex != NULL)
-    FJ_MEM_FREE(list->vertex);
-  if (list->texture != NULL)
-    FJ_MEM_FREE(list->texture);
-  if (list->normal != NULL)
-    FJ_MEM_FREE(list->normal);
-
-  FJ_MEM_FREE(list);
-}
-
-static void push_index(struct IndexList *list, long v, long vt, long vn)
-{
-  const long next_index = list->count;
-
-  if (list->count == list->alloc) {
-    const long new_alloc = list->alloc * 2;
-    list->vertex  = FJ_MEM_REALLOC_ARRAY(list->vertex,  long, new_alloc);
-    list->texture = FJ_MEM_REALLOC_ARRAY(list->texture, long, new_alloc);
-    list->normal  = FJ_MEM_REALLOC_ARRAY(list->normal,  long, new_alloc);
-    list->alloc = new_alloc;
-  }
-
-  list->vertex[next_index] = v;
-  list->texture[next_index] = vt;
-  list->normal[next_index] = vn;
-  list->count++;
-}
-
-static void clear_index_list(struct IndexList *list)
+static void clear_index_list(IndexList *list)
 {
   list->triplet = FACE_V;
-  list->count = 0;
+  list->vertex.clear();
+  list->texture.clear();
+  list->normal.clear();
 }
 
 static char *trim_line(char *line)
@@ -482,3 +457,4 @@ static int match_token(const char *line, const char *token)
   return is_separator(*ln);
 }
 
+} // namespace xxx
