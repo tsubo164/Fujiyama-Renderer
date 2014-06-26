@@ -1,12 +1,9 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_point_cloud.h"
 #include "fj_intersection.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
 #include "fj_ray.h"
 
 #include <cstdio>

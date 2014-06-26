@@ -1,31 +1,22 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef TABLE_H
 #define TABLE_H
 
 #include "fj_scene_interface.h"
+#include <string>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class Table;
+class TableEnt;
 
-struct Table;
-struct TableEnt;
+extern Table *TblNew(void);
+extern void TblFree(Table *table);
 
-extern struct Table *TblNew(void);
-extern void TblFree(struct Table *table);
+extern TableEnt *TblLookup(Table *table, const char *key);
+extern TableEnt *TblAdd(Table *table, const char *key, fj::ID id);
 
-extern struct TableEnt *TblLookup(struct Table *table, const char *key);
-extern struct TableEnt *TblAdd(struct Table *table, const char *key, fj::ID id);
+extern const std::string &EntGetName(const TableEnt *ent);
+extern fj::ID EntGetID(const TableEnt *ent);
 
-extern const char *EntGetName(const struct TableEnt *ent);
-extern fj::ID EntGetID(const struct TableEnt *ent);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#endif /* XXX_H */
+#endif // FJ_XXX_H

@@ -1,13 +1,10 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_mesh.h"
 #include "fj_intersection.h"
 #include "fj_primitive_set.h"
 #include "fj_triangle.h"
-#include "fj_memory.h"
 #include "fj_ray.h"
 
 #define ATTRIBUTE_LIST(ATTR) \

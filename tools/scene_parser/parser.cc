@@ -1,21 +1,30 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "parser.h"
 #include "command.h"
 #include "table.h"
 #include "fj_scene_interface.h"
-#include "fj_memory.h"
 
-#include <string.h>
-#include <assert.h>
-#include <stdio.h>
-#include <ctype.h>
+#include <cstring>
+#include <cassert>
+#include <cstdio>
+#include <cctype>
+
+static void print_command(const CommandArgument *args, int nargs);
+static int enum_to_num(CommandArgument *arg);
+static int scan_number(CommandArgument *arg);
+static int build_arguments(Parser *parser,
+    const Command *command, CommandArgument *arguments);
+static int tokenize_line(const char *line,
+    char *tokenized, size_t tokenized_size,
+    CommandArgument *args, int max_args);
+
+static int parse_line(Parser *parser, const char *line);
+static void parse_error(Parser *parser, int error_no);
 
 enum PsrErroNo {
-  PSR_ERR_NONE = 1024, /* offset to avoid conflict with SI_ERR */
+  PSR_ERR_NONE = 1024, // offset to avoid conflict with SI_ERR
   PSR_ERR_UNKNOWN_COMMAND,
   PSR_ERR_MANY_ARGS,
   PSR_ERR_FEW_ARGS,
@@ -25,79 +34,65 @@ enum PsrErroNo {
   PSR_ERR_NAME_NOT_FOUND
 };
 
-struct Parser {
+class Parser {
+public:
+  Parser();
+  ~Parser();
+
+public:
   int line_no;
-  struct Table *table;
+  Table *table;
 
   const char *error_message;
   int error_no;
 };
 
-static void print_command(const struct CommandArgument *args, int nargs);
-static int enum_to_num(struct CommandArgument *arg);
-static int scan_number(struct CommandArgument *arg);
-static int build_arguments(struct Parser *parser,
-    const struct Command *command, struct CommandArgument *arguments);
-static int tokenize_line(const char *line,
-    char *tokenized, size_t tokenized_size,
-    struct CommandArgument *args, int max_args);
-
-static int parse_line(struct Parser *parser, const char *line);
-static void parse_error(struct Parser *parser, int error_no);
-
-struct Parser *PsrNew(void)
+Parser::Parser()
 {
-  struct Parser *parser = FJ_MEM_ALLOC(struct Parser);
-
-  if (parser == NULL)
-    return NULL;
-
+  line_no = 0;
+  table = TblNew();
   SiOpenScene();
-  parser->line_no = 0;
-  parser->table = TblNew();
-  if (parser->table == NULL) {
-    PsrFree(parser);
-    return NULL;
-  }
-
-  parse_error(parser, PSR_ERR_NONE);
-
-  return parser;
+  parse_error(this, PSR_ERR_NONE);
 }
 
-void PsrFree(struct Parser *parser)
+Parser::~Parser()
 {
-  if (parser == NULL)
-    return;
-
   SiCloseScene();
-
-  TblFree(parser->table);
-  FJ_MEM_FREE(parser);
+  TblFree(table);
 }
 
-const char *PsrGetErrorMessage(const struct Parser *parser)
+Parser *PsrNew(void)
+{
+  return new Parser();
+}
+
+void PsrFree(Parser *parser)
+{
+  delete parser;
+}
+
+const char *PsrGetErrorMessage(const Parser *parser)
 {
   return parser->error_message;
 }
 
-int PsrParseLine(struct Parser *parser, const char *line)
+int PsrParseLine(Parser *parser, const char *line)
 {
   parser->line_no++;
 
   return parse_line(parser, line);
 }
 
-int PsrGetLineNo(const struct Parser *parser)
+int PsrGetLineNo(const Parser *parser)
 {
   return parser->line_no;
 }
 
 static int tokenize_line(const char *line,
     char *tokenized, size_t tokenized_size,
-    struct CommandArgument *args, int max_args)
+    CommandArgument *args, int max_args)
 {
-  struct CommandArgument *arg = args;
+  CommandArgument *arg = args;
   const char *src = line;
   char *dst = tokenized;
   int ntokens = 0;
@@ -123,7 +118,7 @@ static int tokenize_line(const char *line,
   return ntokens;
 }
 
-static void print_command(const struct CommandArgument *args, int nargs)
+static void print_command(const CommandArgument *args, int nargs)
 {
   int i = 0;
 
@@ -138,13 +133,13 @@ static void print_command(const struct CommandArgument *args, int nargs)
   }
 }
 
-static int build_arguments(struct Parser *parser,
-    const struct Command *command, struct CommandArgument *arguments)
+static int build_arguments(Parser *parser,
+    const Command *command, CommandArgument *arguments)
 {
   int i;
 
   for (i = 0; i < command->arg_count; i++) {
-    struct CommandArgument *arg = &arguments[i];
+    CommandArgument *arg = &arguments[i];
     const int *type = &command->arg_types[i];
 
     switch(*type) {
@@ -156,7 +151,7 @@ static int build_arguments(struct Parser *parser,
       break;
 
     case ARG_ENTRY_ID: {
-      const struct TableEnt *ent = TblLookup(parser->table, arg->str);
+      const TableEnt *ent = TblLookup(parser->table, arg->str);
       if (ent == NULL) {
         parse_error(parser, PSR_ERR_NAME_NOT_FOUND);
         return -1;
@@ -205,11 +200,11 @@ static int build_arguments(struct Parser *parser,
   return 0;
 }
 
-static int parse_line(struct Parser *parser, const char *line)
+static int parse_line(Parser *parser, const char *line)
 {
-  struct CommandArgument arguments[16] = {{NULL}};
-  struct CommandResult result = INIT_COMMAND_RESULT;
-  const struct Command *command = NULL;
+  CommandArgument arguments[16] = {{NULL}};
+  CommandResult result = INIT_COMMAND_RESULT;
+  const Command *command = NULL;
 
   const char *head = line;
   char token_list[1024] = {'\0'};
@@ -262,13 +257,13 @@ static int parse_line(struct Parser *parser, const char *line)
   return 0;
 }
 
-static int scan_number(struct CommandArgument *arg)
+static int scan_number(CommandArgument *arg)
 {
   char *end = NULL;
   const int is_enum = enum_to_num(arg);
 
   if (is_enum) {
-    /* arg->num is already set from enum string */
+    // arg->num is already set from enum string
     return 0;
   }
 
@@ -280,18 +275,18 @@ static int scan_number(struct CommandArgument *arg)
   return 0;
 }
 
-static int enum_to_num(struct CommandArgument *arg)
+static int enum_to_num(CommandArgument *arg)
 {
   const char *str = arg->str;
 
-  /* transform orders */
+  // transform orders
   if (strcmp(str, "ORDER_SRT") == 0) {arg->num = SI_ORDER_SRT; return 1;}
   if (strcmp(str, "ORDER_STR") == 0) {arg->num = SI_ORDER_STR; return 1;}
   if (strcmp(str, "ORDER_RST") == 0) {arg->num = SI_ORDER_RST; return 1;}
   if (strcmp(str, "ORDER_RTS") == 0) {arg->num = SI_ORDER_RTS; return 1;}
   if (strcmp(str, "ORDER_TRS") == 0) {arg->num = SI_ORDER_TRS; return 1;}
   if (strcmp(str, "ORDER_TSR") == 0) {arg->num = SI_ORDER_TSR; return 1;}
-  /* rotate orders */
+  // rotate orders
   if (strcmp(str, "ORDER_XYZ") == 0) {arg->num = SI_ORDER_XYZ; return 1;}
   if (strcmp(str, "ORDER_XZY") == 0) {arg->num = SI_ORDER_XZY; return 1;}
   if (strcmp(str, "ORDER_YXZ") == 0) {arg->num = SI_ORDER_YXZ; return 1;}
@@ -302,16 +297,16 @@ static int enum_to_num(struct CommandArgument *arg)
   return 0;
 }
 
-/* TODO should move this to fj_scene_interface.c? */
+// TODO should move this to fj_scene_interface.c?
 struct SiError {
   int number;
   const char *message;
 };
 
-static void parse_error(struct Parser *parser, int error_no)
+static void parse_error(Parser *parser, int error_no)
 {
-  static const struct SiError errors[] = {
-    /* from Parser */
+  static const SiError errors[] = {
+    // from Parser
     {PSR_ERR_NONE, ""},
     {PSR_ERR_UNKNOWN_COMMAND,  "unknown command"},
     {PSR_ERR_MANY_ARGS,        "too many arguments"},
@@ -320,20 +315,20 @@ static void parse_error(struct Parser *parser, int error_no)
     {PSR_ERR_BAD_ENUM,         "bad enum arguments"},
     {PSR_ERR_NAME_EXISTS,      "entry name already exists"},
     {PSR_ERR_NAME_NOT_FOUND,   "entry name not found"},
-    /* from SceneInterface */
+    // from SceneInterface
     {SI_ERR_PLUGIN_NOT_FOUND,           "plugin not found"},
     {SI_ERR_INIT_PLUGIN_FUNC_NOT_EXIST, "initialize plugin function not exit"},
     {SI_ERR_INIT_PLUGIN_FUNC_FAIL,      "initialize plugin function failed"},
     {SI_ERR_BAD_PLUGIN_INFO,            "invalid plugin info in the plugin"},
     {SI_ERR_CLOSE_PLUGIN_FAIL,          "close plugin function failed"},
-    /* TODO FIXME temp */
+    // TODO FIXME temp
     {SI_ERR_BADTYPE,    "invalid entry type"},
     {SI_ERR_FAILLOAD,   "load file failed"},
     {SI_ERR_FAILNEW,    "new entry failed"},
     {SI_ERR_NO_MEMORY,  "no memory"},
     {SI_ERR_NONE, ""}
   };
-  const struct SiError *error = NULL;
+  const SiError *error = NULL;
 
   parser->error_no = error_no;
 

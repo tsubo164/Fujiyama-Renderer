@@ -1,79 +1,78 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "table.h"
 #include "fj_string_function.h"
-#include "fj_memory.h"
 
-#include <string.h>
-#include <assert.h>
+#include <cstring>
+#include <cassert>
 
 using namespace fj;
 
-enum { HASH_SIZE = 1237 }; /* a prime number */
+enum { HASH_SIZE = 1237 }; // a prime number
 enum { MULTIPLIER = 31 };
 
-static struct TableEnt *new_entry(const char *key, ID id);
-static void free_entry(struct TableEnt *ent);
+static TableEnt *new_entry(const char *key, ID id);
+static void free_entry(TableEnt *ent);
 
 static unsigned int hash_fn(const char *key);
 
-struct TableEnt {
-  char *key;
+class TableEnt {
+public:
+  TableEnt(std::string Key, ID Id) : key(Key), id(Id), next(NULL) {}
+  ~TableEnt() {}
+
+public:
+  std::string key;
   ID id;
-  struct TableEnt *next;
+  TableEnt *next;
 };
 
-struct Table {
-  struct TableEnt *table[HASH_SIZE];
+class Table {
+public:
+  Table();
+  ~Table();
+
+public:
+  TableEnt *table_[HASH_SIZE];
 };
 
-struct Table *TblNew(void)
+Table::Table()
 {
-  int i;
-  struct Table *table = FJ_MEM_ALLOC(struct Table);
-
-  if (table == NULL)
-    return NULL;
-
-  for (i = 0; i < HASH_SIZE; i++) {
-    table->table[i] = NULL;
+  for (int i = 0; i < HASH_SIZE; i++) {
+    table_[i] = NULL;
   }
-
-  return table;
 }
 
-void TblFree(struct Table *table)
+Table::~Table()
 {
-  int i;
-  struct TableEnt *ent = NULL;
-
-  if (table == NULL)
-    return;
-
-  for (i = 0; i < HASH_SIZE; i++) {
-    if (table->table[i] == NULL)
-      continue;
-    for (ent = table->table[i]; ent != NULL; ) {
-      /* need to save the entry to be freed before moving to next */
-      struct TableEnt *kill = ent;
+  for (int i = 0; i < HASH_SIZE; i++) {
+    for (TableEnt *ent = table_[i]; ent != NULL; ) {
+      // need to save the entry to be freed before moving to next
+      TableEnt *kill = ent;
       ent = ent->next;
       free_entry(kill);
     }
   }
-
-  FJ_MEM_FREE(table);
 }
 
-struct TableEnt *TblLookup(struct Table *table, const char *key)
+Table *TblNew(void)
 {
-  struct TableEnt *ent = NULL;
+  return new Table();
+}
+
+void TblFree(Table *table)
+{
+  delete table;
+}
+
+TableEnt *TblLookup(Table *table, const char *key)
+{
+  TableEnt *ent = NULL;
   const unsigned int h = hash_fn(key);
 
-  for (ent = table->table[h]; ent != NULL; ent = ent->next) {
-    if (strcmp(key, ent->key) == 0) {
+  for (ent = table->table_[h]; ent != NULL; ent = ent->next) {
+    if (ent->key == key) {
       break;
     }
   }
@@ -81,13 +80,13 @@ struct TableEnt *TblLookup(struct Table *table, const char *key)
   return ent;
 }
 
-struct TableEnt *TblAdd(struct Table *table, const char *key, ID id)
+TableEnt *TblAdd(Table *table, const char *key, ID id)
 {
-  struct TableEnt *ent = NULL;
+  TableEnt *ent = NULL;
   const unsigned int h = hash_fn(key);
 
-  for (ent = table->table[h]; ent != NULL; ent = ent->next) {
-    if (strcmp(key, ent->key) == 0) {
+  for (ent = table->table_[h]; ent != NULL; ent = ent->next) {
+    if (ent->key == key) {
       return ent;
     }
   }
@@ -97,47 +96,30 @@ struct TableEnt *TblAdd(struct Table *table, const char *key, ID id)
   if (ent == NULL)
     return NULL;
 
-  ent->next = table->table[h];
-  table->table[h] = ent;
+  ent->next = table->table_[h];
+  table->table_[h] = ent;
 
   return ent;
 }
 
-const char *EntGetName(const struct TableEnt *ent)
+const std::string &EntGetName(const TableEnt *ent)
 {
   return ent->key;
 }
 
-ID EntGetID(const struct TableEnt *ent)
+ID EntGetID(const TableEnt *ent)
 {
   return ent->id;
 }
 
-static struct TableEnt *new_entry(const char *key, ID id)
+static TableEnt *new_entry(const char *key, ID id)
 {
-  struct TableEnt *ent = FJ_MEM_ALLOC(struct TableEnt);
-
-  if (ent == NULL)
-    return NULL;
-
-  ent->key = StrDup(key);
-  if (ent->key == NULL) {
-    free_entry(ent);
-    return NULL;
-  }
-
-  ent->id = id;
-  ent->next = NULL;
-  return ent;
+  return new TableEnt(key, id);
 }
 
-static void free_entry(struct TableEnt *ent)
+static void free_entry(TableEnt *ent)
 {
-  if (ent == NULL)
-    return;
-
-  ent->key = StrFree(ent->key);
-  FJ_MEM_FREE(ent);
+  delete ent;
 }
 
 static unsigned int hash_fn(const char *key)
@@ -150,4 +132,3 @@ static unsigned int hash_fn(const char *key)
 
   return h % HASH_SIZE;
 }
-

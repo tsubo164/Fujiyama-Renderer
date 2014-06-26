@@ -1,14 +1,11 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_bvh_accelerator.h"
 #include "fj_intersection.h"
 #include "fj_primitive_set.h"
 #include "fj_accelerator.h"
 #include "fj_numeric.h"
-#include "fj_memory.h"
 #include "fj_box.h"
 #include "fj_ray.h"
 

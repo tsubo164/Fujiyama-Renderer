@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_curve.h"
 #include "fj_intersection.h"
@@ -9,7 +7,6 @@ See LICENSE and README
 #include "fj_transform.h"
 #include "fj_numeric.h"
 #include "fj_matrix.h"
-#include "fj_memory.h"
 #include "fj_vector.h"
 #include "fj_ray.h"
 #include "fj_box.h"
