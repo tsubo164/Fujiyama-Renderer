@@ -2,7 +2,6 @@
 // See LICENSE and README
 
 #include "framebuffer_viewer.h"
-#include "fj_string_function.h"
 #include "fj_framebuffer_io.h"
 #include "fj_framebuffer.h"
 #include "fj_rectangle.h"
@@ -61,6 +60,18 @@ static void clear_image_viewer(FrameBufferViewer *v);
 static void setup_image_drawing(FrameBufferViewer *v);
 static void set_to_home_position(FrameBufferViewer *v);
 void GlDrawTileGuide(int width, int height, int tilesize);
+
+char *StrCopyAndTerminate(char *dst, const char *src, size_t nchars)
+{
+  size_t len;
+
+  len = strlen(src);
+  len = Min(len, nchars);
+  strncpy(dst, src, len);
+  dst[len] = '\0';
+
+  return dst;
+}
 
 static void clear_image_viewer(FrameBufferViewer *v)
 {

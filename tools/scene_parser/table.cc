@@ -2,7 +2,6 @@
 // See LICENSE and README
 
 #include "table.h"
-#include "fj_string_function.h"
 
 #include <cstring>
 #include <cassert>
