@@ -19,7 +19,7 @@ files       := \
 		fj_noise fj_object_group fj_object_instance  fj_object_set fj_os fj_plugin \
 		fj_point_cloud fj_point_cloud_io fj_procedure fj_progress fj_property \
 		fj_random fj_rectangle fj_renderer fj_sampler fj_scene fj_scene_interface fj_shader \
-		fj_string_function fj_shading fj_tex_coord fj_texture fj_tiler fj_timer fj_transform \
+		fj_string_function fj_shading fj_texture fj_tiler fj_timer fj_transform \
 		fj_triangle fj_turbulence fj_vector fj_volume fj_volume_accelerator fj_volume_filling
 
 incdir  := $(topdir)/src

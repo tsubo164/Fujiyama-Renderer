@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_TEXCOORD_H
 #define FJ_TEXCOORD_H
@@ -10,7 +8,8 @@ See LICENSE and README
 
 namespace fj {
 
-struct FJ_API TexCoord {
+class FJ_API TexCoord {
+public:
   TexCoord() : u(0), v(0) {}
   TexCoord(float uu, float vv) : u(uu), v(vv) {}
   ~TexCoord() {}
@@ -35,10 +34,6 @@ struct FJ_API TexCoord {
   float u, v;
 };
 
-FJ_API struct TexCoord *TexCoordAlloc(long count);
-FJ_API struct TexCoord *TexCoordRealloc(struct TexCoord *texcoord, long count);
-FJ_API void TexCoordFree(struct TexCoord *texcoord);
-
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H
