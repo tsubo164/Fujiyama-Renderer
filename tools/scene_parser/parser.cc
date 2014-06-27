@@ -7,6 +7,7 @@
 #include "fj_scene_interface.h"
 
 #include <cstring>
+#include <cstdlib>
 #include <cassert>
 #include <cstdio>
 #include <cctype>
