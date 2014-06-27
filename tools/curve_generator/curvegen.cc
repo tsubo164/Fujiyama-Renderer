@@ -11,7 +11,6 @@
 #include "fj_vector.h"
 #include "fj_color.h"
 #include "fj_noise.h"
-#include "fj_array.h"
 #include "fj_mesh.h"
 #include "fj_box.h"
 

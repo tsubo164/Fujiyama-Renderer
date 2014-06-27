@@ -6,7 +6,6 @@
 #include "fj_triangle.h"
 #include "fj_mesh_io.h"
 #include "fj_vector.h"
-#include "fj_array.h"
 #include "fj_color.h"
 #include "fj_mesh.h"
 

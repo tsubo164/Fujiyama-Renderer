@@ -12,7 +12,7 @@ topdir      := ..
 target_dir  := lib
 target_name := libscene.so
 files       := \
-		fj_accelerator fj_array fj_box fj_bvh_accelerator fj_callback fj_camera \
+		fj_accelerator fj_box fj_bvh_accelerator fj_callback fj_camera \
 		fj_curve fj_curve_io fj_file_io fj_filter fj_framebuffer \
 		fj_framebuffer_io fj_grid_accelerator fj_importance_sampling \
 		fj_interval fj_io fj_light fj_matrix fj_mesh fj_mesh_io fj_mipmap fj_multi_thread \
