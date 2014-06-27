@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_VECTOR_H
 #define FJ_VECTOR_H
@@ -36,6 +34,13 @@ public:
 
   Real x, y;
 };
+
+inline Real Dot2(const Vector2 &a, const Vector2 &b)
+{
+  return
+    a.x * b.x +
+    a.y * b.y;
+}
 
 class Vector4 {
 public:
@@ -273,15 +278,6 @@ inline Vector LerpVec3(const Vector &a, const Vector &b, Real t)
   return (1 - t) * a + t * b;
 }
 
-extern struct Vector *VecAlloc(long count);
-extern struct Vector *VecRealloc(struct Vector *v, long count);
-extern void VecFree(struct Vector *v);
-
-extern void VecPrint(const struct Vector *a);
-
-/* VEC2 */
-#define VEC2_DOT(a,b) ((a)->x * (b)->x + (a)->y * (b)->y)
-
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H
