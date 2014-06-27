@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_COLOR_H
 #define FJ_COLOR_H
@@ -240,10 +238,6 @@ inline Color ColLerp(const Color &A, const Color &B, float t)
 {
   return (1 - t) * A + t * B;
 }
-
-FJ_API Color *ColAlloc(long count);
-FJ_API Color *ColRealloc(Color *c, long count);
-FJ_API void ColFree(Color *c);
 
 } // namespace xxx
 
