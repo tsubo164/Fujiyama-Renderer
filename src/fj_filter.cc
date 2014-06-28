@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_filter.h"
 #include <cassert>
@@ -46,18 +44,6 @@ void Filter::SetFilterType(int filtertype, Real xwidth, Real ywidth)
 Real Filter::Evaluate(Real x, Real y) const
 {
   return evaluate_(xwidth_, ywidth_, x, y);
-}
-
-Filter *FltNew(int filtertype, Real xwidth, Real ywidth)
-{
-  Filter *filter = new Filter();
-  filter->SetFilterType(filtertype, xwidth, ywidth);
-  return filter;
-}
-
-void FltFree(Filter *filter)
-{
-  delete filter;
 }
 
 static Real eval_gaussian(Real xwidth, Real ywidth, Real x, Real y)

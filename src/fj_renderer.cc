@@ -543,7 +543,7 @@ public:
   const Camera *camera;
   FrameBuffer *framebuffer;
   Sampler *sampler;
-  Filter *filter;
+  Filter filter;
   Sample *pixel_samples;
 
   TraceContext context;
@@ -587,14 +587,8 @@ static void init_worker(Worker *worker, int id,
       renderer->sample_time_start_, renderer->sample_time_end_);
   worker->pixel_samples = worker->sampler->AllocatePixelSamples();
 
-  /* Filter */
-  worker->filter = FltNew(FLT_GAUSSIAN, xfwidth, yfwidth);
-  if (worker->filter == NULL) {
-    /*
-    render_state = -1;
-    goto cleanup_and_exit;
-    */
-  }
+  // Filter
+  worker->filter.SetFilterType(FLT_GAUSSIAN, xfwidth, yfwidth);
 
   /* context */
   worker->context = SlCameraContext(renderer->target_objects_);
@@ -653,7 +647,6 @@ static void finish_worker(Worker *worker)
 {
   worker->sampler->FreePixelSamples(worker->pixel_samples);
   SmpFree(worker->sampler);
-  FltFree(worker->filter);
 }
 
 static void free_worker_list(Worker *worker_list, int worker_count)
@@ -677,7 +670,7 @@ static Color4 apply_pixel_filter(Worker *worker, int x, int y)
   const int xres = worker->xres;
   const int yres = worker->yres;
   Sample *pixel_samples = worker->pixel_samples;
-  Filter *filter = worker->filter;
+  const Filter &filter = worker->filter;
 
   Color4 pixel;
   float wgt_sum = 0.f;
@@ -691,7 +684,7 @@ static Color4 apply_pixel_filter(Worker *worker, int x, int y)
 
     filtx = xres * sample->uv.x - (x + .5);
     filty = yres * (1-sample->uv.y) - (y + .5);
-    wgt = filter->Evaluate(filtx, filty);
+    wgt = filter.Evaluate(filtx, filty);
 
     pixel.r += wgt * sample->data[0];
     pixel.g += wgt * sample->data[1];

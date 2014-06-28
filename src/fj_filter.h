@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_FILTER_H
 #define FJ_FILTER_H
@@ -23,13 +21,10 @@ public:
   void SetFilterType(int filtertype, Real xwidth, Real ywidth);
   Real Evaluate(Real x, Real y) const;
 
-public:
+private:
   Real xwidth_, ywidth_;
   Real (*evaluate_)(Real xwidth, Real ywidth, Real x, Real y);
 };
-
-extern Filter *FltNew(int filtertype, Real xwidth, Real ywidth);
-extern void FltFree(Filter *filter);
 
 } // namespace xxx
 
