@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_SAMPLER_H
 #define FJ_SAMPLER_H
@@ -72,10 +70,6 @@ private:
   Real sample_time_start_;
   Real sample_time_end_;
 };
-
-extern Sampler *SmpNew(int xres, int yres,
-    int xsamples, int ysamples, float xfwidth, float yfwidth);
-extern void SmpFree(Sampler *sampler);
 
 } // namespace xxx
 

@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_sampler.h"
 #include "fj_rectangle.h"
@@ -208,19 +206,6 @@ int Sampler::GetSampleCountForRegion(const Rectangle &region,
   const int ynsamples = get_sample_count_for_region(yrate, SizeY(region), ymargin);
 
   return xnsamples * ynsamples;
-}
-
-Sampler *SmpNew(int xres, int yres,
-    int xsamples, int ysamples, float xfwidth, float yfwidth)
-{
-  Sampler *sampler = new Sampler();
-  sampler->Initialize(xres, yres, xsamples, ysamples, xfwidth, yfwidth);
-  return sampler;
-}
-
-void SmpFree(Sampler *sampler)
-{
-  delete sampler;
 }
 
 static int get_pixel_margin(int rate, float fwidth)

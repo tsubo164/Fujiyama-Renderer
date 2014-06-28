@@ -542,7 +542,7 @@ public:
 
   const Camera *camera;
   FrameBuffer *framebuffer;
-  Sampler *sampler;
+  Sampler sampler;
   Filter filter;
   Sample *pixel_samples;
 
@@ -574,18 +574,12 @@ static void init_worker(Worker *worker, int id,
   worker->xres = xres;
   worker->yres = yres;
 
-  /* Sampler */
-  worker->sampler = SmpNew(xres, yres, xrate, yrate, xfwidth, yfwidth);
-  if (worker->sampler == NULL) {
-    /*
-    render_state = -1;
-    goto cleanup_and_exit;
-    */
-  }
-  worker->sampler->SetJitter(renderer->jitter_);
-  worker->sampler->SetSampleTimeRange(
+  // Sampler
+  worker->sampler.Initialize(xres, yres, xrate, yrate, xfwidth, yfwidth);
+  worker->sampler.SetJitter(renderer->jitter_);
+  worker->sampler.SetSampleTimeRange(
       renderer->sample_time_start_, renderer->sample_time_end_);
-  worker->pixel_samples = worker->sampler->AllocatePixelSamples();
+  worker->pixel_samples = worker->sampler.AllocatePixelSamples();
 
   // Filter
   worker->filter.SetFilterType(FLT_GAUSSIAN, xfwidth, yfwidth);
@@ -638,15 +632,14 @@ static void set_working_region(Worker *worker, int region_id)
   worker->tile_region.xmax = tile->xmax;
   worker->tile_region.ymax = tile->ymax;
 
-  if (worker->sampler->GenerateSamples(worker->tile_region)) {
+  if (worker->sampler.GenerateSamples(worker->tile_region)) {
     /* TODO error handling */
   }
 }
 
 static void finish_worker(Worker *worker)
 {
-  worker->sampler->FreePixelSamples(worker->pixel_samples);
-  SmpFree(worker->sampler);
+  worker->sampler.FreePixelSamples(worker->pixel_samples);
 }
 
 static void free_worker_list(Worker *worker_list, int worker_count)
@@ -666,7 +659,7 @@ static void free_worker_list(Worker *worker_list, int worker_count)
 
 static Color4 apply_pixel_filter(Worker *worker, int x, int y)
 {
-  const int nsamples = worker->sampler->GetSampleCountForPixel();
+  const int nsamples = worker->sampler.GetSampleCountForPixel();
   const int xres = worker->xres;
   const int yres = worker->yres;
   Sample *pixel_samples = worker->pixel_samples;
@@ -715,7 +708,7 @@ static void reconstruct_image(Worker *worker)
     for (x = xmin; x < xmax; x++) {
       Color4 pixel;
 
-      worker->sampler->GetPixelSamples(worker->pixel_samples, x, y);
+      worker->sampler.GetPixelSamples(worker->pixel_samples, x, y);
       pixel = apply_pixel_filter(worker, x, y);
 
       fb->SetColor(x, y, pixel);
@@ -751,7 +744,7 @@ static void render_tile_start(Worker *worker)
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
-  info.total_sample_count = worker->sampler->GetSampleCount();
+  info.total_sample_count = worker->sampler.GetSampleCount();
   info.tile_region = worker->tile_region;
   info.framebuffer = worker->framebuffer;
 
@@ -764,7 +757,7 @@ static void render_tile_done(Worker *worker)
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
-  info.total_sample_count = worker->sampler->GetSampleCount();
+  info.total_sample_count = worker->sampler.GetSampleCount();
   info.tile_region = worker->tile_region;
   info.framebuffer = worker->framebuffer;
 
@@ -777,7 +770,7 @@ static int integrate_samples(Worker *worker)
   TraceContext cxt = worker->context;
   Ray ray;
 
-  while ((smp = worker->sampler->GetNextSample()) != NULL) {
+  while ((smp = worker->sampler.GetNextSample()) != NULL) {
     Color4 C_trace;
     double t_hit = FLT_MAX;
     int hit = 0;
