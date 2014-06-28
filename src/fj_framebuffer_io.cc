@@ -187,7 +187,6 @@ int FbSaveCroppedData(FrameBuffer *fb, const char *filename)
   int xmin, ymin, xmax, ymax;
   int viewbox[4] = {0, 0, 0, 0};
   int databox[4] = {0, 0, 0, 0};
-  FrameBuffer *cropped = NULL;
   FbOutput *out = NULL;
 
   out = FbOpenOutputFile(filename);
@@ -203,13 +202,13 @@ int FbSaveCroppedData(FrameBuffer *fb, const char *filename)
   ymax = databox[3];
   BOX2_SET(viewbox, 0, 0, fb->GetWidth(), fb->GetHeight());
 
-  cropped = FbNew();
-  cropped->Resize(xmax-xmin, ymax-ymin, fb->GetChannelCount());
+  FrameBuffer cropped;
+  cropped.Resize(xmax-xmin, ymax-ymin, fb->GetChannelCount());
 
   for ( y = ymin; y < ymax; y++) {
     for ( x = xmin; x < xmax; x++) {
       const float *src = (float *) fb->GetReadOnly(x, y, 0);
-      float *dst = cropped->GetWritable(x-xmin, y-ymin, 0);
+      float *dst = cropped.GetWritable(x-xmin, y-ymin, 0);
       dst[0] = src[0];
       dst[1] = src[1];
       dst[2] = src[2];
@@ -217,17 +216,15 @@ int FbSaveCroppedData(FrameBuffer *fb, const char *filename)
     }
   }
 
-  out->width = cropped->GetWidth();
-  out->height = cropped->GetHeight();
-  out->nchannels = cropped->GetChannelCount();
+  out->width = cropped.GetWidth();
+  out->height = cropped.GetHeight();
+  out->nchannels = cropped.GetChannelCount();
   BOX2_COPY(out->viewbox, viewbox);
   BOX2_COPY(out->databox, databox);
-  out->data = cropped->GetReadOnly(0, 0, 0);
+  out->data = cropped.GetReadOnly(0, 0, 0);
 
   FbWriteFile(out);
   FbCloseOutputFile(out);
-
-  FbFree(cropped);
 
   return 0;
 }

@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_framebuffer.h"
 #include "fj_numeric.h"
@@ -173,16 +171,6 @@ void FrameBuffer::SetColor(int x, int y, const Color4 &rgba)
 int FrameBuffer::get_index(int x, int y, int z) const
 {
   return y * width_ * nchannels_ + x * nchannels_ + z;
-}
-
-FrameBuffer *FbNew(void)
-{
-  return new FrameBuffer();
-}
-
-void FbFree(FrameBuffer *fb)
-{
-  delete fb;
 }
 
 } // namespace xxx

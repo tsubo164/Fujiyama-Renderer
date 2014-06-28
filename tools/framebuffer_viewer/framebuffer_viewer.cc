@@ -27,7 +27,7 @@ public:
   ~FrameBufferViewer() {}
 
 public:
-  FrameBuffer *fb;
+  FrameBuffer fb;
   char filename[1024];
 
   int win_width;
@@ -75,8 +75,6 @@ char *StrCopyAndTerminate(char *dst, const char *src, size_t nchars)
 
 static void clear_image_viewer(FrameBufferViewer *v)
 {
-  v->fb = NULL;
-
   v->win_width = 0;
   v->win_height = 0;
   v->diplay_channel = DISPLAY_RGB;
@@ -106,9 +104,6 @@ void FbvFreeViewer(FrameBufferViewer *v)
   if (v == NULL)
     return;
 
-  if (v->fb != NULL)
-    FbFree(v->fb);
-
   delete v;
 }
 
@@ -122,8 +117,9 @@ void FbvDraw(const FrameBufferViewer *v)
   glClearColor(.2f, .2f, .2f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  if (v->fb == NULL)
+  if (v->fb.IsEmpty()) {
     return;
+  }
 
   xmove = v->scale * v->xoffset; 
   ymove = v->scale * v->yoffset; 
@@ -147,7 +143,7 @@ void FbvDraw(const FrameBufferViewer *v)
   // render framebuffer
   glTranslatef(0.f, 0.f, 0.1f); 
 
-  if (!v->fb->IsEmpty()) {
+  if (!v->fb.IsEmpty()) {
     draw_image(&v->image);
     draw_outline(&v->image);
   }
@@ -343,20 +339,16 @@ int FbvLoadImage(FrameBufferViewer *v, const char *filename)
     return -1;
   }
 
-  if (v->fb == NULL) {
-    v->fb = FbNew();
-  }
-
   if (strcmp(ext, "fb") == 0) {
     BufferInfo info = BUFINFO_INIT;
-    err = load_fb(v->filename, v->fb, &info);
+    err = load_fb(v->filename, &v->fb, &info);
     BOX2_COPY(v->viewbox, info.viewbox);
     BOX2_COPY(v->databox, info.databox);
     v->tilesize = info.tilesize;
   }
   else if (strcmp(ext, "mip") == 0) {
     BufferInfo info = BUFINFO_INIT;
-    err = load_mip(v->filename, v->fb, &info);
+    err = load_mip(v->filename, &v->fb, &info);
     BOX2_COPY(v->viewbox, info.viewbox);
     BOX2_COPY(v->databox, info.databox);
     v->tilesize = info.tilesize;
@@ -370,8 +362,8 @@ int FbvLoadImage(FrameBufferViewer *v, const char *filename)
 
   {
     // TODO define gamma function
-    float *pixel = v->fb->GetWritable(0, 0, 0);
-    const int N = v->fb->GetWidth() * v->fb->GetHeight() * v->fb->GetChannelCount();
+    float *pixel = v->fb.GetWritable(0, 0, 0);
+    const int N = v->fb.GetWidth() * v->fb.GetHeight() * v->fb.GetChannelCount();
     int i;
 
     const float gamma = 1 / 2.2;
@@ -391,14 +383,14 @@ void FbvGetImageSize(const FrameBufferViewer *v,
 {
   BOX2_COPY(databox, v->databox);
   BOX2_COPY(viewbox, v->viewbox);
-  *nchannels = v->fb->GetChannelCount();
+  *nchannels = v->fb.GetChannelCount();
 }
 
 //----------------------------------------------------------------------------
 static void setup_image_drawing(FrameBufferViewer *v)
 {
-  setup_image_drawer(&v->image, v->fb->GetReadOnly(0, 0, 0),
-      v->fb->GetChannelCount(), v->diplay_channel,
+  setup_image_drawer(&v->image, v->fb.GetReadOnly(0, 0, 0),
+      v->fb.GetChannelCount(), v->diplay_channel,
       v->databox[0],
       v->viewbox[3] - v->viewbox[1] - v->databox[3],
       v->databox[2] - v->databox[0],

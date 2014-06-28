@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_FRAMEBUFFER_H
 #define FJ_FRAMEBUFFER_H
@@ -66,7 +64,7 @@ public:
   // (r, g, b, a) will be set when framebuffer is rgba
   void SetColor(int x, int y, const Color4 &rgba);
 
-public:
+private:
   int get_index(int x, int y, int z) const;
 
   std::vector<float> buf_;
@@ -74,9 +72,6 @@ public:
   int height_;
   int nchannels_;
 };
-
-extern FJ_API FrameBuffer *FbNew(void);
-extern FJ_API void FbFree(FrameBuffer *fb);
 
 } // namespace xxx
 

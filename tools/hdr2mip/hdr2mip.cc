@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_framebuffer.h"
 #include "fj_mipmap.h"
@@ -24,8 +22,8 @@ int main(int argc, const char **argv)
 {
   FILE *fp;
   int width, height;
-  struct MipOutput mip;
-  struct FrameBuffer *hdr;
+  MipOutput mip;
+  FrameBuffer hdr;
   rgbe_header_info info;
 
   if (argc == 2 && strcmp(argv[1], "--help") == 0) {
@@ -51,32 +49,24 @@ int main(int argc, const char **argv)
     return -1;
   }
 
-  hdr = FbNew();
-  if (hdr == NULL) {
-    fprintf(stderr, "error: could not allocate framebuffer itself\n");
-    return -1;
-  }
-
-  if (hdr->Resize(width, height, 3) == NULL) {
+  if (hdr.Resize(width, height, 3) == NULL) {
     fprintf(stderr, "error: could not allocate framebuffer: %d x %d\n", width, height);
     return -1;
   }
-  RGBE_ReadPixels_RLE(fp, hdr->GetWritable(0, 0, 0), width, height);
+  RGBE_ReadPixels_RLE(fp, hdr.GetWritable(0, 0, 0), width, height);
 
   mip.Open(argv[2]);
   if (!mip.IsOpen()) {
     fprintf(stderr, "error: couldn't open output file\n");
-    FbFree(hdr);
     return -1;
   }
 
-  mip.GenerateFromSourceData(hdr->GetReadOnly(0, 0, 0), width, height, 3);
+  mip.GenerateFromSourceData(hdr.GetReadOnly(0, 0, 0), width, height, 3);
   printf("input res: %d, %d\n", width, height);
   printf("output res: %d, %d\n", mip.GetWidth(), mip.GetHeight());
 
   mip.WriteFile();
 
-  FbFree(hdr);
   fclose(fp);
 
   return 0;

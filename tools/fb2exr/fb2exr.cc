@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_framebuffer_io.h"
 #include "fj_framebuffer.h"
@@ -63,27 +61,19 @@ try {
   const Imath::Box2i dispwin = make_box2i(in->viewbox);
   const Imath::Box2i datawin = make_box2i(in->databox);
 
-  fj::FrameBuffer *fb = FbNew();
-  if (fb == NULL) {
-    FbCloseInputFile(in);
-    throw runtime_error("could not create FrameBuffer");
-    return -1;
-  }
-
-  fb->Resize(in->width, in->height, in->nchannels);
-  in->data = fb->GetWritable(0, 0, 0);
+  fj::FrameBuffer fb;
+  fb.Resize(in->width, in->height, in->nchannels);
+  in->data = fb.GetWritable(0, 0, 0);
 
   FbReadData(in);
   FbCloseInputFile(in);
 
-  const int width = fb->GetWidth();
-  const int height = fb->GetHeight();
-  const int nchannels = fb->GetChannelCount();
+  const int width = fb.GetWidth();
+  const int height = fb.GetHeight();
+  const int nchannels = fb.GetChannelCount();
   vector<Imf::Rgba> rgba(width * height);
 
-  copy_fb_into_rgba(fb->GetReadOnly(0, 0, 0), &rgba[0], width, height, nchannels);
-
-  FbFree(fb);
+  copy_fb_into_rgba(fb.GetReadOnly(0, 0, 0), &rgba[0], width, height, nchannels);
 
   write_rgba_layer(argv[2], &rgba[0], dispwin, datawin);
 

@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_framebuffer.h"
 #include "fj_mipmap.h"
@@ -53,7 +51,7 @@ int main(int argc, const char **argv)
   int height = 0;
   int nchans = 0;
   MipOutput mip;
-  struct FrameBuffer *fb = NULL;
+  FrameBuffer fb;
   int i;
 
   /* jpeg */
@@ -100,13 +98,7 @@ int main(int argc, const char **argv)
     goto cleanup_jpeg;
   }
 
-  fb = FbNew();
-  if (fb == NULL) {
-    fprintf(stderr, "error: could not allocate framebuffer itself\n");
-    goto cleanup_jpeg;
-  }
-
-  if (fb->Resize(width, height, nchans) == NULL) {
+  if (fb.Resize(width, height, nchans) == NULL) {
     fprintf(stderr, "error: could not allocate framebuffer: %d x %d\n", width, height);
     goto cleanup_jpeg;
   }
@@ -119,7 +111,7 @@ int main(int argc, const char **argv)
   /* read jpeg */
   i = 0;
   while (cinfo.output_scanline < cinfo.output_height) {
-    float * fb_scanline = fb->GetWritable(0, i, 0);
+    float * fb_scanline = fb.GetWritable(0, i, 0);
     (void) jpeg_read_scanlines(&cinfo, buffer, 1);
     copy_scanline(buffer[0], fb_scanline, width, nchans);
     i++;
@@ -133,17 +125,14 @@ int main(int argc, const char **argv)
   mip.Open(argv[2]);
   if (!mip.IsOpen()) {
     fprintf(stderr, "error: couldn't open output file\n");
-    FbFree(fb);
     return -1;
   }
 
-  mip.GenerateFromSourceData(fb->GetReadOnly(0, 0, 0), width, height, nchans);
+  mip.GenerateFromSourceData(fb.GetReadOnly(0, 0, 0), width, height, nchans);
   printf("input res: %d, %d\n", width, height);
   printf("output res: %d, %d\n", mip.GetWidth(), mip.GetHeight());
 
   mip.WriteFile();
-
-  FbFree(fb);
 
   return 0;
 

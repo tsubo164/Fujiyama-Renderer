@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "load_images.h"
 #include "fj_framebuffer_io.h"
@@ -70,27 +68,23 @@ int load_mip(const char *filename, struct FrameBuffer *fb, struct BufferInfo *in
 
   {
     int x, y;
-    struct FrameBuffer *tilebuf = FbNew();
+    FrameBuffer tilebuf;
 
-    if (tilebuf == NULL) {
-      /* TODO error handling */
-    }
-    tilebuf->Resize(in.GetTileSize(), in.GetTileSize(), in.GetChannelCount());
+    tilebuf.Resize(in.GetTileSize(), in.GetTileSize(), in.GetChannelCount());
 
     for (y = 0; y < in.GetTileCountY(); y++) {
       for (x = 0; x < in.GetTileCountX(); x++) {
         int i;
-        in.ReadTile(x, y, tilebuf->GetWritable(0, 0, 0));
+        in.ReadTile(x, y, tilebuf.GetWritable(0, 0, 0));
         for (i = 0; i < in.GetTileSize(); i++) {
           float *dst;
           const float *src;
           dst = fb->GetWritable(x * in.GetTileSize(), y * in.GetTileSize() + i, 0);
-          src = tilebuf->GetReadOnly(0, i, 0);
+          src = tilebuf.GetReadOnly(0, i, 0);
           memcpy(dst, src, sizeof(float) * in.GetTileSize() * in.GetChannelCount());
         }
       }
     }
-    FbFree(tilebuf);
   }
 
   BOX2_SET(info->viewbox, 0, 0, in.GetWidth(), in.GetHeight());
