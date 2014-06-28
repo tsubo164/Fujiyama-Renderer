@@ -1,35 +1,34 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_VOLUME_FILLING_H
 #define FJ_VOLUME_FILLING_H
 
+#include "fj_compatibility.h"
 #include "fj_vector.h"
 
 namespace fj {
 
-struct Volume;
+class Volume;
 
-struct CloudControlPoint {
-  struct Vector orig;
-  struct Vector udir;
-  struct Vector vdir;
-  struct Vector wdir;
-  struct Vector noise_space;
+struct FJ_API CloudControlPoint {
+  Vector orig;
+  Vector udir;
+  Vector vdir;
+  Vector wdir;
+  Vector noise_space;
 
   double density;
   double radius;
   double noise_amplitude;
 };
 
-struct WispsControlPoint {
-  struct Vector orig;
-  struct Vector udir;
-  struct Vector vdir;
-  struct Vector wdir;
-  struct Vector noise_space;
+struct FJ_API WispsControlPoint {
+  Vector orig;
+  Vector udir;
+  Vector vdir;
+  Vector wdir;
+  Vector noise_space;
 
   double density;
   double radius;
@@ -39,18 +38,18 @@ struct WispsControlPoint {
   double speck_radius;
 };
 
-extern void LerpWispConstrolPoint(struct WispsControlPoint *cp,
-    const struct WispsControlPoint *cp0, const struct WispsControlPoint *cp1,
+FJ_API void LerpWispConstrolPoint(WispsControlPoint *cp,
+    const WispsControlPoint *cp0, const WispsControlPoint *cp1,
     double t);
 
-extern void BilerpWispConstrolPoint(struct WispsControlPoint *cp,
-    const struct WispsControlPoint *cp00, const struct WispsControlPoint *cp10,
-    const struct WispsControlPoint *cp01, const struct WispsControlPoint *cp11,
+FJ_API void BilerpWispConstrolPoint(WispsControlPoint *cp,
+    const WispsControlPoint *cp00, const WispsControlPoint *cp10,
+    const WispsControlPoint *cp01, const WispsControlPoint *cp11,
     double s, double t);
 
-extern void FillWithSphere(struct Volume *volume,
-    const struct Vector *center, double radius, float density);
+FJ_API void FillWithSphere(Volume *volume,
+    const Vector *center, double radius, float density);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

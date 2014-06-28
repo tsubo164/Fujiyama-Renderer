@@ -148,14 +148,4 @@ int Texture::GetHeight() const
   return cache_list_[0].GetTextureHeight();
 }
 
-Texture *TexNew(void)
-{
-  return new Texture();
-}
-
-void TexFree(Texture *tex)
-{
-  delete tex;
-}
-
 } // namespace xxx

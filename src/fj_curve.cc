@@ -237,16 +237,6 @@ Index Curve::get_primitive_count() const
   return GetCurveCount();
 }
 
-Curve *CrvNew(void)
-{
-  return new Curve();
-}
-
-void CrvFree(Curve *curve)
-{
-  delete curve;
-}
-
 static void compute_world_to_ray_matrix(const Ray &ray, Matrix *dst)
 {
   const Real ox = ray.orig.x;

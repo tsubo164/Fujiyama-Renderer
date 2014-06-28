@@ -80,9 +80,6 @@ private:
   void cache_split_depth();
 };
 
-FJ_API Curve *CrvNew(void);
-FJ_API void CrvFree(Curve *curve);
-
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

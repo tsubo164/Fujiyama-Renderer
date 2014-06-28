@@ -4,6 +4,7 @@
 #ifndef FJ_PROCEDURE_H
 #define FJ_PROCEDURE_H
 
+#include "fj_compatibility.h"
 #include "fj_property.h"
 #include "fj_plugin.h"
 #include <string>
@@ -12,7 +13,7 @@
 
 namespace fj {
 
-class ProcedureFunctionTable {
+class FJ_API ProcedureFunctionTable {
 public:
   int (*MyRun)(void *self);
 };
@@ -25,7 +26,7 @@ enum PrcErrorNo {
   PRC_ERR_NOMEM
 };
 
-class Procedure {
+class FJ_API Procedure {
 public:
   Procedure();
   ~Procedure();
@@ -41,9 +42,6 @@ public:
   const ProcedureFunctionTable *vptr_;
   const Plugin *plugin_;
 };
-
-extern Procedure *PrcNew(const Plugin *plugin);
-extern void PrcFree(Procedure *procedure);
 
 } // namespace xxx
 

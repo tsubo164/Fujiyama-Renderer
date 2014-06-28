@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_turbulence.h"
 #include "fj_noise.h"
@@ -68,16 +66,6 @@ Vector Turbulence::Evaluate3d(const Vector &position) const
   const Vector noise = PerlinNoise3d(P, lacunarity_, gain_, octaves_);
 
   return amplitude_ * noise;
-}
-
-Turbulence *TrbNew(void)
-{
-  return new Turbulence();
-}
-
-void TrbFree(Turbulence *turbulence)
-{
-  delete turbulence;
 }
 
 } // namespace xxx

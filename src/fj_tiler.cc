@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_tiler.h"
 #include "fj_rectangle.h"
@@ -111,18 +109,6 @@ void Tiler::GenerateTiles(const Rectangle &region)
   xntiles_ = xntiles;
   yntiles_ = yntiles;
   tiles_.swap(tmp_tiles);
-}
-
-Tiler *TlrNew(int xres, int yres, int xtile_size, int ytile_size)
-{
-  Tiler *tiler = new Tiler();
-  tiler->Divide(xres, yres, xtile_size, ytile_size);
-  return tiler;
-}
-
-void TlrFree(Tiler *tiler)
-{
-  delete tiler;
 }
 
 } // namespace xxx

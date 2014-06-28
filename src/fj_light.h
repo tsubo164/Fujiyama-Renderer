@@ -92,9 +92,6 @@ public: // TODO ONCE FINISHING INHERITANCE MAKE IT PRAIVATE
   int (*Preprocess_)(Light *light);
 };
 
-extern Light *LgtNew(int light_type);
-extern void LgtFree(Light *light);
-
 } // namespace xxx
 
 #endif // FJ_XXX_H

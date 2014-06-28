@@ -111,14 +111,4 @@ Vector Camera::compute_ray_target(const Vector2 &uv) const
       -1);
 }
 
-Camera *CamNew(const char *type)
-{
-  return new Camera();
-}
-
-void CamFree(Camera *cam)
-{
-  delete cam;
-}
-
 } // namespace xxx

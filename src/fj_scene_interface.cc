@@ -162,7 +162,7 @@ Status SiOpenPlugin(const char *filename)
 /* Scene interfaces */
 Status SiOpenScene(void)
 {
-  set_scene(ScnNew());
+  set_scene(new Scene());
 
   if (get_scene() == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
@@ -175,7 +175,7 @@ Status SiOpenScene(void)
 
 Status SiCloseScene(void)
 {
-  ScnFree(get_scene());
+  delete get_scene();
   set_scene(NULL);
 
   set_errno(SI_ERR_NONE);

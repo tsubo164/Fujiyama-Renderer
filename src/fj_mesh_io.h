@@ -4,6 +4,7 @@
 #ifndef FJ_MESHIO_H
 #define FJ_MESHIO_H
 
+#include "fj_compatibility.h"
 #include <vector>
 #include <string>
 #include <cstdio>
@@ -25,7 +26,7 @@ enum MshErrorNo {
   MSH_ERR_NO_MEMORY
 };
 
-class MeshInput {
+class FJ_API MeshInput {
 public:
   MeshInput() {}
   ~MeshInput() {}
@@ -43,7 +44,7 @@ public:
   std::vector<std::string> attr_names;
 };
 
-class MeshOutput {
+class FJ_API MeshOutput {
 public:
   MeshOutput() {}
   ~MeshOutput() {}
@@ -65,21 +66,21 @@ public:
 };
 
 // mesh input file interfaces
-extern MeshInput *MshOpenInputFile(const char *filename);
-extern void MshCloseInputFile(MeshInput *in);
-extern int MshReadHeader(MeshInput *in);
+FJ_API MeshInput *MshOpenInputFile(const char *filename);
+FJ_API void MshCloseInputFile(MeshInput *in);
+FJ_API int MshReadHeader(MeshInput *in);
 
 // mesh output file interfaces
-extern MeshOutput *MshOpenOutputFile(const char *filename);
-extern void MshCloseOutputFile(MeshOutput *out);
-extern void MshWriteFile(MeshOutput *out);
+FJ_API MeshOutput *MshOpenOutputFile(const char *filename);
+FJ_API void MshCloseOutputFile(MeshOutput *out);
+FJ_API void MshWriteFile(MeshOutput *out);
 
 // high level interface for loading mesh file
 // TODO AUTOMATICALLY ADD AND COMPUTE N IF NOT EXIST
-extern int MshLoadFile(Mesh *mesh, const char *filename);
+FJ_API int MshLoadFile(Mesh *mesh, const char *filename);
 
 // error no interfaces
-extern int MshGetErrorNo(void);
+FJ_API int MshGetErrorNo(void);
 
 } // namespace xxx
 

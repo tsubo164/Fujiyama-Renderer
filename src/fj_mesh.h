@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_MESH_H
 #define FJ_MESH_H
@@ -79,9 +77,6 @@ private:
 
   Box bounds_;
 };
-
-extern Mesh *MshNew(void);
-extern void MshFree(Mesh *mesh);
 
 extern void MshGetFaceVertexPosition(const Mesh *mesh, int face_index,
     Vector *P0, Vector *P1, Vector *P2);

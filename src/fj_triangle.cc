@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_triangle.h"
 #include "fj_tex_coord.h"
@@ -9,9 +7,9 @@ See LICENSE and README
 #include "fj_vector.h"
 #include "fj_box.h"
 
-static const double EPSILON = 1e-6;
-
 namespace fj {
+
+static const double EPSILON = 1e-6;
 
 double TriComputeArea(const Vector &vert0, const Vector &vert1, const Vector &vert2)
 {

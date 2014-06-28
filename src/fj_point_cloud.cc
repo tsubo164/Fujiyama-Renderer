@@ -144,14 +144,4 @@ Index PointCloud::get_primitive_count() const
   return GetPointCount();
 }
 
-PointCloud *PtcNew(void)
-{
-  return new PointCloud();
-}
-
-void PtcFree(PointCloud *ptc)
-{
-  delete ptc;
-}
-
 } // namespace xxx

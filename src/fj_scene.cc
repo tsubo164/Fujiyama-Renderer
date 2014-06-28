@@ -176,17 +176,6 @@ Mesh *Scene::NewMesh()
   return push_entry_(MeshList, mesh);
 }
 
-// Scene
-Scene *ScnNew(void)
-{
-  return new Scene();
-}
-
-void ScnFree(Scene *scene)
-{
-  delete scene;
-}
-
 DEFINE_LIST_FUNCTIONS(ObjectInstance)
 DEFINE_LIST_FUNCTIONS(Accelerator)
 DEFINE_LIST_FUNCTIONS(FrameBuffer)

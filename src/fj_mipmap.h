@@ -4,6 +4,7 @@
 #ifndef FJ_MIPMAP_H
 #define FJ_MIPMAP_H
 
+#include "fj_compatibility.h"
 #include "fj_framebuffer.h"
 #include <string>
 #include <cstdio>
@@ -12,7 +13,7 @@ namespace fj {
 
 class FrameBuffer;
 
-class MipInput {
+class FJ_API MipInput {
 public:
   MipInput();
   ~MipInput();
@@ -46,7 +47,7 @@ private:
   size_t offset_of_tile_;
 };
 
-class MipOutput {
+class FJ_API MipOutput {
 public:
   MipOutput();
   ~MipOutput();

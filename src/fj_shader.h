@@ -4,6 +4,7 @@
 #ifndef FJ_SHADER_H
 #define FJ_SHADER_H
 
+#include "fj_compatibility.h"
 #include "fj_property.h"
 #include "fj_shading.h"
 #include "fj_texture.h"
@@ -15,7 +16,7 @@
 
 namespace fj {
 
-class ShaderFunctionTable {
+class FJ_API ShaderFunctionTable {
 public:
   void (*MyEvaluate)(const void *self, const TraceContext *cxt,
       const SurfaceInput *in, SurfaceOutput *out);
@@ -29,7 +30,7 @@ enum ShdErrorNo {
   SHD_ERR_NOMEM
 };
 
-class Shader {
+class FJ_API Shader {
 public:
   Shader();
   ~Shader();
@@ -45,9 +46,6 @@ public:
   const ShaderFunctionTable *vptr_;
   const Plugin *plugin_;
 };
-
-extern Shader *ShdNew(const Plugin *plg);
-extern void ShdFree(Shader *shader);
 
 } // namespace xxx
 

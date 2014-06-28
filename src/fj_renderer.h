@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_RENDERER_H
 #define FJ_RENDERER_H
@@ -12,11 +10,11 @@ See LICENSE and README
 
 namespace fj {
 
-struct Renderer;
-struct FrameBuffer;
-struct ObjectGroup;
-struct Camera;
-struct Light;
+class Renderer;
+class FrameBuffer;
+class ObjectGroup;
+class Camera;
+class Light;
 
 class FrameProgress {
 public:
@@ -55,10 +53,10 @@ public:
   void SetRaymarchReflectStep(double step);
   void SetRaymarchRefractStep(double step);
 
-  void SetCamera(struct Camera *cam);
-  void SetFrameBuffers(struct FrameBuffer *fb);
-  void SetTargetObjects(struct ObjectGroup *grp);
-  void SetTargetLights(struct Light **lights, int nlights);
+  void SetCamera(Camera *cam);
+  void SetFrameBuffers(FrameBuffer *fb);
+  void SetTargetObjects(ObjectGroup *grp);
+  void SetTargetLights(Light **lights, int nlights);
 
   // use max thread if use_max_thread is 1, otherwise takes account for thread_count
   void SetUseMaxThread(int use_max_thread);
@@ -84,14 +82,14 @@ public:
   int preprocess_framebuffer() const;
   int preprocess_lights();
 
-  struct Camera *camera_;
-  struct FrameBuffer *framebuffer_;
-  struct ObjectGroup *target_objects_;
-  struct Light **target_lights_;
+  Camera *camera_;
+  FrameBuffer *framebuffer_;
+  ObjectGroup *target_objects_;
+  Light **target_lights_;
   int nlights_;
 
   int resolution_[2];
-  struct Rectangle frame_region_;
+  Rectangle frame_region_;
   int pixelsamples_[2];
   int tilesize_[2];
   float filterwidth_[2];
@@ -111,13 +109,10 @@ public:
   int use_max_thread_;
   int thread_count_;
 
-  struct FrameReport frame_report_;
-  struct TileReport tile_report_;
-  struct FrameProgress frame_progress_;
+  FrameReport frame_report_;
+  TileReport tile_report_;
+  FrameProgress frame_progress_;
 };
-
-extern struct Renderer *RdrNew(void);
-extern void RdrFree(struct Renderer *renderer);
 
 } // namespace xxx
 

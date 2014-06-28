@@ -11,7 +11,7 @@ namespace fj {
 
 class FrameBuffer;
 
-class FbInput {
+class FJ_API FbInput {
 public:
   FbInput() {}
   ~FbInput() {}
@@ -29,7 +29,7 @@ public:
   float *data;
 };
 
-class FbOutput {
+class FJ_API FbOutput {
 public:
   FbOutput() {}
   ~FbOutput() {}
@@ -55,20 +55,20 @@ enum FbErrorNo {
   ERR_FB_BADVER
 };
 
-extern int FbGetErrorNo(void);
-extern const char *FbGetErrorMessage(int err);
+FJ_API int FbGetErrorNo(void);
+FJ_API const char *FbGetErrorMessage(int err);
 
-extern FbInput *FbOpenInputFile(const char *filename);
-extern void FbCloseInputFile(FbInput *in);
-extern int FbReadHeader(FbInput *in);
-extern int FbReadData(FbInput *in);
+FJ_API FbInput *FbOpenInputFile(const char *filename);
+FJ_API void FbCloseInputFile(FbInput *in);
+FJ_API int FbReadHeader(FbInput *in);
+FJ_API int FbReadData(FbInput *in);
 
-extern FbOutput *FbOpenOutputFile(const char *filename);
-extern void FbCloseOutputFile(FbOutput *out);
-extern void FbWriteFile(FbOutput *out);
+FJ_API FbOutput *FbOpenOutputFile(const char *filename);
+FJ_API void FbCloseOutputFile(FbOutput *out);
+FJ_API void FbWriteFile(FbOutput *out);
 
 // high level interface for saving framebuffer file
-extern int FbSaveCroppedData(FrameBuffer *fb, const char *filename);
+FJ_API int FbSaveCroppedData(FrameBuffer *fb, const char *filename);
 
 } // namespace xxx
 

@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_VOLUME_H
 #define FJ_VOLUME_H
@@ -78,9 +76,6 @@ public:
 
   Real filtersize_;
 };
-
-extern Volume *VolNew(void);
-extern void VolFree(Volume *volume);
 
 extern void VolGetIndexRange(const Volume *volume,
     const Vector *center, double radius,

@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_volume.h"
 #include "fj_numeric.h"
@@ -186,16 +184,6 @@ void Volume::compute_filter_size()
       size_.z / res.z);
 
   filtersize_ = Length(voxelsize);
-}
-
-Volume *VolNew(void)
-{
-  return new Volume();
-}
-
-void VolFree(Volume *volume)
-{
-  delete volume;
 }
 
 void VolGetIndexRange(const Volume *volume,

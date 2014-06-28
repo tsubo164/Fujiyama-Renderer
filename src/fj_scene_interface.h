@@ -1,11 +1,10 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_SCENEINTERFACE_H
 #define FJ_SCENEINTERFACE_H
 
+#include "fj_compatibility.h"
 #include "fj_callback.h"
 
 namespace fj {
@@ -56,68 +55,68 @@ enum SiLightType {
 };
 
 /* Error interfaces */
-extern int SiGetErrorNo(void);
+FJ_API int SiGetErrorNo(void);
 
 /* Plugin interfaces */
-extern Status SiOpenPlugin(const char *filename);
+FJ_API Status SiOpenPlugin(const char *filename);
 
 /* Scene interfaces */
-extern Status SiOpenScene(void);
-extern Status SiCloseScene(void);
-extern Status SiRenderScene(ID renderer);
-extern Status SiSaveFrameBuffer(ID framebuffer, const char *filename);
-extern Status SiRunProcedure(ID procedure);
+FJ_API Status SiOpenScene(void);
+FJ_API Status SiCloseScene(void);
+FJ_API Status SiRenderScene(ID renderer);
+FJ_API Status SiSaveFrameBuffer(ID framebuffer, const char *filename);
+FJ_API Status SiRunProcedure(ID procedure);
 
-extern Status SiAddObjectToGroup(ID group, ID object);
+FJ_API Status SiAddObjectToGroup(ID group, ID object);
 
-extern ID SiNewObjectInstance(ID primset_id);
-extern ID SiNewFrameBuffer(const char *arg);
-extern ID SiNewObjectGroup(void);
-extern ID SiNewPointCloud(const char *filename);
-extern ID SiNewTurbulence(void);
-extern ID SiNewProcedure(const char *plugin_name);
-extern ID SiNewRenderer(void);
-extern ID SiNewTexture(const char *filename);
-extern ID SiNewCamera(const char *arg);
-extern ID SiNewShader(const char *plugin_name);
-extern ID SiNewVolume(void);
-extern ID SiNewCurve(const char *filename);
-extern ID SiNewLight(int light_type);
-extern ID SiNewMesh(const char *filename);
+FJ_API ID SiNewObjectInstance(ID primset_id);
+FJ_API ID SiNewFrameBuffer(const char *arg);
+FJ_API ID SiNewObjectGroup(void);
+FJ_API ID SiNewPointCloud(const char *filename);
+FJ_API ID SiNewTurbulence(void);
+FJ_API ID SiNewProcedure(const char *plugin_name);
+FJ_API ID SiNewRenderer(void);
+FJ_API ID SiNewTexture(const char *filename);
+FJ_API ID SiNewCamera(const char *arg);
+FJ_API ID SiNewShader(const char *plugin_name);
+FJ_API ID SiNewVolume(void);
+FJ_API ID SiNewCurve(const char *filename);
+FJ_API ID SiNewLight(int light_type);
+FJ_API ID SiNewMesh(const char *filename);
 
-extern Status SiAssignFrameBuffer(ID renderer, ID framebuffer);
-extern Status SiAssignObjectGroup(ID id, const char *name, ID group);
-extern Status SiAssignTurbulence(ID id, const char *name, ID turbulence);
-extern Status SiAssignTexture(ID id, const char *name, ID texture);
-extern Status SiAssignVolume(ID id, const char *name, ID volume);
-extern Status SiAssignCamera(ID renderer, ID camera);
-extern Status SiAssignShader(ID object, ID shader);
-extern Status SiAssignMesh(ID id, const char *name, ID mesh);
+FJ_API Status SiAssignFrameBuffer(ID renderer, ID framebuffer);
+FJ_API Status SiAssignObjectGroup(ID id, const char *name, ID group);
+FJ_API Status SiAssignTurbulence(ID id, const char *name, ID turbulence);
+FJ_API Status SiAssignTexture(ID id, const char *name, ID texture);
+FJ_API Status SiAssignVolume(ID id, const char *name, ID volume);
+FJ_API Status SiAssignCamera(ID renderer, ID camera);
+FJ_API Status SiAssignShader(ID object, ID shader);
+FJ_API Status SiAssignMesh(ID id, const char *name, ID mesh);
 
 /* Property interfaces */
-extern Status SiSetProperty1(ID id, const char *name, double v0);
-extern Status SiSetProperty2(ID id, const char *name, double v0, double v1);
-extern Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2);
-extern Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, double v3);
-extern Status SiSetStringProperty(ID id, const char *name, const char *string);
+FJ_API Status SiSetProperty1(ID id, const char *name, double v0);
+FJ_API Status SiSetProperty2(ID id, const char *name, double v0, double v1);
+FJ_API Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2);
+FJ_API Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, double v3);
+FJ_API Status SiSetStringProperty(ID id, const char *name, const char *string);
 
 /* time variable property */
-extern Status SiSetSampleProperty3(ID id, const char *name,
+FJ_API Status SiSetSampleProperty3(ID id, const char *name,
     double v0, double v1, double v2, double time);
 
 struct Property;
-extern const struct Property *SiGetPropertyList(const char *type_name);
+FJ_API const struct Property *SiGetPropertyList(const char *type_name);
 
 /* Callback interfaces */
-extern Status SiSetFrameReportCallback(ID id, void *data,
+FJ_API Status SiSetFrameReportCallback(ID id, void *data,
     FrameStartCallback frame_start,
     FrameDoneCallback frame_done);
 
-extern Status SiSetTileReportCallback(ID id, void *data,
+FJ_API Status SiSetTileReportCallback(ID id, void *data,
     TileStartCallback tile_start,
     SampleDoneCallback sample_done,
     TileDoneCallback tile_done);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

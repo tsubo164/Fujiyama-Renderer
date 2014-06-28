@@ -54,9 +54,6 @@ private:
   Box bounds_;
 };
 
-FJ_API PointCloud *PtcNew(void);
-FJ_API void PtcFree(PointCloud *ptc);
-
 } // namespace xxx
 
 #endif /* FJ_XXX_H */

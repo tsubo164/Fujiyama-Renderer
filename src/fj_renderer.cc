@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_renderer.h"
 #include "fj_multi_thread.h"
@@ -19,14 +17,14 @@ See LICENSE and README
 #include "fj_ray.h"
 #include "fj_box.h"
 
-#include <assert.h>
-#include <string.h>
-#include <stdio.h>
-#include <float.h>
+#include <cassert>
+#include <cstring>
+#include <cstdio>
+#include <cfloat>
 
 namespace fj {
 
-static Iteration count_total_samples(const struct Tiler *tiler,
+static Iteration count_total_samples(const Tiler *tiler,
     int x_pixel_samples, int y_pixel_samples,
     float x_filter_width, float y_filter_width)
 {
@@ -56,7 +54,7 @@ static Iteration count_total_samples(const struct Tiler *tiler,
   return total_sample_count;
 }
 
-static void distribute_progress_iterations(struct FrameProgress *progress, Iteration total_iteration_count)
+static void distribute_progress_iterations(FrameProgress *progress, Iteration total_iteration_count)
 {
   const Iteration partial_itr = (Iteration) floor(total_iteration_count / 10.);
   Iteration remains = total_iteration_count - partial_itr * 10;
@@ -74,7 +72,7 @@ static void distribute_progress_iterations(struct FrameProgress *progress, Itera
   progress->current_segment = 0;
 }
 
-static void init_frame_progress(struct FrameProgress *progress, const struct Tiler *tiler,
+static void init_frame_progress(FrameProgress *progress, const Tiler *tiler,
     int x_pixel_samples, int y_pixel_samples,
     float x_filter_width, float y_filter_width)
 {
@@ -88,9 +86,9 @@ static void init_frame_progress(struct FrameProgress *progress, const struct Til
   distribute_progress_iterations(progress, total_iteration_count);
 }
 
-static Interrupt default_frame_start(void *data, const struct FrameInfo *info)
+static Interrupt default_frame_start(void *data, const FrameInfo *info)
 {
-  struct FrameProgress *fp = (struct FrameProgress *) data;
+  FrameProgress *fp = (FrameProgress *) data;
 
   fp->timer.Start();
   printf("# Rendering Frame\n");
@@ -107,9 +105,9 @@ static Interrupt default_frame_start(void *data, const struct FrameInfo *info)
 
   return CALLBACK_CONTINUE;
 }
-static Interrupt default_frame_done(void *data, const struct FrameInfo *info)
+static Interrupt default_frame_done(void *data, const FrameInfo *info)
 {
-  struct FrameProgress *fp = (struct FrameProgress *) data;
+  FrameProgress *fp = (FrameProgress *) data;
   Elapse elapse;
 
   elapse = fp->timer.GetElapse();
@@ -120,13 +118,13 @@ static Interrupt default_frame_done(void *data, const struct FrameInfo *info)
   return CALLBACK_CONTINUE;
 }
 
-static Interrupt default_tile_start(void *data, const struct TileInfo *info)
+static Interrupt default_tile_start(void *data, const TileInfo *info)
 {
   return CALLBACK_CONTINUE;
 }
 static void increment_progress(void *data)
 {
-  struct FrameProgress *fp = (struct FrameProgress *) data;
+  FrameProgress *fp = (FrameProgress *) data;
   const ProgressStatus status = fp->progress.Increment();
 
   if (status == PROGRESS_DONE) {
@@ -152,7 +150,7 @@ static Interrupt default_sample_done(void *data)
 
   return CALLBACK_CONTINUE;
 }
-static Interrupt default_tile_done(void *data, const struct TileInfo *info)
+static Interrupt default_tile_done(void *data, const TileInfo *info)
 {
   return CALLBACK_CONTINUE;
 }
@@ -303,25 +301,25 @@ void Renderer::SetRaymarchRefractStep(double step)
   raymarch_refract_step_ = Max(step, .001);
 }
 
-void Renderer::SetCamera(struct Camera *cam)
+void Renderer::SetCamera(Camera *cam)
 {
   assert(cam != NULL);
   camera_ = cam;
 }
 
-void Renderer::SetFrameBuffers(struct FrameBuffer *fb)
+void Renderer::SetFrameBuffers(FrameBuffer *fb)
 {
   assert(fb != NULL);
   framebuffer_ = fb;
 }
 
-void Renderer::SetTargetObjects(struct ObjectGroup *grp)
+void Renderer::SetTargetObjects(ObjectGroup *grp)
 {
   assert(grp != NULL);
   target_objects_ = grp;
 }
 
-void Renderer::SetTargetLights(struct Light **lights, int nlights)
+void Renderer::SetTargetLights(Light **lights, int nlights)
 {
   assert(lights != NULL);
   assert(nlights > 0);
@@ -400,12 +398,13 @@ int Renderer::RenderScene()
 }
 
 // TODO TMP REMOVE LATER
-static struct Worker *new_worker_list(int worker_count,
-    const struct Renderer *renderer, const struct Tiler *tiler);
-static void render_frame_start(struct Renderer *renderer, const struct Tiler *tiler);
-static ThreadStatus render_tile(void *data, const struct ThreadContext *context);
-static void render_frame_done(struct Renderer *renderer, const struct Tiler *tiler);
-static void free_worker_list(struct Worker *worker_list, int worker_count);
+class Worker;
+static Worker *new_worker_list(int worker_count,
+    const Renderer *renderer, const Tiler *tiler);
+static void render_frame_start(Renderer *renderer, const Tiler *tiler);
+static ThreadStatus render_tile(void *data, const ThreadContext *context);
+static void render_frame_done(Renderer *renderer, const Tiler *tiler);
+static void free_worker_list(Worker *worker_list, int worker_count);
 
 int Renderer::prepare_rendering()
 {
@@ -514,7 +513,7 @@ int Renderer::preprocess_lights()
   timer.Start();
 
   for (int i = 0; i < NLIGHTS; i++) {
-    struct Light *light = target_lights_[i];
+    Light *light = target_lights_[i];
     const int err = light->Preprocess();
 
     if (err) {
@@ -530,38 +529,33 @@ int Renderer::preprocess_lights()
   return 0;
 }
 
-struct Renderer *RdrNew(void)
-{
-  return new Renderer();
-}
+class Worker {
+public:
+  Worker() {}
+  ~Worker() {}
 
-void RdrFree(struct Renderer *renderer)
-{
-  delete renderer;
-}
-
-struct Worker {
+public:
   int id;
   int region_id;
   int region_count;
   int xres, yres;
 
-  const struct Camera *camera;
-  struct FrameBuffer *framebuffer;
-  struct Sampler *sampler;
-  struct Filter *filter;
-  struct Sample *pixel_samples;
+  const Camera *camera;
+  FrameBuffer *framebuffer;
+  Sampler *sampler;
+  Filter *filter;
+  Sample *pixel_samples;
 
-  struct TraceContext context;
-  struct Rectangle tile_region;
+  TraceContext context;
+  Rectangle tile_region;
 
-  struct TileReport tile_report;
+  TileReport tile_report;
 
-  const struct Tiler *tiler;
+  const Tiler *tiler;
 };
 
-static void init_worker(struct Worker *worker, int id,
-    const struct Renderer *renderer, const struct Tiler *tiler)
+static void init_worker(Worker *worker, int id,
+    const Renderer *renderer, const Tiler *tiler)
 {
   const int xres = renderer->resolution_[0];
   const int yres = renderer->resolution_[1];
@@ -622,8 +616,8 @@ static void init_worker(struct Worker *worker, int id,
   worker->tile_report = renderer->tile_report_;
 }
 
-static struct Worker *new_worker_list(int worker_count,
-    const struct Renderer *renderer, const struct Tiler *tiler)
+static Worker *new_worker_list(int worker_count,
+    const Renderer *renderer, const Tiler *tiler)
 {
   Worker *worker_list = new Worker[worker_count];
   int i;
@@ -639,7 +633,7 @@ static struct Worker *new_worker_list(int worker_count,
   return worker_list;
 }
 
-static void set_working_region(struct Worker *worker, int region_id)
+static void set_working_region(Worker *worker, int region_id)
 {
   const Tile *tile = worker->tiler->GetTile(region_id);
 
@@ -655,14 +649,14 @@ static void set_working_region(struct Worker *worker, int region_id)
   }
 }
 
-static void finish_worker(struct Worker *worker)
+static void finish_worker(Worker *worker)
 {
   worker->sampler->FreePixelSamples(worker->pixel_samples);
   SmpFree(worker->sampler);
   FltFree(worker->filter);
 }
 
-static void free_worker_list(struct Worker *worker_list, int worker_count)
+static void free_worker_list(Worker *worker_list, int worker_count)
 {
   int i;
 
@@ -677,21 +671,21 @@ static void free_worker_list(struct Worker *worker_list, int worker_count)
   delete [] worker_list;
 }
 
-static struct Color4 apply_pixel_filter(struct Worker *worker, int x, int y)
+static Color4 apply_pixel_filter(Worker *worker, int x, int y)
 {
   const int nsamples = worker->sampler->GetSampleCountForPixel();
   const int xres = worker->xres;
   const int yres = worker->yres;
-  struct Sample *pixel_samples = worker->pixel_samples;
-  struct Filter *filter = worker->filter;
+  Sample *pixel_samples = worker->pixel_samples;
+  Filter *filter = worker->filter;
 
-  struct Color4 pixel;
+  Color4 pixel;
   float wgt_sum = 0.f;
   float inv_sum = 0.f;
   int i;
 
   for (i = 0; i < nsamples; i++) {
-    struct Sample *sample = &pixel_samples[i];
+    Sample *sample = &pixel_samples[i];
     double filtx = 0, filty = 0;
     double wgt = 0;
 
@@ -715,9 +709,9 @@ static struct Color4 apply_pixel_filter(struct Worker *worker, int x, int y)
   return pixel;
 }
 
-static void reconstruct_image(struct Worker *worker)
+static void reconstruct_image(Worker *worker)
 {
-  struct FrameBuffer *fb = worker->framebuffer;
+  FrameBuffer *fb = worker->framebuffer;
   const int xmin = worker->tile_region.xmin;
   const int ymin = worker->tile_region.ymin;
   const int xmax = worker->tile_region.xmax;
@@ -726,7 +720,7 @@ static void reconstruct_image(struct Worker *worker)
 
   for (y = ymin; y < ymax; y++) {
     for (x = xmin; x < xmax; x++) {
-      struct Color4 pixel;
+      Color4 pixel;
 
       worker->sampler->GetPixelSamples(worker->pixel_samples, x, y);
       pixel = apply_pixel_filter(worker, x, y);
@@ -736,9 +730,9 @@ static void reconstruct_image(struct Worker *worker)
   }
 }
 
-static void render_frame_start(struct Renderer *renderer, const struct Tiler *tiler)
+static void render_frame_start(Renderer *renderer, const Tiler *tiler)
 {
-  struct FrameInfo info;
+  FrameInfo info;
   info.worker_count = renderer->GetThreadCount();
   info.tile_count = tiler->GetTileCount();
   info.frame_region = renderer->frame_region_;;
@@ -747,9 +741,9 @@ static void render_frame_start(struct Renderer *renderer, const struct Tiler *ti
   CbReportFrameStart(&renderer->frame_report_, &info);
 }
 
-static void render_frame_done(struct Renderer *renderer, const struct Tiler *tiler)
+static void render_frame_done(Renderer *renderer, const Tiler *tiler)
 {
-  struct FrameInfo info;
+  FrameInfo info;
   info.worker_count = renderer->GetThreadCount();
   info.tile_count = tiler->GetTileCount();
   info.frame_region = renderer->frame_region_;;
@@ -758,9 +752,9 @@ static void render_frame_done(struct Renderer *renderer, const struct Tiler *til
   CbReportFrameDone(&renderer->frame_report_, &info);
 }
 
-static void render_tile_start(struct Worker *worker)
+static void render_tile_start(Worker *worker)
 {
-  struct TileInfo info;
+  TileInfo info;
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
@@ -771,9 +765,9 @@ static void render_tile_start(struct Worker *worker)
   CbReportTileStart(&worker->tile_report, &info);
 }
 
-static void render_tile_done(struct Worker *worker)
+static void render_tile_done(Worker *worker)
 {
-  struct TileInfo info;
+  TileInfo info;
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
@@ -784,14 +778,14 @@ static void render_tile_done(struct Worker *worker)
   CbReportTileDone(&worker->tile_report, &info);
 }
 
-static int integrate_samples(struct Worker *worker)
+static int integrate_samples(Worker *worker)
 {
-  struct Sample *smp = NULL;
-  struct TraceContext cxt = worker->context;
-  struct Ray ray;
+  Sample *smp = NULL;
+  TraceContext cxt = worker->context;
+  Ray ray;
 
   while ((smp = worker->sampler->GetNextSample()) != NULL) {
-    struct Color4 C_trace;
+    Color4 C_trace;
     double t_hit = FLT_MAX;
     int hit = 0;
     int interrupted = 0;
@@ -821,10 +815,10 @@ static int integrate_samples(struct Worker *worker)
   return 0;
 }
 
-static ThreadStatus render_tile(void *data, const struct ThreadContext *context)
+static ThreadStatus render_tile(void *data, const ThreadContext *context)
 {
-  struct Worker *worker_list = (struct Worker *) data;
-  struct Worker *worker = &worker_list[context->thread_id];
+  Worker *worker_list = (Worker *) data;
+  Worker *worker = &worker_list[context->thread_id];
   int interrupted = 0;
 
   set_working_region(worker, context->iteration_id);

@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_TURBULENCE_H
 #define FJ_TURBULENCE_H
@@ -35,9 +33,6 @@ private:
   Real   gain_;
   int    octaves_;
 };
-
-extern FJ_API Turbulence *TrbNew();
-extern FJ_API void TrbFree(Turbulence *turbulence);
 
 } // namespace xxx
 

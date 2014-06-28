@@ -4,6 +4,7 @@
 #ifndef FJ_CURVEIO_H
 #define FJ_CURVEIO_H
 
+#include "fj_compatibility.h"
 #include <vector>
 #include <string>
 #include <cstdio>
@@ -15,7 +16,7 @@ class TexCoord;
 class Vector;
 class Color;
 
-class CurveInput {
+class FJ_API CurveInput {
 public:
   CurveInput() {}
   ~CurveInput() {}
@@ -39,7 +40,7 @@ public:
   std::vector<char> data_buffer;
 };
 
-class CurveOutput {
+class FJ_API CurveOutput {
 public:
   CurveOutput() {}
   ~CurveOutput() {}
@@ -69,22 +70,22 @@ enum CrvErrorNo {
 };
 
 // error no interfaces
-extern int CrvGetErrorNo(void);
-extern const char *CrvGetErrorMessage(int err);
+FJ_API int CrvGetErrorNo(void);
+FJ_API const char *CrvGetErrorMessage(int err);
 
 // curve input file interfaces
-extern CurveInput *CrvOpenInputFile(const char *filename);
-extern void CrvCloseInputFile(CurveInput *in);
-extern int CrvReadHeader(CurveInput *in);
-extern int CrvReadAttribute(CurveInput *in);
+FJ_API CurveInput *CrvOpenInputFile(const char *filename);
+FJ_API void CrvCloseInputFile(CurveInput *in);
+FJ_API int CrvReadHeader(CurveInput *in);
+FJ_API int CrvReadAttribute(CurveInput *in);
 
 // curve output file interfaces
-extern CurveOutput *CrvOpenOutputFile(const char *filename);
-extern void CrvCloseOutputFile(CurveOutput *out);
-extern void CrvWriteFile(CurveOutput *out);
+FJ_API CurveOutput *CrvOpenOutputFile(const char *filename);
+FJ_API void CrvCloseOutputFile(CurveOutput *out);
+FJ_API void CrvWriteFile(CurveOutput *out);
 
 // high level interface for loading curve file
-extern int CrvLoadFile(Curve *curve, const char *filename);
+FJ_API int CrvLoadFile(Curve *curve, const char *filename);
 
 } // namespace xxx
 

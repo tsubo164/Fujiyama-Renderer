@@ -186,18 +186,6 @@ int Light::Preprocess()
   return Preprocess_(this);
 }
 
-Light *LgtNew(int light_type)
-{
-  Light *light = new Light();
-  light->SetLightType(light_type);
-  return light;
-}
-
-void LgtFree(Light *light)
-{
-  delete light;
-}
-
 // point light
 static int point_light_get_sample_count(const Light *light)
 {

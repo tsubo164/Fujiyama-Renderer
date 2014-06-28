@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_TILER_H
 #define FJ_TILER_H
@@ -42,9 +40,6 @@ public:
   int xtile_size_;
   int ytile_size_;
 };
-
-extern Tiler *TlrNew(int xres, int yres, int xtile_size, int ytile_size);
-extern void TlrFree(Tiler *tiler);
 
 } // namespace xxx
 

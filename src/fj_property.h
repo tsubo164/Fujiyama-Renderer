@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_PROPERTY_H
 #define FJ_PROPERTY_H
@@ -33,7 +31,7 @@ class Shader;
 class Volume;
 class Mesh;
 
-class PropertyValue {
+class FJ_API PropertyValue {
 public:
   PropertyValue() :
     type(PROP_NONE),
@@ -64,7 +62,7 @@ public:
   Real time;
 };
 
-class Property {
+class FJ_API Property {
 public:
   int type;
   const char *name;
@@ -72,32 +70,32 @@ public:
   int (*SetProperty)(void *self, const PropertyValue *value);
 };
 
-extern PropertyValue PropScalar(Real v0);
-extern PropertyValue PropVector2(Real v0, Real v1);
-extern PropertyValue PropVector3(Real v0, Real v1, Real v2);
-extern PropertyValue PropVector4(Real v0, Real v1, Real v2, Real v3);
-extern PropertyValue PropString(const char *string);
+FJ_API PropertyValue PropScalar(Real v0);
+FJ_API PropertyValue PropVector2(Real v0, Real v1);
+FJ_API PropertyValue PropVector3(Real v0, Real v1, Real v2);
+FJ_API PropertyValue PropVector4(Real v0, Real v1, Real v2, Real v3);
+FJ_API PropertyValue PropString(const char *string);
 
-extern PropertyValue PropObjectGroup(ObjectGroup *group);
-extern PropertyValue PropTurbulence(Turbulence *turbulence);
-extern PropertyValue PropTexture(Texture *texture);
-extern PropertyValue PropVolume(Volume *volume);
-extern PropertyValue PropMesh(Mesh *mesh);
+FJ_API PropertyValue PropObjectGroup(ObjectGroup *group);
+FJ_API PropertyValue PropTurbulence(Turbulence *turbulence);
+FJ_API PropertyValue PropTexture(Texture *texture);
+FJ_API PropertyValue PropVolume(Volume *volume);
+FJ_API PropertyValue PropMesh(Mesh *mesh);
 
-extern int PropIsValid(const Property *prop);
+FJ_API int PropIsValid(const Property *prop);
 
-extern const char *PropName(const Property *prop);
-extern const int PropType(const Property *prop);
-extern const Real PropDefaultValue(const Property *prop, int index);
-extern const char *PropTypeString(const Property *prop);
+FJ_API const char *PropName(const Property *prop);
+FJ_API const int PropType(const Property *prop);
+FJ_API const Real PropDefaultValue(const Property *prop, int index);
+FJ_API const char *PropTypeString(const Property *prop);
 
-extern const Property *PropFind(const Property *list, int type, const char *name);
-extern int PropSetAllDefaultValues(void *self, const Property *list);
+FJ_API const Property *PropFind(const Property *list, int type, const char *name);
+FJ_API int PropSetAllDefaultValues(void *self, const Property *list);
 
 /* for time variable properties */
 enum { MAX_PROPERTY_SAMPLES = 8 };
 
-struct PropertySample {
+struct FJ_API PropertySample {
   PropertySample() : vector(), time(0) {}
   ~PropertySample() {}
 
@@ -105,14 +103,14 @@ struct PropertySample {
   Real time;
 };
 
-struct PropertySampleList {
+struct FJ_API PropertySampleList {
   PropertySample samples[MAX_PROPERTY_SAMPLES];
   int sample_count;
 };
 
-extern void PropInitSampleList(PropertySampleList *list);
-extern int PropPushSample(PropertySampleList *list, const PropertySample *sample);
-extern void PropLerpSamples(const PropertySampleList *list, Real time,
+FJ_API void PropInitSampleList(PropertySampleList *list);
+FJ_API int PropPushSample(PropertySampleList *list, const PropertySample *sample);
+FJ_API void PropLerpSamples(const PropertySampleList *list, Real time,
     PropertySample *dst);
 
 } // namespace xxx

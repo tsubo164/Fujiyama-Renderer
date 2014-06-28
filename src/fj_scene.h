@@ -152,10 +152,6 @@ private:
   std::vector<Mesh *> MeshList;
 };
 
-// Scene
-extern Scene *ScnNew(void);
-extern void ScnFree(Scene *scene);
-
 } // namespace xxx
 
 #endif // FJ_XXX_H

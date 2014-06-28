@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_object_instance.h"
 #include "fj_intersection.h"
@@ -345,16 +343,6 @@ void ObjectInstance::merge_sampled_bounds()
   }
 
   bounds_ = merged_bounds;
-}
-
-ObjectInstance *ObjNew(void)
-{
-  return new ObjectInstance();
-}
-
-void ObjFree(ObjectInstance *obj)
-{
-  delete obj;
 }
 
 } // namespace xxx

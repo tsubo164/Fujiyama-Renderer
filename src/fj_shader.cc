@@ -87,18 +87,6 @@ int Shader::SetProperty(const std::string &prop_name, const PropertyValue &src_d
   return dst_prop->SetProperty(self_, &src_data);
 }
 
-Shader *ShdNew(const Plugin *plugin)
-{
-  Shader *shader = new Shader();
-  shader->Initialize(plugin);
-  return shader;
-}
-
-void ShdFree(Shader *shader)
-{
-  delete shader;
-}
-
 static void set_error(int err)
 {
   error_no = err;

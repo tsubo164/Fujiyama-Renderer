@@ -99,18 +99,6 @@ int Procedure::SetProperty(const std::string &prop_name, const PropertyValue &sr
   return dst_prop->SetProperty(self_, &src_data);
 }
 
-Procedure *PrcNew(const Plugin *plugin)
-{
-  Procedure *procedure = new Procedure();
-  procedure->Initialize(plugin);
-  return procedure;
-}
-
-void PrcFree(Procedure *procedure)
-{
-  delete procedure;
-}
-
 static void set_error(int err)
 {
   error_no = err;

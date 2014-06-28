@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_OBJECTINSTANCE_H
 #define FJ_OBJECTINSTANCE_H
@@ -86,9 +84,6 @@ private:
   const ObjectGroup *shadow_target_;
   const ObjectGroup *self_target_;
 };
-
-extern ObjectInstance *ObjNew(void);
-extern void ObjFree(ObjectInstance *obj);
 
 } // namespace xxx
 

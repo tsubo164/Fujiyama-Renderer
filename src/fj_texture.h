@@ -55,9 +55,6 @@ private:
   std::vector<TextureCache> cache_list_;
 };
 
-extern Texture *TexNew(void);
-extern void TexFree(Texture *tex);
-
 } // namespace xxx
 
 #endif // FJ_XXX_H

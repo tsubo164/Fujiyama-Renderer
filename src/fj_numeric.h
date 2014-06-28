@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_NUMERIC_H
 #define FJ_NUMERIC_H
@@ -83,4 +81,4 @@ inline Real Bilerp(Real v00, Real v10, Real v01, Real v11, Real s, Real t)
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

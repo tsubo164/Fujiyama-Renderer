@@ -245,16 +245,6 @@ Index Mesh::get_primitive_count() const
   return GetFaceCount();
 }
 
-Mesh *MshNew(void)
-{
-  return new Mesh();
-}
-
-void MshFree(Mesh *mesh)
-{
-  delete mesh;
-}
-
 void MshGetFaceVertexPosition(const Mesh *mesh, int face_index,
     Vector *P0, Vector *P1, Vector *P2)
 {
