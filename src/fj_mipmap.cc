@@ -30,8 +30,23 @@ static int pow2[POW2_SIZE] = {
   1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768
 };
 
-struct Coordinate { int x, y; };
-struct Position { float x, y; };
+class Coordinate {
+public:
+  Coordinate() : x(0), y(0) {}
+  ~Coordinate() {}
+
+public:
+  int x, y;
+};
+
+class Position {
+public:
+  Position() : x(0), y(0) {}
+  ~Position() {}
+
+public:
+  float x, y;
+};
 
 static void compute_output_res(int in_w, int in_h, int *out_w, int *out_h);
 static void scale_and_copy_image(const float *src, int sw, int sh,

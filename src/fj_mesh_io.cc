@@ -17,15 +17,15 @@
 namespace fj {
 
 static int error_no = MSH_ERR_NONE;
-static size_t write_attriname(struct MeshOutput *out, const std::string &name);
-static size_t write_attridata(struct MeshOutput *out, const std::string &name);
-static size_t read_attridata(struct MeshInput *in);
+static size_t write_attriname(MeshOutput *out, const std::string &name);
+static size_t write_attridata(MeshOutput *out, const std::string &name);
+static size_t read_attridata(MeshInput *in);
 static void set_error(int err);
 
 // mesh input file interfaces
-struct MeshInput *MshOpenInputFile(const char *filename)
+MeshInput *MshOpenInputFile(const char *filename)
 {
-  struct MeshInput *in = new MeshInput();
+  MeshInput *in = new MeshInput();
 
   if (in == NULL) {
     set_error(MSH_ERR_NO_MEMORY);
@@ -48,7 +48,7 @@ struct MeshInput *MshOpenInputFile(const char *filename)
   return in;
 }
 
-void MshCloseInputFile(struct MeshInput *in)
+void MshCloseInputFile(MeshInput *in)
 {
   if (in == NULL)
     return;
@@ -60,7 +60,7 @@ void MshCloseInputFile(struct MeshInput *in)
   delete in;
 }
 
-int MshReadHeader(struct MeshInput *in)
+int MshReadHeader(MeshInput *in)
 {
   int i;
   size_t nreads = 0;
@@ -102,9 +102,9 @@ int MshReadHeader(struct MeshInput *in)
 }
 
 // mesh output file interfaces
-struct MeshOutput *MshOpenOutputFile(const char *filename)
+MeshOutput *MshOpenOutputFile(const char *filename)
 {
-  struct MeshOutput *out = new MeshOutput();
+  MeshOutput *out = new MeshOutput();
 
   if (out == NULL) {
     set_error(MSH_ERR_NO_MEMORY);
@@ -133,7 +133,7 @@ struct MeshOutput *MshOpenOutputFile(const char *filename)
   return out;
 }
 
-void MshCloseOutputFile(struct MeshOutput *out)
+void MshCloseOutputFile(MeshOutput *out)
 {
   if (out == NULL)
     return;
@@ -144,7 +144,7 @@ void MshCloseOutputFile(struct MeshOutput *out)
   delete out;
 }
 
-void MshWriteFile(struct MeshOutput *out)
+void MshWriteFile(MeshOutput *out)
 {
   char magic[] = MSH_FILE_MAGIC;
 
@@ -180,11 +180,11 @@ void MshWriteFile(struct MeshOutput *out)
   write_attridata(out, "indices");
 }
 
-int MshLoadFile(struct Mesh *mesh, const char *filename)
+int MshLoadFile(Mesh *mesh, const char *filename)
 {
   int i, j;
   int TOTAL_ATTR_COUNT;
-  struct MeshInput *in;
+  MeshInput *in;
 
   in = MshOpenInputFile(filename);
   if (in == NULL) {
@@ -206,7 +206,7 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const double *data = (const double *) &in->data_buffer[0];
-        struct Vector P;
+        Vector P;
         P.x = data[3*j + 0];
         P.y = data[3*j + 1];
         P.z = data[3*j + 2];
@@ -219,7 +219,7 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const double *data = (const double *) &in->data_buffer[0];
-        struct Vector N;
+        Vector N;
         N.x = data[3*j + 0];
         N.y = data[3*j + 1];
         N.z = data[3*j + 2];
@@ -232,7 +232,7 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const float *data = (const float *) &in->data_buffer[0];
-        struct Color Cd;
+        Color Cd;
         Cd.r = data[3*j + 0];
         Cd.g = data[3*j + 1];
         Cd.b = data[3*j + 2];
@@ -245,7 +245,7 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const float *data = (const float *) &in->data_buffer[0];
-        struct TexCoord texcoord;
+        TexCoord texcoord;
         texcoord.u = data[2*j + 0];
         texcoord.v = data[2*j + 1];
         mesh->SetVertexTexture(j, texcoord);
@@ -257,7 +257,7 @@ int MshLoadFile(struct Mesh *mesh, const char *filename)
       read_attridata(in);
       for (j = 0; j < in->nverts; j++) {
         const double *data = (const double *) &in->data_buffer[0];
-        struct Vector velocity;
+        Vector velocity;
         velocity.x = data[3*j + 0];
         velocity.y = data[3*j + 1];
         velocity.z = data[3*j + 2];
@@ -295,7 +295,7 @@ static void set_error(int err)
   error_no = err;
 }
 
-static size_t write_attriname(struct MeshOutput *out, const std::string &name)
+static size_t write_attriname(MeshOutput *out, const std::string &name)
 {
   size_t namesize;
   size_t nwrotes;
@@ -327,7 +327,7 @@ static size_t write_attriname(struct MeshOutput *out, const std::string &name)
   return nwrotes;
 }
 
-static size_t write_attridata(struct MeshOutput *out, const std::string &name)
+static size_t write_attridata(MeshOutput *out, const std::string &name)
 {
   size_t datasize = 0;
   size_t nwrotes = 0;
@@ -413,7 +413,7 @@ static size_t write_attridata(struct MeshOutput *out, const std::string &name)
   return nwrotes;
 }
 
-static size_t read_attridata(struct MeshInput *in)
+static size_t read_attridata(MeshInput *in)
 {
   size_t nreads = 0;
   size_t datasize = 0;

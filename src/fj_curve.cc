@@ -51,11 +51,21 @@ bool Curve::Has##Class##Label() const \
   ATTRIBUTE_LIST(ATTR)
 #undef ATTR
 
-struct ControlPoint {
+class ControlPoint {
+public:
+  ControlPoint() {}
+  ~ControlPoint() {}
+
+public:
   Vector P;
 };
 
-struct Bezier3 {
+class Bezier3 {
+public:
+  Bezier3() : cp(), width(), velocity() {}
+  ~Bezier3() {}
+
+public:
   ControlPoint cp[4];
   Real width[2];
   Vector velocity[4];

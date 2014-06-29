@@ -246,7 +246,8 @@ loop_exit:
 
 // Compares an axis component of primitive centroid for std::sort.
 template<int Axis>
-struct CentroidLess {
+class CentroidLess {
+public:
   bool operator()(Primitive *a, Primitive *b) const
   { 
     return a->centroid[Axis] < b->centroid[Axis];

@@ -10,25 +10,30 @@
 
 namespace fj {
 
-struct Texture;
+class Texture;
 
-struct DomeSample {
-  struct Color color;
-  struct TexCoord uv;
-  struct Vector dir;
+class DomeSample {
+public:
+  DomeSample() {}
+  ~DomeSample() {}
+
+public:
+  Color color;
+  TexCoord uv;
+  Vector dir;
 };
 
-extern int ImportanceSampling(struct Texture *texture, int seed,
+extern int ImportanceSampling(Texture *texture, int seed,
     int sample_xres, int sample_yres,
-    struct DomeSample *dome_samples, int sample_count);
+    DomeSample *dome_samples, int sample_count);
 
-extern int StratifiedImportanceSampling(struct Texture *texture, int seed,
+extern int StratifiedImportanceSampling(Texture *texture, int seed,
     int sample_xres, int sample_yres,
-    struct DomeSample *dome_samples, int sample_count);
+    DomeSample *dome_samples, int sample_count);
 
-extern int StructuredImportanceSampling(struct Texture *texture, int seed,
+extern int StructuredImportanceSampling(Texture *texture, int seed,
     int sample_xres, int sample_yres,
-    struct DomeSample *dome_samples, int sample_count);
+    DomeSample *dome_samples, int sample_count);
 
 } // namespace xxx
 

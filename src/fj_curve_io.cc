@@ -14,8 +14,8 @@
 
 namespace fj {
 
-static size_t write_attriname(struct CurveOutput *out, const std::string &name);
-static size_t write_attridata(struct CurveOutput *out, const std::string &name);
+static size_t write_attriname(CurveOutput *out, const std::string &name);
+static size_t write_attridata(CurveOutput *out, const std::string &name);
 static void set_error(int err);
 
 static int error_no = ERR_CRV_NOERR;
@@ -51,7 +51,7 @@ static void set_error(int err)
 }
 
 // curve input file interfaces
-struct CurveInput *CrvOpenInputFile(const char *filename)
+CurveInput *CrvOpenInputFile(const char *filename)
 {
   CurveInput *in = new CurveInput();
   if (in == NULL) {
@@ -81,7 +81,7 @@ struct CurveInput *CrvOpenInputFile(const char *filename)
   return in;
 }
 
-void CrvCloseInputFile(struct CurveInput *in)
+void CrvCloseInputFile(CurveInput *in)
 {
   if (in == NULL)
     return;
@@ -92,7 +92,7 @@ void CrvCloseInputFile(struct CurveInput *in)
   delete in;
 }
 
-int CrvReadHeader(struct CurveInput *in)
+int CrvReadHeader(CurveInput *in)
 {
   int i;
   size_t nreads = 0;
@@ -133,7 +133,7 @@ int CrvReadHeader(struct CurveInput *in)
   return 0;
 }
 
-int CrvReadAttribute(struct CurveInput *in)
+int CrvReadAttribute(CurveInput *in)
 {
   size_t nreads = 0;
   size_t datasize = 0;
@@ -145,7 +145,7 @@ int CrvReadAttribute(struct CurveInput *in)
 }
 
 // curve output file interfaces
-struct CurveOutput *CrvOpenOutputFile(const char *filename)
+CurveOutput *CrvOpenOutputFile(const char *filename)
 {
   CurveOutput *out = new CurveOutput();
   if (out == NULL) {
@@ -175,7 +175,7 @@ struct CurveOutput *CrvOpenOutputFile(const char *filename)
   return out;
 }
 
-void CrvCloseOutputFile(struct CurveOutput *out)
+void CrvCloseOutputFile(CurveOutput *out)
 {
   if (out == NULL)
     return;
@@ -186,7 +186,7 @@ void CrvCloseOutputFile(struct CurveOutput *out)
   delete out;
 }
 
-void CrvWriteFile(struct CurveOutput *out)
+void CrvWriteFile(CurveOutput *out)
 {
   char magic[] = CRV_FILE_MAGIC;
 
@@ -222,11 +222,11 @@ void CrvWriteFile(struct CurveOutput *out)
   write_attridata(out, "indices");
 }
 
-int CrvLoadFile(struct Curve *curve, const char *filename)
+int CrvLoadFile(Curve *curve, const char *filename)
 {
   int i;
   int TOTAL_ATTR_COUNT;
-  struct CurveInput *in;
+  CurveInput *in;
 
   in = CrvOpenInputFile(filename);
   if (in == NULL) {
@@ -321,7 +321,7 @@ int CrvLoadFile(struct Curve *curve, const char *filename)
   return 0;
 }
 
-static size_t write_attriname(struct CurveOutput *out, const std::string &name)
+static size_t write_attriname(CurveOutput *out, const std::string &name)
 {
   size_t namesize;
   size_t nwrotes;
@@ -353,7 +353,7 @@ static size_t write_attriname(struct CurveOutput *out, const std::string &name)
   return nwrotes;
 }
 
-static size_t write_attridata(struct CurveOutput *out, const std::string &name)
+static size_t write_attridata(CurveOutput *out, const std::string &name)
 {
   size_t datasize;
   size_t nwrotes;

@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_BOX_H
 #define FJ_BOX_H
@@ -11,21 +9,21 @@ See LICENSE and README
 
 namespace fj {
 
-struct FJ_API Box {
+class FJ_API Box {
+public:
   Box() : min(), max() {}
   Box(Real xmin, Real ymin, Real zmin, Real xmax, Real ymax, Real zmax)
     : min(xmin, ymin, zmin), max(xmax, ymax, zmax) {}
   ~Box() {}
 
+public:
   Vector min;
   Vector max;
 };
 
-// edit
 FJ_API void BoxExpand(Box *box, Real delta);
 FJ_API void BoxReverseInfinite(Box *box);
 
-// test
 FJ_API bool BoxContainsPoint(const Box &box, const Vector &point);
 FJ_API void BoxAddPoint(Box *box, const Vector &point);
 FJ_API void BoxAddBox(Box *box, const Box &otherbox);
@@ -35,14 +33,12 @@ FJ_API bool BoxRayIntersect(const Box &box,
     Real ray_tmin, Real ray_tmax,
     Real *hit_tmin, Real *hit_tmax);
 
-// property
 FJ_API Vector BoxSize(const Box &box);
 FJ_API Vector BoxCentroid(const Box &box);
 FJ_API Real BoxDiagonal(const Box &box);
 
-// print
 FJ_API void BoxPrint(const Box &box);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

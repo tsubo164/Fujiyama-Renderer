@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_MATRIX_H
 #define FJ_MATRIX_H
@@ -11,7 +9,8 @@ See LICENSE and README
 
 namespace fj {
 
-struct FJ_API Matrix {
+class FJ_API Matrix {
+public:
   Matrix()
   {
     e[0]=1.;  e[1]=0.;  e[2]=0.;  e[3]=0.;
@@ -36,8 +35,8 @@ struct FJ_API Matrix {
   Real e[16];
 };
 
-struct Vector;
-struct Box;
+class Vector;
+class Box;
 
 FJ_API void MatIdentity(Matrix *dst);
 FJ_API void MatSet(Matrix *dst,
@@ -63,4 +62,4 @@ FJ_API void MatPrint(const Matrix &m);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H
