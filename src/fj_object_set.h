@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_OBJECT_SET_H
 #define FJ_OBJECT_SET_H
@@ -14,9 +12,9 @@ See LICENSE and README
 
 namespace fj {
 
-struct ObjectInstance;
-struct Intersection;
-struct Ray;
+class ObjectInstance;
+class Intersection;
+class Ray;
 
 class ObjectSet : public PrimitiveSet {
 public:
@@ -44,4 +42,4 @@ private:
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

@@ -30,7 +30,7 @@ static const int perm[] = {
   PERMUTAION
 };
 
-Real PerlinNoise(const struct Vector &position,
+Real PerlinNoise(const Vector &position,
     Real lacunarity, Real persistence, int octaves)
 {
   Vector P = position;
@@ -47,7 +47,7 @@ Real PerlinNoise(const struct Vector &position,
   return noise_value;
 }
 
-Vector PerlinNoise3d(const struct Vector &position,
+Vector PerlinNoise3d(const Vector &position,
     Real lacunarity, Real persistence, int octaves)
 {
   Vector P_out;

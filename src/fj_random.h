@@ -8,27 +8,32 @@
 
 namespace fj {
 
-struct Vector2;
-struct Vector;
+class Vector2;
+class Vector;
 
-struct FJ_API XorShift {
+class FJ_API XorShift {
+public:
+  XorShift() :state() {}
+  ~XorShift() {}
+
+public:
   uint32_t state[4];
 };
 
-FJ_API void XorInit(struct XorShift *xr);
+FJ_API void XorInit(XorShift *xr);
 
-FJ_API uint32_t XorNextInteger(struct XorShift *xr);
-FJ_API double XorNextFloat01(struct XorShift *xr);
+FJ_API uint32_t XorNextInteger(XorShift *xr);
+FJ_API double XorNextFloat01(XorShift *xr);
 
-FJ_API void XorSolidSphereRand(struct XorShift *xr, struct Vector *out_position);
-FJ_API void XorHollowSphereRand(struct XorShift *xr, struct Vector *out_position);
-FJ_API void XorSolidCubeRand(struct XorShift *xr, struct Vector *out_position);
+FJ_API void XorSolidSphereRand(XorShift *xr, Vector *out_position);
+FJ_API void XorHollowSphereRand(XorShift *xr, Vector *out_position);
+FJ_API void XorSolidCubeRand(XorShift *xr, Vector *out_position);
 
-FJ_API void XorSolidDiskRand(struct XorShift *xr, struct Vector2 *out_position);
-FJ_API void XorHollowDiskRand(struct XorShift *xr, struct Vector2 *out_position);
-FJ_API void XorGaussianDiskRand(struct XorShift *xr, struct Vector2 *out_position);
+FJ_API void XorSolidDiskRand(XorShift *xr, Vector2 *out_position);
+FJ_API void XorHollowDiskRand(XorShift *xr, Vector2 *out_position);
+FJ_API void XorGaussianDiskRand(XorShift *xr, Vector2 *out_position);
 
-FJ_API double XorGaussianRand(struct XorShift *xr);
+FJ_API double XorGaussianRand(XorShift *xr);
 
 } // namespace xxx
 

@@ -1,14 +1,21 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_MULTI_THREAD_H
 #define FJ_MULTI_THREAD_H
 
 namespace fj {
 
-struct ThreadContext {
+class ThreadContext {
+public:
+  ThreadContext() :
+      iteration_id(0),
+      iteration_count(0),
+      thread_id(0),
+      thread_count(0) {}
+  ~ThreadContext() {}
+
+public:
   int iteration_id;
   int iteration_count;
   int thread_id;
@@ -21,7 +28,7 @@ enum {
 };
 typedef int ThreadStatus;
 
-typedef ThreadStatus (*ThreadFunction)(void *data, const struct ThreadContext *context);
+typedef ThreadStatus (*ThreadFunction)(void *data, const ThreadContext *context);
 typedef void (*CriticalFunction)(void *data);
 
 extern int MtGetMaxThreadCount(void);
@@ -36,4 +43,4 @@ extern void MtCriticalSection(void *data, CriticalFunction critical);
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

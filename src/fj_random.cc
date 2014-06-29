@@ -9,7 +9,7 @@ See LICENSE and README
 
 namespace fj {
 
-void XorInit(struct XorShift *xr)
+void XorInit(XorShift *xr)
 {
   xr->state[0] = 123456789;
   xr->state[1] = 362436069;
@@ -17,7 +17,7 @@ void XorInit(struct XorShift *xr)
   xr->state[3] = 88675123;
 }
 
-uint32_t XorNextInteger(struct XorShift *xr)
+uint32_t XorNextInteger(XorShift *xr)
 {
   uint32_t *st = xr->state;
   uint32_t t;
@@ -31,12 +31,12 @@ uint32_t XorNextInteger(struct XorShift *xr)
   return st[3];
 }
 
-double XorNextFloat01(struct XorShift *xr)
+double XorNextFloat01(XorShift *xr)
 {
   return (double) XorNextInteger(xr) / UINT32_MAX;
 }
 
-void XorSolidSphereRand(struct XorShift *xr, struct Vector *out_position)
+void XorSolidSphereRand(XorShift *xr, Vector *out_position)
 {
   for (;;) {
     out_position->x = 2 * XorNextFloat01(xr) - 1;
@@ -49,7 +49,7 @@ void XorSolidSphereRand(struct XorShift *xr, struct Vector *out_position)
   }
 }
 
-void XorHollowSphereRand(struct XorShift *xr, struct Vector *out_position)
+void XorHollowSphereRand(XorShift *xr, Vector *out_position)
 {
   double dot = 0;
   double len_inv = 0;
@@ -72,14 +72,14 @@ void XorHollowSphereRand(struct XorShift *xr, struct Vector *out_position)
   out_position->z *= len_inv;
 }
 
-void XorSolidCubeRand(struct XorShift *xr, struct Vector *out_position)
+void XorSolidCubeRand(XorShift *xr, Vector *out_position)
 {
   out_position->x = 2 * XorNextFloat01(xr) - 1;
   out_position->y = 2 * XorNextFloat01(xr) - 1;
   out_position->z = 2 * XorNextFloat01(xr) - 1;
 }
 
-void XorSolidDiskRand(struct XorShift *xr, struct Vector2 *out_position)
+void XorSolidDiskRand(XorShift *xr, Vector2 *out_position)
 {
   for (;;) {
     out_position->x = 2 * XorNextFloat01(xr) - 1;
@@ -91,7 +91,7 @@ void XorSolidDiskRand(struct XorShift *xr, struct Vector2 *out_position)
   }
 }
 
-void XorHollowDiskRand(struct XorShift *xr, struct Vector2 *out_position)
+void XorHollowDiskRand(XorShift *xr, Vector2 *out_position)
 {
   double dot = 0;
   double len_inv = 0;
@@ -112,7 +112,7 @@ void XorHollowDiskRand(struct XorShift *xr, struct Vector2 *out_position)
   out_position->y *= len_inv;
 }
 
-void XorGaussianDiskRand(struct XorShift *xr, struct Vector2 *out_position)
+void XorGaussianDiskRand(XorShift *xr, Vector2 *out_position)
 {
   const double gauss = XorGaussianRand(xr);
 
@@ -121,9 +121,9 @@ void XorGaussianDiskRand(struct XorShift *xr, struct Vector2 *out_position)
   out_position->y *= gauss;
 }
 
-double XorGaussianRand(struct XorShift *xr)
+double XorGaussianRand(XorShift *xr)
 {
-  struct Vector2 P(0, 0);
+  Vector2 P(0, 0);
   double dot = 0;
 
   for (;;) {

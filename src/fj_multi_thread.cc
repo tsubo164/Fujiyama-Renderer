@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_multi_thread.h"
 #include <stddef.h>
@@ -42,7 +40,7 @@ ThreadStatus MtRunThreadLoop(void *data, ThreadFunction run_thread, int thread_c
 #pragma omp parallel for schedule(dynamic)
   for (i = start; i < end; i++) {
     ThreadStatus local_status = THREAD_LOOP_CONTINUE;
-    struct ThreadContext cxt;
+    ThreadContext cxt;
 
     if (global_status == THREAD_LOOP_CANCEL) {
       continue;

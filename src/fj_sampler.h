@@ -10,13 +10,14 @@
 
 namespace fj {
 
-struct Rectangle;
+class Rectangle;
 
 class Sample {
 public:
   Sample() : uv(), time(0), data() {}
   ~Sample() {}
 
+public:
   Vector2 uv;
   Real time;
   Vector4 data;

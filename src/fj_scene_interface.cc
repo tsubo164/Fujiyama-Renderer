@@ -45,35 +45,51 @@ enum EntryType {
   Type_End
 };
 
-struct Entry {
+class Entry {
+public:
+  Entry() : type(-1), index(-1) {}
+  ~Entry() {}
+
+public:
   int type;
   int index;
 };
 
 /* the global scene data */
-static struct Scene *the_scene = NULL;
+static Scene *the_scene = NULL;
 
-static struct Scene *get_scene()
+static Scene *get_scene()
 {
   return the_scene;
 }
 
-static void set_scene(struct Scene *scene)
+static void set_scene(Scene *scene)
 {
   the_scene = scene;
 }
 
 /* ID map for link an ID to another ID */
-struct IDmapEntry {
+class IDmapEntry {
+public:
+  IDmapEntry() : key(0), value(0) {}
+  ~IDmapEntry() {}
+
+public:
   ID key, value;
 };
 
-struct IDmap {
+// TODO use std::map
+class IDmap {
+public:
+  IDmap() : entry_count(0), entry() {}
+  ~IDmap() {}
+
+public:
   int entry_count;
-  struct IDmapEntry entry[1024];
+  IDmapEntry entry[1024];
 };
 
-static struct IDmap primset_to_accel = {0, {{0, 0}}};
+static IDmap primset_to_accel;
 
 static void push_idmap_endtry(ID key, ID value)
 {
@@ -92,7 +108,7 @@ static ID find_accelerator(ID primset)
 {
   int i;
   for (i = 0; i < primset_to_accel.entry_count; i++) {
-    const struct IDmapEntry *stored_entry = &primset_to_accel.entry[i];
+    const IDmapEntry *stored_entry = &primset_to_accel.entry[i];
 
     if (stored_entry->key == primset) {
       return stored_entry->value;
@@ -106,13 +122,13 @@ static int si_errno = SI_ERR_NONE;
 
 static int is_valid_type(int type);
 static ID encode_id(int type, int index);
-static struct Entry decode_id(ID id);
-static int prepare_render(const struct Renderer *renderer);
+static Entry decode_id(ID id);
+static int prepare_render(const Renderer *renderer);
 static void set_errno(int err_no);
 static Status status_of_error(int err);
 
-static int set_property(const struct Entry *entry,
-    const char *name, const struct PropertyValue *value);
+static int set_property(const Entry *entry,
+    const char *name, const PropertyValue *value);
 
 /* property list description */
 #include "internal/fj_property_list_include.cc"
@@ -182,8 +198,8 @@ Status SiCloseScene(void)
 
 Status SiRenderScene(ID renderer)
 {
-  const struct Entry entry = decode_id(renderer);
-  struct Renderer *renderer_ptr = NULL;
+  const Entry entry = decode_id(renderer);
+  Renderer *renderer_ptr = NULL;
   int err = 0;
 
   if (entry.type != Type_Renderer) {
@@ -215,8 +231,8 @@ Status SiRenderScene(ID renderer)
 
 Status SiSaveFrameBuffer(ID framebuffer, const char *filename)
 {
-  const struct Entry entry = decode_id(framebuffer);
-  struct FrameBuffer *framebuffer_ptr = NULL;
+  const Entry entry = decode_id(framebuffer);
+  FrameBuffer *framebuffer_ptr = NULL;
   int err = 0;
 
   if (entry.type != Type_FrameBuffer) {
@@ -242,8 +258,8 @@ Status SiSaveFrameBuffer(ID framebuffer, const char *filename)
 
 Status SiRunProcedure(ID procedure)
 {
-  const struct Entry entry = decode_id(procedure);
-  struct Procedure *procedure_ptr = NULL;
+  const Entry entry = decode_id(procedure);
+  Procedure *procedure_ptr = NULL;
   int err = 0;
 
   if (entry.type != Type_Procedure)
@@ -265,11 +281,11 @@ Status SiRunProcedure(ID procedure)
 
 Status SiAddObjectToGroup(ID group, ID object)
 {
-  struct ObjectGroup *group_ptr = NULL;
-  struct ObjectInstance *object_ptr = NULL;
+  ObjectGroup *group_ptr = NULL;
+  ObjectInstance *object_ptr = NULL;
 
   {
-    const struct Entry entry = decode_id(group);
+    const Entry entry = decode_id(group);
     if (entry.type != Type_ObjectGroup)
       return SI_FAIL;
 
@@ -278,7 +294,7 @@ Status SiAddObjectToGroup(ID group, ID object)
       return SI_FAIL;
   }
   {
-    const struct Entry entry = decode_id(object);
+    const Entry entry = decode_id(object);
     if (entry.type != Type_ObjectInstance)
       return SI_FAIL;
 
@@ -296,11 +312,11 @@ Status SiAddObjectToGroup(ID group, ID object)
 ID SiNewObjectInstance(ID primset_id)
 {
   const ID accel_id = find_accelerator(primset_id);
-  const struct Entry entry = decode_id(accel_id);
+  const Entry entry = decode_id(accel_id);
 
   if (entry.type == Type_Accelerator) {
-    struct ObjectInstance *object = NULL;
-    struct Accelerator *acc = NULL;
+    ObjectInstance *object = NULL;
+    Accelerator *acc = NULL;
     int err = 0;
 
     acc = get_scene()->GetAccelerator(entry.index);
@@ -323,8 +339,8 @@ ID SiNewObjectInstance(ID primset_id)
     PropSetAllDefaultValues(object, get_builtin_type_property_list(Type_ObjectInstance));
   }
   else if (entry.type == Type_Volume) {
-    struct ObjectInstance *object = NULL;
-    struct Volume *volume = NULL;
+    ObjectInstance *object = NULL;
+    Volume *volume = NULL;
     int err = 0;
 
     volume = get_scene()->GetVolume(entry.index);
@@ -379,8 +395,8 @@ ID SiNewObjectGroup(void)
 
 ID SiNewPointCloud(const char *filename)
 {
-  struct PointCloud *ptc = NULL;
-  struct Accelerator *acc = NULL;
+  PointCloud *ptc = NULL;
+  Accelerator *acc = NULL;
 
   ID ptc_id = SI_BADID;
   ID accel_id = SI_BADID;
@@ -421,7 +437,7 @@ ID SiNewPointCloud(const char *filename)
 
 ID SiNewTurbulence(void)
 {
-  struct Turbulence *turb = get_scene()->NewTurbulence();
+  Turbulence *turb = get_scene()->NewTurbulence();
   if (turb == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -434,8 +450,8 @@ ID SiNewTurbulence(void)
 
 ID SiNewProcedure(const char *plugin_name)
 {
-  struct Plugin **plugins = get_scene()->GetPluginList();
-  struct Plugin *found = NULL;
+  Plugin **plugins = get_scene()->GetPluginList();
+  Plugin *found = NULL;
   const int N = (int) get_scene()->GetPluginCount();
   int i = 0;
 
@@ -460,7 +476,7 @@ ID SiNewProcedure(const char *plugin_name)
 
 ID SiNewRenderer(void)
 {
-  struct Renderer *renderer = get_scene()->NewRenderer();
+  Renderer *renderer = get_scene()->NewRenderer();
   if (renderer == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -473,7 +489,7 @@ ID SiNewRenderer(void)
 
 ID SiNewTexture(const char *filename)
 {
-  struct Texture *tex = get_scene()->NewTexture();
+  Texture *tex = get_scene()->NewTexture();
 
   if (tex == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
@@ -490,7 +506,7 @@ ID SiNewTexture(const char *filename)
 
 ID SiNewCamera(const char *arg)
 {
-  struct Camera *camera = get_scene()->NewCamera(arg);
+  Camera *camera = get_scene()->NewCamera(arg);
   if (camera == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -503,8 +519,8 @@ ID SiNewCamera(const char *arg)
 
 ID SiNewShader(const char *plugin_name)
 {
-  struct Plugin **plugins = get_scene()->GetPluginList();
-  struct Plugin *found = NULL;
+  Plugin **plugins = get_scene()->GetPluginList();
+  Plugin *found = NULL;
   const int N = (int) get_scene()->GetPluginCount();
   int i = 0;
 
@@ -529,7 +545,7 @@ ID SiNewShader(const char *plugin_name)
 
 ID SiNewVolume(void)
 {
-  struct Volume *volume = get_scene()->NewVolume();
+  Volume *volume = get_scene()->NewVolume();
   ID volume_id = SI_BADID;
 
   if (volume == NULL) {
@@ -549,8 +565,8 @@ ID SiNewVolume(void)
 
 ID SiNewCurve(const char *filename)
 {
-  struct Curve *curve = NULL;
-  struct Accelerator *acc = NULL;
+  Curve *curve = NULL;
+  Accelerator *acc = NULL;
 
   ID curve_id = SI_BADID;
   ID accel_id = SI_BADID;
@@ -583,7 +599,7 @@ ID SiNewCurve(const char *filename)
 
 ID SiNewLight(int light_type)
 {
-  struct Light *light = NULL;
+  Light *light = NULL;
   int type = 0;
 
   switch (light_type) {
@@ -617,8 +633,8 @@ ID SiNewLight(int light_type)
 
 ID SiNewMesh(const char *filename)
 {
-  struct Mesh *mesh = NULL;
-  struct Accelerator *acc = NULL;
+  Mesh *mesh = NULL;
+  Accelerator *acc = NULL;
 
   ID mesh_id = SI_BADID;
   ID accel_id = SI_BADID;
@@ -655,10 +671,10 @@ ID SiNewMesh(const char *filename)
 
 Status SiAssignShader(ID object, ID shader)
 {
-  struct ObjectInstance *object_ptr = NULL;
-  struct Shader *shader_ptr = NULL;
+  ObjectInstance *object_ptr = NULL;
+  Shader *shader_ptr = NULL;
   {
-    const struct Entry entry = decode_id(object);
+    const Entry entry = decode_id(object);
 
     if (entry.type != Type_ObjectInstance)
       return SI_FAIL;
@@ -668,7 +684,7 @@ Status SiAssignShader(ID object, ID shader)
       return SI_FAIL;
   }
   {
-    const struct Entry entry = decode_id(shader);
+    const Entry entry = decode_id(shader);
 
     if (entry.type != Type_Shader)
       return SI_FAIL;
@@ -684,10 +700,10 @@ Status SiAssignShader(ID object, ID shader)
 
 Status SiAssignObjectGroup(ID id, const char *name, ID group)
 {
-  const struct Entry entry = decode_id(id);
-  const struct Entry group_ent = decode_id(group);
-  struct PropertyValue value;
-  struct ObjectGroup *group_ptr = NULL;
+  const Entry entry = decode_id(id);
+  const Entry group_ent = decode_id(group);
+  PropertyValue value;
+  ObjectGroup *group_ptr = NULL;
   int err = 0;
 
   if (group_ent.type != Type_ObjectGroup)
@@ -705,10 +721,10 @@ Status SiAssignObjectGroup(ID id, const char *name, ID group)
 
 Status SiAssignTexture(ID id, const char *name, ID texture)
 {
-  const struct Entry entry = decode_id(id);
-  const struct Entry texture_ent = decode_id(texture);
-  struct PropertyValue value;
-  struct Texture *texture_ptr = NULL;
+  const Entry entry = decode_id(id);
+  const Entry texture_ent = decode_id(texture);
+  PropertyValue value;
+  Texture *texture_ptr = NULL;
   int err = 0;
 
   if (texture_ent.type != Type_Texture)
@@ -726,10 +742,10 @@ Status SiAssignTexture(ID id, const char *name, ID texture)
 
 Status SiAssignCamera(ID renderer, ID camera)
 {
-  struct Renderer *renderer_ptr = NULL;
-  struct Camera *camera_ptr = NULL;
+  Renderer *renderer_ptr = NULL;
+  Camera *camera_ptr = NULL;
   {
-    const struct Entry entry = decode_id(renderer);
+    const Entry entry = decode_id(renderer);
 
     if (entry.type != Type_Renderer)
       return SI_FAIL;
@@ -739,7 +755,7 @@ Status SiAssignCamera(ID renderer, ID camera)
       return SI_FAIL;
   }
   {
-    const struct Entry entry = decode_id(camera);
+    const Entry entry = decode_id(camera);
 
     if (entry.type != Type_Camera)
       return SI_FAIL;
@@ -755,10 +771,10 @@ Status SiAssignCamera(ID renderer, ID camera)
 
 Status SiAssignFrameBuffer(ID renderer, ID framebuffer)
 {
-  struct Renderer *renderer_ptr = NULL;
-  struct FrameBuffer *framebuffer_ptr = NULL;
+  Renderer *renderer_ptr = NULL;
+  FrameBuffer *framebuffer_ptr = NULL;
   {
-    const struct Entry entry = decode_id(renderer);
+    const Entry entry = decode_id(renderer);
 
     if (entry.type != Type_Renderer)
       return SI_FAIL;
@@ -768,7 +784,7 @@ Status SiAssignFrameBuffer(ID renderer, ID framebuffer)
       return SI_FAIL;
   }
   {
-    const struct Entry entry = decode_id(framebuffer);
+    const Entry entry = decode_id(framebuffer);
 
     if (entry.type != Type_FrameBuffer)
       return SI_FAIL;
@@ -784,8 +800,8 @@ Status SiAssignFrameBuffer(ID renderer, ID framebuffer)
 
 Status SiSetProperty1(ID id, const char *name, double v0)
 {
-  const struct Entry entry = decode_id(id);
-  const struct PropertyValue value = PropScalar(v0);
+  const Entry entry = decode_id(id);
+  const PropertyValue value = PropScalar(v0);
   const int err = set_property(&entry, name, &value);
 
   return status_of_error(err);
@@ -793,8 +809,8 @@ Status SiSetProperty1(ID id, const char *name, double v0)
 
 Status SiSetProperty2(ID id, const char *name, double v0, double v1)
 {
-  const struct Entry entry = decode_id(id);
-  const struct PropertyValue value = PropVector2(v0, v1);
+  const Entry entry = decode_id(id);
+  const PropertyValue value = PropVector2(v0, v1);
   const int err = set_property(&entry, name, &value);
 
   return status_of_error(err);
@@ -802,8 +818,8 @@ Status SiSetProperty2(ID id, const char *name, double v0, double v1)
 
 Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2)
 {
-  const struct Entry entry = decode_id(id);
-  const struct PropertyValue value = PropVector3(v0, v1, v2);
+  const Entry entry = decode_id(id);
+  const PropertyValue value = PropVector3(v0, v1, v2);
   const int err = set_property(&entry, name, &value);
 
   return status_of_error(err);
@@ -811,8 +827,8 @@ Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2)
 
 Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, double v3)
 {
-  const struct Entry entry = decode_id(id);
-  const struct PropertyValue value = PropVector4(v0, v1, v2, v3);
+  const Entry entry = decode_id(id);
+  const PropertyValue value = PropVector4(v0, v1, v2, v3);
   const int err = set_property(&entry, name, &value);
 
   return status_of_error(err);
@@ -820,8 +836,8 @@ Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, 
 
 Status SiSetStringProperty(ID id, const char *name, const char *string)
 {
-  const struct Entry entry = decode_id(id);
-  const struct PropertyValue value = PropString(string);
+  const Entry entry = decode_id(id);
+  const PropertyValue value = PropString(string);
   const int err = set_property(&entry, name, &value);
 
   return status_of_error(err);
@@ -830,8 +846,8 @@ Status SiSetStringProperty(ID id, const char *name, const char *string)
 /* time variable property */
 Status SiSetSampleProperty3(ID id, const char *name, double v0, double v1, double v2, double time)
 {
-  const struct Entry entry = decode_id(id);
-  struct PropertyValue value = PropVector3(v0, v1, v2);
+  const Entry entry = decode_id(id);
+  PropertyValue value = PropVector3(v0, v1, v2);
   int err = 0;
 
   value.time = time;
@@ -842,10 +858,10 @@ Status SiSetSampleProperty3(ID id, const char *name, double v0, double v1, doubl
 
 Status SiAssignTurbulence(ID id, const char *name, ID turbulence)
 {
-  const struct Entry entry = decode_id(id);
-  const struct Entry turbulence_ent = decode_id(turbulence);
-  struct PropertyValue value;
-  struct Turbulence *turbulence_ptr = NULL;
+  const Entry entry = decode_id(id);
+  const Entry turbulence_ent = decode_id(turbulence);
+  PropertyValue value;
+  Turbulence *turbulence_ptr = NULL;
   int err = 0;
 
   if (turbulence_ent.type != Type_Turbulence)
@@ -863,10 +879,10 @@ Status SiAssignTurbulence(ID id, const char *name, ID turbulence)
 
 Status SiAssignVolume(ID id, const char *name, ID volume)
 {
-  const struct Entry entry = decode_id(id);
-  const struct Entry volume_ent = decode_id(volume);
-  struct PropertyValue value;
-  struct Volume *volume_ptr = NULL;
+  const Entry entry = decode_id(id);
+  const Entry volume_ent = decode_id(volume);
+  PropertyValue value;
+  Volume *volume_ptr = NULL;
   int err = 0;
 
   if (volume_ent.type != Type_Volume)
@@ -884,10 +900,10 @@ Status SiAssignVolume(ID id, const char *name, ID volume)
 
 Status SiAssignMesh(ID id, const char *name, ID mesh)
 {
-  const struct Entry entry = decode_id(id);
-  const struct Entry mesh_ent = decode_id(mesh);
-  struct PropertyValue value;
-  struct Mesh *mesh_ptr = NULL;
+  const Entry entry = decode_id(id);
+  const Entry mesh_ent = decode_id(mesh);
+  PropertyValue value;
+  Mesh *mesh_ptr = NULL;
   int err = 0;
 
   if (mesh_ent.type != Type_Mesh)
@@ -907,10 +923,10 @@ Status SiSetFrameReportCallback(ID id, void *data,
     FrameStartCallback frame_start,
     FrameDoneCallback frame_done)
 {
-  const struct Entry entry = decode_id(id);
+  const Entry entry = decode_id(id);
 
   if (entry.type == Type_Renderer) {
-    struct Renderer *renderer_ptr = get_scene()->GetRenderer(entry.index);
+    Renderer *renderer_ptr = get_scene()->GetRenderer(entry.index);
     renderer_ptr->SetFrameReportCallback(
         data,
         frame_start,
@@ -926,10 +942,10 @@ Status SiSetTileReportCallback(ID id, void *data,
     SampleDoneCallback sample_done,
     TileDoneCallback tile_done)
 {
-  const struct Entry entry = decode_id(id);
+  const Entry entry = decode_id(id);
 
   if (entry.type == Type_Renderer) {
-    struct Renderer *renderer_ptr = get_scene()->GetRenderer(entry.index);
+    Renderer *renderer_ptr = get_scene()->GetRenderer(entry.index);
     renderer_ptr->SetTileReportCallback(
         data,
         tile_start,
@@ -941,7 +957,7 @@ Status SiSetTileReportCallback(ID id, void *data,
   }
 }
 
-const struct Property *SiGetPropertyList(const char *type_name)
+const Property *SiGetPropertyList(const char *type_name)
 {
   return get_property_list(type_name);
 }
@@ -956,9 +972,9 @@ static ID encode_id(int type, int index)
   return TYPE_ID_OFFSET * type + index;
 }
 
-static struct Entry decode_id(ID id)
+static Entry decode_id(ID id)
 {
-  struct Entry entry = {-1, -1};
+  Entry entry;
   const int type = id / TYPE_ID_OFFSET;
 
   if (!is_valid_type(type))
@@ -972,8 +988,8 @@ static struct Entry decode_id(ID id)
 
 static int create_implicit_groups(void)
 {
-  struct ObjectGroup *all_objects = NULL;
-  struct Renderer *renderer = NULL;
+  ObjectGroup *all_objects = NULL;
+  Renderer *renderer = NULL;
   int N = 0;
   int i;
 
@@ -985,15 +1001,15 @@ static int create_implicit_groups(void)
 
   N = get_scene()->GetObjectInstanceCount();
   for (i = 0; i < N; i++) {
-    struct ObjectInstance *obj = get_scene()->GetObjectInstance(i);
+    ObjectInstance *obj = get_scene()->GetObjectInstance(i);
     all_objects->AddObject(obj);
   }
 
   /* Preparing ObjectInstance */
   N = get_scene()->GetObjectInstanceCount();
   for (i = 0; i < N; i++) {
-    struct ObjectInstance *obj = get_scene()->GetObjectInstance(i);
-    const struct Light **lightlist = (const struct Light **) get_scene()->GetLightList();
+    ObjectInstance *obj = get_scene()->GetObjectInstance(i);
+    const Light **lightlist = (const Light **) get_scene()->GetLightList();
     int nlights = get_scene()->GetLightCount();
     obj->SetLightList(lightlist, nlights);
 
@@ -1008,7 +1024,7 @@ static int create_implicit_groups(void)
 
     {
       /* self hit group */
-      struct ObjectGroup *self_group = get_scene()->NewObjectGroup();
+      ObjectGroup *self_group = get_scene()->NewObjectGroup();
       if (self_group == NULL) {
         /* TODO error handling */
       }
@@ -1021,7 +1037,7 @@ static int create_implicit_groups(void)
   renderer->SetTargetObjects(all_objects);
   {
     const int nlights = get_scene()->GetLightCount();
-    struct Light **lightlist = get_scene()->GetLightList();
+    Light **lightlist = get_scene()->GetLightList();
     renderer->SetTargetLights(lightlist, nlights);
   }
 
@@ -1035,19 +1051,19 @@ static void compute_objects_bounds(void)
 
   N = get_scene()->GetAcceleratorCount();
   for (i = 0; i < N; i++) {
-    struct Accelerator *acc = get_scene()->GetAccelerator(i);
+    Accelerator *acc = get_scene()->GetAccelerator(i);
     acc->ComputeBounds();
   }
 
   N = get_scene()->GetObjectInstanceCount();
   for (i = 0; i < N; i++) {
-    struct ObjectInstance *obj = get_scene()->GetObjectInstance(i);
+    ObjectInstance *obj = get_scene()->GetObjectInstance(i);
     obj->ComputeBounds();
   }
 
   N = get_scene()->GetObjectGroupCount();
   for (i = 0; i < N; i++) {
-    struct ObjectGroup *grp = get_scene()->GetObjectGroup(i);
+    ObjectGroup *grp = get_scene()->GetObjectGroup(i);
     grp->ComputeBounds();
   }
 }
@@ -1068,18 +1084,18 @@ static void build_accelerators(void)
   timer.Start();
 
   for (i = 0; i < NOBJTECTS; i++) {
-    struct Accelerator *acc = get_scene()->GetAccelerator(i);
+    Accelerator *acc = get_scene()->GetAccelerator(i);
     acc->Build();
   }
 
   for (i = 0; i < NGROUPS; i++) {
-    struct ObjectGroup *grp = get_scene()->GetObjectGroup(i);
-    struct Accelerator *mutable_acc = NULL;
-    struct VolumeAccelerator *mutable_volume_acc = NULL;
+    ObjectGroup *grp = get_scene()->GetObjectGroup(i);
+    Accelerator *mutable_acc = NULL;
+    VolumeAccelerator *mutable_volume_acc = NULL;
 
     // TODO TRY TO AVOID MUTABLE
-    mutable_acc = (struct Accelerator *) grp->GetSurfaceAccelerator();
-    mutable_volume_acc = (struct VolumeAccelerator *) grp->GetVolumeAccelerator();
+    mutable_acc = (Accelerator *) grp->GetSurfaceAccelerator();
+    mutable_volume_acc = (VolumeAccelerator *) grp->GetVolumeAccelerator();
 
     /* TODO come up with a better way */
     if (mutable_acc != NULL) {
@@ -1095,7 +1111,7 @@ static void build_accelerators(void)
   printf("#   %dh %dm %ds\n\n", elapse.hour, elapse.min, elapse.sec);
 }
 
-static int prepare_render(const struct Renderer *renderer)
+static int prepare_render(const Renderer *renderer)
 {
   int err = 0;
 
@@ -1129,10 +1145,10 @@ static Status status_of_error(int err)
 }
 
 /* TODO refactoring in terms of variable names */
-static int find_and_set_property(void *self, const struct Property *src_props,
-    const char *prop_name, const struct PropertyValue *src_data)
+static int find_and_set_property(void *self, const Property *src_props,
+    const char *prop_name, const PropertyValue *src_data)
 {
-  const struct Property *dst_prop = PropFind(src_props, src_data->type, prop_name);
+  const Property *dst_prop = PropFind(src_props, src_data->type, prop_name);
   if (dst_prop == NULL)
     return -1;
 
@@ -1143,22 +1159,22 @@ static int find_and_set_property(void *self, const struct Property *src_props,
   return dst_prop->SetProperty(self, src_data);
 }
 
-static int set_property(const struct Entry *entry,
-    const char *name, const struct PropertyValue *value)
+static int set_property(const Entry *entry,
+    const char *name, const PropertyValue *value)
 {
-  const struct Property *src_props = NULL;
+  const Property *src_props = NULL;
   void *dst_entry = NULL;
 
   /* procedure and shader type properties */
   if (entry->type == Type_Procedure) {
-    struct Procedure *procedure = get_scene()->GetProcedure(entry->index);
+    Procedure *procedure = get_scene()->GetProcedure(entry->index);
     if (procedure == NULL)
       return SI_FAIL;
 
     return procedure->SetProperty(name, *value);
   }
   else if (entry->type == Type_Shader) {
-    struct Shader *shader = get_scene()->GetShader(entry->index);
+    Shader *shader = get_scene()->GetShader(entry->index);
     if (shader == NULL)
       return SI_FAIL;
 

@@ -13,6 +13,7 @@ public:
   Rectangle() : xmin(0), ymin(0), xmax(0), ymax(0) {}
   ~Rectangle() {}
 
+public:
   int xmin, ymin, xmax, ymax;
 };
 
