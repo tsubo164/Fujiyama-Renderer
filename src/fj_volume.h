@@ -12,7 +12,7 @@
 
 namespace fj {
 
-class Resolution {
+class FJ_API Resolution {
 public:
   Resolution() : x(0), y(0), z(0) {}
   Resolution(int xx, int yy, int zz) : x(xx), y(yy), z(zz) {}
@@ -21,7 +21,7 @@ public:
   int x, y, z;
 };
 
-class VoxelBuffer {
+class FJ_API VoxelBuffer {
 public:
   VoxelBuffer();
   ~VoxelBuffer();
@@ -38,7 +38,7 @@ private:
   Resolution res_;
 };
 
-class VolumeSample {
+class FJ_API VolumeSample {
 public:
   VolumeSample() : density(0) {}
   ~VolumeSample() {}
@@ -77,7 +77,7 @@ public:
   Real filtersize_;
 };
 
-extern void VolGetIndexRange(const Volume *volume,
+FJ_API void VolGetIndexRange(const Volume *volume,
     const Vector *center, double radius,
     int *xmin, int *ymin, int *zmin,
     int *xmax, int *ymax, int *zmax);

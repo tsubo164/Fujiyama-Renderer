@@ -33,6 +33,7 @@ See LICENSE and README
 
 #if defined(FJ_WINDOWS)
   #define FJ_API __declspec(dllexport)
+  //#define FJ_API __declspec(dllimport)
 #else
   #define FJ_API
 #endif

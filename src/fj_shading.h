@@ -4,15 +4,16 @@
 #ifndef FJ_SHADING_H
 #define FJ_SHADING_H
 
+#include "fj_compatibility.h"
 #include "fj_tex_coord.h"
 #include "fj_vector.h"
 #include "fj_color.h"
 
 namespace fj {
 
-struct ObjectInstance;
-struct ObjectGroup;
-struct Texture;
+class ObjectInstance;
+class ObjectGroup;
+class Texture;
 
 enum RayContext {
   CXT_CAMERA_RAY = 0,
@@ -21,7 +22,8 @@ enum RayContext {
   CXT_REFRACT_RAY
 };
 
-struct TraceContext {
+class FJ_API TraceContext {
+public:
   int ray_context;
   int reflect_depth;
   int refract_depth;
@@ -37,82 +39,85 @@ struct TraceContext {
   double raymarch_reflect_step;
   double raymarch_refract_step;
 
-  const struct ObjectGroup *trace_target;
+  const ObjectGroup *trace_target;
 };
 
-struct SurfaceInput {
-  struct Vector P;
-  struct Vector N;
-  struct Color Cd;
-  struct TexCoord uv;
+class FJ_API SurfaceInput {
+public:
+  Vector P;
+  Vector N;
+  Color Cd;
+  TexCoord uv;
   float Alpha;
 
-  struct Vector Ng;
-  struct Vector I;
+  Vector Ng;
+  Vector I;
 
-  struct Vector dPdu;
-  struct Vector dPdv;
+  Vector dPdu;
+  Vector dPdv;
 
-  const struct ObjectInstance *shaded_object;
+  const ObjectInstance *shaded_object;
 };
 
-struct SurfaceOutput {
-  struct Color Cs;
+class FJ_API SurfaceOutput {
+public:
+  Color Cs;
   float Os;
 };
 
-struct LightOutput {
-  struct Color Cl;
-  struct Color Ol;
-  struct Vector Ln;
+class FJ_API LightOutput {
+public:
+  Color Cl;
+  Color Ol;
+  Vector Ln;
   double distance;
 };
 
 // tracing functions
-extern void SlFaceforward(const struct Vector *I, const struct Vector *N, struct Vector *Nf);
-extern double SlFresnel(const struct Vector *I, const struct Vector *N, double ior);
-extern double SlPhong(const struct Vector *I, const struct Vector *N, const struct Vector *L,
+FJ_API void SlFaceforward(const Vector *I, const Vector *N, Vector *Nf);
+FJ_API double SlFresnel(const Vector *I, const Vector *N, double ior);
+FJ_API double SlPhong(const Vector *I, const Vector *N, const Vector *L,
     double roughness);
 
-extern void SlReflect(const struct Vector *I, const struct Vector *N, struct Vector *R);
-extern void SlRefract(const struct Vector *I, const struct Vector *N, double ior,
-    struct Vector *T);
+FJ_API void SlReflect(const Vector *I, const Vector *N, Vector *R);
+FJ_API void SlRefract(const Vector *I, const Vector *N, double ior,
+    Vector *T);
 
-extern int SlTrace(const struct TraceContext *cxt,
-    const struct Vector *ray_orig, const struct Vector *ray_dir,
-    double ray_tmin, double ray_tmax, struct Color4 *out_color, double *t_hit);
-extern int SlSurfaceRayIntersect(const struct TraceContext *cxt,
-    const struct Vector *ray_orig, const struct Vector *ray_dir,
+FJ_API int SlTrace(const TraceContext *cxt,
+    const Vector *ray_orig, const Vector *ray_dir,
+    double ray_tmin, double ray_tmax, Color4 *out_color, double *t_hit);
+FJ_API int SlSurfaceRayIntersect(const TraceContext *cxt,
+    const Vector *ray_orig, const Vector *ray_dir,
     double ray_tmin, double ray_tmax,
-    struct Vector *P_hit, struct Vector *N_hit, double *t_hit);
+    Vector *P_hit, Vector *N_hit, double *t_hit);
 
-extern struct TraceContext SlCameraContext(const struct ObjectGroup *target);
-extern struct TraceContext SlReflectContext(const struct TraceContext *cxt,
-    const struct ObjectInstance *obj);
-extern struct TraceContext SlRefractContext(const struct TraceContext *cxt,
-    const struct ObjectInstance *obj);
-extern struct TraceContext SlShadowContext(const struct TraceContext *cxt,
-    const struct ObjectInstance *obj);
-extern struct TraceContext SlSelfHitContext(const struct TraceContext *cxt,
-    const struct ObjectInstance *obj);
+FJ_API TraceContext SlCameraContext(const ObjectGroup *target);
+FJ_API TraceContext SlReflectContext(const TraceContext *cxt,
+    const ObjectInstance *obj);
+FJ_API TraceContext SlRefractContext(const TraceContext *cxt,
+    const ObjectInstance *obj);
+FJ_API TraceContext SlShadowContext(const TraceContext *cxt,
+    const ObjectInstance *obj);
+FJ_API TraceContext SlSelfHitContext(const TraceContext *cxt,
+    const ObjectInstance *obj);
 
 // lighting functions
-struct LightSample;
+class LightSample;
 
-extern int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *sample,
-    const struct Vector *Ps, const struct Vector *axis, double angle,
-    const struct SurfaceInput *in, struct LightOutput *out);
+FJ_API int SlIlluminance(const TraceContext *cxt, const LightSample *sample,
+    const Vector *Ps, const Vector *axis, double angle,
+    const SurfaceInput *in, LightOutput *out);
 
-extern int SlGetLightCount(const struct SurfaceInput *in);
-extern int SlGetLightSampleCount(const struct SurfaceInput *in);
-extern struct LightSample *SlNewLightSamples(const struct SurfaceInput *in);
-extern void SlFreeLightSamples(struct LightSample * samples);
+FJ_API int SlGetLightCount(const SurfaceInput *in);
+FJ_API int SlGetLightSampleCount(const SurfaceInput *in);
+FJ_API LightSample *SlNewLightSamples(const SurfaceInput *in);
+FJ_API void SlFreeLightSamples(LightSample * samples);
 
 // texture functions
-extern void SlBumpMapping(const struct Texture *bump_map,
-    const struct Vector *dPdu, const struct Vector *dPdv,
-    const struct TexCoord *texcoord, double amplitude,
-    const struct Vector *N, struct Vector *N_bump);
+FJ_API void SlBumpMapping(const Texture *bump_map,
+    const Vector *dPdu, const Vector *dPdv,
+    const TexCoord *texcoord, double amplitude,
+    const Vector *N, Vector *N_bump);
 
 } // namespace xxx
 

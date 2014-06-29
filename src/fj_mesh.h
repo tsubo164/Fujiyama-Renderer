@@ -78,9 +78,9 @@ private:
   Box bounds_;
 };
 
-extern void MshGetFaceVertexPosition(const Mesh *mesh, int face_index,
+FJ_API void MshGetFaceVertexPosition(const Mesh *mesh, int face_index,
     Vector *P0, Vector *P1, Vector *P2);
-extern void MshGetFaceVertexNormal(const Mesh *mesh, int face_index,
+FJ_API void MshGetFaceVertexNormal(const Mesh *mesh, int face_index,
     Vector *N0, Vector *N1, Vector *N2);
 
 } // namespace xxx

@@ -21,22 +21,22 @@
 
 namespace fj {
 
-static int has_reached_bounce_limit(const struct TraceContext *cxt);
-static int shadow_ray_has_reached_opcity_limit(const struct TraceContext *cxt, float opac);
-static void setup_ray(const struct Vector *ray_orig, const struct Vector *ray_dir,
+static int has_reached_bounce_limit(const TraceContext *cxt);
+static int shadow_ray_has_reached_opcity_limit(const TraceContext *cxt, float opac);
+static void setup_ray(const Vector *ray_orig, const Vector *ray_dir,
     double ray_tmin, double ray_tmax,
-    struct Ray *ray);
+    Ray *ray);
 static void setup_surface_input(
-    const struct Intersection *isect,
-    const struct Ray *ray,
-    struct SurfaceInput *in);
+    const Intersection *isect,
+    const Ray *ray,
+    SurfaceInput *in);
 
-static int trace_surface(const struct TraceContext *cxt, const struct Ray &ray,
-    struct Color4 *out_rgba, double *t_hit);
-static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray,
-    struct Color4 *out_rgba);
+static int trace_surface(const TraceContext *cxt, const Ray &ray,
+    Color4 *out_rgba, double *t_hit);
+static int raymarch_volume(const TraceContext *cxt, const Ray *ray,
+    Color4 *out_rgba);
 
-void SlFaceforward(const struct Vector *I, const struct Vector *N, struct Vector *Nf)
+void SlFaceforward(const Vector *I, const Vector *N, Vector *Nf)
 {
   if (Dot(*I, *N) < 0) {
     *Nf = *N;
@@ -47,7 +47,7 @@ void SlFaceforward(const struct Vector *I, const struct Vector *N, struct Vector
   Nf->z = -N->z;
 }
 
-double SlFresnel(const struct Vector *I, const struct Vector *N, double ior)
+double SlFresnel(const Vector *I, const Vector *N, double ior)
 {
   double k2 = 0;
   double F0 = 0;
@@ -69,11 +69,11 @@ double SlFresnel(const struct Vector *I, const struct Vector *N, double ior)
   return F0 + (1. - F0) * pow(1. - cos, 5.);
 }
 
-double SlPhong(const struct Vector *I, const struct Vector *N, const struct Vector *L,
+double SlPhong(const Vector *I, const Vector *N, const Vector *L,
     double roughness)
 {
   double spec = 0;
-  struct Vector Lrefl;
+  Vector Lrefl;
 
   SlReflect(L, N, &Lrefl);
 
@@ -84,7 +84,7 @@ double SlPhong(const struct Vector *I, const struct Vector *N, const struct Vect
   return spec;
 }
 
-void SlReflect(const struct Vector *I, const struct Vector *N, struct Vector *R)
+void SlReflect(const Vector *I, const Vector *N, Vector *R)
 {
   // dot(-I, N)
   const double cos = -1 * Dot(*I, *N);
@@ -94,10 +94,10 @@ void SlReflect(const struct Vector *I, const struct Vector *N, struct Vector *R)
   R->z = I->z + 2 * cos * N->z;
 }
 
-void SlRefract(const struct Vector *I, const struct Vector *N, double ior,
-    struct Vector *T)
+void SlRefract(const Vector *I, const Vector *N, double ior,
+    Vector *T)
 {
-  struct Vector n;
+  Vector n;
   double radicand = 0;
   double ncoeff = 0;
   double cos1 = 0;
@@ -134,13 +134,13 @@ void SlRefract(const struct Vector *I, const struct Vector *N, double ior,
   T->z = eta * I->z + ncoeff * n.z;
 }
 
-int SlTrace(const struct TraceContext *cxt,
-    const struct Vector *ray_orig, const struct Vector *ray_dir,
-    double ray_tmin, double ray_tmax, struct Color4 *out_rgba, double *t_hit)
+int SlTrace(const TraceContext *cxt,
+    const Vector *ray_orig, const Vector *ray_dir,
+    double ray_tmin, double ray_tmax, Color4 *out_rgba, double *t_hit)
 {
-  struct Ray ray;
-  struct Color4 surface_color;
-  struct Color4 volume_color;
+  Ray ray;
+  Color4 surface_color;
+  Color4 volume_color;
   int hit_surface = 0;
   int hit_volume = 0;
 
@@ -175,14 +175,14 @@ int SlTrace(const struct TraceContext *cxt,
   return hit_surface || hit_volume;
 }
 
-int SlSurfaceRayIntersect(const struct TraceContext *cxt,
-    const struct Vector *ray_orig, const struct Vector *ray_dir,
+int SlSurfaceRayIntersect(const TraceContext *cxt,
+    const Vector *ray_orig, const Vector *ray_dir,
     double ray_tmin, double ray_tmax,
-    struct Vector *P_hit, struct Vector *N_hit, double *t_hit)
+    Vector *P_hit, Vector *N_hit, double *t_hit)
 {
-  const struct Accelerator *acc = NULL;
-  struct Intersection isect;
-  struct Ray ray;
+  const Accelerator *acc = NULL;
+  Intersection isect;
+  Ray ray;
   int hit = 0;
 
   setup_ray(ray_orig, ray_dir, ray_tmin, ray_tmax, &ray);
@@ -198,9 +198,9 @@ int SlSurfaceRayIntersect(const struct TraceContext *cxt,
   return hit;
 }
 
-struct TraceContext SlCameraContext(const struct ObjectGroup *target)
+TraceContext SlCameraContext(const ObjectGroup *target)
 {
-  struct TraceContext cxt;
+  TraceContext cxt;
 
   cxt.ray_context = CXT_CAMERA_RAY;
   cxt.reflect_depth = 0;
@@ -221,10 +221,10 @@ struct TraceContext SlCameraContext(const struct ObjectGroup *target)
   return cxt;
 }
 
-struct TraceContext SlReflectContext(const struct TraceContext *cxt,
-    const struct ObjectInstance *obj)
+TraceContext SlReflectContext(const TraceContext *cxt,
+    const ObjectInstance *obj)
 {
-  struct TraceContext refl_cxt = *cxt;
+  TraceContext refl_cxt = *cxt;
 
   refl_cxt.reflect_depth++;
   refl_cxt.ray_context = CXT_REFLECT_RAY;
@@ -233,10 +233,10 @@ struct TraceContext SlReflectContext(const struct TraceContext *cxt,
   return refl_cxt;
 }
 
-struct TraceContext SlRefractContext(const struct TraceContext *cxt,
-    const struct ObjectInstance *obj)
+TraceContext SlRefractContext(const TraceContext *cxt,
+    const ObjectInstance *obj)
 {
-  struct TraceContext refr_cxt = *cxt;
+  TraceContext refr_cxt = *cxt;
 
   refr_cxt.refract_depth++;
   refr_cxt.ray_context = CXT_REFRACT_RAY;
@@ -245,10 +245,10 @@ struct TraceContext SlRefractContext(const struct TraceContext *cxt,
   return refr_cxt;
 }
 
-struct TraceContext SlShadowContext(const struct TraceContext *cxt,
-    const struct ObjectInstance *obj)
+TraceContext SlShadowContext(const TraceContext *cxt,
+    const ObjectInstance *obj)
 {
-  struct TraceContext shad_cxt = *cxt;
+  TraceContext shad_cxt = *cxt;
 
   shad_cxt.ray_context = CXT_SHADOW_RAY;
   // turn off the secondary trance on occluding objects
@@ -259,28 +259,28 @@ struct TraceContext SlShadowContext(const struct TraceContext *cxt,
   return shad_cxt;
 }
 
-struct TraceContext SlSelfHitContext(const struct TraceContext *cxt,
-    const struct ObjectInstance *obj)
+TraceContext SlSelfHitContext(const TraceContext *cxt,
+    const ObjectInstance *obj)
 {
-  struct TraceContext self_cxt = *cxt;
+  TraceContext self_cxt = *cxt;
 
   self_cxt.trace_target = obj->GetSelfHitTarget();
 
   return self_cxt;
 }
 
-int SlGetLightCount(const struct SurfaceInput *in)
+int SlGetLightCount(const SurfaceInput *in)
 {
   return in->shaded_object->GetLightCount();
 }
 
-int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *sample,
-    const struct Vector *Ps, const struct Vector *axis, double angle,
-    const struct SurfaceInput *in, struct LightOutput *out)
+int SlIlluminance(const TraceContext *cxt, const LightSample *sample,
+    const Vector *Ps, const Vector *axis, double angle,
+    const SurfaceInput *in, LightOutput *out)
 {
   double cosangle = 0.;
-  struct Vector nml_axis;
-  struct Color light_color;
+  Vector nml_axis;
+  Color light_color;
 
   out->Cl.r = 0;
   out->Cl.g = 0;
@@ -317,8 +317,8 @@ int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *samp
   }
 
   if (cxt->cast_shadow) {
-    struct TraceContext shad_cxt;
-    struct Color4 C_occl;
+    TraceContext shad_cxt;
+    Color4 C_occl;
     double t_hit = FLT_MAX;
     int hit = 0;
 
@@ -340,9 +340,9 @@ int SlIlluminance(const struct TraceContext *cxt, const struct LightSample *samp
 }
 
   // TODO temp solution compute before rendering
-int SlGetLightSampleCount(const struct SurfaceInput *in)
+int SlGetLightSampleCount(const SurfaceInput *in)
 {
-  const struct Light **lights = in->shaded_object->GetLightList();
+  const Light **lights = in->shaded_object->GetLightList();
   const int nlights = SlGetLightCount(in);
   int nsamples = 0;
   int i;
@@ -358,15 +358,15 @@ int SlGetLightSampleCount(const struct SurfaceInput *in)
   return nsamples;
 }
 
-struct LightSample *SlNewLightSamples(const struct SurfaceInput *in)
+LightSample *SlNewLightSamples(const SurfaceInput *in)
 {
-  const struct Light **lights = in->shaded_object->GetLightList();
+  const Light **lights = in->shaded_object->GetLightList();
   const int nlights = SlGetLightCount(in);
   const int nsamples = SlGetLightSampleCount(in);
   int i;
 
-  struct LightSample *samples = NULL;
-  struct LightSample *sample = NULL;
+  LightSample *samples = NULL;
+  LightSample *sample = NULL;
 
   if (nsamples == 0) {
     // TODO handling
@@ -384,7 +384,7 @@ struct LightSample *SlNewLightSamples(const struct SurfaceInput *in)
   return samples;
 }
 
-void SlFreeLightSamples(struct LightSample * samples)
+void SlFreeLightSamples(LightSample * samples)
 {
   if (samples == NULL)
     return;
@@ -396,15 +396,15 @@ void SlFreeLightSamples(struct LightSample * samples)
   (a)->y *= (val); \
   (a)->z *= (val); \
   } while(0)
-void SlBumpMapping(const struct Texture *bump_map,
-    const struct Vector *dPdu, const struct Vector *dPdv,
-    const struct TexCoord *texcoord, double amplitude,
-    const struct Vector *N, struct Vector *N_bump)
+void SlBumpMapping(const Texture *bump_map,
+    const Vector *dPdu, const Vector *dPdv,
+    const TexCoord *texcoord, double amplitude,
+    const Vector *N, Vector *N_bump)
 {
-  struct Color4 C_tex0(0, 0, 0, 1);
-  struct Color4 C_tex1(0, 0, 0, 1);
-  struct Vector N_dPdu;
-  struct Vector N_dPdv;
+  Color4 C_tex0(0, 0, 0, 1);
+  Color4 C_tex1(0, 0, 0, 1);
+  Vector N_dPdu;
+  Vector N_dPdv;
   float Bu, Bv;
   float du, dv;
   float val0, val1;
@@ -445,7 +445,7 @@ void SlBumpMapping(const struct Texture *bump_map,
 }
 #undef MUL
 
-static int has_reached_bounce_limit(const struct TraceContext *cxt)
+static int has_reached_bounce_limit(const TraceContext *cxt)
 {
   int current_depth = 0;
   int max_depth = 0;
@@ -475,9 +475,9 @@ static int has_reached_bounce_limit(const struct TraceContext *cxt)
   return current_depth > max_depth;
 }
 
-static void setup_ray(const struct Vector *ray_orig, const struct Vector *ray_dir,
+static void setup_ray(const Vector *ray_orig, const Vector *ray_dir,
     double ray_tmin, double ray_tmax,
-    struct Ray *ray)
+    Ray *ray)
 {
   ray->orig = *ray_orig;
   ray->dir = *ray_dir;
@@ -486,9 +486,9 @@ static void setup_ray(const struct Vector *ray_orig, const struct Vector *ray_di
 }
 
 static void setup_surface_input(
-    const struct Intersection *isect,
-    const struct Ray *ray,
-    struct SurfaceInput *in)
+    const Intersection *isect,
+    const Ray *ray,
+    SurfaceInput *in)
 {
   in->shaded_object = isect->object;
   in->P  = isect->P;
@@ -501,11 +501,11 @@ static void setup_surface_input(
   in->dPdv = isect->dPdv;
 }
 
-static int trace_surface(const struct TraceContext *cxt, const struct Ray &ray,
-    struct Color4 *out_rgba, double *t_hit)
+static int trace_surface(const TraceContext *cxt, const Ray &ray,
+    Color4 *out_rgba, double *t_hit)
 {
-  const struct Accelerator *acc = NULL;
-  struct Intersection isect;
+  const Accelerator *acc = NULL;
+  Intersection isect;
   int hit = 0;
 
   out_rgba->r = 0;
@@ -523,8 +523,8 @@ static int trace_surface(const struct TraceContext *cxt, const struct Ray &ray,
 #endif
 
   if (hit) {
-    struct SurfaceInput in;
-    struct SurfaceOutput out;
+    SurfaceInput in;
+    SurfaceOutput out;
 
     setup_surface_input(&isect, &ray, &in);
     isect.object->GetShader()->Evaluate(*cxt, in, &out);
@@ -541,10 +541,10 @@ static int trace_surface(const struct TraceContext *cxt, const struct Ray &ray,
   return hit;
 }
 
-static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray,
-    struct Color4 *out_rgba)
+static int raymarch_volume(const TraceContext *cxt, const Ray *ray,
+    Color4 *out_rgba)
 {
-  const struct VolumeAccelerator *acc = NULL;
+  const VolumeAccelerator *acc = NULL;
   IntervalList intervals;
   int hit = 0;
 
@@ -561,8 +561,8 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
   }
 
   {
-    struct Vector P;
-    struct Vector ray_delta;
+    Vector P;
+    Vector ray_delta;
     double t = 0, t_start = 0, t_delta = 0, t_limit = 0;
     const float opacity_threshold = cxt->opacity_threshold;
 
@@ -603,21 +603,21 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
 
     // raymarch
     while (t <= t_limit && out_rgba->a < opacity_threshold) {
-      const struct Interval *interval = intervals.GetHead();
-      struct Color color;
+      const Interval *interval = intervals.GetHead();
+      Color color;
       float opacity = 0;
 
       // loop over volume candidates at this sample point
       for (; interval != NULL; interval = interval->next) {
-        struct VolumeSample sample;
+        VolumeSample sample;
         interval->object->GetVolumeSample(P, cxt->time, &sample);
 
         // merge volume with max density
         opacity = Max(opacity, t_delta * sample.density);
 
         if (cxt->ray_context != CXT_SHADOW_RAY) {
-          struct SurfaceInput in;
-          struct SurfaceOutput out;
+          SurfaceInput in;
+          SurfaceOutput out;
 
           in.shaded_object = interval->object;
           in.P = P;
@@ -651,7 +651,7 @@ static int raymarch_volume(const struct TraceContext *cxt, const struct Ray *ray
   return hit;
 }
 
-static int shadow_ray_has_reached_opcity_limit(const struct TraceContext *cxt, float opac)
+static int shadow_ray_has_reached_opcity_limit(const TraceContext *cxt, float opac)
 {
   if (cxt->ray_context == CXT_SHADOW_RAY && opac > cxt->opacity_threshold) {
     return 1;

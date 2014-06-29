@@ -17,9 +17,10 @@ See LICENSE and README
 
 namespace fj {
 
-struct ObjectInstance;
+class ObjectInstance;
 
-struct Intersection {
+class Intersection {
+public:
   Intersection() : object(NULL), prim_id(0), t_hit(REAL_MAX) {}
   ~Intersection() {}
 

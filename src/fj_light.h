@@ -4,6 +4,7 @@
 #ifndef FJ_LIGHT_H
 #define FJ_LIGHT_H
 
+#include "fj_compatibility.h"
 #include "fj_importance_sampling.h"
 #include "fj_transform.h"
 #include "fj_random.h"

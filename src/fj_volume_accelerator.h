@@ -8,11 +8,11 @@
 
 namespace fj {
 
-struct VolumeAccelerator;
-struct IntervalList;
-struct Interval;
-struct Box;
-struct Ray;
+class VolumeAccelerator;
+class IntervalList;
+class Interval;
+class Box;
+class Ray;
 
 enum VolumeAcceleratorType {
   VOLACC_BRUTEFORCE = 0,
@@ -20,8 +20,8 @@ enum VolumeAcceleratorType {
 };
 
 typedef int (*VolumeIntersectFunction)(const void *volume_set, int volume_id, double time,
-      const struct Ray *ray, struct Interval *interval);
-typedef void (*VolumeBoundsFunction)(const void *volume_set, int volume_id, struct Box *bounds);
+      const Ray *ray, Interval *interval);
+typedef void (*VolumeBoundsFunction)(const void *volume_set, int volume_id, Box *bounds);
 
 class VolumeAccelerator {
 public:
@@ -44,35 +44,35 @@ public:
   }
 
   const char *name_;
-  struct Box bounds_;
+  Box bounds_;
   int has_built_;
 
-  // TODO should make struct PrimitiveSet?
+  // TODO should make PrimitiveSet?
   const void *volume_set_;
   int num_volumes_;
-  struct Box volume_set_bounds_;
+  Box volume_set_bounds_;
   VolumeIntersectFunction VolumeIntersect_;
   VolumeBoundsFunction VolumeBounds_;
 
   // private
   char *derived_;
-  void (*FreeDerived_)(struct VolumeAccelerator *acc);
-  int (*Build_)(struct VolumeAccelerator *acc);
-  int (*Intersect_)(const struct VolumeAccelerator *acc, double time, const struct Ray *ray,
-      struct IntervalList *intervals);
+  void (*FreeDerived_)(VolumeAccelerator *acc);
+  int (*Build_)(VolumeAccelerator *acc);
+  int (*Intersect_)(const VolumeAccelerator *acc, double time, const Ray *ray,
+      IntervalList *intervals);
 };
 
-extern struct VolumeAccelerator *VolumeAccNew(int accelerator_type);
-extern void VolumeAccFree(struct VolumeAccelerator *acc);
+extern VolumeAccelerator *VolumeAccNew(int accelerator_type);
+extern void VolumeAccFree(VolumeAccelerator *acc);
 
-extern void VolumeAccSetTargetGeometry(struct VolumeAccelerator *acc,
-  const void *primset, int nprims, const struct Box *primset_bounds,
+extern void VolumeAccSetTargetGeometry(VolumeAccelerator *acc,
+  const void *primset, int nprims, const Box *primset_bounds,
   VolumeIntersectFunction prim_intersect_function,
   VolumeBoundsFunction prim_bounds_function);
 
-extern int VolumeAccBuild(struct VolumeAccelerator *acc);
-extern int VolumeAccIntersect(const struct VolumeAccelerator *acc, double time,
-    const struct Ray *ray, struct IntervalList *intervals);
+extern int VolumeAccBuild(VolumeAccelerator *acc);
+extern int VolumeAccIntersect(const VolumeAccelerator *acc, double time,
+    const Ray *ray, IntervalList *intervals);
 
 } // namespace xxx
 

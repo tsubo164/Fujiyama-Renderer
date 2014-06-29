@@ -1,11 +1,10 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_PLUGIN_H
 #define FJ_PLUGIN_H
 
+#include "fj_compatibility.h"
 #include <string>
 #include <cstddef>
 
@@ -92,10 +91,10 @@ private:
   PluginInfo info_;
 };
 
-extern Plugin *PlgOpen(const char *filename);
-extern int PlgClose(Plugin *plugin);
+FJ_API Plugin *PlgOpen(const char *filename);
+FJ_API int PlgClose(Plugin *plugin);
 
-extern int PlgSetupInfo(PluginInfo *info,
+FJ_API int PlgSetupInfo(PluginInfo *info,
     int api_version,
     const char *plugin_type,
     const char *plugin_name,
@@ -105,7 +104,7 @@ extern int PlgSetupInfo(PluginInfo *info,
     const Property *properties,
     const MetaInfo *meta);
 
-extern int PlgGetErrorNo(void);
+FJ_API int PlgGetErrorNo(void);
 
 } // namespace xxx
 

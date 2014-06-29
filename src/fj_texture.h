@@ -4,6 +4,7 @@
 #ifndef FJ_TEXTURE_H
 #define FJ_TEXTURE_H
 
+#include "fj_compatibility.h"
 #include "fj_framebuffer.h"
 #include "fj_mipmap.h"
 #include <string>
@@ -15,7 +16,7 @@ class MipInput;
 class Color4;
 
 // Texture cache for each thread
-class TextureCache {
+class FJ_API TextureCache {
 public:
   TextureCache();
   ~TextureCache();
@@ -35,7 +36,7 @@ private:
   bool is_open_;
 };
 
-class Texture {
+class FJ_API Texture {
 public:
   Texture();
   ~Texture();
