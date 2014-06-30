@@ -1,14 +1,10 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
-/*
-this file is inteded to be included in fj_scene_interface.c 
-defines all properties for builtin type and some helper functions
-*/
+// this file is inteded to be included in fj_scene_interface.c 
+// defines all properties for builtin type and some helper functions
 
-static int set_ObjectInstance_transform_order(void *self, const struct PropertyValue *value)
+static int set_ObjectInstance_transform_order(void *self, const PropertyValue *value)
 {
   // TODO error handling
   if (!XfmIsTransformOrder((int) value->vector[0]))
@@ -19,7 +15,7 @@ static int set_ObjectInstance_transform_order(void *self, const struct PropertyV
   return 0;
 }
 
-static int set_ObjectInstance_rotate_order(void *self, const struct PropertyValue *value)
+static int set_ObjectInstance_rotate_order(void *self, const PropertyValue *value)
 {
   // TODO error handling
   if (!XfmIsRotateOrder((int) value->vector[0]))
@@ -30,182 +26,182 @@ static int set_ObjectInstance_rotate_order(void *self, const struct PropertyValu
   return 0;
 }
 
-static int set_ObjectInstance_translate(void *self, const struct PropertyValue *value)
+static int set_ObjectInstance_translate(void *self, const PropertyValue *value)
 {
   ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
   obj->SetTranslate(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 
-static int set_ObjectInstance_rotate(void *self, const struct PropertyValue *value)
+static int set_ObjectInstance_rotate(void *self, const PropertyValue *value)
 {
   ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
   obj->SetRotate(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 
-static int set_ObjectInstance_scale(void *self, const struct PropertyValue *value)
+static int set_ObjectInstance_scale(void *self, const PropertyValue *value)
 {
   ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
   obj->SetScale(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 
-static int set_ObjectInstance_reflect_target(void *self, const struct PropertyValue *value)
+static int set_ObjectInstance_reflect_target(void *self, const PropertyValue *value)
 {
   ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
   obj->SetReflectTarget(value->object_group);
   return 0;
 }
 
-static int set_ObjectInstance_refract_target(void *self, const struct PropertyValue *value)
+static int set_ObjectInstance_refract_target(void *self, const PropertyValue *value)
 {
   ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
   obj->SetRefractTarget(value->object_group);
   return 0;
 }
 
-static int set_ObjectInstance_shadow_target(void *self, const struct PropertyValue *value)
+static int set_ObjectInstance_shadow_target(void *self, const PropertyValue *value)
 {
   ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
   obj->SetShadowTarget(value->object_group);
   return 0;
 }
 
-static int set_Turbulence_lacunarity(void *self, const struct PropertyValue *value)
+static int set_Turbulence_lacunarity(void *self, const PropertyValue *value)
 {
   Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
   turbulence->SetLacunarity(value->vector[0]);
   return 0;
 }
 
-static int set_Turbulence_gain(void *self, const struct PropertyValue *value)
+static int set_Turbulence_gain(void *self, const PropertyValue *value)
 {
   Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
   turbulence->SetGain(value->vector[0]);
   return 0;
 }
 
-static int set_Turbulence_octaves(void *self, const struct PropertyValue *value)
+static int set_Turbulence_octaves(void *self, const PropertyValue *value)
 {
   Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
   turbulence->SetOctaves((int) value->vector[0]);
   return 0;
 }
 
-static int set_Turbulence_amplitude(void *self, const struct PropertyValue *value)
+static int set_Turbulence_amplitude(void *self, const PropertyValue *value)
 {
   Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
   turbulence->SetAmplitude(value->vector[0], value->vector[1], value->vector[2]);
   return 0;
 }
 
-static int set_Turbulence_frequency(void *self, const struct PropertyValue *value)
+static int set_Turbulence_frequency(void *self, const PropertyValue *value)
 {
   Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
   turbulence->SetFrequency(value->vector[0], value->vector[1], value->vector[2]);
   return 0;
 }
 
-static int set_Turbulence_offset(void *self, const struct PropertyValue *value)
+static int set_Turbulence_offset(void *self, const PropertyValue *value)
 {
   Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
   turbulence->SetOffset(value->vector[0], value->vector[1], value->vector[2]);
   return 0;
 }
 
-static int set_Renderer_sample_jitter(void *self, const struct PropertyValue *value)
+static int set_Renderer_sample_jitter(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetSampleJitter(value->vector[0]);
   return 0;
 }
 
-static int set_Renderer_cast_shadow(void *self, const struct PropertyValue *value)
+static int set_Renderer_cast_shadow(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetShadowEnable((int) value->vector[0]);
   return 0;
 }
 
-static int set_Renderer_max_reflect_depth(void *self, const struct PropertyValue *value)
+static int set_Renderer_max_reflect_depth(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetMaxReflectDepth((int) value->vector[0]);
   return 0;
 }
 
-static int set_Renderer_max_refract_depth(void *self, const struct PropertyValue *value)
+static int set_Renderer_max_refract_depth(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetMaxRefractDepth((int) value->vector[0]);
   return 0;
 }
 
-static int set_Renderer_raymarch_step(void *self, const struct PropertyValue *value)
+static int set_Renderer_raymarch_step(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetRaymarchStep(value->vector[0]);
   return 0;
 }
 
-static int set_Renderer_raymarch_shadow_step(void *self, const struct PropertyValue *value)
+static int set_Renderer_raymarch_shadow_step(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetRaymarchShadowStep(value->vector[0]);
   return 0;
 }
 
-static int set_Renderer_raymarch_reflect_step(void *self, const struct PropertyValue *value)
+static int set_Renderer_raymarch_reflect_step(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetRaymarchReflectStep(value->vector[0]);
   return 0;
 }
 
-static int set_Renderer_raymarch_refract_step(void *self, const struct PropertyValue *value)
+static int set_Renderer_raymarch_refract_step(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetRaymarchRefractStep(value->vector[0]);
   return 0;
 }
 
-static int set_Renderer_sample_time_range(void *self, const struct PropertyValue *value)
+static int set_Renderer_sample_time_range(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetSampleTimeRange(value->vector[0], value->vector[1]);
   return 0;
 }
 
-static int set_Renderer_resolution(void *self, const struct PropertyValue *value)
+static int set_Renderer_resolution(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetResolution((int) value->vector[0], (int) value->vector[1]);
   return 0;
 }
 
-static int set_Renderer_pixelsamples(void *self, const struct PropertyValue *value)
+static int set_Renderer_pixelsamples(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetPixelSamples((int) value->vector[0], (int) value->vector[1]);
   return 0;
 }
 
-static int set_Renderer_tilesize(void *self, const struct PropertyValue *value)
+static int set_Renderer_tilesize(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetTileSize((int) value->vector[0], (int) value->vector[1]);
   return 0;
 }
 
-static int set_Renderer_filterwidth(void *self, const struct PropertyValue *value)
+static int set_Renderer_filterwidth(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetFilterWidth(value->vector[0], value->vector[1]);
   return 0;
 }
 
-static int set_Renderer_render_region(void *self, const struct PropertyValue *value)
+static int set_Renderer_render_region(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetRenderRegion(
@@ -214,80 +210,80 @@ static int set_Renderer_render_region(void *self, const struct PropertyValue *va
   return 0;
 }
 
-static int set_Renderer_use_max_thread(void *self, const struct PropertyValue *value)
+static int set_Renderer_use_max_thread(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetUseMaxThread((int) value->vector[0]);
   return 0;
 }
 
-static int set_Renderer_thread_count(void *self, const struct PropertyValue *value)
+static int set_Renderer_thread_count(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetThreadCount((int) value->vector[0]);
   return 0;
 }
 
-static int set_Camera_fov(void *self, const struct PropertyValue *value)
+static int set_Camera_fov(void *self, const PropertyValue *value)
 {
   Camera *cam = reinterpret_cast<Camera *>(self);
   cam->SetFov(value->vector[0]);
   return 0;
 }
 
-static int set_Camera_znear(void *self, const struct PropertyValue *value)
+static int set_Camera_znear(void *self, const PropertyValue *value)
 {
   Camera *cam = reinterpret_cast<Camera *>(self);
   cam->SetNearPlane(value->vector[0]);
   return 0;
 }
 
-static int set_Camera_zfar(void *self, const struct PropertyValue *value)
+static int set_Camera_zfar(void *self, const PropertyValue *value)
 {
   Camera *cam = reinterpret_cast<Camera *>(self);
   cam->SetFarPlane(value->vector[0]);
   return 0;
 }
 
-static int set_Camera_translate(void *self, const struct PropertyValue *value)
+static int set_Camera_translate(void *self, const PropertyValue *value)
 {
   Camera *cam = reinterpret_cast<Camera *>(self);
   cam->SetTranslate(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 
-static int set_Camera_rotate(void *self, const struct PropertyValue *value)
+static int set_Camera_rotate(void *self, const PropertyValue *value)
 {
   Camera *cam = reinterpret_cast<Camera *>(self);
   cam->SetRotate(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 
-static int set_Camera_transform_order(void *self, const struct PropertyValue *value)
+static int set_Camera_transform_order(void *self, const PropertyValue *value)
 {
   Camera *cam = reinterpret_cast<Camera *>(self);
   cam->SetTransformOrder((int) value->vector[0]);
   return 0;
 }
 
-static int set_Camera_rotate_order(void *self, const struct PropertyValue *value)
+static int set_Camera_rotate_order(void *self, const PropertyValue *value)
 {
   Camera *cam = reinterpret_cast<Camera *>(self);
   cam->SetRotateOrder((int) value->vector[0]);
   return 0;
 }
 
-static int set_Volume_resolution(void *self, const struct PropertyValue *value)
+static int set_Volume_resolution(void *self, const PropertyValue *value)
 {
   Volume *volume = reinterpret_cast<Volume *>(self);
   volume->Resize(value->vector[0], value->vector[1], value->vector[2]);
   return 0;
 }
 
-static int set_Volume_bounds_min(void *self, const struct PropertyValue *value)
+static int set_Volume_bounds_min(void *self, const PropertyValue *value)
 {
-  struct Volume *volume = (struct Volume *) self;
-  struct Box bounds;
+  Volume *volume = (Volume *) self;
+  Box bounds;
 
   bounds = volume->GetBounds();
 
@@ -300,10 +296,10 @@ static int set_Volume_bounds_min(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static int set_Volume_bounds_max(void *self, const struct PropertyValue *value)
+static int set_Volume_bounds_max(void *self, const PropertyValue *value)
 {
-  struct Volume *volume = (struct Volume *) self;
-  struct Box bounds;
+  Volume *volume = (Volume *) self;
+  Box bounds;
 
   bounds = volume->GetBounds();
 
@@ -316,42 +312,42 @@ static int set_Volume_bounds_max(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static int set_Light_intensity(void *self, const struct PropertyValue *value)
+static int set_Light_intensity(void *self, const PropertyValue *value)
 {
   Light *light = reinterpret_cast<Light *>(self);
   light->SetIntensity(value->vector[0]);
   return 0;
 }
 
-static int set_Light_color(void *self, const struct PropertyValue *value)
+static int set_Light_color(void *self, const PropertyValue *value)
 {
   Light *light = reinterpret_cast<Light *>(self);
   light->SetColor(value->vector[0], value->vector[1], value->vector[2]);
   return 0;
 }
 
-static int set_Light_sample_count(void *self, const struct PropertyValue *value)
+static int set_Light_sample_count(void *self, const PropertyValue *value)
 {
   Light *light = reinterpret_cast<Light *>(self);
   light->SetSampleCount((int) value->vector[0]);
   return 0;
 }
 
-static int set_Light_double_sided(void *self, const struct PropertyValue *value)
+static int set_Light_double_sided(void *self, const PropertyValue *value)
 {
   Light *light = reinterpret_cast<Light *>(self);
   light->SetDoubleSided((bool) value->vector[0]);
   return 0;
 }
 
-static int set_Light_environment_map(void *self, const struct PropertyValue *value)
+static int set_Light_environment_map(void *self, const PropertyValue *value)
 {
   Light *light = reinterpret_cast<Light *>(self);
   light->SetEnvironmentMap(value->texture);
   return 0;
 }
 
-static int set_Light_transform_order(void *self, const struct PropertyValue *value)
+static int set_Light_transform_order(void *self, const PropertyValue *value)
 {
   // TODO error handling
   if (!XfmIsTransformOrder((int) value->vector[0]))
@@ -362,7 +358,7 @@ static int set_Light_transform_order(void *self, const struct PropertyValue *val
   return 0;
 }
 
-static int set_Light_rotate_order(void *self, const struct PropertyValue *value)
+static int set_Light_rotate_order(void *self, const PropertyValue *value)
 {
   // TODO error handling
   if (!XfmIsRotateOrder((int) value->vector[0]))
@@ -373,21 +369,21 @@ static int set_Light_rotate_order(void *self, const struct PropertyValue *value)
   return 0;
 }
 
-static int set_Light_translate(void *self, const struct PropertyValue *value)
+static int set_Light_translate(void *self, const PropertyValue *value)
 {
   Light *light = reinterpret_cast<Light *>(self);
   light->SetTranslate(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 
-static int set_Light_rotate(void *self, const struct PropertyValue *value)
+static int set_Light_rotate(void *self, const PropertyValue *value)
 {
   Light *light = reinterpret_cast<Light *>(self);
   light->SetRotate(value->vector[0], value->vector[1], value->vector[2], value->time);
   return 0;
 }
 
-static int set_Light_scale(void *self, const struct PropertyValue *value)
+static int set_Light_scale(void *self, const PropertyValue *value)
 {
   Light *light = reinterpret_cast<Light *>(self);
   light->SetScale(value->vector[0], value->vector[1], value->vector[2], value->time);
@@ -395,7 +391,7 @@ static int set_Light_scale(void *self, const struct PropertyValue *value)
 }
 
 #define END_OF_PROPERTY {PROP_NONE, NULL, {0, 0, 0, 0}, NULL}
-static const struct Property ObjectInstance_properties[] = {
+static const Property ObjectInstance_properties[] = {
   {PROP_SCALAR,      "transform_order", {ORDER_SRT},  set_ObjectInstance_transform_order},
   {PROP_SCALAR,      "rotate_order",    {ORDER_ZXY},  set_ObjectInstance_rotate_order},
   {PROP_VECTOR3,     "translate",       {0, 0, 0, 0}, set_ObjectInstance_translate},
@@ -407,7 +403,7 @@ static const struct Property ObjectInstance_properties[] = {
   END_OF_PROPERTY
 };
 
-static const struct Property Turbulence_properties[] = {
+static const Property Turbulence_properties[] = {
   {PROP_SCALAR,  "lacunarity", {2, 0, 0, 0},  set_Turbulence_lacunarity},
   {PROP_SCALAR,  "gain",       {.5, 0, 0, 0}, set_Turbulence_gain},
   {PROP_SCALAR,  "octaves",    {8, 0, 0, 0},  set_Turbulence_octaves},
@@ -417,7 +413,7 @@ static const struct Property Turbulence_properties[] = {
   END_OF_PROPERTY
 };
 
-static const struct Property Renderer_properties[] = {
+static const Property Renderer_properties[] = {
   {PROP_SCALAR,  "sample_jitter",         {1, 0, 0, 0},      set_Renderer_sample_jitter},
   {PROP_SCALAR,  "cast_shadow",           {1, 0, 0, 0},      set_Renderer_cast_shadow},
   {PROP_SCALAR,  "max_reflect_depth",     {3, 0, 0, 0},      set_Renderer_max_reflect_depth},
@@ -437,7 +433,7 @@ static const struct Property Renderer_properties[] = {
   END_OF_PROPERTY
 };
 
-static const struct Property Camera_properties[] = {
+static const Property Camera_properties[] = {
   {PROP_SCALAR,  "transform_order", {ORDER_SRT},     set_Camera_transform_order},
   {PROP_SCALAR,  "rotate_order",    {ORDER_ZXY},     set_Camera_rotate_order},
   {PROP_VECTOR3, "translate",       {0, 0, 0, 0},    set_Camera_translate},
@@ -448,14 +444,14 @@ static const struct Property Camera_properties[] = {
   END_OF_PROPERTY
 };
 
-static const struct Property Volume_properties[] = {
+static const Property Volume_properties[] = {
   {PROP_VECTOR3, "resolution", {0, 0, 0, 0}, set_Volume_resolution},
   {PROP_VECTOR3, "bounds_min", {0, 0, 0, 0}, set_Volume_bounds_min},
   {PROP_VECTOR3, "bounds_max", {0, 0, 0, 0}, set_Volume_bounds_max},
   END_OF_PROPERTY
 };
 
-static const struct Property Light_properties[] = {
+static const Property Light_properties[] = {
   {PROP_SCALAR,  "transform_order", {ORDER_SRT},   set_Light_transform_order},
   {PROP_SCALAR,  "rotate_order",    {ORDER_ZXY},   set_Light_rotate_order},
   {PROP_VECTOR3, "translate",       {0, 0, 0, 0},  set_Light_translate},
@@ -469,15 +465,16 @@ static const struct Property Light_properties[] = {
   END_OF_PROPERTY
 };
 
-struct property_desc {
+class property_desc {
+public:
   int entry_type;
   const char *type_name;
-  const struct Property *property_list;
-  void *(*get_entry_from_scene)(const struct Scene *scene, int index);
+  const Property *property_list;
+  void *(*get_entry_from_scene)(const Scene *scene, int index);
 };
 
 #define GET_FUNC(type) \
-void *get_##type(const struct Scene *scene, int index) { \
+void *get_##type(const Scene *scene, int index) { \
   return (void *) scene->Get##type(index); \
 }
 #define DESC(type) {Type_##type, #type, type##_properties, get_##type}
@@ -487,7 +484,7 @@ GET_FUNC(Renderer)
 GET_FUNC(Camera)
 GET_FUNC(Volume)
 GET_FUNC(Light)
-static const struct property_desc property_desc_list[] = {
+static const property_desc property_desc_list[] = {
   DESC(ObjectInstance),
   DESC(Turbulence),
   DESC(Renderer),
@@ -499,9 +496,9 @@ static const struct property_desc property_desc_list[] = {
 #undef GET_FUNC
 #undef PROPERTY_DESC
 
-static void *get_builtin_type_entry(struct Scene *scene, const struct Entry *entry)
+static void *get_builtin_type_entry(Scene *scene, const Entry *entry)
 {
-  const struct property_desc *desc = NULL;
+  const property_desc *desc = NULL;
 
   for (desc = property_desc_list; desc->type_name != NULL; desc++) {
     if (desc->entry_type == entry->type) {
@@ -511,9 +508,9 @@ static void *get_builtin_type_entry(struct Scene *scene, const struct Entry *ent
   return NULL;
 }
 
-static const struct Property *get_builtin_type_property_list(int entry_type)
+static const Property *get_builtin_type_property_list(int entry_type)
 {
-  const struct property_desc *desc = NULL;
+  const property_desc *desc = NULL;
 
   for (desc = property_desc_list; desc->type_name != NULL; desc++) {
     if (desc->entry_type == entry_type) {
@@ -525,7 +522,7 @@ static const struct Property *get_builtin_type_property_list(int entry_type)
 
 static int get_builtin_type_by_name(const char *builtin_type_name)
 {
-  const struct property_desc *desc = NULL;
+  const property_desc *desc = NULL;
 
   for (desc = property_desc_list; desc->type_name != NULL; desc++) {
     if (strcmp(desc->type_name, builtin_type_name) == 0) {
@@ -535,11 +532,11 @@ static int get_builtin_type_by_name(const char *builtin_type_name)
   return Type_Begin;
 }
 
-static const struct Property *get_property_list(const char *type_name)
+static const Property *get_property_list(const char *type_name)
 {
   /* builtin type properties */
   const int entry_type = get_builtin_type_by_name(type_name);
-  const struct Property *builtin_props = get_builtin_type_property_list(entry_type);
+  const Property *builtin_props = get_builtin_type_property_list(entry_type);
 
   if (builtin_props != NULL) {
     return builtin_props;
@@ -548,8 +545,8 @@ static const struct Property *get_property_list(const char *type_name)
   /* plugin type properties */
   {
     const char *plugin_name = type_name;
-    struct Plugin **plugins = get_scene()->GetPluginList();
-    struct Plugin *found = NULL;
+    Plugin **plugins = get_scene()->GetPluginList();
+    Plugin *found = NULL;
     const int N = (int) get_scene()->GetPluginCount();
     int i;
 

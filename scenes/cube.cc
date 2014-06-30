@@ -1,39 +1,34 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
-/*
-example scene of C interfaces
-1 cube with 1 point lights
-
-to compile and render this scene, run this at the top level of source tree
-
- $ make sample
-
-*/
+// example scene of C interfaces
+// 1 cube with 1 point lights
+// 
+// to compile and render this scene, run this at the top level of source tree
+// 
+//  $ make sample
 
 #include "fj_scene_interface.h"
-#include <stdio.h>
+#include <cstdio>
 
 using namespace fj;
 
 #define USE_CUSTOM_CALLBACKS 0
 
 #if USE_CUSTOM_CALLBACKS
-static Interrupt frame_start(void *data, const struct FrameInfo *info)
+static Interrupt frame_start(void *data, const FrameInfo *info)
 {
   printf("# Callback Sample -- Frame Start\n");
   return CALLBACK_CONTINUE;
 }
-static Interrupt frame_done(void *data, const struct FrameInfo *info)
+static Interrupt frame_done(void *data, const FrameInfo *info)
 {
   printf("# Callback Sample -- Frame Done\n");
   return CALLBACK_CONTINUE;
 }
 
 static int N = 0;
-static Interrupt tile_start(void *data, const struct TileInfo *info)
+static Interrupt tile_start(void *data, const TileInfo *info)
 {
   printf("#   Callback Sample -- Tile Start\n");
   return CALLBACK_CONTINUE;
@@ -46,12 +41,12 @@ static Interrupt interrupt_in_the_middle(void *data)
   (*n)++;
   return CALLBACK_CONTINUE;
 }
-static Interrupt tile_done(void *data, const struct TileInfo *info)
+static Interrupt tile_done(void *data, const TileInfo *info)
 {
   printf("#   Callback Sample -- Tile Done\n");
   return CALLBACK_CONTINUE;
 }
-#endif /* USE_CUSTOM_CALLBACKS */
+#endif // USE_CUSTOM_CALLBACKS
 
 int main(int argc, const char **argv)
 {
@@ -66,18 +61,18 @@ int main(int argc, const char **argv)
   ID light;
   ID mesh;
 
-  /* Scene */
+  // Scene
   SiOpenScene();
 
-  /* Plugin */
+  // Plugin
   if (SiOpenPlugin("PlasticShader")) {
-    /* TODO error handling */
-    /*
+    // TODO error handling
+#if 0
     fprintf(stderr, "Could not open shader: %s\n", SiGetErrorMessage(SiGetErrorNo()));
-    */
+#endif
   }
 
-  /* Camera */
+  // Camera
   camera = SiNewCamera("PerspectiveCamera");
   if (camera == SI_BADID) {
     fprintf(stderr, "Could not allocate camera\n");
@@ -86,7 +81,7 @@ int main(int argc, const char **argv)
   SiSetProperty3(camera, "translate", 3, 3, 3);
   SiSetProperty3(camera, "rotate", -35.264389682754654, 45, 0);
 
-  /* Light */
+  // Light
   light = SiNewLight(SI_POINT_LIGHT);
   if (light  == SI_BADID) {
     fprintf(stderr, "Could not allocate light\n");
@@ -94,24 +89,24 @@ int main(int argc, const char **argv)
   }
   SiSetProperty3(light, "translate", 1, 12, 3);
 
-  /* Shader */
+  // Shader
   shader = SiNewShader("PlasticShader");
   if (shader == SI_BADID) {
     fprintf(stderr, "Could not create shader: PlasticShader\n");
     return -1;
   }
 
-  /* Mesh and Accelerator */
+  // Mesh and Accelerator
   mesh = SiNewMesh("cube.mesh");
   if (mesh == SI_BADID) {
-    /* TODO error handling */
-    /*
+    // TODO error handling
+#if 0
     fprintf(stderr, "Could not create mesh: %s\n", SiGetErrorMessage(SiGetErrorNo()));
-    */
+#endif
     return -1;
   }
 
-  /* ObjectInstance */
+  // ObjectInstance
   object = SiNewObjectInstance(mesh);
   if (object == SI_BADID) {
     fprintf(stderr, "Could not create object instance\n");
@@ -120,14 +115,14 @@ int main(int argc, const char **argv)
   SiSetProperty3(object, "rotate", 0, 10, 0);
   SiAssignShader(object, shader);
 
-  /* FrameBuffer */
+  // FrameBuffer
   framebuffer = SiNewFrameBuffer("rgba");
   if (framebuffer == SI_BADID) {
     fprintf(stderr, "Could not allocate framebuffer\n");
     return -1;
   }
 
-  /* Renderer */
+  // Renderer
   renderer = SiNewRenderer();
   if (renderer == SI_BADID) {
     fprintf(stderr, "Could not allocate renderer\n");
@@ -147,9 +142,9 @@ int main(int argc, const char **argv)
       tile_start,
       interrupt_in_the_middle,
       tile_done);
-#endif /* USE_CUSTOM_CALLBACKS */
+#endif // USE_CUSTOM_CALLBACKS
 
-  /* Render scene */
+  // Render scene
   SiRenderScene(renderer);
   SiSaveFrameBuffer(framebuffer, "cube.fb");
   SiCloseScene();

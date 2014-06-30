@@ -1,19 +1,17 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_callback.h"
-#include <stddef.h>
+#include <cstddef>
 
 namespace fj {
 
-static Interrupt no_frame_report(void *data, const struct FrameInfo *info)
+static Interrupt no_frame_report(void *data, const FrameInfo *info)
 {
   return CALLBACK_CONTINUE;
 }
 
-static Interrupt no_tile_report(void *data, const struct TileInfo *info)
+static Interrupt no_tile_report(void *data, const TileInfo *info)
 {
   return CALLBACK_CONTINUE;
 }
@@ -22,32 +20,32 @@ static Interrupt no_sample_report(void *data)
   return CALLBACK_CONTINUE;
 }
 
-Interrupt CbReportFrameStart(struct FrameReport *report, const struct FrameInfo *info)
+Interrupt CbReportFrameStart(FrameReport *report, const FrameInfo *info)
 {
   return report->start(report->data, info);
 }
 
-Interrupt CbReportFrameDone(struct FrameReport *report, const struct FrameInfo *info)
+Interrupt CbReportFrameDone(FrameReport *report, const FrameInfo *info)
 {
   return report->done(report->data, info);
 }
 
-Interrupt CbReportTileStart(struct TileReport *report, const struct TileInfo *info)
+Interrupt CbReportTileStart(TileReport *report, const TileInfo *info)
 {
   return report->start(report->data, info);
 }
 
-Interrupt CbReportTileDone(struct TileReport *report, const struct TileInfo *info)
+Interrupt CbReportTileDone(TileReport *report, const TileInfo *info)
 {
   return report->done(report->data, info);
 }
 
-Interrupt CbReportSampleDone(struct TileReport *report)
+Interrupt CbReportSampleDone(TileReport *report)
 {
   return report->sample_done(report->data);
 }
 
-void CbSetFrameReport(struct FrameReport *report, void *data,
+void CbSetFrameReport(FrameReport *report, void *data,
     FrameStartCallback frame_start,
     FrameDoneCallback frame_done)
 {
@@ -56,7 +54,7 @@ void CbSetFrameReport(struct FrameReport *report, void *data,
   report->done  = (frame_done  == NULL) ? no_frame_report : frame_done;
 }
 
-void CbSetTileReport(struct TileReport *report, void *data,
+void CbSetTileReport(TileReport *report, void *data,
     TileStartCallback tile_start,
     SampleDoneCallback sample_done,
     TileDoneCallback tile_done)

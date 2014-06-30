@@ -28,9 +28,9 @@ static int compare_property_sample(const void *ptr0, const void *ptr1);
 static void push_sample(PropertySampleList *list, const PropertySample *sample);
 static void sort_by_sample_time(PropertySampleList *list);
 
-struct PropertyValue PropScalar(double v0)
+PropertyValue PropScalar(double v0)
 {
-  struct PropertyValue value;
+  PropertyValue value;
 
   value.type = PROP_SCALAR;
   value.vector[0] = v0;
@@ -38,9 +38,9 @@ struct PropertyValue PropScalar(double v0)
   return value;
 }
 
-struct PropertyValue PropVector2(double v0, double v1)
+PropertyValue PropVector2(double v0, double v1)
 {
-  struct PropertyValue value;
+  PropertyValue value;
 
   value.type = PROP_VECTOR2;
   value.vector[0] = v0;
@@ -49,9 +49,9 @@ struct PropertyValue PropVector2(double v0, double v1)
   return value;
 }
 
-struct PropertyValue PropVector3(double v0, double v1, double v2)
+PropertyValue PropVector3(double v0, double v1, double v2)
 {
-  struct PropertyValue value;
+  PropertyValue value;
 
   value.type = PROP_VECTOR3;
   value.vector[0] = v0;
@@ -61,9 +61,9 @@ struct PropertyValue PropVector3(double v0, double v1, double v2)
   return value;
 }
 
-struct PropertyValue PropVector4(double v0, double v1, double v2, double v3)
+PropertyValue PropVector4(double v0, double v1, double v2, double v3)
 {
-  struct PropertyValue value;
+  PropertyValue value;
 
   value.type = PROP_VECTOR4;
   value.vector[0] = v0;
@@ -74,9 +74,9 @@ struct PropertyValue PropVector4(double v0, double v1, double v2, double v3)
   return value;
 }
 
-struct PropertyValue PropString(const char *string)
+PropertyValue PropString(const char *string)
 {
-  struct PropertyValue value;
+  PropertyValue value;
 
   value.type = PROP_STRING;
   value.string = string;
@@ -84,9 +84,9 @@ struct PropertyValue PropString(const char *string)
   return value;
 }
 
-struct PropertyValue PropObjectGroup(struct ObjectGroup *group)
+PropertyValue PropObjectGroup(ObjectGroup *group)
 {
-  struct PropertyValue value;
+  PropertyValue value;
 
   value.type = PROP_OBJECTGROUP;
   value.object_group = group;
@@ -94,9 +94,9 @@ struct PropertyValue PropObjectGroup(struct ObjectGroup *group)
   return value;
 }
 
-struct PropertyValue PropTurbulence(struct Turbulence *turbulence)
+PropertyValue PropTurbulence(Turbulence *turbulence)
 {
-  struct PropertyValue value;
+  PropertyValue value;
 
   value.type = PROP_TURBULENCE;
   value.turbulence = turbulence;
@@ -104,9 +104,9 @@ struct PropertyValue PropTurbulence(struct Turbulence *turbulence)
   return value;
 }
 
-struct PropertyValue PropTexture(struct Texture *texture)
+PropertyValue PropTexture(Texture *texture)
 {
-  struct PropertyValue value;
+  PropertyValue value;
 
   value.type = PROP_TEXTURE;
   value.texture = texture;
@@ -114,9 +114,9 @@ struct PropertyValue PropTexture(struct Texture *texture)
   return value;
 }
 
-struct PropertyValue PropVolume(struct Volume *volume)
+PropertyValue PropVolume(Volume *volume)
 {
-  struct PropertyValue value;
+  PropertyValue value;
 
   value.type = PROP_VOLUME;
   value.volume = volume;
@@ -124,9 +124,9 @@ struct PropertyValue PropVolume(struct Volume *volume)
   return value;
 }
 
-struct PropertyValue PropMesh(struct Mesh *mesh)
+PropertyValue PropMesh(Mesh *mesh)
 {
-  struct PropertyValue value;
+  PropertyValue value;
 
   value.type = PROP_MESH;
   value.mesh = mesh;
@@ -134,7 +134,7 @@ struct PropertyValue PropMesh(struct Mesh *mesh)
   return value;
 }
 
-int PropIsValid(const struct Property *prop)
+int PropIsValid(const Property *prop)
 {
   if (PropType(prop) == PROP_NONE)
     return 0;
@@ -145,17 +145,17 @@ int PropIsValid(const struct Property *prop)
   return 1;
 }
 
-const char *PropName(const struct Property *prop)
+const char *PropName(const Property *prop)
 {
   return prop->name;
 }
 
-const int PropType(const struct Property *prop)
+const int PropType(const Property *prop)
 {
   return prop->type;
 }
 
-const double PropDefaultValue(const struct Property *prop, int index)
+const double PropDefaultValue(const Property *prop, int index)
 {
   if (index < 0 || index > 3)
     return 0;
@@ -163,7 +163,7 @@ const double PropDefaultValue(const struct Property *prop, int index)
   return prop->default_value[index];
 }
 
-const char *PropTypeString(const struct Property *prop)
+const char *PropTypeString(const Property *prop)
 {
   switch (PropType(prop)) {
   case PROP_SCALAR:      return "Scalar";
@@ -181,10 +181,10 @@ const char *PropTypeString(const struct Property *prop)
   }
 }
 
-const struct Property *PropFind(const struct Property *list, int type, const char *name)
+const Property *PropFind(const Property *list, int type, const char *name)
 {
-  const struct Property *prop = list;
-  const struct Property *found = NULL;
+  const Property *prop = list;
+  const Property *found = NULL;
 
   while (PropIsValid(prop)) {
     if (PropType(prop) == type && strcmp(PropName(prop), name) == 0) {
@@ -196,13 +196,13 @@ const struct Property *PropFind(const struct Property *list, int type, const cha
   return found;
 }
 
-int PropSetAllDefaultValues(void *self, const struct Property *list)
+int PropSetAllDefaultValues(void *self, const Property *list)
 {
-  const struct Property *prop = NULL;
+  const Property *prop = NULL;
   int err_count = 0;
 
   for (prop = list; PropIsValid(prop); prop++) {
-    struct PropertyValue value;
+    PropertyValue value;
     int err = 0;
 
     switch (PropType(prop)) {
