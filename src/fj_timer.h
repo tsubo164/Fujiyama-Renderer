@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_TIMER_H
 #define FJ_TIMER_H
@@ -11,7 +9,12 @@ See LICENSE and README
 
 namespace fj {
 
-struct FJ_API Elapse {
+class FJ_API Elapse {
+public:
+  Elapse() : hour(0), min(0), sec(0) {}
+  ~Elapse() {}
+
+public:
   int hour;
   int min;
   int sec;
@@ -31,4 +34,4 @@ private:
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_timer.h"
 
@@ -18,7 +16,8 @@ Elapse Timer::GetElapse() const
   time(&end_time);
 
   const double total_seconds = difftime(end_time, start_time_);
-  Elapse elapse = {0, 0, 1};
+  Elapse elapse;
+  elapse.sec = 1;
 
   if (total_seconds > 1.) {
     elapse.hour = static_cast<int>(total_seconds / (60*60));

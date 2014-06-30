@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_transform.h"
 #include "fj_matrix.h"
@@ -13,13 +11,13 @@ namespace fj {
 
 static int is_transform_order(int order);
 static int is_rotate_order(int order);
-static void update_matrix(struct Transform *transform);
+static void update_matrix(Transform *transform);
 static void make_transform_matrix(
     int transform_order, int rotate_order,
     double tx, double ty, double tz,
     double rx, double ry, double rz,
     double sx, double sy, double sz,
-    struct Matrix *transform);
+    Matrix *transform);
 
 bool IsTransformOrder(int order)
 {
@@ -140,8 +138,7 @@ void Transform::update_matrix()
   MatInverse(&inverse, matrix);
 }
 
-//==============================================================================
-void XfmReset(struct Transform *transform)
+void XfmReset(Transform *transform)
 {
   MatIdentity(&transform->matrix);
   MatIdentity(&transform->inverse);
@@ -154,69 +151,69 @@ void XfmReset(struct Transform *transform)
   transform->scale     = Vector(1, 1, 1);
 }
 
-void XfmTransformPoint(const struct Transform *transform, struct Vector *point)
+void XfmTransformPoint(const Transform *transform, Vector *point)
 {
   MatTransformPoint(transform->matrix, point);
 }
 
-void XfmTransformVector(const struct Transform *transform, struct Vector *vector)
+void XfmTransformVector(const Transform *transform, Vector *vector)
 {
   MatTransformVector(transform->matrix, vector);
 }
 
-void XfmTransformBounds(const struct Transform *transform, struct Box *bounds)
+void XfmTransformBounds(const Transform *transform, Box *bounds)
 {
   MatTransformBounds(transform->matrix, bounds);
 }
 
-void XfmTransformPointInverse(const struct Transform *transform, struct Vector *point)
+void XfmTransformPointInverse(const Transform *transform, Vector *point)
 {
   MatTransformPoint(transform->inverse, point);
 }
 
-void XfmTransformVectorInverse(const struct Transform *transform, struct Vector *vector)
+void XfmTransformVectorInverse(const Transform *transform, Vector *vector)
 {
   MatTransformVector(transform->inverse, vector);
 }
 
-void XfmTransformBoundsInverse(const struct Transform *transform, struct Box *bounds)
+void XfmTransformBoundsInverse(const Transform *transform, Box *bounds)
 {
   MatTransformBounds(transform->inverse, bounds);
 }
 
-void XfmSetTranslate(struct Transform *transform, double tx, double ty, double tz)
+void XfmSetTranslate(Transform *transform, double tx, double ty, double tz)
 {
   transform->translate = Vector(tx, ty, tz);
   update_matrix(transform);
 }
 
-void XfmSetRotate(struct Transform *transform, double rx, double ry, double rz)
+void XfmSetRotate(Transform *transform, double rx, double ry, double rz)
 {
   transform->rotate = Vector(rx, ry, rz);
   update_matrix(transform);
 }
 
-void XfmSetScale(struct Transform *transform, double sx, double sy, double sz)
+void XfmSetScale(Transform *transform, double sx, double sy, double sz)
 {
   transform->scale = Vector(sx, sy, sz);
   update_matrix(transform);
 }
 
-void XfmSetTransformOrder(struct Transform *transform, int order)
+void XfmSetTransformOrder(Transform *transform, int order)
 {
   assert(is_transform_order(order));
   transform->transform_order = order;
   update_matrix(transform);
 }
 
-void XfmSetRotateOrder(struct Transform *transform, int order)
+void XfmSetRotateOrder(Transform *transform, int order)
 {
   assert(is_rotate_order(order));
   transform->rotate_order = order;
   update_matrix(transform);
 }
 
-void XfmSetTransform(struct Transform *transform,
+void XfmSetTransform(Transform *transform,
     int transform_order, int rotate_order,
     double tx, double ty, double tz,
     double rx, double ry, double rz,
@@ -307,7 +304,7 @@ void XfmSetSampleRotateOrder(struct TransformSampleList *list, int order)
 }
 
 void XfmLerpTransformSample(const struct TransformSampleList *list, double time,
-    struct Transform *transform_interp)
+    Transform *transform_interp)
 {
   struct PropertySample T;
   struct PropertySample R;
@@ -324,7 +321,7 @@ void XfmLerpTransformSample(const struct TransformSampleList *list, double time,
     S.vector[0], S.vector[1], S.vector[2]);
 }
 
-static void update_matrix(struct Transform *transform)
+static void update_matrix(Transform *transform)
 {
   make_transform_matrix(transform->transform_order, transform->rotate_order,
       transform->translate.x, transform->translate.y, transform->translate.z,

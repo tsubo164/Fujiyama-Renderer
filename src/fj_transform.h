@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_TRANSFORM_H
 #define FJ_TRANSFORM_H
@@ -73,24 +71,24 @@ public:
   Vector scale;
 };
 
-struct Box;
+class Box;
 
-extern void XfmReset(struct Transform *transform);
+extern void XfmReset(Transform *transform);
 
-extern void XfmTransformPoint(const struct Transform *transform, struct Vector *point);
-extern void XfmTransformVector(const struct Transform *transform, struct Vector *vector);
-extern void XfmTransformBounds(const struct Transform *transform, struct Box *bounds);
+extern void XfmTransformPoint(const Transform *transform, Vector *point);
+extern void XfmTransformVector(const Transform *transform, Vector *vector);
+extern void XfmTransformBounds(const Transform *transform, Box *bounds);
 
-extern void XfmTransformPointInverse(const struct Transform *transform, struct Vector *point);
-extern void XfmTransformVectorInverse(const struct Transform *transform, struct Vector *vector);
-extern void XfmTransformBoundsInverse(const struct Transform *transform, struct Box *bounds);
+extern void XfmTransformPointInverse(const Transform *transform, Vector *point);
+extern void XfmTransformVectorInverse(const Transform *transform, Vector *vector);
+extern void XfmTransformBoundsInverse(const Transform *transform, Box *bounds);
 
-extern void XfmSetTranslate(struct Transform *transform, double tx, double ty, double tz);
-extern void XfmSetRotate(struct Transform *transform, double rx, double ry, double rz);
-extern void XfmSetScale(struct Transform *transform, double sx, double sy, double sz);
-extern void XfmSetTransformOrder(struct Transform *transform, int order);
-extern void XfmSetRotateOrder(struct Transform *transform, int order);
-extern void XfmSetTransform(struct Transform *transform,
+extern void XfmSetTranslate(Transform *transform, double tx, double ty, double tz);
+extern void XfmSetRotate(Transform *transform, double rx, double ry, double rz);
+extern void XfmSetScale(Transform *transform, double sx, double sy, double sz);
+extern void XfmSetTransformOrder(Transform *transform, int order);
+extern void XfmSetRotateOrder(Transform *transform, int order);
+extern void XfmSetTransform(Transform *transform,
     int transform_order, int rotate_order,
     double tx, double ty, double tz,
     double rx, double ry, double rz,
@@ -110,7 +108,7 @@ struct TransformSampleList {
 
 extern void XfmInitTransformSampleList(struct TransformSampleList *list);
 extern void XfmLerpTransformSample(const struct TransformSampleList *list, double time,
-    struct Transform *transform_interp);
+    Transform *transform_interp);
 
 extern void XfmPushTranslateSample(struct TransformSampleList *list,
     double tx, double ty, double tz, double time);
@@ -124,4 +122,4 @@ extern void XfmSetSampleRotateOrder(struct TransformSampleList *list, int order)
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H
