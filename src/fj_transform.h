@@ -83,42 +83,47 @@ extern void XfmTransformPointInverse(const Transform *transform, Vector *point);
 extern void XfmTransformVectorInverse(const Transform *transform, Vector *vector);
 extern void XfmTransformBoundsInverse(const Transform *transform, Box *bounds);
 
-extern void XfmSetTranslate(Transform *transform, double tx, double ty, double tz);
-extern void XfmSetRotate(Transform *transform, double rx, double ry, double rz);
-extern void XfmSetScale(Transform *transform, double sx, double sy, double sz);
+extern void XfmSetTranslate(Transform *transform, Real tx, Real ty, Real tz);
+extern void XfmSetRotate(Transform *transform, Real rx, Real ry, Real rz);
+extern void XfmSetScale(Transform *transform, Real sx, Real sy, Real sz);
 extern void XfmSetTransformOrder(Transform *transform, int order);
 extern void XfmSetRotateOrder(Transform *transform, int order);
 extern void XfmSetTransform(Transform *transform,
     int transform_order, int rotate_order,
-    double tx, double ty, double tz,
-    double rx, double ry, double rz,
-    double sx, double sy, double sz);
+    Real tx, Real ty, Real tz,
+    Real rx, Real ry, Real rz,
+    Real sx, Real sy, Real sz);
 
 extern int XfmIsTransformOrder(int order);
 extern int XfmIsRotateOrder(int order);
 
-/* TransformSampleList */
-struct TransformSampleList {
-  struct PropertySampleList translate;
-  struct PropertySampleList rotate;
-  struct PropertySampleList scale;
+// TransformSampleList
+class TransformSampleList {
+public:
+  TransformSampleList() {}
+  ~TransformSampleList() {}
+
+public:
+  PropertySampleList translate;
+  PropertySampleList rotate;
+  PropertySampleList scale;
   int transform_order;
   int rotate_order;
 };
 
-extern void XfmInitTransformSampleList(struct TransformSampleList *list);
-extern void XfmLerpTransformSample(const struct TransformSampleList *list, double time,
+extern void XfmInitTransformSampleList(TransformSampleList *list);
+extern void XfmLerpTransformSample(const TransformSampleList *list, Real time,
     Transform *transform_interp);
 
-extern void XfmPushTranslateSample(struct TransformSampleList *list,
-    double tx, double ty, double tz, double time);
-extern void XfmPushRotateSample(struct TransformSampleList *list,
-    double rx, double ry, double rz, double time);
-extern void XfmPushScaleSample(struct TransformSampleList *list,
-    double sx, double sy, double sz, double time);
+extern void XfmPushTranslateSample(TransformSampleList *list,
+    Real tx, Real ty, Real tz, Real time);
+extern void XfmPushRotateSample(TransformSampleList *list,
+    Real rx, Real ry, Real rz, Real time);
+extern void XfmPushScaleSample(TransformSampleList *list,
+    Real sx, Real sy, Real sz, Real time);
 
-extern void XfmSetSampleTransformOrder(struct TransformSampleList *list, int order);
-extern void XfmSetSampleRotateOrder(struct TransformSampleList *list, int order);
+extern void XfmSetSampleTransformOrder(TransformSampleList *list, int order);
+extern void XfmSetSampleRotateOrder(TransformSampleList *list, int order);
 
 } // namespace xxx
 

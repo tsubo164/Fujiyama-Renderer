@@ -14,9 +14,9 @@ static int is_rotate_order(int order);
 static void update_matrix(Transform *transform);
 static void make_transform_matrix(
     int transform_order, int rotate_order,
-    double tx, double ty, double tz,
-    double rx, double ry, double rz,
-    double sx, double sy, double sz,
+    Real tx, Real ty, Real tz,
+    Real rx, Real ry, Real rz,
+    Real sx, Real sy, Real sz,
     Matrix *transform);
 
 bool IsTransformOrder(int order)
@@ -181,19 +181,19 @@ void XfmTransformBoundsInverse(const Transform *transform, Box *bounds)
   MatTransformBounds(transform->inverse, bounds);
 }
 
-void XfmSetTranslate(Transform *transform, double tx, double ty, double tz)
+void XfmSetTranslate(Transform *transform, Real tx, Real ty, Real tz)
 {
   transform->translate = Vector(tx, ty, tz);
   update_matrix(transform);
 }
 
-void XfmSetRotate(Transform *transform, double rx, double ry, double rz)
+void XfmSetRotate(Transform *transform, Real rx, Real ry, Real rz)
 {
   transform->rotate = Vector(rx, ry, rz);
   update_matrix(transform);
 }
 
-void XfmSetScale(Transform *transform, double sx, double sy, double sz)
+void XfmSetScale(Transform *transform, Real sx, Real sy, Real sz)
 {
   transform->scale = Vector(sx, sy, sz);
   update_matrix(transform);
@@ -215,9 +215,9 @@ void XfmSetRotateOrder(Transform *transform, int order)
 
 void XfmSetTransform(Transform *transform,
     int transform_order, int rotate_order,
-    double tx, double ty, double tz,
-    double rx, double ry, double rz,
-    double sx, double sy, double sz)
+    Real tx, Real ty, Real tz,
+    Real rx, Real ry, Real rz,
+    Real sx, Real sy, Real sz)
 {
   transform->transform_order = transform_order;
   transform->rotate_order = rotate_order;
@@ -237,7 +237,7 @@ int XfmIsRotateOrder(int order)
   return is_rotate_order(order);
 }
 
-void XfmInitTransformSampleList(struct TransformSampleList *list)
+void XfmInitTransformSampleList(TransformSampleList *list)
 {
   PropInitSampleList(&list->translate);
   PropInitSampleList(&list->rotate);
@@ -252,10 +252,10 @@ void XfmInitTransformSampleList(struct TransformSampleList *list)
   list->scale.samples[0].vector[3] = 1;
 }
 
-void XfmPushTranslateSample(struct TransformSampleList *list,
-    double tx, double ty, double tz, double time)
+void XfmPushTranslateSample(TransformSampleList *list,
+    Real tx, Real ty, Real tz, Real time)
 {
-  struct PropertySample sample;
+  PropertySample sample;
 
   sample.vector[0] = tx;
   sample.vector[1] = ty;
@@ -265,10 +265,10 @@ void XfmPushTranslateSample(struct TransformSampleList *list,
   PropPushSample(&list->translate, &sample);
 }
 
-void XfmPushRotateSample(struct TransformSampleList *list,
-    double rx, double ry, double rz, double time)
+void XfmPushRotateSample(TransformSampleList *list,
+    Real rx, Real ry, Real rz, Real time)
 {
-  struct PropertySample sample;
+  PropertySample sample;
 
   sample.vector[0] = rx;
   sample.vector[1] = ry;
@@ -278,10 +278,10 @@ void XfmPushRotateSample(struct TransformSampleList *list,
   PropPushSample(&list->rotate, &sample);
 }
 
-void XfmPushScaleSample(struct TransformSampleList *list,
-    double sx, double sy, double sz, double time)
+void XfmPushScaleSample(TransformSampleList *list,
+    Real sx, Real sy, Real sz, Real time)
 {
-  struct PropertySample sample;
+  PropertySample sample;
 
   sample.vector[0] = sx;
   sample.vector[1] = sy;
@@ -291,24 +291,24 @@ void XfmPushScaleSample(struct TransformSampleList *list,
   PropPushSample(&list->scale, &sample);
 }
 
-void XfmSetSampleTransformOrder(struct TransformSampleList *list, int order)
+void XfmSetSampleTransformOrder(TransformSampleList *list, int order)
 {
   assert(is_transform_order(order));
   list->transform_order = order;
 }
 
-void XfmSetSampleRotateOrder(struct TransformSampleList *list, int order)
+void XfmSetSampleRotateOrder(TransformSampleList *list, int order)
 {
   assert(is_rotate_order(order));
   list->rotate_order = order;
 }
 
-void XfmLerpTransformSample(const struct TransformSampleList *list, double time,
+void XfmLerpTransformSample(const TransformSampleList *list, Real time,
     Transform *transform_interp)
 {
-  struct PropertySample T;
-  struct PropertySample R;
-  struct PropertySample S;
+  PropertySample T;
+  PropertySample R;
+  PropertySample S;
 
   PropLerpSamples(&list->translate, time, &T);
   PropLerpSamples(&list->rotate, time, &R);
@@ -334,10 +334,10 @@ static void update_matrix(Transform *transform)
 
 static void make_transform_matrix(
     int transform_order, int rotate_order,
-    double tx, double ty, double tz,
-    double rx, double ry, double rz,
-    double sx, double sy, double sz,
-    struct Matrix *transform)
+    Real tx, Real ty, Real tz,
+    Real rx, Real ry, Real rz,
+    Real sx, Real sy, Real sz,
+    Matrix *transform)
 {
 #define QUEUE_SET(dst,q0,q1,q2) do { \
   (dst)[0] = (q0); \
@@ -346,8 +346,8 @@ static void make_transform_matrix(
   } while(0)
 
   int i;
-  struct Matrix T, R, S, RX, RY, RZ;
-  struct Matrix *queue[3];
+  Matrix T, R, S, RX, RY, RZ;
+  Matrix *queue[3];
 
   MatTranslate(&T, tx, ty, tz);
   MatRotateX(&RX, rx);

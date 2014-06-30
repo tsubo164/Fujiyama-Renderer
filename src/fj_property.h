@@ -95,15 +95,22 @@ FJ_API int PropSetAllDefaultValues(void *self, const Property *list);
 /* for time variable properties */
 enum { MAX_PROPERTY_SAMPLES = 8 };
 
-struct FJ_API PropertySample {
+class FJ_API PropertySample {
+public:
   PropertySample() : vector(), time(0) {}
   ~PropertySample() {}
 
+public:
   Real vector[4];
   Real time;
 };
 
-struct FJ_API PropertySampleList {
+class FJ_API PropertySampleList {
+public:
+  PropertySampleList() : samples(), sample_count(0) {}
+  ~PropertySampleList() {}
+
+public:
   PropertySample samples[MAX_PROPERTY_SAMPLES];
   int sample_count;
 };

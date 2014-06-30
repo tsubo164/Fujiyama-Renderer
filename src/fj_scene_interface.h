@@ -104,8 +104,8 @@ FJ_API Status SiSetStringProperty(ID id, const char *name, const char *string);
 FJ_API Status SiSetSampleProperty3(ID id, const char *name,
     double v0, double v1, double v2, double time);
 
-struct Property;
-FJ_API const struct Property *SiGetPropertyList(const char *type_name);
+class Property;
+FJ_API const Property *SiGetPropertyList(const char *type_name);
 
 /* Callback interfaces */
 FJ_API Status SiSetFrameReportCallback(ID id, void *data,

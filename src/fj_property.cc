@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_property.h"
 #include "fj_numeric.h"
@@ -27,8 +25,8 @@ See LICENSE and README
 namespace fj {
 
 static int compare_property_sample(const void *ptr0, const void *ptr1);
-static void push_sample(struct PropertySampleList *list, const struct PropertySample *sample);
-static void sort_by_sample_time(struct PropertySampleList *list);
+static void push_sample(PropertySampleList *list, const PropertySample *sample);
+static void sort_by_sample_time(PropertySampleList *list);
 
 struct PropertyValue PropScalar(double v0)
 {
@@ -239,9 +237,9 @@ int PropSetAllDefaultValues(void *self, const struct Property *list)
 }
 
 /* for time variable properties */
-void PropInitSampleList(struct PropertySampleList *list)
+void PropInitSampleList(PropertySampleList *list)
 {
-  const struct PropertySample initial_value;
+  const PropertySample initial_value;
   int i;
 
   for (i = 0; i < MAX_PROPERTY_SAMPLES; i++) {
@@ -251,7 +249,7 @@ void PropInitSampleList(struct PropertySampleList *list)
   list->sample_count = 1;
 }
 
-int PropPushSample(struct PropertySampleList *list, const struct PropertySample *sample)
+int PropPushSample(PropertySampleList *list, const PropertySample *sample)
 {
   int i;
 
@@ -272,8 +270,8 @@ int PropPushSample(struct PropertySampleList *list, const struct PropertySample 
   return 0;
 }
 
-void PropLerpSamples(const struct PropertySampleList *list, double time,
-    struct PropertySample *dst)
+void PropLerpSamples(const PropertySampleList *list, double time,
+    PropertySample *dst)
 {
   int i;
 
@@ -293,8 +291,8 @@ void PropLerpSamples(const struct PropertySampleList *list, double time,
       return;
     }
     if (list->samples[i].time > time) {
-      const struct PropertySample *sample0 = &list->samples[i-1];
-      const struct PropertySample *sample1 = &list->samples[i];
+      const PropertySample *sample0 = &list->samples[i-1];
+      const PropertySample *sample1 = &list->samples[i];
       const double t = Fit(time, sample0->time, sample1->time, 0, 1);
       VEC4_LERP(dst->vector, sample0->vector, sample1->vector, t);
       return;
@@ -304,8 +302,8 @@ void PropLerpSamples(const struct PropertySampleList *list, double time,
 
 static int compare_property_sample(const void *ptr0, const void *ptr1)
 {
-  const struct PropertySample *sample0 = (const struct PropertySample *) ptr0;
-  const struct PropertySample *sample1 = (const struct PropertySample *) ptr1;
+  const PropertySample *sample0 = (const PropertySample *) ptr0;
+  const PropertySample *sample1 = (const PropertySample *) ptr1;
   const double x = sample0->time;
   const double y = sample1->time;
 
@@ -317,7 +315,7 @@ static int compare_property_sample(const void *ptr0, const void *ptr1)
     return 0;
 }
 
-static void push_sample(struct PropertySampleList *list, const struct PropertySample *sample)
+static void push_sample(PropertySampleList *list, const PropertySample *sample)
 {
   const int next_index = list->sample_count;
   assert(list->sample_count < MAX_PROPERTY_SAMPLES);
@@ -326,10 +324,10 @@ static void push_sample(struct PropertySampleList *list, const struct PropertySa
   list->sample_count++;
 }
 
-static void sort_by_sample_time(struct PropertySampleList *list)
+static void sort_by_sample_time(PropertySampleList *list)
 {
   qsort(list->samples, list->sample_count,
-      sizeof(struct PropertySample),
+      sizeof(PropertySample),
       compare_property_sample);
 }
 
