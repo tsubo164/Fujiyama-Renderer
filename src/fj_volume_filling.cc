@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_volume_filling.h"
 #include "fj_numeric.h"
@@ -16,9 +14,9 @@ See LICENSE and README
 
 namespace fj {
 
-void LerpWispConstrolPoint(struct WispsControlPoint *cp,
-    const struct WispsControlPoint *cp0, const struct WispsControlPoint *cp1,
-    double t)
+void LerpWispConstrolPoint(WispsControlPoint *cp,
+    const WispsControlPoint *cp0, const WispsControlPoint *cp1,
+    Real t)
 {
   cp->orig = LerpVec3(cp0->orig, cp1->orig, t);
   cp->udir = LerpVec3(cp0->udir, cp1->udir, t);
@@ -37,10 +35,10 @@ void LerpWispConstrolPoint(struct WispsControlPoint *cp,
   cp->speck_radius = Lerp(cp0->speck_radius, cp1->speck_radius, t);
 }
 
-extern void BilerpWispConstrolPoint(struct WispsControlPoint *cp,
-    const struct WispsControlPoint *cp00, const struct WispsControlPoint *cp10,
-    const struct WispsControlPoint *cp01, const struct WispsControlPoint *cp11,
-    double s, double t)
+void BilerpWispConstrolPoint(WispsControlPoint *cp,
+    const WispsControlPoint *cp00, const WispsControlPoint *cp10,
+    const WispsControlPoint *cp01, const WispsControlPoint *cp11,
+    Real s, Real t)
 {
   VEC3_BILERP(&cp->orig, &cp00->orig, &cp10->orig, &cp01->orig, &cp11->orig, s, t);
   VEC3_BILERP(&cp->udir, &cp00->udir, &cp10->udir, &cp01->udir, &cp11->udir, s, t);
@@ -63,13 +61,13 @@ extern void BilerpWispConstrolPoint(struct WispsControlPoint *cp,
       cp01->speck_radius, cp11->speck_radius, s, t);
 }
 
-void FillWithSphere(struct Volume *volume,
-    const struct Vector *center, double radius, float density)
+void FillWithSphere(Volume *volume,
+    const Vector *center, Real radius, float density)
 {
   int i, j, k;
   int xmin, ymin, zmin;
   int xmax, ymax, zmax;
-  const double thresholdwidth = .5 * volume->GetFilterSize();
+  const Real thresholdwidth = .5 * volume->GetFilterSize();
 
   VolGetIndexRange(volume, center, radius,
       &xmin, &ymin, &zmin,
@@ -78,7 +76,7 @@ void FillWithSphere(struct Volume *volume,
   for (k = zmin; k <= zmax; k++) {
     for (j = ymin; j <= ymax; j++) {
       for (i = xmin; i <= xmax; i++) {
-        struct Vector P;
+        Vector P;
         float value = 0;
 
         P = volume->IndexToPoint(i, j, k);

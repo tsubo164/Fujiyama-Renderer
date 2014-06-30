@@ -6,49 +6,60 @@
 
 #include "fj_compatibility.h"
 #include "fj_vector.h"
+#include "fj_types.h"
 
 namespace fj {
 
 class Volume;
 
-struct FJ_API CloudControlPoint {
+class FJ_API CloudControlPoint {
+public:
+  CloudControlPoint() {}
+  ~CloudControlPoint() {}
+
+public:
   Vector orig;
   Vector udir;
   Vector vdir;
   Vector wdir;
   Vector noise_space;
 
-  double density;
-  double radius;
-  double noise_amplitude;
+  Real density;
+  Real radius;
+  Real noise_amplitude;
 };
 
-struct FJ_API WispsControlPoint {
+class FJ_API WispsControlPoint {
+public:
+  WispsControlPoint() {}
+  ~WispsControlPoint() {}
+
+public:
   Vector orig;
   Vector udir;
   Vector vdir;
   Vector wdir;
   Vector noise_space;
 
-  double density;
-  double radius;
-  double noise_amplitude;
+  Real density;
+  Real radius;
+  Real noise_amplitude;
 
-  double speck_count;
-  double speck_radius;
+  Real speck_count;
+  Real speck_radius;
 };
 
 FJ_API void LerpWispConstrolPoint(WispsControlPoint *cp,
     const WispsControlPoint *cp0, const WispsControlPoint *cp1,
-    double t);
+    Real t);
 
 FJ_API void BilerpWispConstrolPoint(WispsControlPoint *cp,
     const WispsControlPoint *cp00, const WispsControlPoint *cp10,
     const WispsControlPoint *cp01, const WispsControlPoint *cp11,
-    double s, double t);
+    Real s, Real t);
 
 FJ_API void FillWithSphere(Volume *volume,
-    const Vector *center, double radius, float density);
+    const Vector *center, Real radius, float density);
 
 } // namespace xxx
 
