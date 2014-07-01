@@ -1,5 +1,5 @@
-#Copyright (c) 2011-2014 Hiroshi Tsubokawa
-#See LICENSE and README
+# Copyright (c) 2011-2014 Hiroshi Tsubokawa
+# See LICENSE and README
 
 topdir := ../
 
@@ -13,7 +13,7 @@ RM = rm -f
 .PHONY: all check clean
 all: check
 
-files := array box iff io numeric vector
+files := box io numeric vector
 objects := $(addsuffix _test.o, $(files))
 targets := $(addsuffix _test, $(files))
 
