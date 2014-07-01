@@ -1,13 +1,11 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "draw_image.h"
 #include <stddef.h>
 #include <assert.h>
 
-void init_image_drawer(struct ImageCard *image)
+void init_image_drawer(ImageCard *image)
 {
   image->pixels = NULL;
   image->display_channel = DISPLAY_RGB;
@@ -22,7 +20,7 @@ void init_image_drawer(struct ImageCard *image)
   image->shader_program.program_id = 0;
 }
 
-void setup_image_drawer(struct ImageCard *image, const float *pixels,
+void setup_image_drawer(ImageCard *image, const float *pixels,
     int channel_count, int display_channel,
     int xoffset, int yoffset, int xsize, int ysize)
 {
@@ -61,7 +59,7 @@ void setup_image_drawer(struct ImageCard *image, const float *pixels,
   }
 }
 
-void draw_image(const struct ImageCard *image)
+void draw_image(const ImageCard *image)
 {
   if (image->pixels == NULL) {
     return;
@@ -86,7 +84,7 @@ void draw_image(const struct ImageCard *image)
   glUseProgram(0);
 }
 
-void draw_outline(const struct ImageCard *image)
+void draw_outline(const ImageCard *image)
 {
   glPushAttrib(GL_CURRENT_BIT);
   glEnable(GL_LINE_STIPPLE);

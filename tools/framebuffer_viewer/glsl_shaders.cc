@@ -1,12 +1,10 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "glsl_shaders.h"
-#include <stdio.h>
+#include <cstdio>
 
-int init_shaders(struct ShaderProgram *prog)
+int init_shaders(ShaderProgram *prog)
 {
   static const GLchar *vert_source[] = {
   "#version 120\n"
@@ -78,7 +76,7 @@ int init_shaders(struct ShaderProgram *prog)
   return 0;
 }
 
-void set_uniform_int(const struct ShaderProgram *prog,
+void set_uniform_int(const ShaderProgram *prog,
     const char *variable_name, GLint value)
 {
     glUniform1i(glGetUniformLocation(prog->program_id, variable_name), value);

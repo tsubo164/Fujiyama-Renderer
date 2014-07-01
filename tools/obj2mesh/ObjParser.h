@@ -6,7 +6,7 @@
 
 namespace fj {
 
-struct ObjParser;
+class ObjParser;
 
 typedef int (*ReadVertxFunction)(
     void *interpreter,
@@ -23,16 +23,16 @@ typedef int (*ReadFaceFunction)(
     const long *texture_indices,
     const long *normal_indices);
 
-extern struct ObjParser *ObjParserNew(
+extern ObjParser *ObjParserNew(
     void *interpreter,
     ReadVertxFunction read_vertex_function,
     ReadVertxFunction read_texture_function,
     ReadVertxFunction read_normal_function,
     ReadFaceFunction read_face_function);
 
-extern void ObjParserFree(struct ObjParser *parser);
+extern void ObjParserFree(ObjParser *parser);
 
-extern int ObjParse(struct ObjParser *parser, const char *filename);
+extern int ObjParse(ObjParser *parser, const char *filename);
 
 } // namespace xxx
 

@@ -47,7 +47,7 @@ try {
   }
 
   const string in_file(argv[1]);
-  struct FbInput *in = FbOpenInputFile(in_file.c_str());
+  FbInput *in = FbOpenInputFile(in_file.c_str());
   if (in == NULL) {
     cerr << "error: could not open input file: " << in_file << "\n";
     return -1;

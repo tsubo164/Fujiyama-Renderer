@@ -1,13 +1,11 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
- */
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "unit_test.h"
 #include "fj_vector.h"
 #include "fj_io.h"
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 
 using namespace fj;
 
@@ -15,8 +13,8 @@ int main()
 {
   const int format_version = 7;
   {
-    struct OutputFile *out = IOOpenOutputFile("io_test_file.bin", "PTCD", format_version);
-    const struct Vector P[] = {
+    OutputFile *out = IOOpenOutputFile("io_test_file.bin", "PTCD", format_version);
+    const Vector P[] = {
         Vector(1, 2, 3),
         Vector(2, 3, 1),
         Vector(3, 1, 2)
@@ -39,8 +37,8 @@ int main()
     IOCloseOutputFile(out);
   }
   {
-    struct InputFile *in = IOOpenInputFile("io_test_file.bin", "PTCD");
-    struct Vector P[] = {
+    InputFile *in = IOOpenInputFile("io_test_file.bin", "PTCD");
+    Vector P[] = {
         Vector(0, 0, 0),
         Vector(0, 0, 0),
         Vector(0, 0, 0)
@@ -62,7 +60,7 @@ int main()
     IOSetInputDouble  (in, "radius", radius, npoints);
 
     {
-      const struct ChunkData *chunk = NULL;
+      const ChunkData *chunk = NULL;
 
       TEST_INT(IOGetInputHeaderChunkCount(in), 1);
 
@@ -72,7 +70,7 @@ int main()
       TEST_INT(ChkGetElementCount(chunk), 1);
     }
     {
-      const struct ChunkData *chunk = NULL;
+      const ChunkData *chunk = NULL;
 
       TEST_INT(IOGetInputDataChunkCount(in), 2);
 
@@ -119,4 +117,3 @@ int main()
 
   return 0;
 }
-

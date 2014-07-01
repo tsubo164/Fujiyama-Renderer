@@ -203,8 +203,8 @@ static int build_arguments(Parser *parser,
 
 static int parse_line(Parser *parser, const char *line)
 {
-  CommandArgument arguments[16] = {{NULL}};
-  CommandResult result = INIT_COMMAND_RESULT;
+  CommandArgument arguments[16];
+  CommandResult result;
   const Command *command = NULL;
 
   const char *head = line;
@@ -299,7 +299,8 @@ static int enum_to_num(CommandArgument *arg)
 }
 
 // TODO should move this to fj_scene_interface.c?
-struct SiError {
+class SiError {
+public:
   int number;
   const char *message;
 };

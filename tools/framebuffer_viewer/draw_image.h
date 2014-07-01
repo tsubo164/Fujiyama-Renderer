@@ -1,16 +1,10 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef DRAW_IMAGE_H
 #define DRAW_IMAGE_H
 
 #include "glsl_shaders.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 enum {
   DISPLAY_RGB = -1,
@@ -20,27 +14,28 @@ enum {
   DISPLAY_A = 3
 };
 
-struct ImageCard {
+class ImageCard {
+public:
+  ImageCard() {}
+  ~ImageCard() {}
+
+public:
   const float *pixels;
   int display_channel;
   int channel_count;
 
   int xmin, ymin, xmax, ymax;
-  struct ShaderProgram shader_program;
+  ShaderProgram shader_program;
 };
 
-extern void init_image_drawer(struct ImageCard *image);
+extern void init_image_drawer(ImageCard *image);
 
-extern void setup_image_drawer(struct ImageCard *image, const float *pixels,
+extern void setup_image_drawer(ImageCard *image, const float *pixels,
     int channel_count, int display_channel,
     int xoffset, int yoffset, int xsize, int ysize);
 
-extern void draw_image(const struct ImageCard *image);
+extern void draw_image(const ImageCard *image);
 
-extern void draw_outline(const struct ImageCard *image);
+extern void draw_outline(const ImageCard *image);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#endif /* XXX_H */
+#endif // XXX_H

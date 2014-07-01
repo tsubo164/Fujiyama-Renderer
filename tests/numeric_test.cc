@@ -1,11 +1,9 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "unit_test.h"
 #include "fj_numeric.h"
-#include <stdio.h>
+#include <cstdio>
 
 using namespace fj;
 
@@ -37,13 +35,13 @@ int main()
     const int l = -1;
     const int u = 122;
 
-    TEST(CLAMP(x, l, u) == x);
+    TEST(Clamp(x, l, u) == x);
 
-    TEST(CLAMP(-14, l, u) == l);
+    TEST(Clamp(-14, l, u) == l);
 
-    TEST(CLAMP(135, l, u) == u);
+    TEST(Clamp(135, l, u) == u);
 
-    TEST(CLAMP(u, l, u) == u);
+    TEST(Clamp(u, l, u) == u);
   }
   printf("%s: %d/%d/%d: (FAIL/PASS/TOTAL)\n", __FILE__,
     TestGetFailCount(), TestGetPassCount(), TestGetTotalCount());

@@ -1,22 +1,19 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "unit_test.h"
 #include "fj_vector.h"
-#include <stdio.h>
+#include <cstdio>
 
 using namespace fj;
 
 int main()
 {
   {
-    const struct Vector a(1, 0, 0);
-    const struct Vector b(0, 1, 0);
-    struct Vector c;
+    const Vector a(1, 0, 0);
+    const Vector b(0, 1, 0);
 
-    VEC3_CROSS(&c, &a, &b);
+    const Vector c = Cross(a, b);
 
     TEST(c.x == 0);
     TEST(c.y == 0);

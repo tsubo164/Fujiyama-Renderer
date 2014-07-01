@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef COMMAND_H
 #define COMMAND_H
@@ -9,10 +7,6 @@ See LICENSE and README
 #include "fj_scene_interface.h"
 
 using namespace fj;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 enum ArgumentType {
   ARG_NULL = 0,
@@ -27,34 +21,46 @@ enum ArgumentType {
   ARG_UNDEFINED
 };
 
-struct CommandArgument {
+class CommandArgument {
+public:
+  CommandArgument() :
+      str(NULL),
+      num(0),
+      id(SI_BADID) {}
+  ~CommandArgument() {}
+
+public:
   char *str;
   double num;
   ID id;
 };
 
-struct CommandResult {
+class CommandResult {
+public:
+  CommandResult() :
+      status(SI_FAIL),
+      new_entry_id(SI_BADID),
+      new_entry_name(NULL)
+  {}
+  ~CommandResult() {}
+
+public:
   Status status;
   ID new_entry_id;
   const char *new_entry_name;
 };
-#define INIT_COMMAND_RESULT {SI_FAIL, SI_BADID, NULL}
 
-typedef struct CommandResult (*CommandFunction)(const struct CommandArgument *args);
+typedef CommandResult (*CommandFunction)(const CommandArgument *args);
 
-struct Command {
+class Command {
+public:
   const char *name;
   const int *arg_types;
   int arg_count;
   CommandFunction Run;
 };
 
-extern const struct Command *CmdSearchCommand(const char *command_name);
-extern int CmdSuccess(const struct CommandResult *result);
+extern const Command *CmdSearchCommand(const char *command_name);
+extern int CmdSuccess(const CommandResult *result);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#endif /* XXX_H */
-
+#endif // XXX_H

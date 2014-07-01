@@ -17,9 +17,9 @@ static int print_property_list(const char *type_name);
 static const int OpenPlugin_args[] = {
   ARG_COMMAND_NAME,
   ARG_FILE_PATH};
-static struct CommandResult OpenPlugin_run(const struct CommandArgument *args)
+static CommandResult OpenPlugin_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiOpenPlugin(args[1].str);
   return result;
 }
@@ -28,9 +28,9 @@ static struct CommandResult OpenPlugin_run(const struct CommandArgument *args)
 static const int RenderScene_args[] = {
   ARG_COMMAND_NAME,
   ARG_ENTRY_ID};
-static struct CommandResult RenderScene_run(const struct CommandArgument *args)
+static CommandResult RenderScene_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiRenderScene(args[1].id);
   return result;
 }
@@ -39,9 +39,9 @@ static struct CommandResult RenderScene_run(const struct CommandArgument *args)
 static const int RunProcedure_args[] = {
   ARG_COMMAND_NAME,
   ARG_ENTRY_ID};
-static struct CommandResult RunProcedure_run(const struct CommandArgument *args)
+static CommandResult RunProcedure_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiRunProcedure(args[1].id);
   return result;
 }
@@ -51,9 +51,9 @@ static const int SaveFrameBuffer_args[] = {
   ARG_COMMAND_NAME,
   ARG_ENTRY_ID,
   ARG_FILE_PATH};
-static struct CommandResult SaveFrameBuffer_run(const struct CommandArgument *args)
+static CommandResult SaveFrameBuffer_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiSaveFrameBuffer(args[1].id, args[2].str);
   return result;
 }
@@ -63,9 +63,9 @@ static const int AddObjectToGroup_args[] = {
   ARG_COMMAND_NAME,
   ARG_ENTRY_ID,
   ARG_ENTRY_ID};
-static struct CommandResult AddObjectToGroup_run(const struct CommandArgument *args)
+static CommandResult AddObjectToGroup_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiAddObjectToGroup(args[1].id, args[2].id);
   return result;
 }
@@ -75,9 +75,9 @@ static const int NewObjectInstance_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID,
   ARG_ENTRY_ID};
-static struct CommandResult NewObjectInstance_run(const struct CommandArgument *args)
+static CommandResult NewObjectInstance_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.new_entry_id = SiNewObjectInstance(args[2].id);
   result.new_entry_name = args[1].str;
   return result;
@@ -88,9 +88,9 @@ static const int NewFrameBuffer_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID,
   ARG_STRING};
-static struct CommandResult NewFrameBuffer_run(const struct CommandArgument *args)
+static CommandResult NewFrameBuffer_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.new_entry_id = SiNewFrameBuffer(args[2].str);
   result.new_entry_name = args[1].str;
   return result;
@@ -100,9 +100,9 @@ static struct CommandResult NewFrameBuffer_run(const struct CommandArgument *arg
 static const int NewObjectGroup_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID};
-static struct CommandResult NewObjectGroup_run(const struct CommandArgument *args)
+static CommandResult NewObjectGroup_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.new_entry_id = SiNewObjectGroup();
   result.new_entry_name = args[1].str;
   return result;
@@ -113,9 +113,9 @@ static const int NewPointCloud_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID,
   ARG_FILE_PATH};
-static struct CommandResult NewPointCloud_run(const struct CommandArgument *args)
+static CommandResult NewPointCloud_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.new_entry_id = SiNewPointCloud(args[2].str);
   result.new_entry_name = args[1].str;
   return result;
@@ -125,9 +125,9 @@ static struct CommandResult NewPointCloud_run(const struct CommandArgument *args
 static const int NewTurbulence_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID};
-static struct CommandResult NewTurbulence_run(const struct CommandArgument *args)
+static CommandResult NewTurbulence_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.new_entry_id = SiNewTurbulence();
   result.new_entry_name = args[1].str;
   return result;
@@ -138,9 +138,9 @@ static const int NewProcedure_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID,
   ARG_STRING};
-static struct CommandResult NewProcedure_run(const struct CommandArgument *args)
+static CommandResult NewProcedure_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.new_entry_id = SiNewProcedure(args[2].str);
   result.new_entry_name = args[1].str;
   return result;
@@ -150,9 +150,9 @@ static struct CommandResult NewProcedure_run(const struct CommandArgument *args)
 static const int NewRenderer_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID};
-static struct CommandResult NewRenderer_run(const struct CommandArgument *args)
+static CommandResult NewRenderer_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.new_entry_id = SiNewRenderer();
   result.new_entry_name = args[1].str;
   return result;
@@ -163,9 +163,9 @@ static const int NewTexture_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID,
   ARG_FILE_PATH};
-static struct CommandResult NewTexture_run(const struct CommandArgument *args)
+static CommandResult NewTexture_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.new_entry_id = SiNewTexture(args[2].str);
   result.new_entry_name = args[1].str;
   return result;
@@ -176,9 +176,9 @@ static const int NewShader_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID,
   ARG_STRING};
-static struct CommandResult NewShader_run(const struct CommandArgument *args)
+static CommandResult NewShader_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.new_entry_id = SiNewShader(args[2].str);
   result.new_entry_name = args[1].str;
   return result;
@@ -189,9 +189,9 @@ static const int NewCamera_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID,
   ARG_STRING};
-static struct CommandResult NewCamera_run(const struct CommandArgument *args)
+static CommandResult NewCamera_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.new_entry_id = SiNewCamera(args[2].str);
   result.new_entry_name = args[1].str;
   return result;
@@ -201,9 +201,9 @@ static struct CommandResult NewCamera_run(const struct CommandArgument *args)
 static const int NewVolume_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID};
-static struct CommandResult NewVolume_run(const struct CommandArgument *args)
+static CommandResult NewVolume_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.new_entry_id = SiNewVolume();
   result.new_entry_name = args[1].str;
   return result;
@@ -214,9 +214,9 @@ static const int NewCurve_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID,
   ARG_FILE_PATH};
-static struct CommandResult NewCurve_run(const struct CommandArgument *args)
+static CommandResult NewCurve_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.new_entry_id = SiNewCurve(args[2].str);
   result.new_entry_name = args[1].str;
   return result;
@@ -227,9 +227,9 @@ static const int NewLight_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID,
   ARG_LIGHT_TYPE};
-static struct CommandResult NewLight_run(const struct CommandArgument *args)
+static CommandResult NewLight_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.new_entry_id = SiNewLight(args[2].num);
   result.new_entry_name = args[1].str;
   return result;
@@ -240,9 +240,9 @@ static const int NewMesh_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID,
   ARG_FILE_PATH};
-static struct CommandResult NewMesh_run(const struct CommandArgument *args)
+static CommandResult NewMesh_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.new_entry_id = SiNewMesh(args[2].str);
   result.new_entry_name = args[1].str;
   return result;
@@ -253,9 +253,9 @@ static const int AssignFrameBuffer_args[] = {
   ARG_COMMAND_NAME,
   ARG_ENTRY_ID,
   ARG_ENTRY_ID};
-static struct CommandResult AssignFrameBuffer_run(const struct CommandArgument *args)
+static CommandResult AssignFrameBuffer_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiAssignFrameBuffer(args[1].id, args[2].id);
   return result;
 }
@@ -266,9 +266,9 @@ static const int AssignObjectGroup_args[] = {
   ARG_ENTRY_ID,
   ARG_PROPERTY_NAME,
   ARG_ENTRY_ID};
-static struct CommandResult AssignObjectGroup_run(const struct CommandArgument *args)
+static CommandResult AssignObjectGroup_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiAssignObjectGroup(args[1].id, args[2].str, args[3].id);
   return result;
 }
@@ -279,9 +279,9 @@ static const int AssignTurbulence_args[] = {
   ARG_ENTRY_ID,
   ARG_PROPERTY_NAME,
   ARG_ENTRY_ID};
-static struct CommandResult AssignTurbulence_run(const struct CommandArgument *args)
+static CommandResult AssignTurbulence_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiAssignTurbulence(args[1].id, args[2].str, args[3].id);
   return result;
 }
@@ -292,9 +292,9 @@ static const int AssignTexture_args[] = {
   ARG_ENTRY_ID,
   ARG_PROPERTY_NAME,
   ARG_ENTRY_ID};
-static struct CommandResult AssignTexture_run(const struct CommandArgument *args)
+static CommandResult AssignTexture_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiAssignTexture(args[1].id, args[2].str, args[3].id);
   return result;
 }
@@ -304,9 +304,9 @@ static const int AssignCamera_args[] = {
   ARG_COMMAND_NAME,
   ARG_ENTRY_ID,
   ARG_ENTRY_ID};
-static struct CommandResult AssignCamera_run(const struct CommandArgument *args)
+static CommandResult AssignCamera_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiAssignCamera(args[1].id, args[2].id);
   return result;
 }
@@ -316,9 +316,9 @@ static const int AssignShader_args[] = {
   ARG_COMMAND_NAME,
   ARG_ENTRY_ID,
   ARG_ENTRY_ID};
-static struct CommandResult AssignShader_run(const struct CommandArgument *args)
+static CommandResult AssignShader_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiAssignShader(args[1].id, args[2].id);
   return result;
 }
@@ -329,9 +329,9 @@ static const int AssignVolume_args[] = {
   ARG_ENTRY_ID,
   ARG_PROPERTY_NAME,
   ARG_ENTRY_ID};
-static struct CommandResult AssignVolume_run(const struct CommandArgument *args)
+static CommandResult AssignVolume_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiAssignVolume(args[1].id, args[2].str, args[3].id);
   return result;
 }
@@ -342,9 +342,9 @@ static const int AssignMesh_args[] = {
   ARG_ENTRY_ID,
   ARG_PROPERTY_NAME,
   ARG_ENTRY_ID};
-static struct CommandResult AssignMesh_run(const struct CommandArgument *args)
+static CommandResult AssignMesh_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiAssignMesh(args[1].id, args[2].str, args[3].id);
   return result;
 }
@@ -355,9 +355,9 @@ static const int SetProperty1_args[] = {
   ARG_ENTRY_ID,
   ARG_PROPERTY_NAME,
   ARG_NUMBER};
-static struct CommandResult SetProperty1_run(const struct CommandArgument *args)
+static CommandResult SetProperty1_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiSetProperty1(args[1].id, args[2].str, args[3].num);
   return result;
 }
@@ -369,9 +369,9 @@ static const int SetProperty2_args[] = {
   ARG_PROPERTY_NAME,
   ARG_NUMBER,
   ARG_NUMBER};
-static struct CommandResult SetProperty2_run(const struct CommandArgument *args)
+static CommandResult SetProperty2_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiSetProperty2(
       args[1].id, args[2].str, args[3].num, args[4].num);
   return result;
@@ -385,9 +385,9 @@ static const int SetProperty3_args[] = {
   ARG_NUMBER,
   ARG_NUMBER,
   ARG_NUMBER};
-static struct CommandResult SetProperty3_run(const struct CommandArgument *args)
+static CommandResult SetProperty3_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiSetProperty3(
       args[1].id, args[2].str,
       args[3].num, args[4].num, args[5].num);
@@ -403,9 +403,9 @@ static const int SetProperty4_args[] = {
   ARG_NUMBER,
   ARG_NUMBER,
   ARG_NUMBER};
-static struct CommandResult SetProperty4_run(const struct CommandArgument *args)
+static CommandResult SetProperty4_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiSetProperty4(
       args[1].id, args[2].str,
       args[3].num, args[4].num, args[5].num, args[6].num);
@@ -418,9 +418,9 @@ static const int SetStringProperty_args[] = {
   ARG_ENTRY_ID,
   ARG_PROPERTY_NAME,
   ARG_STRING};
-static struct CommandResult SetStringProperty_run(const struct CommandArgument *args)
+static CommandResult SetStringProperty_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiSetStringProperty(args[1].id, args[2].str, args[3].str);
   return result;
 }
@@ -434,9 +434,9 @@ static const int SetSampleProperty3_args[] = {
   ARG_NUMBER,
   ARG_NUMBER,
   ARG_NUMBER};
-static struct CommandResult SetSampleProperty3_run(const struct CommandArgument *args)
+static CommandResult SetSampleProperty3_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = SiSetSampleProperty3(
       args[1].id, args[2].str,
       args[3].num, args[4].num, args[5].num, args[6].num);
@@ -447,14 +447,14 @@ static struct CommandResult SetSampleProperty3_run(const struct CommandArgument 
 static const int ShowPropertyList_args[] = {
   ARG_COMMAND_NAME,
   ARG_STRING};
-static struct CommandResult ShowPropertyList_run(const struct CommandArgument *args)
+static CommandResult ShowPropertyList_run(const CommandArgument *args)
 {
-  struct CommandResult result = INIT_COMMAND_RESULT;
+  CommandResult result;
   result.status = print_property_list(args[1].str);
   return result;
 }
 
-static const struct Command command_list[] = {
+static const Command command_list[] = {
 #define REGISTER_COMMAND(name) {#name, name##_args, \
     sizeof(name##_args)/sizeof(name##_args[0]), name##_run}
   REGISTER_COMMAND(OpenPlugin),
@@ -495,9 +495,9 @@ static const struct Command command_list[] = {
 #undef REGISTER_COMMAND
 };
 
-const struct Command *CmdSearchCommand(const char *command_name)
+const Command *CmdSearchCommand(const char *command_name)
 {
-  const struct Command *cmd = command_list;
+  const Command *cmd = command_list;
 
   for (; cmd->name != NULL; cmd++) {
     if (strcmp(cmd->name, command_name) == 0) {
@@ -508,7 +508,7 @@ const struct Command *CmdSearchCommand(const char *command_name)
   return NULL;
 }
 
-int CmdSuccess(const struct CommandResult *result)
+int CmdSuccess(const CommandResult *result)
 {
   if (result->status == SI_FAIL &&
       result->new_entry_id == SI_BADID) {
@@ -547,8 +547,8 @@ static void scalar_to_transform_order_string(char *dst, const char *prop_name, d
 
 static int print_property_list(const char *type_name)
 {
-  const struct Property *list = SiGetPropertyList(type_name);
-  const struct Property *prop = NULL;
+  const Property *list = SiGetPropertyList(type_name);
+  const Property *prop = NULL;
 
   if (list == NULL) {
     printf("#   No property is available for %s\n", type_name);

@@ -473,27 +473,27 @@ public:
   void *(*get_entry_from_scene)(const Scene *scene, int index);
 };
 
-#define GET_FUNC(type) \
+#define DEFINE_GET_ENTRY_FUNC(type) \
 void *get_##type(const Scene *scene, int index) { \
   return (void *) scene->Get##type(index); \
 }
-#define DESC(type) {Type_##type, #type, type##_properties, get_##type}
-GET_FUNC(ObjectInstance)
-GET_FUNC(Turbulence)
-GET_FUNC(Renderer)
-GET_FUNC(Camera)
-GET_FUNC(Volume)
-GET_FUNC(Light)
+#define PROPERTY_DESC(type) {Type_##type, #type, type##_properties, get_##type}
+DEFINE_GET_ENTRY_FUNC(ObjectInstance)
+DEFINE_GET_ENTRY_FUNC(Turbulence)
+DEFINE_GET_ENTRY_FUNC(Renderer)
+DEFINE_GET_ENTRY_FUNC(Camera)
+DEFINE_GET_ENTRY_FUNC(Volume)
+DEFINE_GET_ENTRY_FUNC(Light)
 static const property_desc property_desc_list[] = {
-  DESC(ObjectInstance),
-  DESC(Turbulence),
-  DESC(Renderer),
-  DESC(Camera),
-  DESC(Volume),
-  DESC(Light),
+  PROPERTY_DESC(ObjectInstance),
+  PROPERTY_DESC(Turbulence),
+  PROPERTY_DESC(Renderer),
+  PROPERTY_DESC(Camera),
+  PROPERTY_DESC(Volume),
+  PROPERTY_DESC(Light),
   {Type_Begin, NULL, NULL, NULL}
 };
-#undef GET_FUNC
+#undef DEFINE_GET_ENTRY_FUNC
 #undef PROPERTY_DESC
 
 static void *get_builtin_type_entry(Scene *scene, const Entry *entry)

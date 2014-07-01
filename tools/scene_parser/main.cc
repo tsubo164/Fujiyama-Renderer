@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "parser.h"
 #include "fj_scene_interface.h"
@@ -14,7 +12,7 @@ See LICENSE and README
 
 int main(int argc, const char **argv)
 {
-  struct Parser *parser = NULL;
+  Parser *parser = NULL;
   char buf[1024] = {'\0'};
   FILE *file = NULL;
   int status = 0;

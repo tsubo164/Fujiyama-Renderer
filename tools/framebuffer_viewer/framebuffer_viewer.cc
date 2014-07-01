@@ -340,14 +340,14 @@ int FbvLoadImage(FrameBufferViewer *v, const char *filename)
   }
 
   if (strcmp(ext, "fb") == 0) {
-    BufferInfo info = BUFINFO_INIT;
+    BufferInfo info;
     err = load_fb(v->filename, &v->fb, &info);
     BOX2_COPY(v->viewbox, info.viewbox);
     BOX2_COPY(v->databox, info.databox);
     v->tilesize = info.tilesize;
   }
   else if (strcmp(ext, "mip") == 0) {
-    BufferInfo info = BUFINFO_INIT;
+    BufferInfo info;
     err = load_mip(v->filename, &v->fb, &info);
     BOX2_COPY(v->viewbox, info.viewbox);
     BOX2_COPY(v->databox, info.databox);

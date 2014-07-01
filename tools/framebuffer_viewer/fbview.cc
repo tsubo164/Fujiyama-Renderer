@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "framebuffer_viewer.h"
 #include "compatible_opengl.h"
@@ -33,7 +31,7 @@ static const char USAGE2[] =
 "  ESC               Quit Application\n"
 "\n";
 
-static struct FrameBufferViewer *viewer = NULL;
+static FrameBufferViewer *viewer = NULL;
 static void exit_viewer(void);
 static void display(void);
 static void resize(int w, int h);

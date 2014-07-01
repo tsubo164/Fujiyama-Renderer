@@ -1,26 +1,24 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
- */
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "unit_test.h"
 #include "fj_box.h"
 #include "fj_vector.h"
-#include <stdio.h>
-#include <float.h>
+#include <cstdio>
+#include <cfloat>
 
 using namespace fj;
 
 int main()
 {
   {
-    struct Box box(-1, -1, -1, 1, 1, 1);
-    struct Vector orig;
-    struct Vector dir(0, 0, 1);
-    double ray_tmin = 0;
-    double ray_tmax = 1000;
-    double hit_tmin = -FLT_MAX;
-    double hit_tmax = FLT_MAX;
+    Box box(-1, -1, -1, 1, 1, 1);
+    Vector orig;
+    Vector dir(0, 0, 1);
+    Real ray_tmin = 0;
+    Real ray_tmax = 1000;
+    Real hit_tmin = -FLT_MAX;
+    Real hit_tmax = FLT_MAX;
     int hit;
 
     hit = BoxRayIntersect(box, orig, dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
@@ -30,13 +28,13 @@ int main()
     TEST(TestDoubleEq(hit_tmax, 1));
   }
   {
-    struct Box box(-1, -1, -1, 1, 1, 1);
-    struct Vector orig(0, 0, -2);
-    struct Vector dir(0, 0, 1);
-    double ray_tmin = 0;
-    double ray_tmax = 1000;
-    double hit_tmin = -FLT_MAX;
-    double hit_tmax = FLT_MAX;
+    Box box(-1, -1, -1, 1, 1, 1);
+    Vector orig(0, 0, -2);
+    Vector dir(0, 0, 1);
+    Real ray_tmin = 0;
+    Real ray_tmax = 1000;
+    Real hit_tmin = -FLT_MAX;
+    Real hit_tmax = FLT_MAX;
     int hit;
 
     hit = BoxRayIntersect(box, orig, dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
@@ -46,13 +44,13 @@ int main()
     TEST(TestDoubleEq(hit_tmax, 3));
   }
   {
-    struct Box box(-1, -1, -1, 1, 1, 1);
-    struct Vector orig(0, 0, -2);
-    struct Vector dir(0, 0, 1);
-    double ray_tmin = 0;
-    double ray_tmax = 2;
-    double hit_tmin = -FLT_MAX;
-    double hit_tmax = FLT_MAX;
+    Box box(-1, -1, -1, 1, 1, 1);
+    Vector orig(0, 0, -2);
+    Vector dir(0, 0, 1);
+    Real ray_tmin = 0;
+    Real ray_tmax = 2;
+    Real hit_tmin = -FLT_MAX;
+    Real hit_tmax = FLT_MAX;
     int hit;
 
     hit = BoxRayIntersect(box, orig, dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
@@ -62,13 +60,13 @@ int main()
     TEST(TestDoubleEq(hit_tmax, 3));
   }
   {
-    struct Box box(-1, -1, -1, 1, 1, 1);
-    struct Vector orig(0, 0, 2);
-    struct Vector dir(0, 0, 1);
-    double ray_tmin = 0;
-    double ray_tmax = 1000;
-    double hit_tmin = -FLT_MAX;
-    double hit_tmax = FLT_MAX;
+    Box box(-1, -1, -1, 1, 1, 1);
+    Vector orig(0, 0, 2);
+    Vector dir(0, 0, 1);
+    Real ray_tmin = 0;
+    Real ray_tmax = 1000;
+    Real hit_tmin = -FLT_MAX;
+    Real hit_tmax = FLT_MAX;
     int hit;
 
     hit = BoxRayIntersect(box, orig, dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
@@ -78,13 +76,13 @@ int main()
     TEST(TestDoubleEq(hit_tmax, FLT_MAX));
   }
   {
-    struct Box box(-1, -1, -1, 1, 1, 1);
-    struct Vector orig(0, 0, -2);
-    struct Vector dir(0, 0, 1);
-    double ray_tmin = 0;
-    double ray_tmax = 1;
-    double hit_tmin = -FLT_MAX;
-    double hit_tmax = FLT_MAX;
+    Box box(-1, -1, -1, 1, 1, 1);
+    Vector orig(0, 0, -2);
+    Vector dir(0, 0, 1);
+    Real ray_tmin = 0;
+    Real ray_tmax = 1;
+    Real hit_tmin = -FLT_MAX;
+    Real hit_tmax = FLT_MAX;
     int hit;
 
     hit = BoxRayIntersect(box, orig, dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
@@ -94,13 +92,13 @@ int main()
     TEST(TestDoubleEq(hit_tmax, FLT_MAX));
   }
   {
-    struct Box box(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-    struct Vector orig;
-    struct Vector dir(0, 0, 1);
-    double ray_tmin = 0;
-    double ray_tmax = 1;
-    double hit_tmin = -FLT_MAX;
-    double hit_tmax = FLT_MAX;
+    Box box(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+    Vector orig;
+    Vector dir(0, 0, 1);
+    Real ray_tmin = 0;
+    Real ray_tmax = 1;
+    Real hit_tmin = -FLT_MAX;
+    Real hit_tmax = FLT_MAX;
     int hit;
 
     hit = BoxRayIntersect(box, orig, dir, ray_tmin, ray_tmax, &hit_tmin, &hit_tmax);
@@ -114,4 +112,3 @@ int main()
 
   return 0;
 }
-

@@ -20,9 +20,9 @@ const char *file_extension(const char *filename)
   return s + 1;
 }
 
-int load_fb(const char *filename, struct FrameBuffer *fb, struct BufferInfo *info)
+int load_fb(const char *filename, FrameBuffer *fb, BufferInfo *info)
 {
-  struct FbInput *in = NULL;
+  FbInput *in = NULL;
 
   if (fb == NULL)
     return -1;
@@ -49,7 +49,7 @@ int load_fb(const char *filename, struct FrameBuffer *fb, struct BufferInfo *inf
   return 0;
 }
 
-int load_mip(const char *filename, struct FrameBuffer *fb, struct BufferInfo *info)
+int load_mip(const char *filename, FrameBuffer *fb, BufferInfo *info)
 {
   MipInput in;
 
