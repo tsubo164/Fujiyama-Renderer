@@ -45,7 +45,7 @@ static const MetaInfo MyMetainfo[] = {
 };
 
 extern "C" {
-int Initialize(PluginInfo *info)
+FJ_PLUGIN_API int Initialize(PluginInfo *info)
 {
   return PlgSetupInfo(info,
       PLUGIN_API_VERSION,
