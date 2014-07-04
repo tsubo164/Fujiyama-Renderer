@@ -1,3 +1,0 @@
-LIBRARY PointCloudsProcedure
-EXPORTS
-	Initialize

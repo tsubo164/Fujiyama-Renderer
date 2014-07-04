@@ -1,3 +1,0 @@
-LIBRARY SSSShader
-EXPORTS
-	Initialize

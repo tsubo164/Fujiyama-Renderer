@@ -1,3 +1,0 @@
-LIBRARY SplineWispsProcedure
-EXPORTS
-	Initialize
