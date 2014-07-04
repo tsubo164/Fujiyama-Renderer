@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include <stddef.h>
 #include <windows.h>
@@ -21,7 +19,7 @@ void *OsDlsym(void *handle, const char *symbol)
   void *sym = NULL;
 
   SetLastError(NO_ERROR);
-  sym = GetProcAddress(handle, symbol);
+  sym = GetProcAddress(reinterpret_cast<HMODULE>(handle), symbol);
 
   return sym;
 }
@@ -42,7 +40,7 @@ char *OsDlerror(void *handle)
       NULL
   );
 
-  return lpMsgBuf;
+  return reinterpret_cast<char *>(lpMsgBuf);
 }
 
 int OsDlclose(void *handle)
@@ -54,7 +52,7 @@ int OsDlclose(void *handle)
   }
 
   SetLastError(NO_ERROR);
-  ret = FreeLibrary(handle);
+  ret = FreeLibrary(reinterpret_cast<HMODULE>(handle));
 
   if (ret == 0) {
     return -1;
