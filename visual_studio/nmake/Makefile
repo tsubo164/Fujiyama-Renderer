@@ -75,202 +75,202 @@ all: \
 
 #===============================================================================
 libscene_dll_obj = \
-  ../../src/fj_accelerator.obj \
-  ../../src/fj_box.obj \
-  ../../src/fj_bvh_accelerator.obj \
-  ../../src/fj_callback.obj \
-  ../../src/fj_camera.obj \
-  ../../src/fj_curve.obj \
-  ../../src/fj_curve_io.obj \
-  ../../src/fj_file_io.obj \
-  ../../src/fj_filter.obj \
-  ../../src/fj_framebuffer.obj \
-  ../../src/fj_framebuffer_io.obj \
-  ../../src/fj_grid_accelerator.obj \
-  ../../src/fj_importance_sampling.obj \
-  ../../src/fj_interval.obj \
-  ../../src/fj_io.obj \
-  ../../src/fj_light.obj \
-  ../../src/fj_matrix.obj \
-  ../../src/fj_mesh.obj \
-  ../../src/fj_mesh_io.obj \
-  ../../src/fj_mipmap.obj \
-  ../../src/fj_multi_thread.obj \
-  ../../src/fj_noise.obj \
-  ../../src/fj_object_group.obj \
-  ../../src/fj_object_instance.obj \
-  ../../src/fj_object_set.obj \
-  ../../src/fj_os.obj \
-  ../../src/fj_plugin.obj \
-  ../../src/fj_point_cloud.obj \
-  ../../src/fj_point_cloud_io.obj \
-  ../../src/fj_procedure.obj \
-  ../../src/fj_progress.obj \
-  ../../src/fj_property.obj \
-  ../../src/fj_random.obj \
-  ../../src/fj_rectangle.obj \
-  ../../src/fj_renderer.obj \
-  ../../src/fj_sampler.obj \
-  ../../src/fj_scene.obj \
-  ../../src/fj_scene_interface.obj \
-  ../../src/fj_shader.obj \
-  ../../src/fj_shading.obj \
-  ../../src/fj_texture.obj \
-  ../../src/fj_tiler.obj \
-  ../../src/fj_timer.obj \
-  ../../src/fj_transform.obj \
-  ../../src/fj_triangle.obj \
-  ../../src/fj_turbulence.obj \
-  ../../src/fj_volume.obj \
-  ../../src/fj_volume_accelerator.obj \
-  ../../src/fj_volume_filling.obj
+  ..\..\src\fj_accelerator.obj \
+  ..\..\src\fj_box.obj \
+  ..\..\src\fj_bvh_accelerator.obj \
+  ..\..\src\fj_callback.obj \
+  ..\..\src\fj_camera.obj \
+  ..\..\src\fj_curve.obj \
+  ..\..\src\fj_curve_io.obj \
+  ..\..\src\fj_file_io.obj \
+  ..\..\src\fj_filter.obj \
+  ..\..\src\fj_framebuffer.obj \
+  ..\..\src\fj_framebuffer_io.obj \
+  ..\..\src\fj_grid_accelerator.obj \
+  ..\..\src\fj_importance_sampling.obj \
+  ..\..\src\fj_interval.obj \
+  ..\..\src\fj_io.obj \
+  ..\..\src\fj_light.obj \
+  ..\..\src\fj_matrix.obj \
+  ..\..\src\fj_mesh.obj \
+  ..\..\src\fj_mesh_io.obj \
+  ..\..\src\fj_mipmap.obj \
+  ..\..\src\fj_multi_thread.obj \
+  ..\..\src\fj_noise.obj \
+  ..\..\src\fj_object_group.obj \
+  ..\..\src\fj_object_instance.obj \
+  ..\..\src\fj_object_set.obj \
+  ..\..\src\fj_os.obj \
+  ..\..\src\fj_plugin.obj \
+  ..\..\src\fj_point_cloud.obj \
+  ..\..\src\fj_point_cloud_io.obj \
+  ..\..\src\fj_procedure.obj \
+  ..\..\src\fj_progress.obj \
+  ..\..\src\fj_property.obj \
+  ..\..\src\fj_random.obj \
+  ..\..\src\fj_rectangle.obj \
+  ..\..\src\fj_renderer.obj \
+  ..\..\src\fj_sampler.obj \
+  ..\..\src\fj_scene.obj \
+  ..\..\src\fj_scene_interface.obj \
+  ..\..\src\fj_shader.obj \
+  ..\..\src\fj_shading.obj \
+  ..\..\src\fj_texture.obj \
+  ..\..\src\fj_tiler.obj \
+  ..\..\src\fj_timer.obj \
+  ..\..\src\fj_transform.obj \
+  ..\..\src\fj_triangle.obj \
+  ..\..\src\fj_turbulence.obj \
+  ..\..\src\fj_volume.obj \
+  ..\..\src\fj_volume_accelerator.obj \
+  ..\..\src\fj_volume_filling.obj
 
-../../src/fj_accelerator.obj : ../../src/fj_accelerator.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_accelerator.cc
+..\..\src\fj_accelerator.obj : ..\..\src\fj_accelerator.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_accelerator.cc
 
-../../src/fj_box.obj : ../../src/fj_box.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_box.cc
+..\..\src\fj_box.obj : ..\..\src\fj_box.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_box.cc
 
-../../src/fj_bvh_accelerator.obj : ../../src/fj_bvh_accelerator.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_bvh_accelerator.cc
+..\..\src\fj_bvh_accelerator.obj : ..\..\src\fj_bvh_accelerator.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_bvh_accelerator.cc
 
-../../src/fj_callback.obj : ../../src/fj_callback.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_callback.cc
+..\..\src\fj_callback.obj : ..\..\src\fj_callback.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_callback.cc
 
-../../src/fj_camera.obj : ../../src/fj_camera.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_camera.cc
+..\..\src\fj_camera.obj : ..\..\src\fj_camera.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_camera.cc
 
-../../src/fj_curve.obj : ../../src/fj_curve.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_curve.cc
+..\..\src\fj_curve.obj : ..\..\src\fj_curve.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_curve.cc
 
-../../src/fj_curve_io.obj : ../../src/fj_curve_io.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_curve_io.cc
+..\..\src\fj_curve_io.obj : ..\..\src\fj_curve_io.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_curve_io.cc
 
-../../src/fj_file_io.obj : ../../src/fj_file_io.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_file_io.cc
+..\..\src\fj_file_io.obj : ..\..\src\fj_file_io.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_file_io.cc
 
-../../src/fj_filter.obj : ../../src/fj_filter.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_filter.cc
+..\..\src\fj_filter.obj : ..\..\src\fj_filter.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_filter.cc
 
-../../src/fj_framebuffer.obj : ../../src/fj_framebuffer.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_framebuffer.cc
+..\..\src\fj_framebuffer.obj : ..\..\src\fj_framebuffer.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_framebuffer.cc
 
-../../src/fj_framebuffer_io.obj : ../../src/fj_framebuffer_io.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_framebuffer_io.cc
+..\..\src\fj_framebuffer_io.obj : ..\..\src\fj_framebuffer_io.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_framebuffer_io.cc
 
-../../src/fj_grid_accelerator.obj : ../../src/fj_grid_accelerator.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_grid_accelerator.cc
+..\..\src\fj_grid_accelerator.obj : ..\..\src\fj_grid_accelerator.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_grid_accelerator.cc
 
-../../src/fj_importance_sampling.obj : ../../src/fj_importance_sampling.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_importance_sampling.cc
+..\..\src\fj_importance_sampling.obj : ..\..\src\fj_importance_sampling.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_importance_sampling.cc
 
-../../src/fj_interval.obj : ../../src/fj_interval.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_interval.cc
+..\..\src\fj_interval.obj : ..\..\src\fj_interval.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_interval.cc
 
-../../src/fj_io.obj : ../../src/fj_io.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_io.cc
+..\..\src\fj_io.obj : ..\..\src\fj_io.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_io.cc
 
-../../src/fj_light.obj : ../../src/fj_light.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_light.cc
+..\..\src\fj_light.obj : ..\..\src\fj_light.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_light.cc
 
-../../src/fj_matrix.obj : ../../src/fj_matrix.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_matrix.cc
+..\..\src\fj_matrix.obj : ..\..\src\fj_matrix.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_matrix.cc
 
-../../src/fj_mesh.obj : ../../src/fj_mesh.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_mesh.cc
+..\..\src\fj_mesh.obj : ..\..\src\fj_mesh.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_mesh.cc
 
-../../src/fj_mesh_io.obj : ../../src/fj_mesh_io.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_mesh_io.cc
+..\..\src\fj_mesh_io.obj : ..\..\src\fj_mesh_io.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_mesh_io.cc
 
-../../src/fj_mipmap.obj : ../../src/fj_mipmap.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_mipmap.cc
+..\..\src\fj_mipmap.obj : ..\..\src\fj_mipmap.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_mipmap.cc
 
-../../src/fj_multi_thread.obj : ../../src/fj_multi_thread.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_multi_thread.cc
+..\..\src\fj_multi_thread.obj : ..\..\src\fj_multi_thread.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_multi_thread.cc
 
-../../src/fj_noise.obj : ../../src/fj_noise.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_noise.cc
+..\..\src\fj_noise.obj : ..\..\src\fj_noise.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_noise.cc
 
-../../src/fj_object_group.obj : ../../src/fj_object_group.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_object_group.cc
+..\..\src\fj_object_group.obj : ..\..\src\fj_object_group.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_object_group.cc
 
-../../src/fj_object_instance.obj : ../../src/fj_object_instance.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_object_instance.cc
+..\..\src\fj_object_instance.obj : ..\..\src\fj_object_instance.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_object_instance.cc
 
-../../src/fj_object_set.obj : ../../src/fj_object_set.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_object_set.cc
+..\..\src\fj_object_set.obj : ..\..\src\fj_object_set.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_object_set.cc
 
-../../src/fj_os.obj : ../../src/fj_os.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_os.cc
+..\..\src\fj_os.obj : ..\..\src\fj_os.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_os.cc
 
-../../src/fj_plugin.obj : ../../src/fj_plugin.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_plugin.cc
+..\..\src\fj_plugin.obj : ..\..\src\fj_plugin.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_plugin.cc
 
-../../src/fj_point_cloud.obj : ../../src/fj_point_cloud.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_point_cloud.cc
+..\..\src\fj_point_cloud.obj : ..\..\src\fj_point_cloud.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_point_cloud.cc
 
-../../src/fj_point_cloud_io.obj : ../../src/fj_point_cloud_io.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_point_cloud_io.cc
+..\..\src\fj_point_cloud_io.obj : ..\..\src\fj_point_cloud_io.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_point_cloud_io.cc
 
-../../src/fj_procedure.obj : ../../src/fj_procedure.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_procedure.cc
+..\..\src\fj_procedure.obj : ..\..\src\fj_procedure.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_procedure.cc
 
-../../src/fj_progress.obj : ../../src/fj_progress.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_progress.cc
+..\..\src\fj_progress.obj : ..\..\src\fj_progress.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_progress.cc
 
-../../src/fj_property.obj : ../../src/fj_property.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_property.cc
+..\..\src\fj_property.obj : ..\..\src\fj_property.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_property.cc
 
-../../src/fj_random.obj : ../../src/fj_random.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_random.cc
+..\..\src\fj_random.obj : ..\..\src\fj_random.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_random.cc
 
-../../src/fj_rectangle.obj : ../../src/fj_rectangle.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_rectangle.cc
+..\..\src\fj_rectangle.obj : ..\..\src\fj_rectangle.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_rectangle.cc
 
-../../src/fj_renderer.obj : ../../src/fj_renderer.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_renderer.cc
+..\..\src\fj_renderer.obj : ..\..\src\fj_renderer.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_renderer.cc
 
-../../src/fj_sampler.obj : ../../src/fj_sampler.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_sampler.cc
+..\..\src\fj_sampler.obj : ..\..\src\fj_sampler.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_sampler.cc
 
-../../src/fj_scene.obj : ../../src/fj_scene.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_scene.cc
+..\..\src\fj_scene.obj : ..\..\src\fj_scene.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_scene.cc
 
-../../src/fj_scene_interface.obj : ../../src/fj_scene_interface.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_scene_interface.cc
+..\..\src\fj_scene_interface.obj : ..\..\src\fj_scene_interface.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_scene_interface.cc
 
-../../src/fj_shader.obj : ../../src/fj_shader.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_shader.cc
+..\..\src\fj_shader.obj : ..\..\src\fj_shader.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_shader.cc
 
-../../src/fj_shading.obj : ../../src/fj_shading.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_shading.cc
+..\..\src\fj_shading.obj : ..\..\src\fj_shading.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_shading.cc
 
-../../src/fj_texture.obj : ../../src/fj_texture.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_texture.cc
+..\..\src\fj_texture.obj : ..\..\src\fj_texture.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_texture.cc
 
-../../src/fj_tiler.obj : ../../src/fj_tiler.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_tiler.cc
+..\..\src\fj_tiler.obj : ..\..\src\fj_tiler.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_tiler.cc
 
-../../src/fj_timer.obj : ../../src/fj_timer.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_timer.cc
+..\..\src\fj_timer.obj : ..\..\src\fj_timer.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_timer.cc
 
-../../src/fj_transform.obj : ../../src/fj_transform.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_transform.cc
+..\..\src\fj_transform.obj : ..\..\src\fj_transform.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_transform.cc
 
-../../src/fj_triangle.obj : ../../src/fj_triangle.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_triangle.cc
+..\..\src\fj_triangle.obj : ..\..\src\fj_triangle.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_triangle.cc
 
-../../src/fj_turbulence.obj : ../../src/fj_turbulence.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_turbulence.cc
+..\..\src\fj_turbulence.obj : ..\..\src\fj_turbulence.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_turbulence.cc
 
-../../src/fj_volume.obj : ../../src/fj_volume.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_volume.cc
+..\..\src\fj_volume.obj : ..\..\src\fj_volume.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_volume.cc
 
-../../src/fj_volume_accelerator.obj : ../../src/fj_volume_accelerator.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_volume_accelerator.cc
+..\..\src\fj_volume_accelerator.obj : ..\..\src\fj_volume_accelerator.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_volume_accelerator.cc
 
-../../src/fj_volume_filling.obj : ../../src/fj_volume_filling.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ../../src/fj_volume_filling.cc
+..\..\src\fj_volume_filling.obj : ..\..\src\fj_volume_filling.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_volume_filling.cc
 
 $(libscene_dll) : $(libscene_dll_obj)
 	@echo libscene.dll
@@ -281,10 +281,10 @@ libscene_dll_exp = $(out_dir)\libscene_dll_exp
 
 #===============================================================================
 cube_exe_obj = \
-  ../../scenes/cube.obj
+  ..\..\scenes\cube.obj
 
-../../scenes/cube.obj : ../../scenes/cube.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../scenes/cube.cc
+..\..\scenes\cube.obj : ..\..\scenes\cube.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\scenes\cube.cc
 
 $(cube_exe) : $(cube_exe_obj)
 	@echo cube.exe
@@ -292,10 +292,10 @@ $(cube_exe) : $(cube_exe_obj)
 
 #===============================================================================
 ConstantShader_dll_obj = \
-  ../../shaders/constant_shader/constant_shader.obj
+  ..\..\shaders\constant_shader\constant_shader.obj
 
-../../shaders/constant_shader/constant_shader.obj : ../../shaders/constant_shader/constant_shader.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../shaders/constant_shader/constant_shader.cc
+..\..\shaders\constant_shader\constant_shader.obj : ..\..\shaders\constant_shader\constant_shader.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\shaders\constant_shader\constant_shader.cc
 
 $(ConstantShader_dll) : $(ConstantShader_dll_obj)
 	@echo ConstantShader.dll
@@ -306,10 +306,10 @@ ConstantShader_dll_exp = $(out_dir)\ConstantShader_dll_exp
 
 #===============================================================================
 GlassShader_dll_obj = \
-  ../../shaders/glass_shader/glass_shader.obj
+  ..\..\shaders\glass_shader\glass_shader.obj
 
-../../shaders/glass_shader/glass_shader.obj : ../../shaders/glass_shader/glass_shader.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../shaders/glass_shader/glass_shader.cc
+..\..\shaders\glass_shader\glass_shader.obj : ..\..\shaders\glass_shader\glass_shader.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\shaders\glass_shader\glass_shader.cc
 
 $(GlassShader_dll) : $(GlassShader_dll_obj)
 	@echo GlassShader.dll
@@ -320,10 +320,10 @@ GlassShader_dll_exp = $(out_dir)\GlassShader_dll_exp
 
 #===============================================================================
 HairShader_dll_obj = \
-  ../../shaders/hair_shader/hair_shader.obj
+  ..\..\shaders\hair_shader\hair_shader.obj
 
-../../shaders/hair_shader/hair_shader.obj : ../../shaders/hair_shader/hair_shader.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../shaders/hair_shader/hair_shader.cc
+..\..\shaders\hair_shader\hair_shader.obj : ..\..\shaders\hair_shader\hair_shader.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\shaders\hair_shader\hair_shader.cc
 
 $(HairShader_dll) : $(HairShader_dll_obj)
 	@echo HairShader.dll
@@ -334,10 +334,10 @@ HairShader_dll_exp = $(out_dir)\HairShader_dll_exp
 
 #===============================================================================
 PlasticShader_dll_obj = \
-  ../../shaders/plastic_shader/plastic_shader.obj
+  ..\..\shaders\plastic_shader\plastic_shader.obj
 
-../../shaders/plastic_shader/plastic_shader.obj : ../../shaders/plastic_shader/plastic_shader.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../shaders/plastic_shader/plastic_shader.cc
+..\..\shaders\plastic_shader\plastic_shader.obj : ..\..\shaders\plastic_shader\plastic_shader.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\shaders\plastic_shader\plastic_shader.cc
 
 $(PlasticShader_dll) : $(PlasticShader_dll_obj)
 	@echo PlasticShader.dll
@@ -348,10 +348,10 @@ PlasticShader_dll_exp = $(out_dir)\PlasticShader_dll_exp
 
 #===============================================================================
 SSSShader_dll_obj = \
-  ../../shaders/sss_shader/sss_shader.obj
+  ..\..\shaders\sss_shader\sss_shader.obj
 
-../../shaders/sss_shader/sss_shader.obj : ../../shaders/sss_shader/sss_shader.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../shaders/sss_shader/sss_shader.cc
+..\..\shaders\sss_shader\sss_shader.obj : ..\..\shaders\sss_shader\sss_shader.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\shaders\sss_shader\sss_shader.cc
 
 $(SSSShader_dll) : $(SSSShader_dll_obj)
 	@echo SSSShader.dll
@@ -362,10 +362,10 @@ SSSShader_dll_exp = $(out_dir)\SSSShader_dll_exp
 
 #===============================================================================
 VolumeShader_dll_obj = \
-  ../../shaders/volume_shader/volume_shader.obj
+  ..\..\shaders\volume_shader\volume_shader.obj
 
-../../shaders/volume_shader/volume_shader.obj : ../../shaders/volume_shader/volume_shader.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../shaders/volume_shader/volume_shader.cc
+..\..\shaders\volume_shader\volume_shader.obj : ..\..\shaders\volume_shader\volume_shader.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\shaders\volume_shader\volume_shader.cc
 
 $(VolumeShader_dll) : $(VolumeShader_dll_obj)
 	@echo VolumeShader.dll
@@ -376,10 +376,10 @@ VolumeShader_dll_exp = $(out_dir)\VolumeShader_dll_exp
 
 #===============================================================================
 PointCloudsProcedure_dll_obj = \
-  ../../procedures/pointclouds_procedure/pointclouds_procedure.obj
+  ..\..\procedures\pointclouds_procedure\pointclouds_procedure.obj
 
-../../procedures/pointclouds_procedure/pointclouds_procedure.obj : ../../procedures/pointclouds_procedure/pointclouds_procedure.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../procedures/pointclouds_procedure/pointclouds_procedure.cc
+..\..\procedures\pointclouds_procedure\pointclouds_procedure.obj : ..\..\procedures\pointclouds_procedure\pointclouds_procedure.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\procedures\pointclouds_procedure\pointclouds_procedure.cc
 
 $(PointCloudsProcedure_dll) : $(PointCloudsProcedure_dll_obj)
 	@echo PointCloudsProcedure.dll
@@ -390,10 +390,10 @@ PointCloudsProcedure_dll_exp = $(out_dir)\PointCloudsProcedure_dll_exp
 
 #===============================================================================
 SplineWispsProcedure_dll_obj = \
-  ../../procedures/splinewisps_procedure/splinewisps_procedure.obj
+  ..\..\procedures\splinewisps_procedure\splinewisps_procedure.obj
 
-../../procedures/splinewisps_procedure/splinewisps_procedure.obj : ../../procedures/splinewisps_procedure/splinewisps_procedure.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../procedures/splinewisps_procedure/splinewisps_procedure.cc
+..\..\procedures\splinewisps_procedure\splinewisps_procedure.obj : ..\..\procedures\splinewisps_procedure\splinewisps_procedure.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\procedures\splinewisps_procedure\splinewisps_procedure.cc
 
 $(SplineWispsProcedure_dll) : $(SplineWispsProcedure_dll_obj)
 	@echo SplineWispsProcedure.dll
@@ -404,10 +404,10 @@ SplineWispsProcedure_dll_exp = $(out_dir)\SplineWispsProcedure_dll_exp
 
 #===============================================================================
 SurfaceWispsProcedure_dll_obj = \
-  ../../procedures/surfacewisps_procedure/surfacewisps_procedure.obj
+  ..\..\procedures\surfacewisps_procedure\surfacewisps_procedure.obj
 
-../../procedures/surfacewisps_procedure/surfacewisps_procedure.obj : ../../procedures/surfacewisps_procedure/surfacewisps_procedure.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../procedures/surfacewisps_procedure/surfacewisps_procedure.cc
+..\..\procedures\surfacewisps_procedure\surfacewisps_procedure.obj : ..\..\procedures\surfacewisps_procedure\surfacewisps_procedure.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\procedures\surfacewisps_procedure\surfacewisps_procedure.cc
 
 $(SurfaceWispsProcedure_dll) : $(SurfaceWispsProcedure_dll_obj)
 	@echo SurfaceWispsProcedure.dll
@@ -418,10 +418,10 @@ SurfaceWispsProcedure_dll_exp = $(out_dir)\SurfaceWispsProcedure_dll_exp
 
 #===============================================================================
 curvegen_exe_obj = \
-  ../../tools/curve_generator/curvegen.obj
+  ..\..\tools\curve_generator\curvegen.obj
 
-../../tools/curve_generator/curvegen.obj : ../../tools/curve_generator/curvegen.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/curve_generator/curvegen.cc
+..\..\tools\curve_generator\curvegen.obj : ..\..\tools\curve_generator\curvegen.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\curve_generator\curvegen.cc
 
 $(curvegen_exe) : $(curvegen_exe_obj)
 	@echo curvegen.exe
@@ -429,10 +429,10 @@ $(curvegen_exe) : $(curvegen_exe_obj)
 
 #===============================================================================
 fb2exr_exe_obj = \
-  ../../tools/fb2exr/fb2exr.obj
+  ..\..\tools\fb2exr\fb2exr.obj
 
-../../tools/fb2exr/fb2exr.obj : ../../tools/fb2exr/fb2exr.cc
-	@$(CC) $(CXXFLAGS) /D "OPENEXR_DLL" /Fo$@ ../../tools/fb2exr/fb2exr.cc
+..\..\tools\fb2exr\fb2exr.obj : ..\..\tools\fb2exr\fb2exr.cc
+	@$(CC) $(CXXFLAGS) /D "OPENEXR_DLL" /Fo$@ ..\..\tools\fb2exr\fb2exr.cc
 
 $(fb2exr_exe) : $(fb2exr_exe_obj)
 	@echo fb2exr.exe
@@ -440,26 +440,26 @@ $(fb2exr_exe) : $(fb2exr_exe_obj)
 
 #===============================================================================
 fbview_exe_obj = \
-  ../../tools/framebuffer_viewer/draw_image.obj \
-  ../../tools/framebuffer_viewer/fbview.obj \
-  ../../tools/framebuffer_viewer/framebuffer_viewer.obj \
-  ../../tools/framebuffer_viewer/glsl_shaders.obj \
-  ../../tools/framebuffer_viewer/load_images.obj
+  ..\..\tools\framebuffer_viewer\draw_image.obj \
+  ..\..\tools\framebuffer_viewer\fbview.obj \
+  ..\..\tools\framebuffer_viewer\framebuffer_viewer.obj \
+  ..\..\tools\framebuffer_viewer\glsl_shaders.obj \
+  ..\..\tools\framebuffer_viewer\load_images.obj
 
-../../tools/framebuffer_viewer/draw_image.obj : ../../tools/framebuffer_viewer/draw_image.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/framebuffer_viewer/draw_image.cc
+..\..\tools\framebuffer_viewer\draw_image.obj : ..\..\tools\framebuffer_viewer\draw_image.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\framebuffer_viewer\draw_image.cc
 
-../../tools/framebuffer_viewer/fbview.obj : ../../tools/framebuffer_viewer/fbview.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/framebuffer_viewer/fbview.cc
+..\..\tools\framebuffer_viewer\fbview.obj : ..\..\tools\framebuffer_viewer\fbview.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\framebuffer_viewer\fbview.cc
 
-../../tools/framebuffer_viewer/framebuffer_viewer.obj : ../../tools/framebuffer_viewer/framebuffer_viewer.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/framebuffer_viewer/framebuffer_viewer.cc
+..\..\tools\framebuffer_viewer\framebuffer_viewer.obj : ..\..\tools\framebuffer_viewer\framebuffer_viewer.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\framebuffer_viewer\framebuffer_viewer.cc
 
-../../tools/framebuffer_viewer/glsl_shaders.obj : ../../tools/framebuffer_viewer/glsl_shaders.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/framebuffer_viewer/glsl_shaders.cc
+..\..\tools\framebuffer_viewer\glsl_shaders.obj : ..\..\tools\framebuffer_viewer\glsl_shaders.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\framebuffer_viewer\glsl_shaders.cc
 
-../../tools/framebuffer_viewer/load_images.obj : ../../tools/framebuffer_viewer/load_images.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/framebuffer_viewer/load_images.cc
+..\..\tools\framebuffer_viewer\load_images.obj : ..\..\tools\framebuffer_viewer\load_images.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\framebuffer_viewer\load_images.cc
 
 $(fbview_exe) : $(fbview_exe_obj)
 	@echo fbview.exe
@@ -467,14 +467,14 @@ $(fbview_exe) : $(fbview_exe_obj)
 
 #===============================================================================
 hdr2mip_exe_obj = \
-  ../../tools/hdr2mip/hdr2mip.obj \
-  ../../tools/hdr2mip/rgbe.obj
+  ..\..\tools\hdr2mip\hdr2mip.obj \
+  ..\..\tools\hdr2mip\rgbe.obj
 
-../../tools/hdr2mip/hdr2mip.obj : ../../tools/hdr2mip/hdr2mip.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/hdr2mip/hdr2mip.cc
+..\..\tools\hdr2mip\hdr2mip.obj : ..\..\tools\hdr2mip\hdr2mip.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\hdr2mip\hdr2mip.cc
 
-../../tools/hdr2mip/rgbe.obj : ../../tools/hdr2mip/rgbe.c
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/hdr2mip/rgbe.c
+..\..\tools\hdr2mip\rgbe.obj : ..\..\tools\hdr2mip\rgbe.c
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\hdr2mip\rgbe.c
 
 $(hdr2mip_exe) : $(hdr2mip_exe_obj)
 	@echo hdr2mip.exe
@@ -482,10 +482,10 @@ $(hdr2mip_exe) : $(hdr2mip_exe_obj)
 
 #===============================================================================
 jpg2mip_exe_obj = \
-  ../../tools/jpg2mip/jpg2mip.obj
+  ..\..\tools\jpg2mip\jpg2mip.obj
 
-../../tools/jpg2mip/jpg2mip.obj : ../../tools/jpg2mip/jpg2mip.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/jpg2mip/jpg2mip.cc
+..\..\tools\jpg2mip\jpg2mip.obj : ..\..\tools\jpg2mip\jpg2mip.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\jpg2mip\jpg2mip.cc
 
 $(jpg2mip_exe) : $(jpg2mip_exe_obj)
 	@echo jpg2mip.exe
@@ -493,14 +493,14 @@ $(jpg2mip_exe) : $(jpg2mip_exe_obj)
 
 #===============================================================================
 obj2mesh_exe_obj = \
-  ../../tools/obj2mesh/obj2mesh.obj \
-  ../../tools/obj2mesh/ObjParser.obj
+  ..\..\tools\obj2mesh\obj2mesh.obj \
+  ..\..\tools\obj2mesh\ObjParser.obj
 
-../../tools/obj2mesh/obj2mesh.obj : ../../tools/obj2mesh/obj2mesh.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/obj2mesh/obj2mesh.cc
+..\..\tools\obj2mesh\obj2mesh.obj : ..\..\tools\obj2mesh\obj2mesh.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\obj2mesh\obj2mesh.cc
 
-../../tools/obj2mesh/ObjParser.obj : ../../tools/obj2mesh/ObjParser.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/obj2mesh/ObjParser.cc
+..\..\tools\obj2mesh\ObjParser.obj : ..\..\tools\obj2mesh\ObjParser.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\obj2mesh\ObjParser.cc
 
 $(obj2mesh_exe) : $(obj2mesh_exe_obj)
 	@echo obj2mesh.exe
@@ -508,14 +508,14 @@ $(obj2mesh_exe) : $(obj2mesh_exe_obj)
 
 #===============================================================================
 ply2mesh_exe_obj = \
-  ../../tools/ply2mesh/ply2mesh.obj \
-  ../../tools/ply2mesh/plyfile.obj
+  ..\..\tools\ply2mesh\ply2mesh.obj \
+  ..\..\tools\ply2mesh\plyfile.obj
 
-../../tools/ply2mesh/ply2mesh.obj : ../../tools/ply2mesh/ply2mesh.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/ply2mesh/ply2mesh.cc
+..\..\tools\ply2mesh\ply2mesh.obj : ..\..\tools\ply2mesh\ply2mesh.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\ply2mesh\ply2mesh.cc
 
-../../tools/ply2mesh/plyfile.obj : ../../tools/ply2mesh/plyfile.c
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/ply2mesh/plyfile.c
+..\..\tools\ply2mesh\plyfile.obj : ..\..\tools\ply2mesh\plyfile.c
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\ply2mesh\plyfile.c
 
 $(ply2mesh_exe) : $(ply2mesh_exe_obj)
 	@echo ply2mesh.exe
@@ -523,10 +523,10 @@ $(ply2mesh_exe) : $(ply2mesh_exe_obj)
 
 #===============================================================================
 ptcgen_exe_obj = \
-  ../../tools/point_cloud_generator/ptcgen.obj
+  ..\..\tools\point_cloud_generator\ptcgen.obj
 
-../../tools/point_cloud_generator/ptcgen.obj : ../../tools/point_cloud_generator/ptcgen.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/point_cloud_generator/ptcgen.cc
+..\..\tools\point_cloud_generator\ptcgen.obj : ..\..\tools\point_cloud_generator\ptcgen.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\point_cloud_generator\ptcgen.cc
 
 $(ptcgen_exe) : $(ptcgen_exe_obj)
 	@echo ptcgen.exe
@@ -534,22 +534,22 @@ $(ptcgen_exe) : $(ptcgen_exe_obj)
 
 #===============================================================================
 scene_exe_obj = \
-  ../../tools/scene_parser/command.obj \
-  ../../tools/scene_parser/main.obj \
-  ../../tools/scene_parser/parser.obj \
-  ../../tools/scene_parser/table.obj
+  ..\..\tools\scene_parser\command.obj \
+  ..\..\tools\scene_parser\main.obj \
+  ..\..\tools\scene_parser\parser.obj \
+  ..\..\tools\scene_parser\table.obj
 
-../../tools/scene_parser/command.obj : ../../tools/scene_parser/command.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/scene_parser/command.cc
+..\..\tools\scene_parser\command.obj : ..\..\tools\scene_parser\command.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\scene_parser\command.cc
 
-../../tools/scene_parser/main.obj : ../../tools/scene_parser/main.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/scene_parser/main.cc
+..\..\tools\scene_parser\main.obj : ..\..\tools\scene_parser\main.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\scene_parser\main.cc
 
-../../tools/scene_parser/parser.obj : ../../tools/scene_parser/parser.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/scene_parser/parser.cc
+..\..\tools\scene_parser\parser.obj : ..\..\tools\scene_parser\parser.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\scene_parser\parser.cc
 
-../../tools/scene_parser/table.obj : ../../tools/scene_parser/table.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/scene_parser/table.cc
+..\..\tools\scene_parser\table.obj : ..\..\tools\scene_parser\table.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\scene_parser\table.cc
 
 $(scene_exe) : $(scene_exe_obj)
 	@echo scene.exe
@@ -557,10 +557,10 @@ $(scene_exe) : $(scene_exe_obj)
 
 #===============================================================================
 velgen_exe_obj = \
-  ../../tools/velocity_generator/velgen.obj
+  ..\..\tools\velocity_generator\velgen.obj
 
-../../tools/velocity_generator/velgen.obj : ../../tools/velocity_generator/velgen.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tools/velocity_generator/velgen.cc
+..\..\tools\velocity_generator\velgen.obj : ..\..\tools\velocity_generator\velgen.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\velocity_generator\velgen.cc
 
 $(velgen_exe) : $(velgen_exe_obj)
 	@echo velgen.exe
@@ -568,14 +568,14 @@ $(velgen_exe) : $(velgen_exe_obj)
 
 #===============================================================================
 box_test_exe_obj = \
-  ../../tests/unit_test.obj \
-  ../../tests/box_test.obj
+  ..\..\tests\unit_test.obj \
+  ..\..\tests\box_test.obj
 
-../../tests/unit_test.obj : ../../tests/unit_test.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tests/unit_test.cc
+..\..\tests\unit_test.obj : ..\..\tests\unit_test.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tests\unit_test.cc
 
-../../tests/box_test.obj : ../../tests/box_test.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tests/box_test.cc
+..\..\tests\box_test.obj : ..\..\tests\box_test.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tests\box_test.cc
 
 $(box_test_exe) : $(box_test_exe_obj)
 	@echo box_test.exe
@@ -583,10 +583,10 @@ $(box_test_exe) : $(box_test_exe_obj)
 
 #===============================================================================
 io_test_exe_obj = \
-  ../../tests/io_test.obj
+  ..\..\tests\io_test.obj
 
-../../tests/io_test.obj : ../../tests/io_test.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tests/io_test.cc
+..\..\tests\io_test.obj : ..\..\tests\io_test.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tests\io_test.cc
 
 $(io_test_exe) : $(io_test_exe_obj)
 	@echo io_test.exe
@@ -594,10 +594,10 @@ $(io_test_exe) : $(io_test_exe_obj)
 
 #===============================================================================
 numeric_test_exe_obj = \
-  ../../tests/numeric_test.obj
+  ..\..\tests\numeric_test.obj
 
-../../tests/numeric_test.obj : ../../tests/numeric_test.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tests/numeric_test.cc
+..\..\tests\numeric_test.obj : ..\..\tests\numeric_test.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tests\numeric_test.cc
 
 $(numeric_test_exe) : $(numeric_test_exe_obj)
 	@echo numeric_test.exe
@@ -605,10 +605,10 @@ $(numeric_test_exe) : $(numeric_test_exe_obj)
 
 #===============================================================================
 vector_test_exe_obj = \
-  ../../tests/vector_test.obj
+  ..\..\tests\vector_test.obj
 
-../../tests/vector_test.obj : ../../tests/vector_test.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ../../tests/vector_test.cc
+..\..\tests\vector_test.obj : ..\..\tests\vector_test.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tests\vector_test.cc
 
 $(vector_test_exe) : $(vector_test_exe_obj)
 	@echo vector_test.exe

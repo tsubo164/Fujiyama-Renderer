@@ -126,7 +126,8 @@ static void mouse(int button, int state, int x, int y)
       btn = MB_MIDDLE;
       break;
     case GLUT_RIGHT_BUTTON:
-      btn = MB_RIGHT;
+      // TODO not sure why need cast only here
+      btn = static_cast<MouseButton>(MB_RIGHT);
       break;
     default:
       break;

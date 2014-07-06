@@ -243,7 +243,8 @@ void FbvPressButton(FrameBufferViewer *v, MouseButton button, int x, int y)
     v->dist_per_pixel = 1.f/v->scale;
     break;
   case MB_RIGHT:
-    v->pressbutton = MB_RIGHT;
+    // TODO not sure why need cast only here
+    v->pressbutton = static_cast<MouseButton>(MB_RIGHT);
     v->lockexponent = v->exponent;
     break;
   default:

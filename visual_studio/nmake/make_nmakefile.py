@@ -248,6 +248,11 @@ def init_target_list(target_list):
 		target['name_macro'] = target['name'].replace('.','_')
 		target['object_list_macro'] = target['name_macro'] + '_obj'
 
+		new_src_list = []
+		for src in target['source_list']:
+			new_src_list.append(src.replace('/', '\\'))
+		target['source_list'] = new_src_list
+
 		target['object_list'] = []
 		for src in target['source_list']:
 			if src.endswith('.cc'):
