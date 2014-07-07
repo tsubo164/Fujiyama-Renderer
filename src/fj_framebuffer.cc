@@ -6,6 +6,7 @@
 #include "fj_vector.h"
 #include "fj_color.h"
 
+#include <cstddef>
 #include <climits>
 #include <cassert>
 

@@ -5,6 +5,7 @@
 #include "fj_rectangle.h"
 #include "fj_numeric.h"
 
+#include <cstddef>
 #include <cassert>
 
 namespace fj {

@@ -7,6 +7,7 @@
 #include "fj_random.h"
 #include "fj_box.h"
 
+#include <cstddef>
 #include <cassert>
 #include <cmath>
 
