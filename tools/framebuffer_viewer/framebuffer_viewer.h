@@ -1,17 +1,17 @@
 // Copyright (c) 2011-2014 Hiroshi Tsubokawa
 // See LICENSE and README
 
-#ifndef FRAMEBUFFERVIEWER_H
-#define FRAMEBUFFERVIEWER_H
+#ifndef FRAMEBUFFER_VIEWER_H
+#define FRAMEBUFFER_VIEWER_H
 
 namespace fj {
 
-typedef enum MouseButton {
-  MB_NONE = 0,
-  MB_LEFT,
-  MB_MIDDLE,
-  MB_RIGHT
-} MouseButton;
+enum MouseButton {
+  MOUSE_BUTTON_NONE = 0,
+  MOUSE_BUTTON_LEFT,
+  MOUSE_BUTTON_MIDDLE,
+  MOUSE_BUTTON_RIGHT
+};
 
 class FrameBufferViewer;
 

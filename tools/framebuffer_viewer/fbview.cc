@@ -116,25 +116,25 @@ static void resize(int w, int h)
 static void mouse(int button, int state, int x, int y)
 {
   if (state == GLUT_DOWN) {
-    MouseButton btn = MB_NONE;
+    MouseButton btn = MOUSE_BUTTON_NONE;
     switch (button)
     {
     case GLUT_LEFT_BUTTON:
-      btn = MB_LEFT;
+      btn = MOUSE_BUTTON_LEFT;
       break;
     case GLUT_MIDDLE_BUTTON:
-      btn = MB_MIDDLE;
+      btn = MOUSE_BUTTON_MIDDLE;
       break;
     case GLUT_RIGHT_BUTTON:
       // TODO not sure why need cast only here
-      btn = static_cast<MouseButton>(MB_RIGHT);
+      btn = MOUSE_BUTTON_RIGHT;
       break;
     default:
       break;
     }
     FbvPressButton(viewer, btn, x, y);
   } else if (state == GLUT_UP) {
-    FbvReleaseButton(viewer, MB_NONE, x, y);
+    FbvReleaseButton(viewer, MOUSE_BUTTON_NONE, x, y);
   }
 }
 

@@ -79,7 +79,7 @@ static void clear_image_viewer(FrameBufferViewer *v)
   v->win_height = 0;
   v->diplay_channel = DISPLAY_RGB;
 
-  v->pressbutton = MB_NONE;
+  v->pressbutton = MOUSE_BUTTON_NONE;
 
   set_to_home_position(v);
 
@@ -194,7 +194,7 @@ void FbvPressButton(FrameBufferViewer *v, MouseButton button, int x, int y)
   v->ypresspos = y;
 
   switch (button) {
-  case MB_LEFT:
+  case MOUSE_BUTTON_LEFT:
 #if 0
     {
       const float *buf;
@@ -236,15 +236,14 @@ void FbvPressButton(FrameBufferViewer *v, MouseButton button, int x, int y)
         }
 #endif
     break;
-  case MB_MIDDLE:
-    v->pressbutton = MB_MIDDLE;
+  case MOUSE_BUTTON_MIDDLE:
+    v->pressbutton = MOUSE_BUTTON_MIDDLE;
     v->xlockoffset = v->xoffset;
     v->ylockoffset = v->yoffset;
     v->dist_per_pixel = 1.f/v->scale;
     break;
-  case MB_RIGHT:
-    // TODO not sure why need cast only here
-    v->pressbutton = static_cast<MouseButton>(MB_RIGHT);
+  case MOUSE_BUTTON_RIGHT:
+    v->pressbutton = MOUSE_BUTTON_RIGHT;
     v->lockexponent = v->exponent;
     break;
   default:
@@ -254,7 +253,7 @@ void FbvPressButton(FrameBufferViewer *v, MouseButton button, int x, int y)
 
 void FbvReleaseButton(FrameBufferViewer *v, MouseButton button, int x, int y)
 {
-  v->pressbutton = MB_NONE;
+  v->pressbutton = MOUSE_BUTTON_NONE;
 }
 
 void FbvMoveMouse(FrameBufferViewer *v, int x, int y)
@@ -263,11 +262,11 @@ void FbvMoveMouse(FrameBufferViewer *v, int x, int y)
   const int posy = y;
 
   switch (v->pressbutton) {
-  case MB_MIDDLE:
+  case MOUSE_BUTTON_MIDDLE:
     v->xoffset = v->xlockoffset + v->dist_per_pixel * (posx - v->xpresspos);
     v->yoffset = v->ylockoffset - v->dist_per_pixel * (posy - v->ypresspos);
     break;
-  case MB_RIGHT:
+  case MOUSE_BUTTON_RIGHT:
     v->exponent = v->lockexponent + .01f * (float)(
           (posx - v->xpresspos) -
           (posy - v->ypresspos));
