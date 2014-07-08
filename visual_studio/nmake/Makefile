@@ -615,6 +615,13 @@ $(vector_test_exe) : $(vector_test_exe_obj)
 	@$(LD) $(LDFLAGS) /out:$@  libscene.lib ../../tests/unit_test.obj $(vector_test_exe_obj)
 
 #===============================================================================
+check:
+	@$(box_test_exe)
+	@$(io_test_exe)
+	@$(numeric_test_exe)
+	@$(vector_test_exe)
+
+#===============================================================================
 clean:
 	$(RM) $(libscene_dll)
 	$(RM) $(libscene_dll_obj)

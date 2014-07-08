@@ -330,6 +330,15 @@ def make_target_obj(src, obj, additional_cflags):
 	text += '\n'
 	return text
 
+def make_target_check(target_list):
+	text = ''
+	text += make_target_header('check')
+	text += 'check:\n'
+	for target in target_list:
+		if target['name_macro'].endswith('_test_exe'):
+			text += '\t@$(' + target['name_macro'] + ')\n'
+	return text
+
 def make_target_clean(target_list):
 	text = ''
 	text += make_target_header('clean')
@@ -364,6 +373,9 @@ if __name__ == '__main__':
 	for target in target_list:
 		fprint(f, make_target(target))
 		fprint(f, '\n')
+
+	fprint(f, make_target_check(target_list))
+	fprint(f, '\n')
 
 	fprint(f, make_target_clean(target_list))
 	fprint(f, '\n')
