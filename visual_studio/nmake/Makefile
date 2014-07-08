@@ -276,8 +276,8 @@ $(libscene_dll) : $(libscene_dll_obj)
 	@echo libscene.dll
 	@$(LD) $(LDFLAGS) /out:$@ /DLL  $(libscene_dll_obj)
 
-libscene_dll_lib = $(out_dir)\libscene_dll_lib
-libscene_dll_exp = $(out_dir)\libscene_dll_exp
+libscene_dll_lib = $(out_dir)\libscene.lib
+libscene_dll_exp = $(out_dir)\libscene.exp
 
 #===============================================================================
 cube_exe_obj = \
@@ -301,8 +301,8 @@ $(ConstantShader_dll) : $(ConstantShader_dll_obj)
 	@echo ConstantShader.dll
 	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(ConstantShader_dll_obj)
 
-ConstantShader_dll_lib = $(out_dir)\ConstantShader_dll_lib
-ConstantShader_dll_exp = $(out_dir)\ConstantShader_dll_exp
+ConstantShader_dll_lib = $(out_dir)\ConstantShader.lib
+ConstantShader_dll_exp = $(out_dir)\ConstantShader.exp
 
 #===============================================================================
 GlassShader_dll_obj = \
@@ -315,8 +315,8 @@ $(GlassShader_dll) : $(GlassShader_dll_obj)
 	@echo GlassShader.dll
 	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(GlassShader_dll_obj)
 
-GlassShader_dll_lib = $(out_dir)\GlassShader_dll_lib
-GlassShader_dll_exp = $(out_dir)\GlassShader_dll_exp
+GlassShader_dll_lib = $(out_dir)\GlassShader.lib
+GlassShader_dll_exp = $(out_dir)\GlassShader.exp
 
 #===============================================================================
 HairShader_dll_obj = \
@@ -329,8 +329,8 @@ $(HairShader_dll) : $(HairShader_dll_obj)
 	@echo HairShader.dll
 	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(HairShader_dll_obj)
 
-HairShader_dll_lib = $(out_dir)\HairShader_dll_lib
-HairShader_dll_exp = $(out_dir)\HairShader_dll_exp
+HairShader_dll_lib = $(out_dir)\HairShader.lib
+HairShader_dll_exp = $(out_dir)\HairShader.exp
 
 #===============================================================================
 PlasticShader_dll_obj = \
@@ -343,8 +343,8 @@ $(PlasticShader_dll) : $(PlasticShader_dll_obj)
 	@echo PlasticShader.dll
 	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(PlasticShader_dll_obj)
 
-PlasticShader_dll_lib = $(out_dir)\PlasticShader_dll_lib
-PlasticShader_dll_exp = $(out_dir)\PlasticShader_dll_exp
+PlasticShader_dll_lib = $(out_dir)\PlasticShader.lib
+PlasticShader_dll_exp = $(out_dir)\PlasticShader.exp
 
 #===============================================================================
 SSSShader_dll_obj = \
@@ -357,8 +357,8 @@ $(SSSShader_dll) : $(SSSShader_dll_obj)
 	@echo SSSShader.dll
 	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(SSSShader_dll_obj)
 
-SSSShader_dll_lib = $(out_dir)\SSSShader_dll_lib
-SSSShader_dll_exp = $(out_dir)\SSSShader_dll_exp
+SSSShader_dll_lib = $(out_dir)\SSSShader.lib
+SSSShader_dll_exp = $(out_dir)\SSSShader.exp
 
 #===============================================================================
 VolumeShader_dll_obj = \
@@ -371,8 +371,8 @@ $(VolumeShader_dll) : $(VolumeShader_dll_obj)
 	@echo VolumeShader.dll
 	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(VolumeShader_dll_obj)
 
-VolumeShader_dll_lib = $(out_dir)\VolumeShader_dll_lib
-VolumeShader_dll_exp = $(out_dir)\VolumeShader_dll_exp
+VolumeShader_dll_lib = $(out_dir)\VolumeShader.lib
+VolumeShader_dll_exp = $(out_dir)\VolumeShader.exp
 
 #===============================================================================
 PointCloudsProcedure_dll_obj = \
@@ -385,8 +385,8 @@ $(PointCloudsProcedure_dll) : $(PointCloudsProcedure_dll_obj)
 	@echo PointCloudsProcedure.dll
 	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(PointCloudsProcedure_dll_obj)
 
-PointCloudsProcedure_dll_lib = $(out_dir)\PointCloudsProcedure_dll_lib
-PointCloudsProcedure_dll_exp = $(out_dir)\PointCloudsProcedure_dll_exp
+PointCloudsProcedure_dll_lib = $(out_dir)\PointCloudsProcedure.lib
+PointCloudsProcedure_dll_exp = $(out_dir)\PointCloudsProcedure.exp
 
 #===============================================================================
 SplineWispsProcedure_dll_obj = \
@@ -399,8 +399,8 @@ $(SplineWispsProcedure_dll) : $(SplineWispsProcedure_dll_obj)
 	@echo SplineWispsProcedure.dll
 	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(SplineWispsProcedure_dll_obj)
 
-SplineWispsProcedure_dll_lib = $(out_dir)\SplineWispsProcedure_dll_lib
-SplineWispsProcedure_dll_exp = $(out_dir)\SplineWispsProcedure_dll_exp
+SplineWispsProcedure_dll_lib = $(out_dir)\SplineWispsProcedure.lib
+SplineWispsProcedure_dll_exp = $(out_dir)\SplineWispsProcedure.exp
 
 #===============================================================================
 SurfaceWispsProcedure_dll_obj = \
@@ -413,8 +413,8 @@ $(SurfaceWispsProcedure_dll) : $(SurfaceWispsProcedure_dll_obj)
 	@echo SurfaceWispsProcedure.dll
 	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(SurfaceWispsProcedure_dll_obj)
 
-SurfaceWispsProcedure_dll_lib = $(out_dir)\SurfaceWispsProcedure_dll_lib
-SurfaceWispsProcedure_dll_exp = $(out_dir)\SurfaceWispsProcedure_dll_exp
+SurfaceWispsProcedure_dll_lib = $(out_dir)\SurfaceWispsProcedure.lib
+SurfaceWispsProcedure_dll_exp = $(out_dir)\SurfaceWispsProcedure.exp
 
 #===============================================================================
 curvegen_exe_obj = \

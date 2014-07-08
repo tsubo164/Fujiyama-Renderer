@@ -263,6 +263,8 @@ def init_target_list(target_list):
 		target['lib_macro'] = ''
 		target['exp_macro'] = ''
 		if target['name'].endswith('.dll'):
+			target['lib_name']  = target['name'].replace('.dll', '.lib')
+			target['exp_name']  = target['name'].replace('.dll', '.exp')
 			target['lib_macro'] = target['name_macro'] + '_lib'
 			target['exp_macro'] = target['name_macro'] + '_exp'
 
@@ -316,8 +318,8 @@ def make_target(target):
 
 	if target['lib_macro']:
 		text += '\n'
-		text += target['lib_macro'] + ' = $(out_dir)\\' + target['lib_macro'] + '\n'
-		text += target['exp_macro'] + ' = $(out_dir)\\' + target['exp_macro'] + '\n'
+		text += target['lib_macro'] + ' = $(out_dir)\\' + target['lib_name'] + '\n'
+		text += target['exp_macro'] + ' = $(out_dir)\\' + target['exp_name'] + '\n'
 
 	return text
 
