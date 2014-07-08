@@ -100,6 +100,11 @@ int main(int argc, const char **argv)
   filename = (char *) argv[1];
   in_ply = ply_open_for_reading(filename, &nelems, &elem_names, &file_type, &version);
 
+  if (in_ply == NULL) {
+    fprintf(stderr, "error: couldn't open input file: %s\n", argv[1]);
+    return -1;
+  }
+
   for (i = 0; i < nelems; i++) {
     PlyElement *elem = in_ply->elems[i];
 

@@ -63,7 +63,11 @@ int main(int argc, const char **argv)
     int i;
 
     Mesh mesh;
-    MshLoadFile(&mesh, in_filename);
+    const int err = MshLoadFile(&mesh, in_filename);
+    if (err) {
+      fprintf(stderr, "error: couldn't open input file: %s\n", in_filename);
+      return -1;
+    }
 
     face_count = mesh.GetFaceCount();
     std::vector<int> point_count_list(face_count);

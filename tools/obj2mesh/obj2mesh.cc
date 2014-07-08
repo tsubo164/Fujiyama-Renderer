@@ -206,6 +206,7 @@ int ObjBufferFromFile(ObjBuffer *buffer, const char *filename)
 
   err = ObjParse(parser, filename);
   if (err) {
+    fprintf(stderr, "error: couldn't open input file: %s\n", filename);
     return -1;
   }
 

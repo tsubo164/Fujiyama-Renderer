@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-#Copyright (c) 2011-2014 Hiroshi Tsubokawa
-#See LICENSE.txt and README.txt
+# Copyright (c) 2011-2014 Hiroshi Tsubokawa
+# See LICENSE.txt and README.txt
 
 import os, glob, shutil, zipfile, sys
 
 fujiyama_dir = 'Fujiyama-Renderer'
 
 readme_txt = """\
-#Copyright (c) 2011-2014 Hiroshi Tsubokawa
-#See LICENSE.txt and README.txt
+# Copyright (c) 2011-2014 Hiroshi Tsubokawa
+# See LICENSE.txt and README.txt
 
 Fujiyama Renderer for Windows 64bit
 ===================================
@@ -36,7 +36,7 @@ def mkdir_p(pth):
 
 if len(sys.argv) != 2:
     print 'error: provide a version'
-    print 'Usage:', __file__, 'v0.2.6'
+    print 'Usage:', __file__, '0.2.7'
     exit()
 
 version = sys.argv[1]

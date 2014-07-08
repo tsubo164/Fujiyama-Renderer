@@ -242,7 +242,9 @@ int ObjParse(ObjParser *parser, const char *filename)
   return 0;
 
 parse_error:
-  fclose(file);
+  if (file != NULL) {
+    fclose(file);
+  }
   return -1;
 }
 
