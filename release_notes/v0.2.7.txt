@@ -1,0 +1,20 @@
+Fujiyama Renderer v0.2.7(Alpha) Release Notes
+=============================================
+
+New features since v0.2.6
+-------------------------
+ * Started re-writing sources in C++.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Mesh primitive group
+ * Global illumination
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support

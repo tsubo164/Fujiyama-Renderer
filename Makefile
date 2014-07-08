@@ -1,5 +1,5 @@
-#Copyright (c) 2011-2014 Hiroshi Tsubokawa
-#See LICENSE and README
+# Copyright (c) 2011-2014 Hiroshi Tsubokawa
+# See LICENSE and README
 
 MAKE    = make --no-print-directory
 INSTALL = install
