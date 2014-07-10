@@ -10,48 +10,47 @@
 
 namespace obj {
 
-class VectorValue {
+class Vertex {
 public:
-  VectorValue() :
-      min_ncomponents(3),
-      max_ncomponents(3),
-      scanned_ncomponents(0),
+  Vertex() :
+      data_count(0),
       x(0.), y(0.), z(0.), w(0.) {}
-  ~VectorValue() {}
+  Vertex(int count, double xx, double yy, double zz, double ww) :
+      data_count(count),
+      x(xx), y(yy), z(zz), w(ww) {}
+  ~Vertex() {}
 
 public:
-  int min_ncomponents;
-  int max_ncomponents;
-  int scanned_ncomponents;
+  int data_count;
   double x, y, z, w;
 };
 
-class ObjIndex {
+class Triplet {
 public:
-  ObjIndex() :
+  Triplet() :
       v(0), vt(0), vn(0),
       has_v(false), has_vt(false), has_vn(false) {}
-  ~ObjIndex() {}
+  ~Triplet() {}
 
 public:
   long v, vt, vn;
   bool has_v, has_vt, has_vn;
 };
 
-class IndexList {
+class TripletList {
   static const size_t INITIAL_INDEX_ALLOC = 8;
 public:
-  IndexList() :
+  TripletList() :
       vertex_ (INITIAL_INDEX_ALLOC),
       texture_(INITIAL_INDEX_ALLOC),
       normal_ (INITIAL_INDEX_ALLOC) {}
-  ~IndexList() {}
+  ~TripletList() {}
 
-  void Push(const ObjIndex &index)
+  void Push(const Triplet &triplet)
   {
-      if (index.has_v)  vertex_.push_back(index.v);
-      if (index.has_vt) texture_.push_back(index.vt);
-      if (index.has_vn) normal_.push_back(index.vn);
+      if (triplet.has_v)  vertex_.push_back(triplet.v);
+      if (triplet.has_vt) texture_.push_back(triplet.vt);
+      if (triplet.has_vn) normal_.push_back(triplet.vn);
   }
 
   void Clear()
@@ -76,52 +75,55 @@ private:
   std::vector<long> normal_;
 };
 
-inline std::istream &operator>>(std::istream &is, ObjIndex &index)
+static Triplet get_triplet(std::istream &is)
 {
-  is >> index.v;
-  index.has_v = true;
+  Triplet triplet;
+
+  is >> triplet.v;
+  triplet.has_v = true;
   if (is.get() != '/') {
-    return is;
+    return triplet;
   }
 
   if (is.peek() == '/') {
     is.get(); // skip '/'
-    is >> index.vn;
-    index.has_vn = true;
-    return is;
+    is >> triplet.vn;
+    triplet.has_vn = true;
+    return triplet;
   }
 
-  is >> index.vt;
-  index.has_vt = true;
+  is >> triplet.vt;
+  triplet.has_vt = true;
   if (is.get() != '/') {
-    return is;
+    return triplet;
   }
 
-  is >> index.vn;
-  index.has_vn = true;
-  return is;
+  is >> triplet.vn;
+  triplet.has_vn = true;
+
+  return triplet;
 }
 
-inline std::istream &operator>>(std::istream &is, VectorValue &vector)
+static Vertex get_vector(std::istream &is)
 {
   double v[4] = {0, 0, 0, 0};
-  int i;
+  int data_count = 0;
 
-  for (i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; i++) {
     is >> v[i];
     if (!is) {
       is.clear();
       break;
     }
+    data_count++;
   }
 
-  vector.scanned_ncomponents = i;
-  vector.x = v[0];
-  vector.y = v[1];
-  vector.z = v[2];
-  vector.w = v[3];
-
-  return is;
+  return Vertex(
+      data_count,
+      v[0],
+      v[1],
+      v[2],
+      v[3]);
 }
 
 static std::string trimed(const std::string &line)
@@ -135,9 +137,39 @@ static std::string trimed(const std::string &line)
   return line.substr(f, l - f + 1);
 }
 
+static long reindicing_single(long total, long index)
+{
+  if (index > 0) {
+    return index - 1;
+  } else if (index < 0) {
+    return index + total;
+  } else {
+    return 0;
+  }
+}
+
+static void reindicing(long v_count, long vt_count, long vn_count, Triplet *triplet)
+{
+  triplet->v  = reindicing_single(v_count,  triplet->v);
+  triplet->vt = reindicing_single(vt_count, triplet->vt);
+  triplet->vn = reindicing_single(vn_count, triplet->vn);
+}
+
+ObjParser::ObjParser() :
+    v_count_(0),
+    vt_count_(0),
+    vn_count_(0),
+    f_count_(0)
+{
+}
+
+ObjParser::~ObjParser()
+{
+}
+
 int ObjParser::Parse(std::istream &stream)
 {
-  IndexList list;
+  TripletList triplets;
   std::string line;
 
   while (getline(stream, line)) {
@@ -146,46 +178,35 @@ int ObjParser::Parse(std::istream &stream)
     iss >> tag;
 
     if (tag == "v") {
-      VectorValue vector;
-      vector.min_ncomponents = 3;
-      vector.max_ncomponents = 4;
-      iss >> vector;
-
-      read_v(vector.scanned_ncomponents, vector.x, vector.y, vector.z, vector.w);
+      const Vertex vertex = get_vector(iss);
+      read_v(vertex.data_count, vertex.x, vertex.y, vertex.z, vertex.w);
+      v_count_++;
     }
     else if (tag == "vt") {
-      VectorValue vector;
-      vector.min_ncomponents = 1;
-      vector.max_ncomponents = 3;
-      iss >> vector;
-
-      read_vt(vector.scanned_ncomponents, vector.x, vector.y, vector.z, vector.w);
+      const Vertex vertex = get_vector(iss);
+      read_vt(vertex.data_count, vertex.x, vertex.y, vertex.z, vertex.w);
+      vt_count_++;
     }
     else if (tag == "vn") {
-      VectorValue vector;
-      vector.min_ncomponents = 3;
-      vector.max_ncomponents = 3;
-      iss >> vector;
-
-      read_vn(vector.scanned_ncomponents, vector.x, vector.y, vector.z, vector.w);
+      const Vertex vertex = get_vector(iss);
+      read_vn(vertex.data_count, vertex.x, vertex.y, vertex.z, vertex.w);
+      vn_count_++;
     }
     else if (tag == "f") {
-      list.Clear();
+      triplets.Clear();
+
       while (iss) {
-        ObjIndex index;
-        iss >> index;
-        // TODO make relative_to_abs
-        index.v--;
-        index.vt--;
-        index.vn--;
-        list.Push(index);
+        Triplet triplet = get_triplet(iss);
+        reindicing(v_count_, vt_count_, vn_count_, &triplet);
+        triplets.Push(triplet);
       }
 
-      const long *vertex  = list.GetVertex();
-      const long *texture = list.GetTexture();
-      const long *normal  = list.GetVertex();
-
-      read_f(list.Count(), vertex, texture, normal);
+      read_f(
+          triplets.Count(),
+          triplets.GetVertex(),
+          triplets.GetTexture(),
+          triplets.GetVertex());
+      f_count_++;
     }
   }
 

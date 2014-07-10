@@ -10,8 +10,8 @@ namespace obj {
 
 class ObjParser {
 public:
-  ObjParser() {}
-  virtual ~ObjParser() {}
+  ObjParser();
+  virtual ~ObjParser();
 
   int Parse(std::istream &stream);
 
@@ -24,6 +24,11 @@ private:
       const long *v_indices,
       const long *vt_indices,
       const long *vn_indices) {}
+
+  long v_count_;
+  long vt_count_;
+  long vn_count_;
+  long f_count_;
 };
 
 } // namespace xxx
