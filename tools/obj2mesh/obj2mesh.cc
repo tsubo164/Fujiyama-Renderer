@@ -20,10 +20,10 @@ static const char USAGE[] =
 "  --help         Display this information\n"
 "\n";
 
-class ObjBuffer {
+class ObjBuffer : public obj::ObjParser {
 public:
   ObjBuffer() : nverts(0), nfaces(0) {}
-  ~ObjBuffer() {}
+  virtual ~ObjBuffer() {}
 
 public:
   std::vector<Vector>   P;
@@ -35,9 +35,60 @@ public:
 
   long nverts;
   long nfaces;
+
+private:
+  // overriding callbacks
+  virtual void read_v (int ncomponents, double x, double y, double z, double w)
+  {
+    P.push_back(Vector(x, y, z));
+    nverts++;
+  }
+  virtual void read_vt(int ncomponents, double x, double y, double z, double w)
+  {
+    uv.push_back(TexCoord(x, y));
+  }
+  virtual void read_vn(int ncomponents, double x, double y, double z, double w)
+  {
+    N.push_back(Vector(x, y, z));
+  }
+
+  virtual void read_f(long index_count,
+    const long *v_indices,
+    const long *vt_indices,
+    const long *vn_indices)
+  {
+    const int ntriangles = index_count - 2;
+
+    for (int i = 0; i < ntriangles; i++) {
+      if (v_indices != NULL) {
+        const Index3 tri_index(
+            v_indices[0],
+            v_indices[i + 1],
+            v_indices[i + 2]);
+        vertex_indices.push_back(tri_index);
+      }
+
+      if (vt_indices != NULL) {
+        const Index3 tri_index(
+            vt_indices[0],
+            vt_indices[i + 1],
+            vt_indices[i + 2]);
+        texture_indices.push_back(tri_index);
+      }
+
+      if (vn_indices != NULL) {
+        const Index3 tri_index(
+            vn_indices[0],
+            vn_indices[i + 1],
+            vn_indices[i + 2]);
+        normal_indices.push_back(tri_index);
+      }
+    }
+
+    nfaces += ntriangles;
+  }
 };
 
-extern int ObjBufferFromFile(ObjBuffer *buffer, const char *filename);
 extern int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename);
 extern int ObjBufferComputeNormals(ObjBuffer *buffer);
 
@@ -63,9 +114,9 @@ int main(int argc, const char **argv)
 
   ObjBuffer buffer;
 
-  err = ObjBufferFromFile(&buffer, in_filename);
+  err = buffer.Parse(in_filename);
   if (err) {
-    // TODO error handling
+    fprintf(stderr, "error: couldn't open input file: %s\n", in_filename);
     return -1;
   }
 
@@ -84,133 +135,6 @@ int main(int argc, const char **argv)
   printf("nverts: %ld\n", buffer.nverts);
   printf("nfaces: %ld\n", buffer.nfaces);
 
-  return 0;
-}
-
-static int read_vertx(
-    void *interpreter,
-    int scanned_ncomponents,
-    double x,
-    double y,
-    double z,
-    double w)
-{
-  ObjBuffer *buffer = (ObjBuffer *) interpreter;
-  Vector P;
-
-  P.x = x;
-  P.y = y;
-  P.z = z;
-  buffer->P.push_back(P);
-
-  buffer->nverts++;
-  return 0;
-}
-
-static int read_texture(
-    void *interpreter,
-    int scanned_ncomponents,
-    double x,
-    double y,
-    double z,
-    double w)
-{
-  ObjBuffer *buffer = (ObjBuffer *) interpreter;
-  TexCoord uv;
-
-  uv.u = x;
-  uv.v = y;
-  buffer->uv.push_back(uv);
-
-  return 0;
-}
-
-static int read_normal(
-    void *interpreter,
-    int scanned_ncomponents,
-    double x,
-    double y,
-    double z,
-    double w)
-{
-  ObjBuffer *buffer = (ObjBuffer *) interpreter;
-  Vector N;
-
-  N.x = x;
-  N.y = y;
-  N.z = z;
-  buffer->N.push_back(N);
-
-  return 0;
-}
-
-static int read_face(
-    void *interpreter,
-    long index_count,
-    const long *vertex_indices,
-    const long *texture_indices,
-    const long *normal_indices)
-{
-  ObjBuffer *buffer = (ObjBuffer *) interpreter;
-  int i;
-
-  const int ntriangles = index_count - 2;
-
-  for (i = 0; i < ntriangles; i++) {
-    if (vertex_indices != NULL) {
-      Index3 tri_index;
-      tri_index.i0 = vertex_indices[0] - 1;
-      tri_index.i1 = vertex_indices[i + 1] - 1;
-      tri_index.i2 = vertex_indices[i + 2] - 1;
-      buffer->vertex_indices.push_back(tri_index);
-    }
-
-    if (texture_indices != NULL) {
-      Index3 tri_index;
-      tri_index.i0 = texture_indices[0] - 1;
-      tri_index.i1 = texture_indices[i + 1] - 1;
-      tri_index.i2 = texture_indices[i + 2] - 1;
-      buffer->texture_indices.push_back(tri_index);
-    }
-
-    if (normal_indices != NULL) {
-      Index3 tri_index;
-      tri_index.i0 = normal_indices[0] - 1;
-      tri_index.i1 = normal_indices[i + 1] - 1;
-      tri_index.i2 = normal_indices[i + 2] - 1;
-      buffer->normal_indices.push_back(tri_index);
-    }
-  }
-
-  buffer->nfaces += ntriangles;
-  return 0;
-}
-
-int ObjBufferFromFile(ObjBuffer *buffer, const char *filename)
-{
-  ObjParser *parser = NULL;
-  int err = 0;
-
-  if (buffer == NULL)
-    return -1;
-
-  if (filename == NULL)
-    return -1;
-
-  parser = ObjParserNew(
-      buffer,
-      read_vertx,
-      read_texture,
-      read_normal,
-      read_face);
-
-  err = ObjParse(parser, filename);
-  if (err) {
-    fprintf(stderr, "error: couldn't open input file: %s\n", filename);
-    return -1;
-  }
-
-  ObjParserFree(parser);
   return 0;
 }
 

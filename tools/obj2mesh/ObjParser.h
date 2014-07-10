@@ -4,36 +4,26 @@
 #ifndef OBJPARSER_H
 #define OBJPARSER_H
 
-namespace fj {
+namespace obj {
 
-class ObjParser;
+class ObjParser {
+public:
+  ObjParser() {}
+  virtual ~ObjParser() {}
 
-typedef int (*ReadVertxFunction)(
-    void *interpreter,
-    int scanned_ncomponents,
-    double x,
-    double y,
-    double z,
-    double w);
+  int Parse(const char *filename);
 
-typedef int (*ReadFaceFunction)(
-    void *interpreter,
-    long index_count,
-    const long *vertex_indices,
-    const long *texture_indices,
-    const long *normal_indices);
+private:
+  virtual void read_v (int ncomponents, double x, double y, double z, double w) {}
+  virtual void read_vt(int ncomponents, double x, double y, double z, double w) {}
+  virtual void read_vn(int ncomponents, double x, double y, double z, double w) {}
 
-extern ObjParser *ObjParserNew(
-    void *interpreter,
-    ReadVertxFunction read_vertex_function,
-    ReadVertxFunction read_texture_function,
-    ReadVertxFunction read_normal_function,
-    ReadFaceFunction read_face_function);
-
-extern void ObjParserFree(ObjParser *parser);
-
-extern int ObjParse(ObjParser *parser, const char *filename);
+  virtual void read_f(long index_count,
+      const long *v_indices,
+      const long *vt_indices,
+      const long *vn_indices) {}
+};
 
 } // namespace xxx
 
-#endif // FJ_XXX_H
+#endif // XXX_H

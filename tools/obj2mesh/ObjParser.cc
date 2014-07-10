@@ -2,22 +2,13 @@
 // See LICENSE and README
 
 #include "ObjParser.h"
+
 #include <vector>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cctype>
+#include <sstream>
+#include <fstream>
+#include <string>
 
-namespace fj {
-
-enum { INITIAL_INDEX_ALLOC = 8 };
-
-enum TripletType {
-  FACE_V = 0,
-  FACE_V_VT,
-  FACE_V__VN,
-  FACE_V_VT_VN
-};
+namespace obj {
 
 class VectorValue {
 public:
@@ -25,8 +16,7 @@ public:
       min_ncomponents(3),
       max_ncomponents(3),
       scanned_ncomponents(0),
-      x(0.), y(0.), z(0.), w(0.)
-  {}
+      x(0.), y(0.), z(0.), w(0.) {}
   ~VectorValue() {}
 
 public:
@@ -36,427 +26,175 @@ public:
   double x, y, z, w;
 };
 
+class ObjIndex {
+public:
+  ObjIndex() :
+      v(0), vt(0), vn(0),
+      has_v(false), has_vt(false), has_vn(false) {}
+  ~ObjIndex() {}
+
+public:
+  long v, vt, vn;
+  bool has_v, has_vt, has_vn;
+};
+
 class IndexList {
+  static const size_t INITIAL_INDEX_ALLOC = 8;
 public:
   IndexList() :
-      triplet(FACE_V),
-      vertex (INITIAL_INDEX_ALLOC),
-      texture(INITIAL_INDEX_ALLOC),
-      normal (INITIAL_INDEX_ALLOC)
-  {
-  }
+      vertex_ (INITIAL_INDEX_ALLOC),
+      texture_(INITIAL_INDEX_ALLOC),
+      normal_ (INITIAL_INDEX_ALLOC) {}
   ~IndexList() {}
 
-public:
-  int triplet;
-  std::vector<long> vertex;
-  std::vector<long> texture;
-  std::vector<long> normal;
-};
-
-static void push_index(IndexList *list, long v, long vt, long vn);
-static void clear_index_list(IndexList *list);
-
-static const char *scan_vector(const char *line, VectorValue *vector);
-static const char *scan_index_list(IndexList *list, const char *line);
-static int detect_triplet(const char *line);
-
-static char *trim_line(char *line);
-static int is_separator(int c);
-static int match_token(const char *line, const char *token);
-
-class ObjParser {
-public:
-  ObjParser() {}
-  ~ObjParser() {}
-
-public:
-  void *interpreter;
-  ReadVertxFunction ReadVertex;
-  ReadVertxFunction ReadTexture;
-  ReadVertxFunction ReadNormal;
-  ReadFaceFunction  ReadFace;
-};
-
-ObjParser *ObjParserNew(
-    void *interpreter,
-    ReadVertxFunction read_vertex_function,
-    ReadVertxFunction read_texture_function,
-    ReadVertxFunction read_normal_function,
-    ReadFaceFunction read_face_function)
-{
-  ObjParser *parser = new ObjParser();
-
-  parser->interpreter = interpreter;
-  parser->ReadVertex = read_vertex_function;
-  parser->ReadTexture = read_texture_function;
-  parser->ReadNormal = read_normal_function;
-  parser->ReadFace = read_face_function;
-
-  return parser;
-}
-
-void ObjParserFree(ObjParser *parser)
-{
-  if (parser == NULL)
-    return;
-
-  delete parser;
-}
-
-int ObjParse(ObjParser *parser, const char *filename)
-{
-  IndexList list;
-  FILE *file = fopen(filename, "r");
-  char buf[4096] = {'\0'};
-  int err = 0;
-
-  if (file == NULL) {
-    goto parse_error;
+  void Push(const ObjIndex &index)
+  {
+      if (index.has_v)  vertex_.push_back(index.v);
+      if (index.has_vt) texture_.push_back(index.vt);
+      if (index.has_vn) normal_.push_back(index.vn);
   }
 
-  while (fgets(buf, 4096, file)) {
-    const char *line = trim_line(buf);
+  void Clear()
+  {
+    vertex_.clear();
+    texture_.clear();
+    normal_.clear();
+  }
 
-    if (match_token(line, "v")) {
+  long Count() const
+  {
+    return vertex_.size();
+  }
+
+  const long *GetVertex()  const { return vertex_.empty() ? NULL : &vertex_[0]; }
+  const long *GetTexture() const { return texture_.empty() ? NULL : &texture_[0]; }
+  const long *GetNormal()  const { return normal_.empty() ? NULL : &normal_[0]; }
+
+private:
+  std::vector<long> vertex_;
+  std::vector<long> texture_;
+  std::vector<long> normal_;
+};
+
+inline std::istream &operator>>(std::istream &is, ObjIndex &index)
+{
+  is >> index.v;
+  index.has_v = true;
+  if (is.get() != '/') {
+    return is;
+  }
+
+  if (is.peek() == '/') {
+    is.get(); // skip '/'
+    is >> index.vn;
+    index.has_vn = true;
+    return is;
+  }
+
+  is >> index.vt;
+  index.has_vt = true;
+  if (is.get() != '/') {
+    return is;
+  }
+
+  is >> index.vn;
+  index.has_vn = true;
+  return is;
+}
+
+inline std::istream &operator>>(std::istream &is, VectorValue &vector)
+{
+  double v[4] = {0, 0, 0, 0};
+  int i;
+
+  for (i = 0; i < 4; i++) {
+    is >> v[i];
+    if (!is) {
+      is.clear();
+      break;
+    }
+  }
+
+  vector.scanned_ncomponents = i;
+  vector.x = v[0];
+  vector.y = v[1];
+  vector.z = v[2];
+  vector.w = v[3];
+
+  return is;
+}
+
+static std::string trimed(const std::string &line)
+{
+  const char white_spaces[] = " \t\f\v\n\r";
+  size_t f = line.find_first_not_of(white_spaces);
+  size_t l = line.find_last_not_of(white_spaces);
+
+  if (f == std::string::npos) f = 0;
+
+  return line.substr(f, l - f + 1);
+}
+
+int ObjParser::Parse(const char *filename)
+{
+  std::ifstream file(filename);
+  if (!file) {
+    return -1;
+  }
+
+  IndexList list;
+  std::string line;
+
+  while (getline(file, line)) {
+    std::istringstream iss(trimed(line));
+    std::string tag;
+    iss >> tag;
+
+    if (tag == "v") {
       VectorValue vector;
       vector.min_ncomponents = 3;
       vector.max_ncomponents = 4;
-      if (parser->ReadVertex == NULL) {
-        continue;
-      }
+      iss >> vector;
 
-      line += 1; // skip "v"
-      line = scan_vector(line, &vector);
-      if (line == NULL) {
-        goto parse_error;
-      }
-
-      if (line[0] != '\0') {
-        goto parse_error;
-      }
-
-      err = parser->ReadVertex(parser->interpreter,
-          vector.scanned_ncomponents,
-          vector.x, vector.y, vector.z, vector.w);
-      if (err) {
-        goto parse_error;
-      }
+      read_v(vector.scanned_ncomponents, vector.x, vector.y, vector.z, vector.w);
     }
-    else if (match_token(line, "vt")) {
+    else if (tag == "vt") {
       VectorValue vector;
       vector.min_ncomponents = 1;
       vector.max_ncomponents = 3;
-      if (parser->ReadTexture == NULL) {
-        continue;
-      }
+      iss >> vector;
 
-      line += 2; // skip "vt"
-      line = scan_vector(line, &vector);
-      if (line == NULL) {
-        goto parse_error;
-      }
-
-      if (line[0] != '\0') {
-        goto parse_error;
-      }
-
-      err = parser->ReadTexture(parser->interpreter,
-          vector.scanned_ncomponents,
-          vector.x, vector.y, vector.z, vector.w);
-      if (err) {
-        goto parse_error;
-      }
+      read_vt(vector.scanned_ncomponents, vector.x, vector.y, vector.z, vector.w);
     }
-    else if (match_token(line, "vn")) {
+    else if (tag == "vn") {
       VectorValue vector;
       vector.min_ncomponents = 3;
       vector.max_ncomponents = 3;
-      if (parser->ReadNormal == NULL) {
-        continue;
-      }
+      iss >> vector;
 
-      line += 2; // skip "vn"
-      line = scan_vector(line, &vector);
-      if (line == NULL) {
-        goto parse_error;
-      }
-
-      if (line[0] != '\0') {
-        goto parse_error;
-      }
-
-      err = parser->ReadNormal(parser->interpreter,
-          vector.scanned_ncomponents,
-          vector.x, vector.y, vector.z, vector.w);
-      if (err) {
-        goto parse_error;
-      }
+      read_vn(vector.scanned_ncomponents, vector.x, vector.y, vector.z, vector.w);
     }
-    else if (match_token(line, "f")) {
-      const long *vertex = NULL;
-      const long *texture = NULL;
-      const long *normal = NULL;
-      if (parser->ReadFace == NULL) {
-        continue;
+    else if (tag == "f") {
+      list.Clear();
+      while (iss) {
+        ObjIndex index;
+        iss >> index;
+        // TODO make relative_to_abs
+        index.v--;
+        index.vt--;
+        index.vn--;
+        list.Push(index);
       }
 
-      line += 1; // skip "f"
-      line = scan_index_list(&list, line);
-      if (line == NULL) {
-        goto parse_error;
-      }
+      const long *vertex  = list.GetVertex();
+      const long *texture = list.GetTexture();
+      const long *normal  = list.GetVertex();
 
-      switch(list.triplet) {
-      case FACE_V:
-        vertex  = &list.vertex[0];
-        break;
-      case FACE_V_VT:
-        vertex  = &list.vertex[0];
-        texture = &list.texture[0];
-        break;
-      case FACE_V__VN:
-        vertex  = &list.vertex[0];
-        break;
-      case FACE_V_VT_VN:
-        vertex  = &list.vertex[0];
-        texture = &list.texture[0];
-        normal  = &list.normal[0];
-        break;
-      default:
-        break;
-      }
-
-      err = parser->ReadFace(parser->interpreter,
-          list.vertex.size(),
-          vertex,
-          texture,
-          normal);
-      if (err) {
-        goto parse_error;
-      }
+      read_f(list.Count(), vertex, texture, normal);
     }
   }
 
-  fclose(file);
   return 0;
-
-parse_error:
-  if (file != NULL) {
-    fclose(file);
-  }
-  return -1;
-}
-
-static const char *scan_vector(const char *line, VectorValue *vector)
-{
-  double vec[4] = {0, 0, 0, 0};
-  const char *next = line;
-  const int min = vector->min_ncomponents < 4 ? vector->min_ncomponents : 4;
-  const int max = vector->max_ncomponents < 4 ? vector->max_ncomponents : 4;
-  int i;
-
-  for (i = 0; i < min; i++) {
-    char *end = NULL;
-    vec[i] = strtod(next, &end);
-    if (next == end) { return NULL;
-    }
-    next = end;
-  }
-
-  vector->scanned_ncomponents = vector->min_ncomponents;
-  for (; i < max; i++) {
-    char *end = NULL;
-    vec[i] = strtod(next, &end);
-    if (next == end) {
-      break;
-    }
-    vector->scanned_ncomponents++;
-    next = end;
-  }
-
-  vector->x = vec[0];
-  vector->y = vec[1];
-  vector->z = vec[2];
-  vector->w = vec[3];
-
-  return next;
-}
-
-static const char *scan_index_list(IndexList *list, const char *line)
-{
-  const char *next = line;
-  char *end = NULL;
-  long v  = 0;
-  long vt = 0;
-  long vn = 0;
-
-  clear_index_list(list);
-  list->triplet = detect_triplet(line);
-
-  switch (list->triplet) {
-  case FACE_V:
-    for (;;) {
-      v = strtol(next, &end, 0);
-      if (next == end) {
-        break;
-      }
-
-      push_index(list, v, vt, vn);
-      next = end;
-    }
-    break;
-
-  case FACE_V_VT:
-    for (;;) {
-      v = strtol(next, &end, 0);
-      if (next == end) {
-        break;
-      }
-
-      next = end + 1; // end[0] == '/'
-      vt = strtol(next, &end, 0);
-      if (next == end) {
-        break;
-      }
-
-      push_index(list, v, vt, vn);
-      next = end;
-    }
-    break;
-
-  case FACE_V__VN:
-    for (;;) {
-      v = strtol(next, &end, 0);
-      if (next == end) {
-        break;
-      }
-
-      next = end + 2; // end[0] == "//"
-      vn = strtol(next, &end, 0);
-      if (next == end) {
-        break;
-      }
-
-      push_index(list, v, vt, vn);
-      next = end;
-    }
-    break;
-
-  case FACE_V_VT_VN:
-    for (;;) {
-      v = strtol(next, &end, 0);
-      if (next == end) {
-        break;
-      }
-
-      next = end + 1; // end[0] == '/'
-      vt = strtol(next, &end, 0);
-      if (next == end) {
-        break;
-      }
-
-      next = end + 1; // end[0] == '/'
-      vn = strtol(next, &end, 0);
-      if (next == end) {
-        break;
-      }
-
-      push_index(list, v, vt, vn);
-      next = end;
-    }
-    break;
-
-  default:
-    break;
-  }
-
-  if (list->vertex.empty()) {
-    return NULL;
-  }
-  return next;
-}
-
-static int detect_triplet(const char *line)
-{
-  const char *ch = line + strspn(line, " \t\v\f");
-  int nslashes = 0;
-
-  while (ch[0] != ' ') {
-    if (ch[0] == '/') {
-      nslashes++;
-      if (ch[1] == '/') {
-        return FACE_V__VN;
-      }
-      if (nslashes == 2) {
-        return FACE_V_VT_VN;
-      }
-    }
-    ch++;
-  }
-
-  if (nslashes == 0)
-    return FACE_V;
-  else
-    return FACE_V_VT;
-}
-
-static void push_index(IndexList *list, long v, long vt, long vn)
-{
-  list->vertex.push_back(v);
-  list->texture.push_back(vt);
-  list->normal.push_back(vn);
-}
-
-static void clear_index_list(IndexList *list)
-{
-  list->triplet = FACE_V;
-  list->vertex.clear();
-  list->texture.clear();
-  list->normal.clear();
-}
-
-static char *trim_line(char *line)
-{
-  char *begin = line + strspn(line, " \t\v\f");
-  char *last_non_space = begin;
-  char *ch = begin;
-
-  while (*ch != '\0') {
-    if (!isspace(*ch)) {
-      last_non_space = ch;
-    }
-    ch++;
-  }
-  last_non_space[1] = '\0';
-
-  return begin;
-}
-
-static int is_separator(int c)
-{
-  if (c == ' ' ||
-    c == '\t' ||
-    c == '\v' ||
-    c == '\f' ||
-    c == '\n' ||
-    c == '\0')
-    return 1;
-  else
-    return 0;
-}
-
-static int match_token(const char *line, const char *token)
-{
-  const char *ln = line;
-  const char *tk = token;
-
-  while (*tk != '\0') {
-    if (*tk++ != *ln++) {
-      return 0;
-    }
-  }
-  return is_separator(*ln);
 }
 
 } // namespace xxx
