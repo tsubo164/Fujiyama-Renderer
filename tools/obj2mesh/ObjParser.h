@@ -4,6 +4,8 @@
 #ifndef OBJPARSER_H
 #define OBJPARSER_H
 
+#include <istream>
+
 namespace obj {
 
 class ObjParser {
@@ -11,7 +13,7 @@ public:
   ObjParser() {}
   virtual ~ObjParser() {}
 
-  int Parse(const char *filename);
+  int Parse(std::istream &stream);
 
 private:
   virtual void read_v (int ncomponents, double x, double y, double z, double w) {}

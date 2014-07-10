@@ -9,7 +9,8 @@
 #include "fj_mesh.h"
 
 #include <vector>
-#include <cstdio>
+#include <iostream>
+#include <fstream>
 #include <cstring>
 
 using namespace fj;
@@ -94,29 +95,30 @@ extern int ObjBufferComputeNormals(ObjBuffer *buffer);
 
 int main(int argc, const char **argv)
 {
-  const char *in_filename = NULL;
-  const char *out_filename = NULL;
-  int err = 0;
-
   if (argc == 2 && strcmp(argv[1], "--help") == 0) {
-    printf("%s", USAGE);
+    std::cerr << USAGE;
     return 0;
   }
 
   if (argc != 3) {
-    fprintf(stderr, "error: invalid number of arguments.\n");
-    fprintf(stderr, "%s", USAGE);
+    std::cerr << "error: invalid number of arguments.\n";
+    std::cerr << USAGE;
     return -1;
   }
 
-  in_filename = argv[1];
-  out_filename = argv[2];
+  const char *in_filename = argv[1];
+  const char *out_filename = argv[2];
+
+  std::ifstream ifs(in_filename);
+  if (!ifs) {
+    std::cerr << "error: couldn't open input file: " << in_filename << "\n";
+    return -1;
+  }
 
   ObjBuffer buffer;
-
-  err = buffer.Parse(in_filename);
+  int err = buffer.Parse(ifs);
   if (err) {
-    fprintf(stderr, "error: couldn't open input file: %s\n", in_filename);
+    // TODO error handling
     return -1;
   }
 
@@ -132,8 +134,8 @@ int main(int argc, const char **argv)
     return -1;
   }
 
-  printf("nverts: %ld\n", buffer.nverts);
-  printf("nfaces: %ld\n", buffer.nfaces);
+  std::cout << "nverts: " << buffer.nverts << "\n";
+  std::cout << "nfaces: " << buffer.nfaces << "\n";
 
   return 0;
 }
@@ -162,60 +164,36 @@ int ObjBufferComputeNormals(ObjBuffer *buffer)
 {
   const int nverts = buffer->nverts;
   const int nfaces = buffer->nfaces;
-  Vector *P = &buffer->P[0];
-  Vector *N = &buffer->N[0];
-  Index3 *indices = &buffer->vertex_indices[0];
-  int i;
+  std::vector<Vector> &P = buffer->P;
+  std::vector<Vector> &N = buffer->N;
+  std::vector<Index3> &indices = buffer->vertex_indices;
 
-  if (buffer->P.empty() || buffer->vertex_indices.empty())
+  if (P.empty() || indices.empty()) {
     return -1;
-
-  if (buffer->N.empty()) {
-    buffer->N.resize(nverts);
-    N = &buffer->N[0];
   }
 
-  // initialize N
-  for (i = 0; i < nverts; i++) {
-    Vector *nml = &N[i];
-    *nml = Vector();
+  if (!N.empty()) {
+    return 0;
   }
 
-  // compute N
-  for (i = 0; i < nfaces; i++) {
-    Vector *P0, *P1, *P2;
-    Vector *N0, *N1, *N2;
-    Vector Ng;
+  N.resize(nverts);
+
+  // accumulate N
+  for (int i = 0; i < nfaces; i++) {
     const int i0 = indices[i].i0;
     const int i1 = indices[i].i1;
     const int i2 = indices[i].i2;
 
-    P0 = &P[i0];
-    P1 = &P[i1];
-    P2 = &P[i2];
-    N0 = &N[i0];
-    N1 = &N[i1];
-    N2 = &N[i2];
+    const Vector Ng = TriComputeFaceNormal(P[i0], P[i1], P[i2]);
 
-    Ng = TriComputeFaceNormal(*P0, *P1, *P2);
-
-    N0->x += Ng.x;
-    N0->y += Ng.y;
-    N0->z += Ng.z;
-
-    N1->x += Ng.x;
-    N1->y += Ng.y;
-    N1->z += Ng.z;
-
-    N2->x += Ng.x;
-    N2->y += Ng.y;
-    N2->z += Ng.z;
+    N[i0] += Ng;
+    N[i1] += Ng;
+    N[i2] += Ng;
   }
 
   // normalize N
-  for (i = 0; i < nverts; i++) {
-    Vector *nml = &N[i];
-    Normalize(nml);
+  for (int i = 0; i < nverts; i++) {
+    Normalize(&N[i]);
   }
 
   return 0;

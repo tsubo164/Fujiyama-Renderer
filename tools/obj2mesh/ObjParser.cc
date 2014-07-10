@@ -135,17 +135,12 @@ static std::string trimed(const std::string &line)
   return line.substr(f, l - f + 1);
 }
 
-int ObjParser::Parse(const char *filename)
+int ObjParser::Parse(std::istream &stream)
 {
-  std::ifstream file(filename);
-  if (!file) {
-    return -1;
-  }
-
   IndexList list;
   std::string line;
 
-  while (getline(file, line)) {
+  while (getline(stream, line)) {
     std::istringstream iss(trimed(line));
     std::string tag;
     iss >> tag;
