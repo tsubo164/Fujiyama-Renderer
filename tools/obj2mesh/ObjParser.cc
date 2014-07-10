@@ -3,10 +3,9 @@
 
 #include "ObjParser.h"
 
-#include <vector>
 #include <sstream>
 #include <fstream>
-#include <string>
+#include <iostream>
 
 namespace obj {
 
@@ -207,6 +206,18 @@ int ObjParser::Parse(std::istream &stream)
           triplets.GetTexture(),
           triplets.GetVertex());
       f_count_++;
+    }
+    else if (tag == "g") {
+      std::vector<std::string> groups;
+      while (iss) {
+        std::string name;
+        iss >> name;
+        if (!iss.fail()) {
+          groups.push_back(name);
+        }
+      }
+
+      read_g(groups);
     }
   }
 

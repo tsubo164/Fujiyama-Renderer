@@ -50,7 +50,7 @@ private:
   }
   virtual void read_vn(int ncomponents, double x, double y, double z, double w)
   {
-    N.push_back(Vector(x, y, z));
+    //N.push_back(Vector(x, y, z));
   }
 
   virtual void read_f(long index_count,
@@ -87,6 +87,13 @@ private:
     }
 
     nfaces += ntriangles;
+  }
+
+  virtual void read_g(const std::vector<std::string> &group_name_list)
+  {
+    for (size_t i = 0; i < group_name_list.size(); i++) {
+      std::cout << "group----: [" << group_name_list[i] << "]\n";
+    }
   }
 };
 
