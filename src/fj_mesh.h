@@ -54,6 +54,11 @@ public:
   bool HasVertexVelocity() const;
   bool HasFaceIndices() const;
 
+#if 0
+  int AddFaceGroup(const std::string &group_name);
+  int SetFaceGroup(int idx, int group_id) const;
+#endif
+
   void ComputeNormals();
   void ComputeBounds();
   void Clear();
@@ -85,4 +90,4 @@ FJ_API void MshGetFaceVertexNormal(const Mesh *mesh, int face_index,
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

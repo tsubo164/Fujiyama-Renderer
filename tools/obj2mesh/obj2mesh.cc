@@ -8,9 +8,12 @@
 #include "fj_vector.h"
 #include "fj_mesh.h"
 
-#include <vector>
 #include <iostream>
 #include <fstream>
+#include <vector>
+#include <string>
+#include <map>
+
 #include <cstring>
 
 using namespace fj;
@@ -23,10 +26,18 @@ static const char USAGE[] =
 
 class ObjBuffer : public obj::ObjParser {
 public:
-  ObjBuffer() : nverts(0), nfaces(0) {}
+  ObjBuffer() :
+      nverts(0), nfaces(0),
+      current_group_id(0)
+  {
+    group_name_to_id["default_group"] = 0;
+  }
   virtual ~ObjBuffer() {}
 
 public:
+  long nverts;
+  long nfaces;
+
   std::vector<Vector>   P;
   std::vector<Vector>   N;
   std::vector<TexCoord> uv;
@@ -34,8 +45,9 @@ public:
   std::vector<Index3>   texture_indices;
   std::vector<Index3>   normal_indices;
 
-  long nverts;
-  long nfaces;
+  std::vector<int> group_ids;
+  std::map<std::string, int> group_name_to_id;
+  int current_group_id;
 
 private:
   // overriding callbacks
@@ -87,13 +99,37 @@ private:
     }
 
     nfaces += ntriangles;
+    group_ids.push_back(current_group_id);
   }
 
   virtual void read_g(const std::vector<std::string> &group_name_list)
   {
+    int upcoming_id = 0;
+
+    std::map<std::string, int>::const_iterator it = group_name_to_id.find(group_name_list[0]);
+    if (it == group_name_to_id.end()) {
+      // the size is the next id
+      upcoming_id = group_name_to_id.size();
+      group_name_to_id[group_name_list[0]] = upcoming_id;
+    } else {
+      upcoming_id = it->second;
+    }
+
+    current_group_id = upcoming_id;
+
+#if 0
+    std::cout << "group----: [" << group_name_list[0] << "] " << upcoming_id << "\n";
     for (size_t i = 0; i < group_name_list.size(); i++) {
       std::cout << "group----: [" << group_name_list[i] << "]\n";
     }
+#endif
+    std::cout << "=========================\n";
+    for (std::map<std::string, int>::const_iterator it = group_name_to_id.begin();
+        it != group_name_to_id.end();
+        ++it) {
+      std::cout << "[" << it->first << "] : " << it->second << "\n";
+    }
+    std::cout << "=========================\n";
   }
 };
 
