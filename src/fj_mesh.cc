@@ -86,6 +86,30 @@ const Box &Mesh::GetBounds() const
   return bounds_;
 }
 
+#if 0
+int Mesh::AddFaceGroup(const std::string &group_name)
+{
+  if (face_group_map_.empty()) {
+    face_group_id_.resize(GetFaceCount());
+  }
+
+  std::map<std::string, int>::const_iterator it = face_group_map_.find(group_name);
+  if (it != face_group_map_.end()) {
+    return it->second;
+  }
+
+  const int new_id = face_group_map_.size();
+  face_group_map_[group_name] = new_id;
+
+  return new_id;
+}
+
+int Mesh::SetFaceGroup(int idx, int group_id) const
+{
+  return 0;
+}
+#endif
+
 void Mesh::ComputeNormals()
 {
   if (!HasVertexPosition() || !HasFaceIndices())

@@ -129,6 +129,7 @@ MeshOutput *MshOpenOutputFile(const char *filename)
   out->uv = NULL;
   out->velocity = NULL;
   out->indices = NULL;
+  out->face_group_id = NULL;
 
   return out;
 }
@@ -157,6 +158,7 @@ void MshWriteFile(MeshOutput *out)
   if (out->velocity != NULL) out->nvert_attrs++;
   out->nface_attrs = 0;
   if (out->indices != NULL) out->nface_attrs++;
+  if (out->face_group_id != NULL) out->nface_attrs++;
 
   fwrite(magic, sizeof(char), MSH_MAGIC_SIZE, out->file);
   fwrite(&out->version, sizeof(int), 1, out->file);
@@ -171,6 +173,7 @@ void MshWriteFile(MeshOutput *out)
   write_attriname(out, "uv");
   write_attriname(out, "velocity");
   write_attriname(out, "indices");
+  write_attriname(out, "face_group_id");
 
   write_attridata(out, "P");
   write_attridata(out, "N");
@@ -178,6 +181,7 @@ void MshWriteFile(MeshOutput *out)
   write_attridata(out, "uv");
   write_attridata(out, "velocity");
   write_attridata(out, "indices");
+  write_attridata(out, "face_group_id");
 }
 
 int MshLoadFile(Mesh *mesh, const char *filename)
@@ -277,6 +281,21 @@ int MshLoadFile(Mesh *mesh, const char *filename)
         mesh->SetFaceIndices(j, tri_index);
       }
     }
+    else if (attrname == "face_group_id") {
+#if 0
+      mesh->SetFaceCount(in->nfaces);
+      mesh->AddFaceIndices();
+#endif
+      read_attridata(in);
+      for (j = 0; j < in->nfaces; j++) {
+        const int *data = (const int *) &in->data_buffer[0];
+        const int group_id = data[j];
+#if 0
+        mesh->SetFaceIndices(j, tri_index);
+#endif
+        printf("FACE: %d -> GOURP: %d\n", j, group_id);
+      }
+    }
   }
 
   mesh->ComputeBounds();
@@ -317,6 +336,11 @@ static size_t write_attriname(MeshOutput *out, const std::string &name)
   }
   else if (name == "indices" && out->indices == NULL) {
     return 0;
+  }
+  else if (name == "face_group_id" && out->face_group_id == NULL) {
+    return 0;
+  }
+  else {
   }
 
   nwrotes = 0;
@@ -408,6 +432,16 @@ static size_t write_attridata(MeshOutput *out, const std::string &name)
       indices[1] = out->indices[i].i1;
       indices[2] = out->indices[i].i2;
       nwrotes += fwrite(indices, sizeof(Index), 3, out->file);
+    }
+  }
+  else if (name == "face_group_id") {
+    if (out->face_group_id == NULL)
+      return 0;
+    datasize = sizeof(int) * out->nfaces;
+    nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
+    for (i = 0; i < out->nfaces; i++) {
+      const int id = out->face_group_id[i];
+      nwrotes += fwrite(&id, sizeof(int), 1, out->file);
     }
   }
   return nwrotes;

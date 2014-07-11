@@ -63,6 +63,7 @@ public:
   TexCoord *uv;
   Vector *velocity;
   Index3 *indices;
+  int *face_group_id;
 };
 
 // mesh input file interfaces

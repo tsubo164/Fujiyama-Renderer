@@ -96,10 +96,11 @@ private:
             vn_indices[i + 2]);
         normal_indices.push_back(tri_index);
       }
+
+      group_ids.push_back(current_group_id);
     }
 
     nfaces += ntriangles;
-    group_ids.push_back(current_group_id);
   }
 
   virtual void read_g(const std::vector<std::string> &group_name_list)
@@ -117,12 +118,6 @@ private:
 
     current_group_id = upcoming_id;
 
-#if 0
-    std::cout << "group----: [" << group_name_list[0] << "] " << upcoming_id << "\n";
-    for (size_t i = 0; i < group_name_list.size(); i++) {
-      std::cout << "group----: [" << group_name_list[i] << "]\n";
-    }
-#endif
     std::cout << "=========================\n";
     for (std::map<std::string, int>::const_iterator it = group_name_to_id.begin();
         it != group_name_to_id.end();
@@ -197,9 +192,12 @@ int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename)
   out->nfaces = buffer->nfaces;
   out->nface_attrs = 1;
   out->indices = &buffer->vertex_indices[0];
+  // TODO TEST
+  out->face_group_id = &buffer->group_ids[0];
 
   MshWriteFile(out);
   MshCloseOutputFile(out);
+
   return 0;
 }
 

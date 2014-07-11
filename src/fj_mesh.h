@@ -11,7 +11,10 @@
 #include "fj_color.h"
 #include "fj_types.h"
 #include "fj_box.h"
+
 #include <vector>
+#include <string>
+#include <map>
 
 namespace fj {
 
@@ -79,6 +82,9 @@ private:
   std::vector<TexCoord> uv_;
   std::vector<Vector>   velocity_;
   std::vector<Index3>   indices_;
+
+  std::vector<int> face_group_id_;
+  std::map<std::string, int> face_group_map_;
 
   Box bounds_;
 };
