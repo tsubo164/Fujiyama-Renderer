@@ -35,6 +35,7 @@ public:
   void AddVertexTexture();
   void AddVertexVelocity();
   void AddFaceIndices();
+  void AddFaceGroupID();
 
   Vector   GetVertexPosition(int idx) const;
   Vector   GetVertexNormal(int idx) const;
@@ -42,6 +43,7 @@ public:
   TexCoord GetVertexTexture(int idx) const;
   Vector   GetVertexVelocity(int idx) const;
   Index3   GetFaceIndices(int idx) const;
+  int      GetFaceGroupID(int idx) const;
 
   void SetVertexPosition(int idx, const Vector &value);
   void SetVertexNormal(int idx, const Vector &value);
@@ -49,6 +51,7 @@ public:
   void SetVertexTexture(int idx, const TexCoord &value);
   void SetVertexVelocity(int idx, const Vector &value);
   void SetFaceIndices(int idx, const Index3 &value);
+  void SetFaceGroupID(int idx, const int &value);
 
   bool HasVertexPosition() const;
   bool HasVertexNormal() const;
@@ -56,11 +59,7 @@ public:
   bool HasVertexTexture() const;
   bool HasVertexVelocity() const;
   bool HasFaceIndices() const;
-
-#if 0
-  int AddFaceGroup(const std::string &group_name);
-  int SetFaceGroup(int idx, int group_id) const;
-#endif
+  bool HasFaceGroupID() const;
 
   void ComputeNormals();
   void ComputeBounds();
@@ -82,9 +81,7 @@ private:
   std::vector<TexCoord> uv_;
   std::vector<Vector>   velocity_;
   std::vector<Index3>   indices_;
-
-  std::vector<int> face_group_id_;
-  std::map<std::string, int> face_group_map_;
+  std::vector<int>      face_group_id_;
 
   Box bounds_;
 };

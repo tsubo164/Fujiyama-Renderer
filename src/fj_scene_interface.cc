@@ -13,10 +13,11 @@
 #include "fj_scene.h"
 #include "fj_timer.h"
 #include "fj_box.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cassert>
 
 #define GET_LAST_ADDED_ID(Type) (get_scene()->Get##Type##Count() - 1)
 

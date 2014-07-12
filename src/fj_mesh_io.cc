@@ -282,18 +282,13 @@ int MshLoadFile(Mesh *mesh, const char *filename)
       }
     }
     else if (attrname == "face_group_id") {
-#if 0
       mesh->SetFaceCount(in->nfaces);
-      mesh->AddFaceIndices();
-#endif
+      mesh->AddFaceGroupID();
       read_attridata(in);
       for (j = 0; j < in->nfaces; j++) {
         const int *data = (const int *) &in->data_buffer[0];
         const int group_id = data[j];
-#if 0
-        mesh->SetFaceIndices(j, tri_index);
-#endif
-        printf("FACE: %d -> GOURP: %d\n", j, group_id);
+        mesh->SetFaceGroupID(j, group_id);
       }
     }
   }

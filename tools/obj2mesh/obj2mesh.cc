@@ -45,7 +45,7 @@ public:
   std::vector<Index3>   texture_indices;
   std::vector<Index3>   normal_indices;
 
-  std::vector<int> group_ids;
+  std::vector<int>      face_group_id;
   std::map<std::string, int> group_name_to_id;
   int current_group_id;
 
@@ -62,6 +62,7 @@ private:
   }
   virtual void read_vn(int ncomponents, double x, double y, double z, double w)
   {
+    // TODO IMPLEMENT THIS
     //N.push_back(Vector(x, y, z));
   }
 
@@ -97,7 +98,7 @@ private:
         normal_indices.push_back(tri_index);
       }
 
-      group_ids.push_back(current_group_id);
+      face_group_id.push_back(current_group_id);
     }
 
     nfaces += ntriangles;
@@ -193,7 +194,7 @@ int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename)
   out->nface_attrs = 1;
   out->indices = &buffer->vertex_indices[0];
   // TODO TEST
-  out->face_group_id = &buffer->group_ids[0];
+  out->face_group_id = &buffer->face_group_id[0];
 
   MshWriteFile(out);
   MshCloseOutputFile(out);
