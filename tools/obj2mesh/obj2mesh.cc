@@ -28,10 +28,7 @@ class ObjBuffer : public obj::ObjParser {
 public:
   ObjBuffer() :
       nverts(0), nfaces(0),
-      current_group_id(0)
-  {
-    group_name_to_id["default_group"] = 0;
-  }
+      current_group_id(0) {}
   virtual ~ObjBuffer() {}
 
 public:
@@ -98,7 +95,7 @@ private:
         normal_indices.push_back(tri_index);
       }
 
-      face_group_id.push_back(current_group_id);
+      set_face_group_id();
     }
 
     nfaces += ntriangles;
@@ -106,26 +103,37 @@ private:
 
   virtual void read_g(const std::vector<std::string> &group_name_list)
   {
-    int upcoming_id = 0;
+    if (nfaces > 0 && face_group_id.empty()) {
+      // fill the previous faces with default_group_id
+      const int default_group_id = 0;
+      group_name_to_id[""] = default_group_id;
+      face_group_id.resize(nfaces, default_group_id);
+    }
 
-    std::map<std::string, int>::const_iterator it = group_name_to_id.find(group_name_list[0]);
+    current_group_id = lookup_group_or_create_new(group_name_list[0]);
+  }
+
+  void set_face_group_id()
+  {
+    if (current_group_id < 0) {
+      return;
+    }
+    face_group_id.push_back(current_group_id);
+  }
+
+  int lookup_group_or_create_new(const std::string &group_name)
+  {
+    int return_id = 0;
+
+    std::map<std::string, int>::const_iterator it = group_name_to_id.find(group_name);
     if (it == group_name_to_id.end()) {
       // the size is the next id
-      upcoming_id = group_name_to_id.size();
-      group_name_to_id[group_name_list[0]] = upcoming_id;
+      return_id = group_name_to_id.size();
+      group_name_to_id[group_name] = return_id;
     } else {
-      upcoming_id = it->second;
+      return_id = it->second;
     }
-
-    current_group_id = upcoming_id;
-
-    std::cout << "=========================\n";
-    for (std::map<std::string, int>::const_iterator it = group_name_to_id.begin();
-        it != group_name_to_id.end();
-        ++it) {
-      std::cout << "[" << it->first << "] : " << it->second << "\n";
-    }
-    std::cout << "=========================\n";
+    return return_id;
   }
 };
 
@@ -175,6 +183,11 @@ int main(int argc, const char **argv)
 
   std::cout << "nverts: " << buffer.nverts << "\n";
   std::cout << "nfaces: " << buffer.nfaces << "\n";
+  std::cout << "face group count: " << buffer.group_name_to_id.size() << "\n";
+  for (std::map<std::string, int>::const_iterator it = buffer.group_name_to_id.begin();
+    it != buffer.group_name_to_id.end(); ++it) {
+    std::cout << "  name: " << it->first << " -> ID: " << it->second << "\n";
+  }
 
   return 0;
 }
@@ -194,7 +207,9 @@ int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename)
   out->nface_attrs = 1;
   out->indices = &buffer->vertex_indices[0];
   // TODO TEST
-  out->face_group_id = &buffer->face_group_id[0];
+  if (!buffer->face_group_id.empty()) {
+    out->face_group_id = &buffer->face_group_id[0];
+  }
 
   MshWriteFile(out);
   MshCloseOutputFile(out);

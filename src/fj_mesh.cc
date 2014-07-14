@@ -173,16 +173,16 @@ bool Mesh::ray_intersect(Index prim_id, Real time,
   if (isect == NULL)
     return true;
 
-  /* we don't know N at time sampled point with velocity motion blur */
-  /* just using N from mesh data */
-  /* intersect info */
+  // we don't know N at time sampled point with velocity motion blur
+  // just using N from mesh data
+  // intersect info
   const Vector N0 = GetVertexNormal(face.i0);
   const Vector N1 = GetVertexNormal(face.i1);
   const Vector N2 = GetVertexNormal(face.i2);
   isect->N = TriComputeNormal(N0, N1, N2, u, v);
 
-  /* TODO TMP uv handling */
-  /* UV = (1-u-v) * UV0 + u * UV1 + v * UV2 */
+  // TODO TMP uv handling
+  // UV = (1-u-v) * UV0 + u * UV1 + v * UV2
   if (HasVertexTexture()) {
     const float t = 1 - u - v;
     const TexCoord uv0 = GetVertexTexture(face.i0);
@@ -206,6 +206,7 @@ bool Mesh::ray_intersect(Index prim_id, Real time,
   isect->P = RayPointAt(ray, t_hit);
   isect->object = NULL;
   isect->prim_id = prim_id;
+  isect->shading_group_id = GetFaceGroupID(prim_id);
   isect->t_hit = t_hit;
 
   return true;

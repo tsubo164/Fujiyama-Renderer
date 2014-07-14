@@ -8,6 +8,8 @@
 #include "fj_transform.h"
 #include "fj_box.h"
 
+#include <vector>
+
 namespace fj {
 
 class Intersection;
@@ -40,7 +42,7 @@ public:
   void SetRotateOrder(int order);
 
   // non-geometric properties */
-  void SetShader(const Shader *shader);
+  void SetShader(const Shader *shader, int shading_group_id);
   void SetLightList(const Light **lights, int count);
   void SetReflectTarget(const ObjectGroup *group);
   void SetRefractTarget(const ObjectGroup *group);
@@ -52,11 +54,11 @@ public:
   const ObjectGroup *GetShadowTarget() const;
   const ObjectGroup *GetSelfHitTarget() const;
 
-  const Shader *GetShader() const;
+  const Shader *GetShader(int shading_group_id) const;
   const Light **GetLightList() const;
-  int GetLightCount() const;
+  int   GetLightCount() const;
   const Box &GetBounds() const;
-  void ComputeBounds();
+  void  ComputeBounds();
 
   // sampling
   bool RayIntersect(const Ray &ray, Real time, Intersection *isect) const;
@@ -76,7 +78,7 @@ private:
   TransformSampleList transform_samples_;
 
   // non-geometric properties
-  const Shader *shader_;
+  std::vector<const Shader *> shader_list_;
   const Light **target_lights_;
   int n_target_lights_;
   const ObjectGroup *reflection_target_;

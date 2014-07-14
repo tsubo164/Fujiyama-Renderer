@@ -695,7 +695,8 @@ Status SiAssignShader(ID object, ID shader)
       return SI_FAIL;
   }
 
-  object_ptr->SetShader(shader_ptr);
+  // TODO shading_group_id
+  object_ptr->SetShader(shader_ptr, 0);
   return SI_SUCCESS;
 }
 

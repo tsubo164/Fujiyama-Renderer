@@ -1,12 +1,11 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_INTERSECTION_H
 #define FJ_INTERSECTION_H
 
 #include "fj_compatibility.h"
+#include "fj_object_instance.h"
 #include "fj_tex_coord.h"
 #include "fj_numeric.h"
 #include "fj_vector.h"
@@ -17,11 +16,15 @@ See LICENSE and README
 
 namespace fj {
 
-class ObjectInstance;
+class Shader;
 
 class Intersection {
 public:
-  Intersection() : object(NULL), prim_id(0), t_hit(REAL_MAX) {}
+  Intersection() :
+      object(NULL),
+      prim_id(0),
+      shading_group_id(0),
+      t_hit(REAL_MAX) {}
   ~Intersection() {}
 
   Vector P;
@@ -34,10 +37,16 @@ public:
 
   const ObjectInstance *object;
   int prim_id;
+  int shading_group_id;
 
   Real t_hit;
+
+  const Shader *GetShader() const
+  {
+    return object->GetShader(shading_group_id);
+  }
 };
 
 } // namespace xxx
 
-#endif /* FJ_XXX_H */
+#endif // FJ_XXX_H

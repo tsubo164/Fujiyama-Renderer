@@ -21,6 +21,8 @@
 
 namespace fj {
 
+static const Color NO_SHADER_COLOR(.5, 1., 0.);
+
 static int has_reached_bounce_limit(const TraceContext *cxt);
 static int shadow_ray_has_reached_opcity_limit(const TraceContext *cxt, float opac);
 static void setup_ray(const Vector *ray_orig, const Vector *ray_dir,
@@ -527,7 +529,14 @@ static int trace_surface(const TraceContext *cxt, const Ray &ray,
     SurfaceOutput out;
 
     setup_surface_input(&isect, &ray, &in);
-    isect.object->GetShader()->Evaluate(*cxt, in, &out);
+
+    const Shader *shader = isect.GetShader();
+    if (shader != NULL) {
+      shader->Evaluate(*cxt, in, &out);
+    } else {
+      out.Cs = NO_SHADER_COLOR;
+      out.Os = 1;
+    }
 
     out.Os = Clamp(out.Os, 0, 1);
     out_rgba->r = out.Cs.r;
@@ -622,7 +631,15 @@ static int raymarch_volume(const TraceContext *cxt, const Ray *ray,
           in.shaded_object = interval->object;
           in.P = P;
           in.N = Vector(0, 0, 0);
-          interval->object->GetShader()->Evaluate(*cxt, in, &out);
+
+          // TODO shading group
+          const Shader *shader = interval->object->GetShader(0);
+          if (shader != NULL) {
+            shader->Evaluate(*cxt, in, &out);
+          } else {
+            out.Cs = NO_SHADER_COLOR;
+            out.Os = 1;
+          }
 
           color.r = out.Cs.r * opacity;
           color.g = out.Cs.g * opacity;
