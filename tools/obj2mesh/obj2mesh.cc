@@ -28,7 +28,11 @@ class ObjBuffer : public obj::ObjParser {
 public:
   ObjBuffer() :
       nverts(0), nfaces(0),
-      current_group_id(0) {}
+      current_group_id(0)
+  {
+    // default group name and id
+    group_name_to_id[""] = 0;
+  }
   virtual ~ObjBuffer() {}
 
 public:
@@ -103,21 +107,25 @@ private:
 
   virtual void read_g(const std::vector<std::string> &group_name_list)
   {
+#if 0
     if (nfaces > 0 && face_group_id.empty()) {
       // fill the previous faces with default_group_id
       const int default_group_id = 0;
       group_name_to_id[""] = default_group_id;
       face_group_id.resize(nfaces, default_group_id);
     }
+#endif
 
     current_group_id = lookup_group_or_create_new(group_name_list[0]);
   }
 
   void set_face_group_id()
   {
+#if 0
     if (current_group_id < 0) {
       return;
     }
+#endif
     face_group_id.push_back(current_group_id);
   }
 
@@ -186,7 +194,7 @@ int main(int argc, const char **argv)
   std::cout << "face group count: " << buffer.group_name_to_id.size() << "\n";
   for (std::map<std::string, int>::const_iterator it = buffer.group_name_to_id.begin();
     it != buffer.group_name_to_id.end(); ++it) {
-    std::cout << "  name: " << it->first << " -> ID: " << it->second << "\n";
+    std::cout << "  name: [" << it->first << "] -> ID: " << it->second << "\n";
   }
 
   return 0;

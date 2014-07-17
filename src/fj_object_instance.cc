@@ -23,7 +23,7 @@ ObjectInstance::ObjectInstance() :
 
     transform_samples_(),
 
-    shader_list_(),
+    shader_list_(1, NULL),
     target_lights_(NULL),
     n_target_lights_(0),
 
@@ -120,7 +120,11 @@ void ObjectInstance::SetRotateOrder(int order)
 
 void ObjectInstance::SetShader(const Shader *shader, int shading_group_id)
 {
-  shader_list_.push_back(shader);
+  if (static_cast<int>(shader_list_.size()) <= shading_group_id) {
+    shader_list_.resize(shading_group_id + 1, NULL);
+  }
+
+  shader_list_[shading_group_id] = shader;
 }
 
 void ObjectInstance::SetLightList(const Light **lights, int count)
@@ -174,9 +178,16 @@ const Shader *ObjectInstance::GetShader(int shading_group_id) const
 {
   if (shading_group_id < 0 ||
       shading_group_id >= static_cast<int>(shader_list_.size())) {
-    return NULL;
+    return shader_list_[0];
   }
-  return shader_list_[shading_group_id];
+
+  const Shader *shader = shader_list_[shading_group_id];
+
+  if (shader == NULL) {
+    return shader_list_[0];
+  } else {
+    return shader;
+  }
 }
 
 const Light **ObjectInstance::GetLightList() const
