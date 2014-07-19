@@ -56,6 +56,7 @@ void Mesh::Clear()
 
 Mesh::Mesh() : nverts_(0), nfaces_(0), bounds_()
 {
+  face_group_name_[""] = 0;
 }
 
 Mesh::~Mesh()
@@ -85,6 +86,19 @@ void Mesh::SetFaceCount(int count)
 const Box &Mesh::GetBounds() const
 {
   return bounds_;
+}
+
+int Mesh::CreateFaceGroup(const std::string &group_name)
+{
+  std::map<std::string, int>::const_iterator it = face_group_name_.find(group_name);
+  if (it != face_group_name_.end()) {
+    return it->second;
+  }
+
+  const int new_id = static_cast<int>(face_group_name_.size());
+  face_group_name_[group_name] = new_id;
+
+  return 0;
 }
 
 void Mesh::ComputeNormals()

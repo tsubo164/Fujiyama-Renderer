@@ -61,6 +61,8 @@ public:
   bool HasFaceIndices() const;
   bool HasFaceGroupID() const;
 
+  int CreateFaceGroup(const std::string &group_name);
+
   void ComputeNormals();
   void ComputeBounds();
   void Clear();
@@ -82,6 +84,8 @@ private:
   std::vector<Vector>   velocity_;
   std::vector<Index3>   indices_;
   std::vector<int>      face_group_id_;
+
+  std::map<std::string, int> face_group_name_;
 
   Box bounds_;
 };
