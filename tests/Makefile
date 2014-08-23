@@ -38,6 +38,5 @@ clean:
 	@echo '  clean tests'
 	@-$(RM) unit_test.o $(objects)
 	@-$(RM) $(targets)
-	@-$(RM) io_test_file.bin
-	@-$(RM) iff_test_file.iff
+	@-$(RM) *.bin
 

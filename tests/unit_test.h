@@ -1,13 +1,12 @@
-/*
-Copyright (c) 2011-2014 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2014 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef TEST_H
 #define TEST_H
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
+#include <iostream>
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,17 +24,8 @@ extern "C" {
       TestPass( #a" == "#b, __FILE__, __LINE__ ); \
   } else { \
       TestFail( #a" == "#b, __FILE__, __LINE__ ); \
-    printf("*   actual:   %d\n", (a)); \
-    printf("*   expected: %d\n", (b)); \
-  } } while (0)
-
-#define TEST_LONG(a, b) \
-  do { if ((a)==(b)) {\
-      TestPass( #a" == "#b, __FILE__, __LINE__ ); \
-  } else { \
-      TestFail( #a" == "#b, __FILE__, __LINE__ ); \
-    printf("*   actual:   %ld\n", (a)); \
-    printf("*   expected: %ld\n", (b)); \
+    std::cout << "*   actual:   " << (a) << "\n"; \
+    std::cout << "*   expected: " << (b) << "\n"; \
   } } while (0)
 
 #define TEST_FLOAT(a, b) \
