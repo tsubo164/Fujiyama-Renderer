@@ -19,86 +19,282 @@ namespace fj {
 static int error_no = MSH_ERR_NONE;
 static size_t write_attriname(MeshOutput *out, const std::string &name);
 static size_t write_attridata(MeshOutput *out, const std::string &name);
-static size_t read_attridata(MeshInput *in);
 static void set_error(int err);
 
-// mesh input file interfaces
-MeshInput *MshOpenInputFile(const char *filename)
+template<typename T>
+inline void read_(std::ifstream &file, T *dst, int64_t count)
 {
-  MeshInput *in = new MeshInput();
-
-  if (in == NULL) {
-    set_error(MSH_ERR_NO_MEMORY);
-    return NULL;
-  }
-
-  in->file = fopen(filename, "rb");
-  if (in->file == NULL) {
-    set_error(MSH_ERR_FILE_NOT_EXIST);
-    delete in;
-    return NULL;
-  }
-
-  in->version = 0;
-  in->nverts = 0;
-  in->nvert_attrs = 0;
-  in->nfaces = 0;
-  in->nface_attrs = 0;
-
-  return in;
+  file.read(reinterpret_cast<char*>(dst), sizeof(*dst) * count);
 }
 
-void MshCloseInputFile(MeshInput *in)
+MeshInput::MeshInput() :
+    version_(0),
+    nverts_(0),
+    nvert_attrs_(0),
+    nfaces_(0),
+    nface_attrs_(0)
 {
-  if (in == NULL)
-    return;
-
-  if (in->file != NULL) {
-    fclose(in->file);
-  }
-
-  delete in;
 }
 
-int MshReadHeader(MeshInput *in)
+MeshInput::~MeshInput()
 {
-  int i;
-  size_t nreads = 0;
-  size_t namesize = 1;
-  char magic[MSH_MAGIC_SIZE];
-  int nattrs_alloc;
+  Close();
+}
 
-  nreads += fread(magic, sizeof(char), MSH_MAGIC_SIZE, in->file);
+int MeshInput::Open(const std::string &filename)
+{
+  file_.open(filename.c_str(), std::ios::in | std::ios::binary);
+
+  if (Fail()) {
+    return -1;
+  }
+
+  return 0;
+}
+
+void MeshInput::Close()
+{
+  file_.close();
+}
+
+bool MeshInput::Fail() const
+{
+  return file_.fail();
+}
+
+int MeshInput::ReadHeader()
+{
+  char magic[MSH_MAGIC_SIZE] = {'\0'};
+
+  read_(file_, magic, MSH_MAGIC_SIZE);
   if (memcmp(magic, MSH_FILE_MAGIC, MSH_MAGIC_SIZE) != 0) {
     set_error(MSH_ERR_BAD_MAGIC_NUMBER);
     return -1;
   }
-  nreads += fread(&in->version, sizeof(int), 1, in->file);
-  if (in->version != MSH_FILE_VERSION) {
+
+  read_(file_, &version_, 1);
+  if (version_ != MSH_FILE_VERSION) {
     set_error(MSH_ERR_BAD_FILE_VERSION);
     return -1;
   }
-  nreads += fread(&in->nverts, sizeof(int), 1, in->file);
-  nreads += fread(&in->nvert_attrs, sizeof(int), 1, in->file);
-  nreads += fread(&in->nfaces, sizeof(int), 1, in->file);
-  nreads += fread(&in->nface_attrs, sizeof(int), 1, in->file);
 
-  nattrs_alloc = in->nvert_attrs + in->nface_attrs;
-  in->attr_names.resize(nattrs_alloc, "");
+  read_(file_, &nverts_,      1);
+  read_(file_, &nvert_attrs_, 1);
+  read_(file_, &nfaces_,      1);
+  read_(file_, &nface_attrs_, 1);
 
-  for (i = 0; i < in->nvert_attrs + in->nface_attrs; i++) {
+  const int TOTAL_ATTR_COUNT = GetVertexAttributeCount() + GetFaceAttributeCount();
+  attr_names_.resize(TOTAL_ATTR_COUNT, "");
+
+  for (int i = 0; i < TOTAL_ATTR_COUNT; i++) {
     char attrname[MAX_ATTRNAME_SIZE] = {'\0'};
+    size_t namesize = 1;
 
-    nreads += fread(&namesize, sizeof(size_t), 1, in->file);
+    read_(file_, &namesize, 1);
     if (namesize > MAX_ATTRNAME_SIZE-1) {
       set_error(MSH_ERR_LONG_ATTRIB_NAME);
       return -1;
     }
-    nreads += fread(attrname, sizeof(char), namesize, in->file);
-    in->attr_names[i] = attrname;
+    read_(file_, attrname, namesize);
+    attr_names_[i] = attrname;
   }
 
   return 0;
+}
+
+void MeshInput::ReadAttributeData()
+{
+  size_t datasize = 0;
+  read_(file_, &datasize, 1);
+
+  data_buffer_.resize(datasize);
+
+  read_(file_, &data_buffer_[0], datasize);
+}
+
+int MeshInput::GetVertexCount() const
+{
+  return nverts_;
+}
+
+int MeshInput::GetVertexAttributeCount() const
+{
+  return nvert_attrs_;
+}
+
+int MeshInput::GetFaceCount() const
+{
+  return nfaces_;
+}
+
+int MeshInput::GetFaceAttributeCount() const
+{
+  return nface_attrs_;
+}
+
+const char *MeshInput::GetDataBuffer() const
+{
+  return &data_buffer_[0];
+}
+
+const std::string MeshInput::GetAttributeName(int i) const
+{
+  if (i < 0 || i >= static_cast<int>(attr_names_.size())) {
+    return std::string("");
+  }
+  return attr_names_[i];
+}
+
+template<typename T>
+inline void write_(std::ofstream &file, const T *src, int64_t count)
+{
+  file.write(reinterpret_cast<const char*>(src), sizeof(*src) * count);
+}
+
+MeshOutput::MeshOutput() :
+    version(MSH_FILE_VERSION),
+    nverts(0),
+    nvert_attrs(0),
+    nfaces(0),
+    nface_attrs(0),
+    P(NULL),
+    N(NULL),
+    Cd(NULL),
+    uv(NULL),
+    velocity(NULL),
+    indices(NULL),
+    face_group_id(NULL)
+{
+}
+
+MeshOutput::~MeshOutput()
+{
+  Close();
+}
+
+int MeshOutput::Open(const std::string &filename)
+{
+  file_.open(filename.c_str(), std::ios::out | std::ios::binary);
+
+  if (Fail()) {
+    return -1;
+  }
+
+  return 0;
+}
+
+void MeshOutput::Close()
+{
+  file_.close();
+  printf("********* CLOSED ==================================================\n");
+}
+
+bool MeshOutput::Fail() const
+{
+  return file_.fail();
+}
+
+void MeshOutput::SetVertexCount(int count)
+{
+  if (count < 0) {
+    return;
+  }
+  nverts = count;
+}
+
+void MeshOutput::SetVertexPosition(const Vector *position)
+{
+  P = position;
+  if (P != NULL) {
+    nvert_attrs++;
+  }
+}
+
+void MeshOutput::SetVertexNormal(const Vector *normal)
+{
+  N = normal;
+  if (N != NULL) {
+    nvert_attrs++;
+  }
+}
+
+void MeshOutput::SetVertexColor(const Color *color)
+{
+  Cd = color;
+  if (Cd != NULL) {
+    nvert_attrs++;
+  }
+}
+
+void MeshOutput::SetVertexTexture(const TexCoord *texcoord)
+{
+  uv = texcoord;
+  if (uv != NULL) {
+    nvert_attrs++;
+  }
+}
+
+void MeshOutput::SetVertexVelocity(const Vector *vel)
+{
+  velocity = vel;
+  if (velocity != NULL) {
+    nvert_attrs++;
+  }
+}
+
+void MeshOutput::SetFaceCount(int count)
+{
+  if (count < 0) {
+    return;
+  }
+  nfaces = count;
+}
+
+void MeshOutput::SetFaceIndex3(const Index3 *index)
+{
+  indices = index;
+  if (indices != NULL) {
+    nface_attrs++;
+  }
+}
+
+void MeshOutput::WriteFile()
+{
+  char magic[] = MSH_FILE_MAGIC;
+
+  // counts nvert_attrs automatically
+  nvert_attrs = 0;
+  if (P != NULL) nvert_attrs++;
+  if (N != NULL) nvert_attrs++;
+  if (Cd != NULL) nvert_attrs++;
+  if (uv != NULL) nvert_attrs++;
+  if (velocity != NULL) nvert_attrs++;
+  nface_attrs = 0;
+  if (indices != NULL) nface_attrs++;
+  if (face_group_id != NULL) nface_attrs++;
+
+  write_(file_, magic, MSH_MAGIC_SIZE);
+  write_(file_, &version,     1);
+  write_(file_, &nverts,      1);
+  write_(file_, &nvert_attrs, 1);
+  write_(file_, &nfaces,      1);
+  write_(file_, &nface_attrs, 1);
+
+  write_attriname(this, "P");
+  write_attriname(this, "N");
+  write_attriname(this, "Cd");
+  write_attriname(this, "uv");
+  write_attriname(this, "velocity");
+  write_attriname(this, "indices");
+  write_attriname(this, "face_group_id");
+
+  write_attridata(this, "P");
+  write_attridata(this, "N");
+  write_attridata(this, "Cd");
+  write_attridata(this, "uv");
+  write_attridata(this, "velocity");
+  write_attridata(this, "indices");
+  write_attridata(this, "face_group_id");
 }
 
 // mesh output file interfaces
@@ -111,25 +307,12 @@ MeshOutput *MshOpenOutputFile(const char *filename)
     return NULL;
   }
 
-  out->file = fopen(filename, "wb");
-  if (out->file == NULL) {
+  out->file_.open(filename, std::ios::out | std::ios::binary);
+  if (out->file_.fail()) {
     set_error(MSH_ERR_FILE_NOT_EXIST);
     delete out;
     return NULL;
   }
-
-  out->version = MSH_FILE_VERSION;
-  out->nverts = 0;
-  out->nvert_attrs = 0;
-  out->nfaces = 0;
-  out->nface_attrs = 0;
-  out->P = NULL;
-  out->N = NULL;
-  out->Cd = NULL;
-  out->uv = NULL;
-  out->velocity = NULL;
-  out->indices = NULL;
-  out->face_group_id = NULL;
 
   return out;
 }
@@ -139,9 +322,6 @@ void MshCloseOutputFile(MeshOutput *out)
   if (out == NULL)
     return;
 
-  if (out->file != NULL) {
-    fclose(out->file);
-  }
   delete out;
 }
 
@@ -160,12 +340,12 @@ void MshWriteFile(MeshOutput *out)
   if (out->indices != NULL) out->nface_attrs++;
   if (out->face_group_id != NULL) out->nface_attrs++;
 
-  fwrite(magic, sizeof(char), MSH_MAGIC_SIZE, out->file);
-  fwrite(&out->version, sizeof(int), 1, out->file);
-  fwrite(&out->nverts, sizeof(int), 1, out->file);
-  fwrite(&out->nvert_attrs, sizeof(int), 1, out->file);
-  fwrite(&out->nfaces, sizeof(int), 1, out->file);
-  fwrite(&out->nface_attrs, sizeof(int), 1, out->file);
+  write_(out->file_, magic, MSH_MAGIC_SIZE);
+  write_(out->file_, &out->version,     1);
+  write_(out->file_, &out->nverts,      1);
+  write_(out->file_, &out->nvert_attrs, 1);
+  write_(out->file_, &out->nfaces,      1);
+  write_(out->file_, &out->nface_attrs, 1);
 
   write_attriname(out, "P");
   write_attriname(out, "N");
@@ -186,30 +366,28 @@ void MshWriteFile(MeshOutput *out)
 
 int MshLoadFile(Mesh *mesh, const char *filename)
 {
-  int i, j;
-  int TOTAL_ATTR_COUNT;
-  MeshInput *in;
+  MeshInput in;
 
-  in = MshOpenInputFile(filename);
-  if (in == NULL) {
+  in.Open(filename);
+  if (in.Fail()) {
     return -1;
   }
 
-  if (MshReadHeader(in)) {
-    MshCloseInputFile(in);
+  if (in.ReadHeader()) {
     return -1;
   }
 
-  TOTAL_ATTR_COUNT = in->nvert_attrs + in->nface_attrs;
+  const int TOTAL_ATTR_COUNT = in.GetVertexAttributeCount() + in.GetFaceAttributeCount();
 
-  for (i = 0; i < TOTAL_ATTR_COUNT; i++) {
-    const std::string &attrname = in->attr_names[i];
+  for (int i = 0; i < TOTAL_ATTR_COUNT; i++) {
+    const std::string attrname = in.GetAttributeName(i);
+
     if (attrname == "P") {
-      mesh->SetVertexCount(in->nverts);
+      mesh->SetVertexCount(in.GetVertexCount());
       mesh->AddVertexPosition();
-      read_attridata(in);
-      for (j = 0; j < in->nverts; j++) {
-        const double *data = (const double *) &in->data_buffer[0];
+      in.ReadAttributeData();
+      for (int j = 0; j < in.GetVertexCount(); j++) {
+        const double *data = (const double *) in.GetDataBuffer();
         Vector P;
         P.x = data[3*j + 0];
         P.y = data[3*j + 1];
@@ -218,11 +396,11 @@ int MshLoadFile(Mesh *mesh, const char *filename)
       }
     }
     else if (attrname == "N") {
-      mesh->SetVertexCount(in->nverts);
+      mesh->SetVertexCount(in.GetVertexCount());
       mesh->AddVertexNormal();
-      read_attridata(in);
-      for (j = 0; j < in->nverts; j++) {
-        const double *data = (const double *) &in->data_buffer[0];
+      in.ReadAttributeData();
+      for (int j = 0; j < in.GetVertexCount(); j++) {
+        const double *data = (const double *) in.GetDataBuffer();
         Vector N;
         N.x = data[3*j + 0];
         N.y = data[3*j + 1];
@@ -231,11 +409,11 @@ int MshLoadFile(Mesh *mesh, const char *filename)
       }
     }
     else if (attrname == "Cd") {
-      mesh->SetVertexCount(in->nverts);
+      mesh->SetVertexCount(in.GetVertexCount());
       mesh->AddVertexColor();
-      read_attridata(in);
-      for (j = 0; j < in->nverts; j++) {
-        const float *data = (const float *) &in->data_buffer[0];
+      in.ReadAttributeData();
+      for (int j = 0; j < in.GetVertexCount(); j++) {
+        const float *data = (const float *) in.GetDataBuffer();
         Color Cd;
         Cd.r = data[3*j + 0];
         Cd.g = data[3*j + 1];
@@ -244,11 +422,11 @@ int MshLoadFile(Mesh *mesh, const char *filename)
       }
     }
     else if (attrname == "uv") {
-      mesh->SetVertexCount(in->nverts);
+      mesh->SetVertexCount(in.GetVertexCount());
       mesh->AddVertexTexture();
-      read_attridata(in);
-      for (j = 0; j < in->nverts; j++) {
-        const float *data = (const float *) &in->data_buffer[0];
+      in.ReadAttributeData();
+      for (int j = 0; j < in.GetVertexCount(); j++) {
+        const float *data = (const float *) in.GetDataBuffer();
         TexCoord texcoord;
         texcoord.u = data[2*j + 0];
         texcoord.v = data[2*j + 1];
@@ -256,11 +434,11 @@ int MshLoadFile(Mesh *mesh, const char *filename)
       }
     }
     else if (attrname == "velocity") {
-      mesh->SetVertexCount(in->nverts);
+      mesh->SetVertexCount(in.GetVertexCount());
       mesh->AddVertexVelocity();
-      read_attridata(in);
-      for (j = 0; j < in->nverts; j++) {
-        const double *data = (const double *) &in->data_buffer[0];
+      in.ReadAttributeData();
+      for (int j = 0; j < in.GetVertexCount(); j++) {
+        const double *data = (const double *) in.GetDataBuffer();
         Vector velocity;
         velocity.x = data[3*j + 0];
         velocity.y = data[3*j + 1];
@@ -269,11 +447,11 @@ int MshLoadFile(Mesh *mesh, const char *filename)
       }
     }
     else if (attrname == "indices") {
-      mesh->SetFaceCount(in->nfaces);
+      mesh->SetFaceCount(in.GetFaceCount());
       mesh->AddFaceIndices();
-      read_attridata(in);
-      for (j = 0; j < in->nfaces; j++) {
-        const Index *data = (const Index *) &in->data_buffer[0];
+      in.ReadAttributeData();
+      for (int j = 0; j < in.GetFaceCount(); j++) {
+        const Index *data = (const Index *) in.GetDataBuffer();
         Index3 tri_index;
         tri_index.i0 = data[3*j + 0];
         tri_index.i1 = data[3*j + 1];
@@ -282,11 +460,11 @@ int MshLoadFile(Mesh *mesh, const char *filename)
       }
     }
     else if (attrname == "face_group_id") {
-      mesh->SetFaceCount(in->nfaces);
+      mesh->SetFaceCount(in.GetFaceCount());
       mesh->AddFaceGroupID();
-      read_attridata(in);
-      for (j = 0; j < in->nfaces; j++) {
-        const int *data = (const int *) &in->data_buffer[0];
+      in.ReadAttributeData();
+      for (int j = 0; j < in.GetFaceCount(); j++) {
+        const int *data = (const int *) in.GetDataBuffer();
         const int group_id = data[j];
         mesh->SetFaceGroupID(j, group_id);
       }
@@ -294,7 +472,6 @@ int MshLoadFile(Mesh *mesh, const char *filename)
   }
 
   mesh->ComputeBounds();
-  MshCloseInputFile(in);
 
   return 0;
 }
@@ -340,8 +517,8 @@ static size_t write_attriname(MeshOutput *out, const std::string &name)
 
   nwrotes = 0;
   namesize = name.length() + 1;
-  nwrotes += fwrite(&namesize, sizeof(size_t), 1, out->file);
-  nwrotes += fwrite(&name[0], sizeof(char), namesize, out->file);
+  write_(out->file_, &namesize, 1);
+  write_(out->file_, &name[0], namesize);
 
   return nwrotes;
 }
@@ -356,103 +533,90 @@ static size_t write_attridata(MeshOutput *out, const std::string &name)
     if (out->P == NULL)
       return 0;
     datasize = 3 * sizeof(double) * out->nverts;
-    nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
+    write_(out->file_, &datasize, 1);
     for (i = 0; i < out->nverts; i++) {
       double P[3] = {0, 0, 0};
       P[0] = out->P[i].x;
       P[1] = out->P[i].y;
       P[2] = out->P[i].z;
-      nwrotes += fwrite(P, sizeof(double), 3, out->file);
+      write_(out->file_, P, 3);
     }
   }
   else if (name == "N") {
     if (out->N == NULL)
       return 0;
     datasize = 3 * sizeof(double) * out->nverts;
-    nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
+    write_(out->file_, &datasize, 1);
     for (i = 0; i < out->nverts; i++) {
       double N[3] = {0, 0, 0};
       N[0] = out->N[i].x;
       N[1] = out->N[i].y;
       N[2] = out->N[i].z;
-      nwrotes += fwrite(N, sizeof(double), 3, out->file);
+      write_(out->file_, N, 3);
     }
   }
   else if (name == "Cd") {
     if (out->Cd == NULL)
       return 0;
     datasize = 3 * sizeof(float) * out->nverts;
-    nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
+    write_(out->file_, &datasize, 1);
     for (i = 0; i < out->nverts; i++) {
       float Cd[3] = {0, 0, 0};
       Cd[0] = out->Cd[i].r;
       Cd[1] = out->Cd[i].g;
       Cd[2] = out->Cd[i].b;
-      nwrotes += fwrite(Cd, sizeof(float), 3, out->file);
+      write_(out->file_, Cd, 3);
     }
   }
   else if (name == "uv") {
     if (out->uv == NULL)
       return 0;
     datasize = 2 * sizeof(float) * out->nverts;
-    nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
+    write_(out->file_, &datasize, 1);
     for (i = 0; i < out->nverts; i++) {
       float uv[2] = {0, 0};
       uv[0] = out->uv[i].u;
       uv[1] = out->uv[i].v;
-      nwrotes += fwrite(uv, sizeof(float), 2, out->file);
+      write_(out->file_, uv, 2);
     }
   }
   else if (name == "velocity") {
     if (out->velocity == NULL)
       return 0;
     datasize = 3 * sizeof(double) * out->nverts;
-    nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
+    write_(out->file_, &datasize, 1);
     for (i = 0; i < out->nverts; i++) {
       double velocity[3] = {0, 0, 0};
       velocity[0] = out->velocity[i].x;
       velocity[1] = out->velocity[i].y;
       velocity[2] = out->velocity[i].z;
-      nwrotes += fwrite(velocity, sizeof(double), 3, out->file);
+      write_(out->file_, velocity, 3);
     }
   }
   else if (name == "indices") {
     if (out->indices == NULL)
       return 0;
     datasize = 3 * sizeof(int) * out->nfaces;
-    nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
+    write_(out->file_, &datasize, 1);
     for (i = 0; i < out->nfaces; i++) {
       Index indices[3] = {0, 0, 0};
       indices[0] = out->indices[i].i0;
       indices[1] = out->indices[i].i1;
       indices[2] = out->indices[i].i2;
-      nwrotes += fwrite(indices, sizeof(Index), 3, out->file);
+      write_(out->file_, indices, 3);
     }
   }
   else if (name == "face_group_id") {
     if (out->face_group_id == NULL)
       return 0;
     datasize = sizeof(int) * out->nfaces;
-    nwrotes += fwrite(&datasize, sizeof(size_t), 1, out->file);
+    write_(out->file_, &datasize, 1);
     for (i = 0; i < out->nfaces; i++) {
       const int id = out->face_group_id[i];
-      nwrotes += fwrite(&id, sizeof(int), 1, out->file);
+      write_(out->file_, &id, 1);
     }
   }
   return nwrotes;
-}
-
-static size_t read_attridata(MeshInput *in)
-{
-  size_t nreads = 0;
-  size_t datasize = 0;
-  nreads += fread(&datasize, sizeof(size_t), 1, in->file);
-
-  in->data_buffer.resize(datasize);
-
-  nreads += fread(&in->data_buffer[0], sizeof(char), datasize, in->file);
-
-  return nreads;
 }
 
 } // namespace xxx

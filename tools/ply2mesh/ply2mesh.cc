@@ -78,7 +78,6 @@ int main(int argc, const char **argv)
   std::vector<TexCoord> uv;
   int has_uv = 0;
   std::vector<Index3> index_array;
-  MeshOutput *out;
 
   if (argc == 2 && strcmp(argv[1], "--help") == 0) {
     printf("%s", USAGE);
@@ -91,7 +90,10 @@ int main(int argc, const char **argv)
     return -1;
   }
 
-  if ((out = MshOpenOutputFile(argv[2])) == NULL) {
+  MeshOutput out;
+
+  out.Open(argv[2]);
+  if (out.Fail()) {
     // XXX
     fprintf(stderr, "Could not open output file: %s\n", argv[2]);
     return -1;
@@ -213,22 +215,18 @@ int main(int argc, const char **argv)
     Normalize(nml);
   }
 
-  // setup MshOutput
-  out->nverts = nverts;
-  out->nvert_attrs = 2;
-  out->P = &P[0];
-  out->N = &N[0];
-  out->Cd = NULL;
-  out->uv = &uv[0];
-  out->nfaces = ntris;
-  out->nface_attrs = 1;
-  out->indices = &index_array[0];
+  // setup MeshOutput
+  out.SetVertexCount(nverts);
+  out.SetVertexPosition(&P[0]);
+  out.SetVertexNormal(&N[0]);
+  out.SetVertexTexture(&uv[0]);
+  out.SetFaceCount(ntris);
+  out.SetFaceIndex3(&index_array[0]);
 
-  MshWriteFile(out);
+  out.WriteFile();
 
   // cleanup
   ply_close(in_ply);
-  MshCloseOutputFile(out);
 
   return 0;
 }
