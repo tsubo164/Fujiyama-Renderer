@@ -77,6 +77,7 @@ public:
   void SetVertexVelocity(const Vector *vel);
   void SetFaceCount(int count);
   void SetFaceIndex3(const Index3 *index);
+  void SetFaceGroupID(const int *id);
 
   void WriteFile();
 

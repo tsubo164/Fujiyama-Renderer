@@ -202,25 +202,26 @@ int main(int argc, const char **argv)
 
 int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename)
 {
-  MeshOutput *out = MshOpenOutputFile(filename);
-  if (out == NULL) {
+  MeshOutput out;
+
+  out.Open(filename);
+  if (out.Fail()) {
     return -1;
   }
 
-  out->nverts = buffer->nverts;
-  out->P  = &buffer->P[0];
-  out->N  = &buffer->N[0];
-  out->uv = &buffer->uv[0];
-  out->nfaces = buffer->nfaces;
-  out->nface_attrs = 1;
-  out->indices = &buffer->vertex_indices[0];
+  out.SetVertexCount(buffer->nverts);
+  out.SetVertexPosition(&buffer->P[0]);
+  out.SetVertexNormal(&buffer->N[0]);
+  out.SetVertexTexture(&buffer->uv[0]);
+  out.SetFaceCount(buffer->nfaces);
+  out.SetFaceIndex3(&buffer->vertex_indices[0]);
+
   // TODO TEST
   if (!buffer->face_group_id.empty()) {
-    out->face_group_id = &buffer->face_group_id[0];
+    out.SetFaceGroupID(&buffer->face_group_id[0]);
   }
 
-  MshWriteFile(out);
-  MshCloseOutputFile(out);
+  out.WriteFile();
 
   return 0;
 }

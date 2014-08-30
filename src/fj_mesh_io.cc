@@ -258,6 +258,14 @@ void MeshOutput::SetFaceIndex3(const Index3 *index)
   }
 }
 
+void MeshOutput::SetFaceGroupID(const int *id)
+{
+  face_group_id = id;
+  if (indices != NULL) {
+    nface_attrs++;
+  }
+}
+
 void MeshOutput::WriteFile()
 {
   char magic[] = MSH_FILE_MAGIC;
@@ -366,6 +374,7 @@ void MshWriteFile(MeshOutput *out)
 
 int MshLoadFile(Mesh *mesh, const char *filename)
 {
+  printf("************* TEST ****************\n");
   MeshInput in;
 
   in.Open(filename);
