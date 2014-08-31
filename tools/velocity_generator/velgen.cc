@@ -26,7 +26,6 @@ static const char USAGE[] =
 
 int main(int argc, const char **argv)
 {
-  MeshOutput *out;
   const char *infile;
   const char *outfile;
 
@@ -49,7 +48,10 @@ int main(int argc, const char **argv)
   infile = argv[1];
   outfile = argv[2];
 
-  if ((out = MshOpenOutputFile(outfile)) == NULL) {
+  MeshOutput out;
+
+  out.Open(outfile);
+  if (out.Fail()) {
     // TODO ERROR HANDLING
     fprintf(stderr, "Could not open output file: %s\n", argv[2]);
     return -1;
@@ -145,19 +147,14 @@ int main(int argc, const char **argv)
   }
 
   // setup MshOutput
-  out->nverts = nverts;
-  out->nvert_attrs = 2;
-  out->P = &P[0];
-  out->N = &N[0];
-  out->Cd = NULL;
-  out->uv = NULL;
-  out->velocity = &velocity[0];
-  out->nfaces = nfaces;
-  out->nface_attrs = 1;
-  out->indices = &indices[0];
+  out.SetVertexCount(nverts);
+  out.SetVertexPosition(&P[0]);
+  out.SetVertexNormal(&N[0]);
+  out.SetVertexVelocity(&velocity[0]);
+  out.SetFaceCount(nfaces);
+  out.SetFaceIndex3(&indices[0]);
 
-  MshWriteFile(out);
-  MshCloseOutputFile(out);
+  out.WriteFile();
 
   return 0;
 }
