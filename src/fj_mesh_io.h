@@ -81,28 +81,26 @@ public:
 
   void WriteFile();
 
-public:
+private:
+  void write_attribute_name(const std::string &name);
+  void write_attribute_data(const std::string &name);
+
   std::ofstream file_;
 
-  int version;
-  int nverts;
-  int nvert_attrs;
-  int nfaces;
-  int nface_attrs;
+  int version_;
+  int nverts_;
+  int nvert_attrs_;
+  int nfaces_;
+  int nface_attrs_;
 
-  const Vector *P;
-  const Vector *N;
-  const Color *Cd;
-  const TexCoord *uv;
-  const Vector *velocity;
-  const Index3 *indices;
-  const int *face_group_id;
+  const Vector *P_;
+  const Vector *N_;
+  const Color *Cd_;
+  const TexCoord *uv_;
+  const Vector *velocity_;
+  const Index3 *indices_;
+  const int *face_group_id_;
 };
-
-// mesh output file interfaces
-FJ_API MeshOutput *MshOpenOutputFile(const char *filename);
-FJ_API void MshCloseOutputFile(MeshOutput *out);
-FJ_API void MshWriteFile(MeshOutput *out);
 
 // high level interface for loading mesh file
 // TODO AUTOMATICALLY ADD AND COMPUTE N IF NOT EXIST
