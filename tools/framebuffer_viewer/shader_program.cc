@@ -1,7 +1,7 @@
 // Copyright (c) 2011-2014 Hiroshi Tsubokawa
 // See LICENSE and README
 
-#include "glsl_shaders.h"
+#include "shader_program.h"
 #include <iostream>
 
 ShaderProgram::ShaderProgram() :

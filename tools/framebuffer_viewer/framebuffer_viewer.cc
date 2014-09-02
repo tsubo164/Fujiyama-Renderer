@@ -10,7 +10,6 @@
 #include "fj_box.h"
 
 #include "compatible_opengl.h"
-#include "glsl_shaders.h"
 #include "load_images.h"
 #include "image_card.h"
 

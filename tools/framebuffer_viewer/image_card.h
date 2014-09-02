@@ -4,7 +4,7 @@
 #ifndef DRAW_IMAGE_H
 #define DRAW_IMAGE_H
 
-#include "glsl_shaders.h"
+#include "shader_program.h"
 
 enum {
   DISPLAY_RGB = -1,
