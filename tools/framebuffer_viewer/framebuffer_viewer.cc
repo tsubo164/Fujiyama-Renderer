@@ -87,8 +87,6 @@ static void clear_image_viewer(FrameBufferViewer *v)
   BOX2_SET(v->viewbox, 0, 0, 0, 0);
   v->tilesize = 0;
   v->draw_tile = 1;
-
-  init_image_drawer(&v->image);
 }
 
 FrameBufferViewer *FbvNewViewer(void)
@@ -144,8 +142,8 @@ void FbvDraw(const FrameBufferViewer *v)
   glTranslatef(0.f, 0.f, 0.1f); 
 
   if (!v->fb.IsEmpty()) {
-    draw_image(&v->image);
-    draw_outline(&v->image);
+    v->image.Draw();
+    v->image.DrawOutline();
   }
 
   // render viewbox line
@@ -389,7 +387,7 @@ void FbvGetImageSize(const FrameBufferViewer *v,
 //----------------------------------------------------------------------------
 static void setup_image_drawing(FrameBufferViewer *v)
 {
-  setup_image_drawer(&v->image, v->fb.GetReadOnly(0, 0, 0),
+  v->image.Init(v->fb.GetReadOnly(0, 0, 0),
       v->fb.GetChannelCount(), v->diplay_channel,
       v->databox[0],
       v->viewbox[3] - v->viewbox[1] - v->databox[3],
