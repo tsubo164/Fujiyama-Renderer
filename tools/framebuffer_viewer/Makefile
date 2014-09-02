@@ -14,7 +14,7 @@ endif
 
 target_dir  := bin
 target_name := fbview
-files       := fbview draw_image framebuffer_viewer glsl_shaders load_images
+files       := fbview image_card framebuffer_viewer glsl_shaders load_images
 topdir      := ../..
 
 incdir  := $(topdir)/src

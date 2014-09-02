@@ -1,7 +1,7 @@
 // Copyright (c) 2011-2014 Hiroshi Tsubokawa
 // See LICENSE and README
 
-#include "draw_image.h"
+#include "image_card.h"
 #include <stddef.h>
 #include <assert.h>
 

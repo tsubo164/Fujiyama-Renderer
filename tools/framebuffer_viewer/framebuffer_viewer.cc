@@ -12,7 +12,7 @@
 #include "compatible_opengl.h"
 #include "glsl_shaders.h"
 #include "load_images.h"
-#include "draw_image.h"
+#include "image_card.h"
 
 #include <cmath>
 #include <cstdio>
