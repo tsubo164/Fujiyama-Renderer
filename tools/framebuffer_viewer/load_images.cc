@@ -7,13 +7,12 @@
 #include "fj_mipmap.h"
 #include "fj_box.h"
 
-#include <string.h>
+#include <cstring>
 
 namespace fj {
 
-std::string file_extension(const std::string &filename)
+std::string GetFileExtension(const std::string &filename)
 {
-
   const size_t dotpos = filename.rfind('.');
 
   if(dotpos == std::string::npos){
@@ -23,16 +22,15 @@ std::string file_extension(const std::string &filename)
   return filename.substr(dotpos + 1, filename.size() - dotpos);
 }
 
-int load_fb(const char *filename, FrameBuffer *fb, BufferInfo *info)
+int LoadFb(const std::string &filename, FrameBuffer *fb, BufferInfo *info)
 {
-  FbInput *in = NULL;
-
   if (fb == NULL)
     return -1;
 
-  in = FbOpenInputFile(filename);
-  if (in == NULL)
+  FbInput *in = FbOpenInputFile(filename.c_str());
+  if (in == NULL) {
     return -1;
+  }
 
   if (FbReadHeader(in)) {
     FbCloseInputFile(in);
@@ -52,12 +50,12 @@ int load_fb(const char *filename, FrameBuffer *fb, BufferInfo *info)
   return 0;
 }
 
-int load_mip(const char *filename, FrameBuffer *fb, BufferInfo *info)
+int LoadMip(const std::string &filename, FrameBuffer *fb, BufferInfo *info)
 {
-  MipInput in;
-
   if (fb == NULL)
     return -1;
+
+  MipInput in;
 
   in.Open(filename);
   if (!in.IsOpen())
@@ -69,23 +67,18 @@ int load_mip(const char *filename, FrameBuffer *fb, BufferInfo *info)
 
   fb->Resize(in.GetWidth(), in.GetHeight(), in.GetChannelCount());
 
-  {
-    int x, y;
-    FrameBuffer tilebuf;
+  FrameBuffer tilebuf;
+  tilebuf.Resize(in.GetTileSize(), in.GetTileSize(), in.GetChannelCount());
 
-    tilebuf.Resize(in.GetTileSize(), in.GetTileSize(), in.GetChannelCount());
-
-    for (y = 0; y < in.GetTileCountY(); y++) {
-      for (x = 0; x < in.GetTileCountX(); x++) {
-        int i;
-        in.ReadTile(x, y, tilebuf.GetWritable(0, 0, 0));
-        for (i = 0; i < in.GetTileSize(); i++) {
-          float *dst;
-          const float *src;
-          dst = fb->GetWritable(x * in.GetTileSize(), y * in.GetTileSize() + i, 0);
-          src = tilebuf.GetReadOnly(0, i, 0);
-          memcpy(dst, src, sizeof(float) * in.GetTileSize() * in.GetChannelCount());
-        }
+  for (int y = 0; y < in.GetTileCountY(); y++) {
+    for (int x = 0; x < in.GetTileCountX(); x++) {
+      in.ReadTile(x, y, tilebuf.GetWritable(0, 0, 0));
+      for (int i = 0; i < in.GetTileSize(); i++) {
+        float *dst;
+        const float *src;
+        dst = fb->GetWritable(x * in.GetTileSize(), y * in.GetTileSize() + i, 0);
+        src = tilebuf.GetReadOnly(0, i, 0);
+        memcpy(dst, src, sizeof(float) * in.GetTileSize() * in.GetChannelCount());
       }
     }
   }

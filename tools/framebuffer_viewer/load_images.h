@@ -21,11 +21,10 @@ public:
   int tilesize;
 };
 
-extern std::string file_extension(const std::string &filename);
+extern std::string GetFileExtension(const std::string &filename);
 
-extern int load_fb(const char *filename, FrameBuffer *fb, BufferInfo *info);
-
-extern int load_mip(const char *filename, FrameBuffer *fb, BufferInfo *info);
+extern int LoadFb(const std::string &filename, FrameBuffer *fb, BufferInfo *info);
+extern int LoadMip(const std::string &filename, FrameBuffer *fb, BufferInfo *info);
 
 } // namespace xxx
 

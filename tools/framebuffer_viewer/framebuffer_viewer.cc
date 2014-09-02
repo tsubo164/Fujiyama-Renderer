@@ -256,21 +256,21 @@ int FrameBufferViewer::LoadImage(const std::string &filename)
     filename_ = filename;
   }
 
-  const std::string ext = file_extension(filename_);
+  const std::string ext = GetFileExtension(filename_);
   if (ext == "") {
     return -1;
   }
 
   if (ext == "fb") {
     BufferInfo info;
-    err = load_fb(filename_.c_str(), &fb_, &info);
+    err = LoadFb(filename_, &fb_, &info);
     BOX2_COPY(viewbox_, info.viewbox);
     BOX2_COPY(databox_, info.databox);
     tilesize_ = info.tilesize;
   }
   else if (ext == "mip") {
     BufferInfo info;
-    err = load_mip(filename_.c_str(), &fb_, &info);
+    err = LoadMip(filename_, &fb_, &info);
     BOX2_COPY(viewbox_, info.viewbox);
     BOX2_COPY(databox_, info.databox);
     tilesize_ = info.tilesize;

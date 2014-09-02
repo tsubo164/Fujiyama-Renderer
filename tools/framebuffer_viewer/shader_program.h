@@ -1,8 +1,8 @@
 // Copyright (c) 2011-2014 Hiroshi Tsubokawa
 // See LICENSE and README
 
-#ifndef GLSL_SHADERS_H
-#define GLSL_SHADERS_H
+#ifndef SHADER_PROGRAM_H
+#define SHADER_PROGRAM_H
 
 #include "compatible_opengl.h"
 

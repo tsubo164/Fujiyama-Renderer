@@ -1,8 +1,8 @@
 // Copyright (c) 2011-2014 Hiroshi Tsubokawa
 // See LICENSE and README
 
-#ifndef DRAW_IMAGE_H
-#define DRAW_IMAGE_H
+#ifndef IMAGE_CARD_H
+#define IMAGE_CARD_H
 
 #include "shader_program.h"
 
