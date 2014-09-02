@@ -4,6 +4,8 @@
 #ifndef LOAD_IMAGES_H
 #define LOAD_IMAGES_H
 
+#include <string>
+
 namespace fj {
 
 class FrameBuffer;
@@ -19,7 +21,7 @@ public:
   int tilesize;
 };
 
-extern const char *file_extension(const char *filename);
+extern std::string file_extension(const std::string &filename);
 
 extern int load_fb(const char *filename, FrameBuffer *fb, BufferInfo *info);
 

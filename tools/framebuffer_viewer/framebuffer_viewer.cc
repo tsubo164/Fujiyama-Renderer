@@ -3,7 +3,6 @@
 
 #include "framebuffer_viewer.h"
 #include "fj_framebuffer_io.h"
-#include "fj_framebuffer.h"
 #include "fj_rectangle.h"
 #include "fj_numeric.h"
 #include "fj_mipmap.h"
@@ -11,138 +10,67 @@
 
 #include "compatible_opengl.h"
 #include "load_images.h"
-#include "image_card.h"
 
 #include <cmath>
-#include <cstdio>
-#include <cstring>
 #include <cassert>
 
 namespace fj {
 
-class FrameBufferViewer {
-public:
-  FrameBufferViewer() {}
-  ~FrameBufferViewer() {}
+static void draw_tile_guide(int width, int height, int tilesize);
 
-public:
-  FrameBuffer fb;
-  char filename[1024];
-
-  int win_width;
-  int win_height;
-  int diplay_channel;
-
-  MouseButton pressbutton;
-  int xpresspos;
-  int ypresspos;
-
-  float scale;
-  float exponent;
-  float lockexponent;
-  float dist_per_pixel;
-  int xoffset;
-  int yoffset;
-  int xlockoffset;
-  int ylockoffset;
-
-  int databox[4];
-  int viewbox[4];
-
-  int tilesize;
-  int draw_tile;
-
-  ImageCard image;
-};
-
-static void clear_image_viewer(FrameBufferViewer *v);
-static void setup_image_drawing(FrameBufferViewer *v);
-static void set_to_home_position(FrameBufferViewer *v);
-void GlDrawTileGuide(int width, int height, int tilesize);
-
-char *StrCopyAndTerminate(char *dst, const char *src, size_t nchars)
+FrameBufferViewer::FrameBufferViewer() :
+    win_width_(0),
+    win_height_(0),
+    diplay_channel_(DISPLAY_RGB),
+    pressbutton_(MOUSE_BUTTON_NONE),
+    tilesize_(0),
+    draw_tile_(1)
 {
-  size_t len;
-
-  len = strlen(src);
-  len = Min(len, nchars);
-  strncpy(dst, src, len);
-  dst[len] = '\0';
-
-  return dst;
+  set_to_home_position();
+  BOX2_SET(databox_, 0, 0, 0, 0);
+  BOX2_SET(viewbox_, 0, 0, 0, 0);
 }
 
-static void clear_image_viewer(FrameBufferViewer *v)
+FrameBufferViewer::~FrameBufferViewer()
 {
-  v->win_width = 0;
-  v->win_height = 0;
-  v->diplay_channel = DISPLAY_RGB;
-
-  v->pressbutton = MOUSE_BUTTON_NONE;
-
-  set_to_home_position(v);
-
-  BOX2_SET(v->databox, 0, 0, 0, 0);
-  BOX2_SET(v->viewbox, 0, 0, 0, 0);
-  v->tilesize = 0;
-  v->draw_tile = 1;
 }
 
-FrameBufferViewer *FbvNewViewer(void)
+void FrameBufferViewer::Draw() const
 {
-  FrameBufferViewer *v = new FrameBufferViewer();
-  
-  clear_image_viewer(v);
-  return v;
-}
-
-void FbvFreeViewer(FrameBufferViewer *v)
-{
-  if (v == NULL)
-    return;
-
-  delete v;
-}
-
-void FbvDraw(const FrameBufferViewer *v)
-{
-  int xmove = 0;
-  int ymove = 0;
-  int xviewsize = v->viewbox[2] - v->viewbox[0];
-  int yviewsize = v->viewbox[3] - v->viewbox[1];
+  const int xviewsize = viewbox_[2] - viewbox_[0];
+  const int yviewsize = viewbox_[3] - viewbox_[1];
+  const int xmove = scale_ * xoffset_; 
+  const int ymove = scale_ * yoffset_; 
 
   glClearColor(.2f, .2f, .2f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  if (v->fb.IsEmpty()) {
+  if (fb_.IsEmpty()) {
     return;
   }
-
-  xmove = v->scale * v->xoffset; 
-  ymove = v->scale * v->yoffset; 
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
   glTranslatef(xmove, ymove, 0.f);
-  glScalef(v->scale, v->scale, 1.f);
+  glScalef(scale_, scale_, 1.f);
   glTranslatef(-.5 * xviewsize, -.5 * yviewsize, 0.f); 
 
   // render background
   glColor3f(0.f, 0.f, 0.f);
   glBegin(GL_QUADS);
-    glVertex3f(v->viewbox[0], v->viewbox[1], 0.f);
-    glVertex3f(v->viewbox[2], v->viewbox[1], 0.f);
-    glVertex3f(v->viewbox[2], v->viewbox[3], 0.f);
-    glVertex3f(v->viewbox[0], v->viewbox[3], 0.f);
+    glVertex3f(viewbox_[0], viewbox_[1], 0.f);
+    glVertex3f(viewbox_[2], viewbox_[1], 0.f);
+    glVertex3f(viewbox_[2], viewbox_[3], 0.f);
+    glVertex3f(viewbox_[0], viewbox_[3], 0.f);
   glEnd();
 
   // render framebuffer
   glTranslatef(0.f, 0.f, 0.1f); 
 
-  if (!v->fb.IsEmpty()) {
-    v->image.Draw();
-    v->image.DrawOutline();
+  if (!fb_.IsEmpty()) {
+    image_.Draw();
+    image_.DrawOutline();
   }
 
   // render viewbox line
@@ -151,44 +79,44 @@ void FbvDraw(const FrameBufferViewer *v)
   glLineStipple(1, 0x0F0F);
   glColor3f(.5f, .5f, .5f);
   glBegin(GL_LINE_LOOP);
-    glVertex3f(v->viewbox[0], v->viewbox[1], 0.f);
-    glVertex3f(v->viewbox[0], v->viewbox[3], 0.f);
-    glVertex3f(v->viewbox[2], v->viewbox[3], 0.f);
-    glVertex3f(v->viewbox[2], v->viewbox[1], 0.f);
+    glVertex3f(viewbox_[0], viewbox_[1], 0.f);
+    glVertex3f(viewbox_[0], viewbox_[3], 0.f);
+    glVertex3f(viewbox_[2], viewbox_[3], 0.f);
+    glVertex3f(viewbox_[2], viewbox_[1], 0.f);
   glEnd();
   glPopAttrib();
 
   // render tile guide
-  if (v->tilesize > 0 && v->draw_tile == 1) {
+  if (tilesize_ > 0 && draw_tile_ == 1) {
     glTranslatef(0.f, 0.f, 0.2f); 
     glPushAttrib(GL_CURRENT_BIT);
     glLineStipple(1, 0x3333);
     glColor3f(.5f, .5f, .5f);
-    GlDrawTileGuide(xviewsize, yviewsize, v->tilesize);
+    draw_tile_guide(xviewsize, yviewsize, tilesize_);
     glPopAttrib();
   }
 
   // Not swapping the buffers here is intentional.
 }
 
-void FbvResize(FrameBufferViewer *v, int width, int height)
+void FrameBufferViewer::Resize(int width, int height)
 {
-  v->win_width = width;
-  v->win_height = height;
+  win_width_ = width;
+  win_height_ = height;
 
-  glViewport(0, 0, v->win_width, v->win_height);
+  glViewport(0, 0, win_width_, win_height_);
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(-.5f * v->win_width, .5f * v->win_width,
-          -.5f * v->win_height, .5f * v->win_height,
+  glOrtho(-.5f * win_width_, .5f * win_width_,
+          -.5f * win_height_, .5f * win_height_,
           -1.f, 1.f);
 }
 
-void FbvPressButton(FrameBufferViewer *v, MouseButton button, int x, int y)
+void FrameBufferViewer::PressButton(MouseButton button, int x, int y)
 {
-  v->xpresspos = x;
-  v->ypresspos = y;
+  xpresspos_ = x;
+  ypresspos_ = y;
 
   switch (button) {
   case MOUSE_BUTTON_LEFT:
@@ -215,102 +143,103 @@ void FbvPressButton(FrameBufferViewer *v, MouseButton button, int x, int y)
       printf ("World coords at z=0.0 are (%g, %g, %g)\n", wx, wy, wz);
       //gluUnProject(x, y_inv, 1., model, proj, view, &wx, &wy, &wz);
       //printf ("World coords at z=1.0 are (%g, %g, %g)\n", wx, wy, wz);
-      view_width = v->viewbox[2] - v->viewbox[0];
-      bufx = (int) wx - v->viewbox[0];
-      bufy = (int) wy - v->viewbox[1] * view_width;
-      //bufy = (v->databox[3]-v->databox[1]-1) - bufy;
-      //printf ("++++++(%d, %d)\n", bufx, (v->databox[3]-v->databox[1]-1) - bufy);
-      bufy = FbGetHeight(v->fb) - bufy - 1;
+      view_width = viewbox[2] - viewbox[0];
+      bufx = (int) wx - viewbox[0];
+      bufy = (int) wy - viewbox[1] * view_width;
+      //bufy = (databox[3]-databox[1]-1) - bufy;
+      //printf ("++++++(%d, %d)\n", bufx, (databox[3]-databox[1]-1) - bufy);
+      bufy = FbGetHeight(fb) - bufy - 1;
       //printf ("------(%d, %d)\n", bufx, bufy);
-      //bufx = CLAMP(bufx, 0, v->databox[2]-v->databox[0]-1);
-      //bufy = CLAMP(bufy, 0, v->databox[3]-v->databox[1]-1);
-      bufx = CLAMP(bufx, 0, FbGetWidth(v->fb)-1);
-      bufy = CLAMP(bufy, 0, FbGetHeight(v->fb)-1);
+      //bufx = CLAMP(bufx, 0, databox[2]-databox[0]-1);
+      //bufy = CLAMP(bufy, 0, databox[3]-databox[1]-1);
+      bufx = CLAMP(bufx, 0, FbGetWidth(fb)-1);
+      bufy = CLAMP(bufy, 0, FbGetHeight(fb)-1);
       //printf ("(%d, %d)\n", bufx, bufy);
-      buf = FbGetReadOnly(v->fb, (int) bufx, (int) bufy, 0);
-      memcpy(pixel, buf, sizeof(float) * FbGetChannelCount(v->fb));
+      buf = FbGetReadOnly(fb, (int) bufx, (int) bufy, 0);
+      memcpy(pixel, buf, sizeof(float) * FbGetChannelCount(fb));
       printf("R:%g G:%g B:%g A:%g\n", pixel[0], pixel[1], pixel[2], pixel[3]);
         }
 #endif
     break;
   case MOUSE_BUTTON_MIDDLE:
-    v->pressbutton = MOUSE_BUTTON_MIDDLE;
-    v->xlockoffset = v->xoffset;
-    v->ylockoffset = v->yoffset;
-    v->dist_per_pixel = 1.f/v->scale;
+    pressbutton_ = MOUSE_BUTTON_MIDDLE;
+    xlockoffset_ = xoffset_;
+    ylockoffset_ = yoffset_;
+    dist_per_pixel_ = 1.f/scale_;
     break;
   case MOUSE_BUTTON_RIGHT:
-    v->pressbutton = MOUSE_BUTTON_RIGHT;
-    v->lockexponent = v->exponent;
+    pressbutton_ = MOUSE_BUTTON_RIGHT;
+    lockexponent_ = exponent_;
     break;
   default:
     break;
   }
 }
 
-void FbvReleaseButton(FrameBufferViewer *v, MouseButton button, int x, int y)
+void FrameBufferViewer::ReleaseButton(MouseButton button, int x, int y)
 {
-  v->pressbutton = MOUSE_BUTTON_NONE;
+  pressbutton_ = MOUSE_BUTTON_NONE;
 }
 
-void FbvMoveMouse(FrameBufferViewer *v, int x, int y)
+void FrameBufferViewer::MoveMouse(int x, int y)
 {
   const int posx = x;
   const int posy = y;
 
-  switch (v->pressbutton) {
+  switch (pressbutton_) {
   case MOUSE_BUTTON_MIDDLE:
-    v->xoffset = v->xlockoffset + v->dist_per_pixel * (posx - v->xpresspos);
-    v->yoffset = v->ylockoffset - v->dist_per_pixel * (posy - v->ypresspos);
+    xoffset_ = xlockoffset_ + dist_per_pixel_ * (posx - xpresspos_);
+    yoffset_ = ylockoffset_ - dist_per_pixel_ * (posy - ypresspos_);
     break;
   case MOUSE_BUTTON_RIGHT:
-    v->exponent = v->lockexponent + .01f * (float)(
-          (posx - v->xpresspos) -
-          (posy - v->ypresspos));
-    v->exponent = Clamp(v->exponent, -5.f, 10.f);
-    v->scale = pow(2, v->exponent);
+    exponent_ = lockexponent_ + .01f * (float)(
+          (posx - xpresspos_) -
+          (posy - ypresspos_));
+    exponent_ = Clamp(exponent_, -5.f, 10.f);
+    scale_ = pow(2, exponent_);
     break;
   default:
     break;
   }
 }
 
-void FbvPressKey(FrameBufferViewer *v, unsigned char key, int mouse_x, int mouse_y)
+void FrameBufferViewer::PressKey(unsigned char key, int mouse_x, int mouse_y)
 {
   switch (key) {
   case 'h':
-    set_to_home_position(v);
-    FbvDraw(v);
+    set_to_home_position();
+    Draw();
     break;
   case 'r':
-    v->diplay_channel = ( v->diplay_channel == DISPLAY_R ) ? DISPLAY_RGB : DISPLAY_R;
-    setup_image_drawing(v);
-    FbvDraw(v);
+    diplay_channel_ = (diplay_channel_ == DISPLAY_R) ? DISPLAY_RGB : DISPLAY_R;
+    setup_image_card();
+    Draw();
     break;
   case 'g':
-    v->diplay_channel = ( v->diplay_channel == DISPLAY_G ) ? DISPLAY_RGB : DISPLAY_G;
-    setup_image_drawing(v);
-    FbvDraw(v);
+    diplay_channel_ = (diplay_channel_ == DISPLAY_G) ? DISPLAY_RGB : DISPLAY_G;
+    setup_image_card();
+    Draw();
     break;
   case 'b':
-    v->diplay_channel = ( v->diplay_channel == DISPLAY_B ) ? DISPLAY_RGB : DISPLAY_B;
-    setup_image_drawing(v);
-    FbvDraw(v);
+    diplay_channel_ = (diplay_channel_ == DISPLAY_B) ? DISPLAY_RGB : DISPLAY_B;
+    setup_image_card();
+    Draw();
     break;
   case 'a':
-    v->diplay_channel = ( v->diplay_channel == DISPLAY_A ) ? DISPLAY_RGB : DISPLAY_A;
-    setup_image_drawing(v);
-    FbvDraw(v);
+    diplay_channel_ = (diplay_channel_ == DISPLAY_A) ? DISPLAY_RGB : DISPLAY_A;
+    setup_image_card();
+    Draw();
     break;
   case 't':
-    v->draw_tile = (v->draw_tile == 1) ? 0 : 1;
-    FbvDraw(v);
+    draw_tile_ = (draw_tile_ == 1) ? 0 : 1;
+    Draw();
     break;
   case 'u':
-    FbvLoadImage(v, v->filename);
-    setup_image_drawing(v);
-    FbvDraw(v);
+    LoadImage(filename_);
+    setup_image_card();
+    Draw();
     break;
+  case 'q':
   case '\033': // ESC ASCII code
     exit(EXIT_SUCCESS);
     break;
@@ -319,36 +248,32 @@ void FbvPressKey(FrameBufferViewer *v, unsigned char key, int mouse_x, int mouse
   }
 }
 
-int FbvLoadImage(FrameBufferViewer *v, const char *filename)
+int FrameBufferViewer::LoadImage(const std::string &filename)
 {
-  char try_filename[1024] = {'\0'};
-  const size_t MAXCPY = 1024-1;
-  const char *ext = NULL;
   int err = 0;
 
-  StrCopyAndTerminate(try_filename, filename, MAXCPY);
-  if (strcmp(v->filename, try_filename) != 0) {
-    StrCopyAndTerminate(v->filename, try_filename, MAXCPY);
+  if (filename_ != filename) {
+    filename_ = filename;
   }
 
-  ext = file_extension(v->filename);
-  if (ext == NULL) {
+  const std::string ext = file_extension(filename_);
+  if (ext == "") {
     return -1;
   }
 
-  if (strcmp(ext, "fb") == 0) {
+  if (ext == "fb") {
     BufferInfo info;
-    err = load_fb(v->filename, &v->fb, &info);
-    BOX2_COPY(v->viewbox, info.viewbox);
-    BOX2_COPY(v->databox, info.databox);
-    v->tilesize = info.tilesize;
+    err = load_fb(filename_.c_str(), &fb_, &info);
+    BOX2_COPY(viewbox_, info.viewbox);
+    BOX2_COPY(databox_, info.databox);
+    tilesize_ = info.tilesize;
   }
-  else if (strcmp(ext, "mip") == 0) {
+  else if (ext == "mip") {
     BufferInfo info;
-    err = load_mip(v->filename, &v->fb, &info);
-    BOX2_COPY(v->viewbox, info.viewbox);
-    BOX2_COPY(v->databox, info.databox);
-    v->tilesize = info.tilesize;
+    err = load_mip(filename_.c_str(), &fb_, &info);
+    BOX2_COPY(viewbox_, info.viewbox);
+    BOX2_COPY(databox_, info.databox);
+    tilesize_ = info.tilesize;
   }
   else {
     return -1;
@@ -359,8 +284,8 @@ int FbvLoadImage(FrameBufferViewer *v, const char *filename)
 
   {
     // TODO define gamma function
-    float *pixel = v->fb.GetWritable(0, 0, 0);
-    const int N = v->fb.GetWidth() * v->fb.GetHeight() * v->fb.GetChannelCount();
+    float *pixel = fb_.GetWritable(0, 0, 0);
+    const int N = fb_.GetWidth() * fb_.GetHeight() * fb_.GetChannelCount();
     int i;
 
     const float gamma = 1 / 2.2;
@@ -370,45 +295,43 @@ int FbvLoadImage(FrameBufferViewer *v, const char *filename)
     }
   }
 
-  setup_image_drawing(v);
+  setup_image_card();
 
   return err;
 }
 
-void FbvGetImageSize(const FrameBufferViewer *v,
-    int databox[4], int viewbox[4], int *nchannels)
+void FrameBufferViewer::GetImageSize(int databox[4], int viewbox[4], int *nchannels) const
 {
-  BOX2_COPY(databox, v->databox);
-  BOX2_COPY(viewbox, v->viewbox);
-  *nchannels = v->fb.GetChannelCount();
+  BOX2_COPY(databox, databox_);
+  BOX2_COPY(viewbox, viewbox_);
+  *nchannels = fb_.GetChannelCount();
 }
 
-//----------------------------------------------------------------------------
-static void setup_image_drawing(FrameBufferViewer *v)
+void FrameBufferViewer::set_to_home_position()
 {
-  v->image.Init(v->fb.GetReadOnly(0, 0, 0),
-      v->fb.GetChannelCount(), v->diplay_channel,
-      v->databox[0],
-      v->viewbox[3] - v->viewbox[1] - v->databox[3],
-      v->databox[2] - v->databox[0],
-      v->databox[3] - v->databox[1]);
+  scale_ = 1.f;
+  exponent_ = 0.f;
+  lockexponent_ = 0.f;
+  dist_per_pixel_ = 0.f;
+  xoffset_ = 0.f;
+  yoffset_ = 0.f;
+  xpresspos_ = 0;
+  ypresspos_ = 0;
+  xlockoffset_ = 0.f;
+  ylockoffset_ = 0.f;
 }
 
-static void set_to_home_position(FrameBufferViewer *v)
+void FrameBufferViewer::setup_image_card()
 {
-  v->scale = 1.f;
-  v->exponent = 0.f;
-  v->lockexponent = 0.f;
-  v->dist_per_pixel = 0.f;
-  v->xoffset = 0.f;
-  v->yoffset = 0.f;
-  v->xpresspos = 0;
-  v->ypresspos = 0;
-  v->xlockoffset = 0.f;
-  v->ylockoffset = 0.f;
+  image_.Init(fb_.GetReadOnly(0, 0, 0),
+      fb_.GetChannelCount(), diplay_channel_,
+      databox_[0],
+      viewbox_[3] - viewbox_[1] - databox_[3],
+      databox_[2] - databox_[0],
+      databox_[3] - databox_[1]);
 }
 
-void GlDrawTileGuide(int width, int height, int tilesize)
+static void draw_tile_guide(int width, int height, int tilesize)
 {
   int i;
   const int XNLINES = width / tilesize + 1;

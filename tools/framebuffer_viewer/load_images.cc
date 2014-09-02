@@ -11,13 +11,16 @@
 
 namespace fj {
 
-const char *file_extension(const char *filename)
+std::string file_extension(const std::string &filename)
 {
-  const char *s = strrchr(filename, '.');
-  if (s == NULL)
-    return 0;
 
-  return s + 1;
+  const size_t dotpos = filename.rfind('.');
+
+  if(dotpos == std::string::npos){
+    return std::string("");
+  }
+
+  return filename.substr(dotpos + 1, filename.size() - dotpos);
 }
 
 int load_fb(const char *filename, FrameBuffer *fb, BufferInfo *info)

@@ -28,7 +28,7 @@ static const char USAGE2[] =
 "  a                 Display alpha channel. one more hit back to rgb\n"
 "  t                 Toggle displaying tile guide lines when viewing *.mip\n"
 "  u                 Update (reload) image file\n"
-"  ESC               Quit Application\n"
+"  ESC or q          Quit Application\n"
 "\n";
 
 static FrameBufferViewer *viewer = NULL;
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
   }
   sprintf(win_title, "%s - FrameBuffer Viewer", argv[1]);
 
-  /* tipical glut settings */
+  // tipical glut settings
   glutInit(&argc, argv);
   glutInitWindowSize(WIN_W, WIN_H);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
   {
     const GLenum err = glewInit();
     if (err != GLEW_OK) {
-      /* Problem: glewInit failed, something is seriously wrong. */
+      // Problem: glewInit failed, something is seriously wrong.
       fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
       return -1;
     }
@@ -98,18 +98,18 @@ int main(int argc, char **argv)
 
 static void exit_viewer(void)
 {
-  FbvFreeViewer(viewer);
+  delete viewer;
 }
 
 static void display(void)
 {
-  FbvDraw(viewer);
+  viewer->Draw();
   glutSwapBuffers();
 }
 
 static void resize(int w, int h)
 {
-  FbvResize(viewer, w, h);
+  viewer->Resize(w, h);
   glutPostRedisplay();
 }
 
@@ -132,21 +132,21 @@ static void mouse(int button, int state, int x, int y)
     default:
       break;
     }
-    FbvPressButton(viewer, btn, x, y);
+    viewer->PressButton(btn, x, y);
   } else if (state == GLUT_UP) {
-    FbvReleaseButton(viewer, MOUSE_BUTTON_NONE, x, y);
+    viewer->ReleaseButton(MOUSE_BUTTON_NONE, x, y);
   }
 }
 
 static void motion(int x, int y)
 {
-  FbvMoveMouse(viewer, x, y);
+  viewer->MoveMouse(x, y);
   glutPostRedisplay();
 }
 
 static void keyboard(unsigned char key, int x, int y)
 {
-  FbvPressKey(viewer, key, x, y);
+  viewer->PressKey(key, x, y);
   glutPostRedisplay();
 }
 
@@ -155,28 +155,28 @@ static int initialize_viewer(const char *filename)
   int databox[4] = {0, 0, 0, 0};
   int viewbox[4] = {0, 0, 0, 0};
 
-  /* create viewer */
-  viewer = FbvNewViewer();
+  // create viewer
+  viewer = new FrameBufferViewer();
   if (viewer == NULL) {
     fprintf(stderr, "Could not allocate FrameBufferViewer\n");
     return -1;
   }
 
-  /* register cleanup function */
+  // register cleanup function
   if (atexit(exit_viewer) != 0) {
     fprintf(stderr, "Could not register viewer_exit()\n");
   }
 
-  /* load image */
+  // load image
   {
-    if (FbvLoadImage(viewer, filename)) {
+    if (viewer->LoadImage(filename)) {
       fprintf(stderr, "Could not open framebuffer file: %s\n", filename);
       return -1;
     } else {
       const char *format;
       int nchannels;
-      /* get image size info */
-      FbvGetImageSize(viewer, databox, viewbox, &nchannels);
+      // get image size info
+      viewer->GetImageSize(databox, viewbox, &nchannels);
       switch (nchannels) {
       case 3:
         format = "RGB";
