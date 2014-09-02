@@ -8,21 +8,21 @@
 
 class ShaderProgram {
 public:
-  ShaderProgram() :
-      vert_shader_id(0),
-      frag_shader_id(0),
-      program_id(0) {}
-  ~ShaderProgram() {}
+  ShaderProgram();
+  ~ShaderProgram();
 
-public:
-  GLuint vert_shader_id;
-  GLuint frag_shader_id;
-  GLuint program_id;
+  int Init();
+
+  void SetUniformInt(const char *variable_name, GLint value) const;
+
+  GLuint GetVertexShaderID() const;
+  GLuint GetFragmentShaderID() const;
+  GLuint GetProgramID() const;
+
+private:
+  GLuint vert_shader_id_;
+  GLuint frag_shader_id_;
+  GLuint program_id_;
 };
-
-extern int init_shaders(ShaderProgram *prog);
-
-extern void set_uniform_int(const ShaderProgram *prog,
-    const char *variable_name, GLint value);
 
 #endif // XXX_H

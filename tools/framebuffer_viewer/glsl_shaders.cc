@@ -2,9 +2,20 @@
 // See LICENSE and README
 
 #include "glsl_shaders.h"
-#include <cstdio>
+#include <iostream>
 
-int init_shaders(ShaderProgram *prog)
+ShaderProgram::ShaderProgram() :
+    vert_shader_id_(0),
+    frag_shader_id_(0),
+    program_id_(0)
+{
+}
+
+ShaderProgram::~ShaderProgram()
+{
+}
+
+int ShaderProgram::Init()
 {
   static const GLchar *vert_source[] = {
   "#version 120\n"
@@ -48,7 +59,7 @@ int init_shaders(ShaderProgram *prog)
   glCompileShader(vert_shader_id);
   glGetShaderiv(vert_shader_id, GL_COMPILE_STATUS, &compiled);
   if (compiled == GL_FALSE) {
-    fprintf(stderr, "vertex shader compile error\n");
+    std::cerr << "vertex shader compile error\n";
   }
 
   frag_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
@@ -56,7 +67,7 @@ int init_shaders(ShaderProgram *prog)
   glCompileShader(frag_shader_id);
   glGetShaderiv(frag_shader_id, GL_COMPILE_STATUS, &compiled);
   if (compiled == GL_FALSE) {
-    fprintf(stderr, "fragment shader compile error\n");
+    std::cerr << "fragment shader compile error\n";
   }
 
   program_id = glCreateProgram();
@@ -66,18 +77,32 @@ int init_shaders(ShaderProgram *prog)
   glLinkProgram(program_id);
   glGetProgramiv(program_id, GL_LINK_STATUS, &linked);
   if (linked == GL_FALSE) {
-    fprintf(stderr, "link error\n");
+    std::cerr << "shader program link error\n";
   }
 
-  prog->vert_shader_id = vert_shader_id;
-  prog->frag_shader_id = frag_shader_id;
-  prog->program_id = program_id;
+  vert_shader_id_ = vert_shader_id;
+  frag_shader_id_ = frag_shader_id;
+  program_id_ = program_id;
 
   return 0;
 }
 
-void set_uniform_int(const ShaderProgram *prog,
-    const char *variable_name, GLint value)
+void ShaderProgram::SetUniformInt(const char *variable_name, GLint value) const
 {
-    glUniform1i(glGetUniformLocation(prog->program_id, variable_name), value);
+  glUniform1i(glGetUniformLocation(program_id_, variable_name), value);
+}
+
+GLuint ShaderProgram::GetVertexShaderID() const
+{
+  return vert_shader_id_;
+}
+
+GLuint ShaderProgram::GetFragmentShaderID() const
+{
+  return frag_shader_id_;
+}
+
+GLuint ShaderProgram::GetProgramID() const
+{
+  return program_id_;
 }

@@ -14,10 +14,6 @@ void init_image_drawer(ImageCard *image)
   image->ymin = 0;
   image->xmax = 0;
   image->ymax = 0;
-
-  image->shader_program.vert_shader_id = 0;
-  image->shader_program.frag_shader_id = 0;
-  image->shader_program.program_id = 0;
 }
 
 void setup_image_drawer(ImageCard *image, const float *pixels,
@@ -54,8 +50,8 @@ void setup_image_drawer(ImageCard *image, const float *pixels,
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-  if (image->shader_program.program_id == 0) {
-    init_shaders(&image->shader_program);
+  if (image->shader_program.GetProgramID() == 0) {
+    image->shader_program.Init();
   }
 }
 
@@ -67,10 +63,10 @@ void draw_image(const ImageCard *image)
 
   glColor3f(1.f, 1.f, 1.f);
 
-  glUseProgram(image->shader_program.program_id);
-  set_uniform_int(&image->shader_program, "texture", 0);
-  set_uniform_int(&image->shader_program, "display_channels", image->display_channel);
-  set_uniform_int(&image->shader_program, "channel_count",    image->channel_count);
+  glUseProgram(image->shader_program.GetProgramID());
+  image->shader_program.SetUniformInt("texture", 0);
+  image->shader_program.SetUniformInt("display_channels", image->display_channel);
+  image->shader_program.SetUniformInt("channel_count",    image->channel_count);
 
   glEnable(GL_TEXTURE_2D);
   glBegin(GL_QUADS);
