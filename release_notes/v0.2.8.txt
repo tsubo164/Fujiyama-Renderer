@@ -1,0 +1,29 @@
+Fujiyama Renderer v0.2.8(Alpha) Release Notes
+=============================================
+
+New features since v0.2.7
+-------------------------
+ * Supports reading *.mesh, *.ply, *.obj, *.mip, *.hdr and *.jpg
+   directory through Python APIs.
+
+ * Supports writing *.fb and *.exr directory through Python APIs.
+
+ * Giving file format other than *.mesh, *.mip and *.fb, you don't have to
+   worry about Fujiyama native file format descrepancy saved on disk.
+
+ * Using Fujiyama native file format still has advantages in terms of
+   speed and memory efficiency.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Mesh primitive group
+ * Global illumination
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support

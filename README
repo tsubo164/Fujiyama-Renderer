@@ -44,6 +44,9 @@ designed to handle production image rendering.
   + Command-like scene description language - works with text filter tools
   + Python Binding scene description - can utilize control structures and libraries
   + FrameBuffer Viewer - displays *.fb and *.mip 
+  + Input format - *.mesh, *.ply, *.obj, *.mip, *.hdr, *.jpg (through Python API)
+  + Output format - *.fb, *.exr (through Python API)
+
 
 * Lighting
   + Point light - traditional point light
