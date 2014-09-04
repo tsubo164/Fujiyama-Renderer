@@ -4,6 +4,10 @@
 #See LICENSE and README
 
 import subprocess
+import tempfile
+import shutil
+import uuid
+import sys
 import os
 
 class SceneInterface:
@@ -11,11 +15,32 @@ class SceneInterface:
 	def __init__(self):
 		self.parser = 'scene'
 		self.commands = []
+		self.pre_conversions = []
+		self.post_conversions = []
+		self.tempdir = ''
+
+	def __del__(self):
+		if self.tempdir != '':
+			try:
+				shutil.rmtree(self.tempdir)
+				print '# Temp directory was deleted'
+				print self.tempdir
+			except OSError:
+				print self.tempdir
+				print 'No such file or directory'
+				print 'Seems that temp directory was removed while rendering'
+		print ''
 
 	def Print(self):
 		"""
 		Prints scene interface commands. No command is excuted.
 		"""
+		for conv in self.pre_conversions:
+			conv_cmd = ''
+			for arg in conv:
+				conv_cmd += arg + ' '
+			print conv_cmd
+
 		for cmd in self.commands:
 			print cmd
 
@@ -23,6 +48,32 @@ class SceneInterface:
 		"""
 		Runs scene parser with input stream
 		"""
+
+		if self.pre_conversions:
+			print '# Running pre conversions'
+
+		for conv in self.pre_conversions:
+			try:
+				conv_cmd = ''
+				for arg in conv:
+					conv_cmd += arg + ' '
+				print conv_cmd
+				code = subprocess.check_call(conv)
+			except KeyboardInterrupt:
+				print ''
+				print ''
+				print '===================='
+				print 'Conversion terminated'
+				print '===================='
+				print ''
+				sys.exit()
+			except OSError, (errno, strerror):
+				print 'error: ' + 'scene' + ': ' + strerror
+				sys.exit()
+			except subprocess.CalledProcessError as e:
+				sys.exit()
+		print ''
+
 		commands = ''
 		for cmd in self.commands:
 			commands = commands + cmd + '\n'
@@ -37,8 +88,35 @@ class SceneInterface:
 			print 'Rendering terminated'
 			print '===================='
 			print ''
+			sys.exit()
 		except OSError, (errno, strerror):
 			print 'error: ' + 'scene' + ': ' + strerror
+			sys.exit()
+
+		if self.post_conversions:
+			print '# Running post conversions'
+
+		for conv in self.post_conversions:
+			try:
+				conv_cmd = ''
+				for arg in conv:
+					conv_cmd += arg + ' '
+				print conv_cmd
+				code = subprocess.check_call(conv)
+			except KeyboardInterrupt:
+				print ''
+				print ''
+				print '===================='
+				print 'Conversion terminated'
+				print '===================='
+				print ''
+				sys.exit()
+			except OSError, (errno, strerror):
+				print 'error: ' + 'scene' + ': ' + strerror
+				sys.exit()
+			except subprocess.CalledProcessError as e:
+				sys.exit()
+		print ''
 
 	def Comment(self, comment):
 		"""
@@ -69,7 +147,17 @@ class SceneInterface:
 		self.commands.append(cmd)
 
 	def SaveFrameBuffer(self, framebuffer, filename):
-		cmd = 'SaveFrameBuffer %s %s' % (framebuffer, filename)
+		filepath, ext = os.path.splitext(filename)
+
+		if ext == '.fb':
+			temp_filename = filename
+		elif ext == '.exr':
+			temp_filename = self.__setup_post_conversion('fb2exr', filename, '.fb', '.exr')
+		else:
+			temp_filename = filename
+			print 'non supported texture file format'
+
+		cmd = 'SaveFrameBuffer %s %s' % (framebuffer, temp_filename)
 		self.commands.append(cmd)
 
 	def RunProcedure(self, procedure):
@@ -109,7 +197,19 @@ class SceneInterface:
 		self.commands.append(cmd)
 
 	def NewTexture(self, name, filename):
-		cmd = 'NewTexture %s %s' % (name, filename)
+		filepath, ext = os.path.splitext(filename)
+
+		if ext == '.mip':
+			temp_filename = filename
+		elif ext == '.hdr':
+			temp_filename = self.__setup_pre_conversion('hdr2mip', filename, '.hdr', '.mip')
+		elif ext == '.jpg':
+			temp_filename = self.__setup_pre_conversion('jpg2mip', filename, '.jpg', '.mip')
+		else:
+			temp_filename = filename
+			print 'non supported texture file format'
+
+		cmd = 'NewTexture %s %s' % (name, temp_filename)
 		self.commands.append(cmd)
 
 	def NewCamera(self, name, arg):
@@ -133,7 +233,19 @@ class SceneInterface:
 		self.commands.append(cmd)
 
 	def NewMesh(self, name, filename):
-		cmd = 'NewMesh %s %s' % (name, filename)
+		filepath, ext = os.path.splitext(filename)
+
+		if ext == '.mesh':
+			temp_filename = filename
+		elif ext == '.ply':
+			temp_filename = self.__setup_pre_conversion('ply2mesh', filename, '.ply', '.mesh')
+		elif ext == '.obj':
+			temp_filename = self.__setup_pre_conversion('obj2mesh', filename, '.obj', '.mesh')
+		else:
+			temp_filename = filename
+			print 'non supported texture file format'
+
+		cmd = 'NewMesh %s %s' % (name, temp_filename)
 		self.commands.append(cmd)
 
 	def AssignShader(self, object_instance, shader):
@@ -201,6 +313,31 @@ class SceneInterface:
 		cmd = 'ShowPropertyList %s' % (type_name)
 		self.commands.append(cmd)
 
+	def __setup_pre_conversion(self, converter, orig_filename, from_ext, to_ext):
+		if self.tempdir == '':
+			self.tempdir = tempfile.mkdtemp()
+			print '# Temp directory was created'
+			print self.tempdir
+
+		temp_filename = os.path.basename(orig_filename)
+		temp_filename = temp_filename.replace(from_ext, to_ext)
+		temp_filename = str(uuid.uuid4()) + '_' + temp_filename
+		temp_filename = os.path.join(self.tempdir, temp_filename)
+		self.pre_conversions.append([converter, orig_filename, temp_filename])
+		return temp_filename
+
+	def __setup_post_conversion(self, converter, orig_filename, from_ext, to_ext):
+		if self.tempdir == '':
+			self.tempdir = tempfile.mkdtemp()
+			print '# Temp directory was created'
+			print self.tempdir
+
+		temp_filename = os.path.basename(orig_filename)
+		temp_filename = temp_filename.replace(to_ext, from_ext)
+		temp_filename = str(uuid.uuid4()) + '_' + temp_filename
+		temp_filename = os.path.join(self.tempdir, temp_filename)
+		self.post_conversions.append([converter, temp_filename, orig_filename])
+		return temp_filename
+
 if __name__ == '__main__':
 	si = SceneInterface()
-
