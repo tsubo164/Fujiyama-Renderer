@@ -86,6 +86,7 @@ libscene_dll_obj = \
   ..\..\src\fj_filter.obj \
   ..\..\src\fj_framebuffer.obj \
   ..\..\src\fj_framebuffer_io.obj \
+  ..\..\src\fj_geo_io.obj \
   ..\..\src\fj_grid_accelerator.obj \
   ..\..\src\fj_importance_sampling.obj \
   ..\..\src\fj_interval.obj \
@@ -157,6 +158,9 @@ libscene_dll_obj = \
 
 ..\..\src\fj_framebuffer_io.obj : ..\..\src\fj_framebuffer_io.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_framebuffer_io.cc
+
+..\..\src\fj_geo_io.obj : ..\..\src\fj_geo_io.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_geo_io.cc
 
 ..\..\src\fj_grid_accelerator.obj : ..\..\src\fj_grid_accelerator.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_grid_accelerator.cc
@@ -440,14 +444,11 @@ $(fb2exr_exe) : $(fb2exr_exe_obj)
 
 #===============================================================================
 fbview_exe_obj = \
-  ..\..\tools\framebuffer_viewer\draw_image.obj \
   ..\..\tools\framebuffer_viewer\fbview.obj \
   ..\..\tools\framebuffer_viewer\framebuffer_viewer.obj \
-  ..\..\tools\framebuffer_viewer\glsl_shaders.obj \
-  ..\..\tools\framebuffer_viewer\load_images.obj
-
-..\..\tools\framebuffer_viewer\draw_image.obj : ..\..\tools\framebuffer_viewer\draw_image.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\framebuffer_viewer\draw_image.cc
+  ..\..\tools\framebuffer_viewer\image_card.obj \
+  ..\..\tools\framebuffer_viewer\load_images.obj \
+  ..\..\tools\framebuffer_viewer\shader_program.obj
 
 ..\..\tools\framebuffer_viewer\fbview.obj : ..\..\tools\framebuffer_viewer\fbview.cc
 	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\framebuffer_viewer\fbview.cc
@@ -455,11 +456,14 @@ fbview_exe_obj = \
 ..\..\tools\framebuffer_viewer\framebuffer_viewer.obj : ..\..\tools\framebuffer_viewer\framebuffer_viewer.cc
 	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\framebuffer_viewer\framebuffer_viewer.cc
 
-..\..\tools\framebuffer_viewer\glsl_shaders.obj : ..\..\tools\framebuffer_viewer\glsl_shaders.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\framebuffer_viewer\glsl_shaders.cc
+..\..\tools\framebuffer_viewer\image_card.obj : ..\..\tools\framebuffer_viewer\image_card.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\framebuffer_viewer\image_card.cc
 
 ..\..\tools\framebuffer_viewer\load_images.obj : ..\..\tools\framebuffer_viewer\load_images.cc
 	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\framebuffer_viewer\load_images.cc
+
+..\..\tools\framebuffer_viewer\shader_program.obj : ..\..\tools\framebuffer_viewer\shader_program.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\framebuffer_viewer\shader_program.cc
 
 $(fbview_exe) : $(fbview_exe_obj)
 	@echo fbview.exe

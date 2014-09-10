@@ -23,7 +23,7 @@ class SceneInterface:
 		if self.tempdir != '':
 			try:
 				shutil.rmtree(self.tempdir)
-				print '# Temp directory was deleted'
+				print '# Deleting temp directory'
 				print self.tempdir
 			except OSError:
 				print self.tempdir
@@ -316,8 +316,9 @@ class SceneInterface:
 	def __setup_pre_conversion(self, converter, orig_filename, from_ext, to_ext):
 		if self.tempdir == '':
 			self.tempdir = tempfile.mkdtemp()
-			print '# Temp directory was created'
+			print '# Creating temp directory'
 			print self.tempdir
+			print
 
 		temp_filename = os.path.basename(orig_filename)
 		temp_filename = temp_filename.replace(from_ext, to_ext)
@@ -329,8 +330,9 @@ class SceneInterface:
 	def __setup_post_conversion(self, converter, orig_filename, from_ext, to_ext):
 		if self.tempdir == '':
 			self.tempdir = tempfile.mkdtemp()
-			print '# Temp directory was created'
+			print '# Creating temp directory'
 			print self.tempdir
+			print
 
 		temp_filename = os.path.basename(orig_filename)
 		temp_filename = temp_filename.replace(to_ext, from_ext)
