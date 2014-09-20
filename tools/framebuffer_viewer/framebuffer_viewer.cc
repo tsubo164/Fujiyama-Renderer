@@ -8,6 +8,8 @@
 #include "fj_mipmap.h"
 #include "fj_box.h"
 
+#include "fj_color.h"
+
 #include "compatible_opengl.h"
 #include "load_images.h"
 
@@ -206,6 +208,23 @@ void FrameBufferViewer::MoveMouse(int x, int y)
 void FrameBufferViewer::PressKey(unsigned char key, int mouse_x, int mouse_y)
 {
   switch (key) {
+  // TODO TEST
+  case 'j':
+    {
+      FrameBuffer tmp;
+      tmp.Resize(2, 2, 4);
+      for (int y = 0; y < tmp.GetHeight(); y++) {
+        for (int x = 0; x < tmp.GetWidth(); x++) {
+          const Color4 color((x + y)%3 == 0, (x + y)%3 == 1, (x + y)%3 == 2, 0);
+          tmp.SetColor(x, y, color);
+        }
+      }
+
+      Copy(fb_, tmp, -1, 1);
+    }
+    setup_image_card();
+    Draw();
+    break;
   case 'h':
     set_to_home_position();
     Draw();

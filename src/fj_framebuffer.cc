@@ -109,11 +109,17 @@ int FrameBuffer::IsEmpty() const
 
 float *FrameBuffer::GetWritable(int x, int y, int z)
 {
+  if (!is_inside(x, y, z)) {
+    return NULL;
+  }
   return &buf_[get_index(x, y, z)];
 }
 
 const float *FrameBuffer::GetReadOnly(int x, int y, int z) const
 {
+  if (!is_inside(x, y, z)) {
+    return NULL;
+  }
   return &buf_[get_index(x, y, z)];
 }
 
@@ -121,6 +127,10 @@ Color4 FrameBuffer::GetColor(int x, int y) const
 {
   const float *pixel = GetReadOnly(x, y, 0);
   const int channel_count = GetChannelCount();
+  
+  if (pixel == NULL) {
+    return Color4();
+  }
   
   if (channel_count == 1) {
     return Color4(
@@ -152,6 +162,10 @@ void FrameBuffer::SetColor(int x, int y, const Color4 &rgba)
 {
   float *pixel = GetWritable(x, y, 0);
   const int channel_count = GetChannelCount();
+
+  if (pixel == NULL) {
+    return;
+  }
   
   if (channel_count == 1) {
     pixel[0] = rgba.r;
@@ -172,6 +186,30 @@ void FrameBuffer::SetColor(int x, int y, const Color4 &rgba)
 int FrameBuffer::get_index(int x, int y, int z) const
 {
   return y * width_ * nchannels_ + x * nchannels_ + z;
+}
+
+bool FrameBuffer::is_inside(int x, int y, int z) const
+{
+  if (x < 0 || x >= GetWidth() ||
+      y < 0 || y >= GetHeight() ||
+      z < 0 || z >= GetChannelCount()) {
+    return false;
+  }
+  return true;
+}
+
+void Copy(FrameBuffer &dst, const FrameBuffer &src,
+    int src_offsetx, int src_offsety)
+{
+  for (int y = 0; y < src.GetHeight(); y++) {
+    for (int x = 0; x < src.GetWidth(); x++) {
+      const Color4 color = src.GetColor(x, y);
+      dst.SetColor(
+          x + src_offsetx,
+          y + src_offsety,
+          color);
+    }
+  }
 }
 
 } // namespace xxx

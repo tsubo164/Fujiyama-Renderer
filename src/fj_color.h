@@ -5,6 +5,7 @@
 #define FJ_COLOR_H
 
 #include "fj_compatibility.h"
+#include <iostream>
 
 namespace fj {
 
@@ -237,6 +238,16 @@ inline float Luminance4(const Color4 &A)
 inline Color ColLerp(const Color &A, const Color &B, float t)
 {
   return (1 - t) * A + t * B;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const Color4 &color)
+{
+  os << "(" <<
+    color.r << ", " <<
+    color.g << ", " <<
+    color.b << ", " <<
+    color.a << ")";
+  return os;
 }
 
 } // namespace xxx

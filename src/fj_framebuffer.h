@@ -49,6 +49,7 @@ public:
   int IsEmpty() const;
 
   // Use these functions with caution.
+  // Returns NULL if (x, y, z) is out of bounds.
   float *GetWritable(int x, int y, int z);
   const float *GetReadOnly(int x, int y, int z) const;
 
@@ -66,12 +67,16 @@ public:
 
 private:
   int get_index(int x, int y, int z) const;
+  bool is_inside(int x, int y, int z) const;
 
   std::vector<float> buf_;
   int width_;
   int height_;
   int nchannels_;
 };
+
+void Copy(FrameBuffer &dst, const FrameBuffer &src,
+    int src_offsetx, int src_offsety);
 
 } // namespace xxx
 
