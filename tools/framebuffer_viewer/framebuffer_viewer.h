@@ -30,6 +30,9 @@ public:
   void MoveMouse(int x, int y);
   void PressKey(unsigned char key, int mouse_x, int mouse_y);
 
+  bool IsListening() const;
+  void Listen();
+
   int LoadImage(const std::string &filename);
 
   void GetImageSize(int databox[4], int viewbox[4], int *nchannels) const;
@@ -37,11 +40,13 @@ public:
 private:
   void set_to_home_position();
   void setup_image_card();
+  void draw_viewbox() const;
 
   FrameBuffer fb_;
   ImageCard image_;
 
   std::string filename_;
+  bool is_listening_;
 
   int win_width_;
   int win_height_;

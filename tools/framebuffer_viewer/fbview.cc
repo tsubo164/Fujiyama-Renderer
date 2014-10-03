@@ -3,6 +3,7 @@
 
 #include "framebuffer_viewer.h"
 #include "compatible_opengl.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,6 +39,7 @@ static void resize(int w, int h);
 static void mouse(int button, int state, int x, int y);
 static void motion(int x, int y);
 static void keyboard(unsigned char key, int x, int y);
+static void timer(int value);
 
 static int initialize_viewer(const char *filename);
 
@@ -75,6 +77,7 @@ int main(int argc, char **argv)
   glutMouseFunc(mouse);
   glutMotionFunc(motion);
   glutKeyboardFunc(keyboard);
+  glutTimerFunc(1000, timer, 0);
 
 #if defined(FJ_WINDOWS)
   {
@@ -148,6 +151,18 @@ static void keyboard(unsigned char key, int x, int y)
 {
   viewer->PressKey(key, x, y);
   glutPostRedisplay();
+
+  // to start listening when key 'l' pressed.
+  timer(0);
+}
+
+static void timer(int value)
+{
+  if (viewer->IsListening()) {
+    viewer->Listen();
+    glutPostRedisplay();
+    glutTimerFunc(100, timer, 0);
+  }
 }
 
 static int initialize_viewer(const char *filename)

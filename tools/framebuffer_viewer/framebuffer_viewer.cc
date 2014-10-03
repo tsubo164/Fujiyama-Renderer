@@ -13,6 +13,7 @@
 #include "compatible_opengl.h"
 #include "load_images.h"
 
+#include <iostream>
 #include <cmath>
 #include <cassert>
 
@@ -21,6 +22,7 @@ namespace fj {
 static void draw_tile_guide(int width, int height, int tilesize);
 
 FrameBufferViewer::FrameBufferViewer() :
+    is_listening_(true),
     win_width_(0),
     win_height_(0),
     diplay_channel_(DISPLAY_RGB),
@@ -77,16 +79,7 @@ void FrameBufferViewer::Draw() const
 
   // render viewbox line
   glTranslatef(0.f, 0.f, 0.1f); 
-  glPushAttrib(GL_CURRENT_BIT);
-  glLineStipple(1, 0x0F0F);
-  glColor3f(.5f, .5f, .5f);
-  glBegin(GL_LINE_LOOP);
-    glVertex3f(viewbox_[0], viewbox_[1], 0.f);
-    glVertex3f(viewbox_[0], viewbox_[3], 0.f);
-    glVertex3f(viewbox_[2], viewbox_[3], 0.f);
-    glVertex3f(viewbox_[2], viewbox_[1], 0.f);
-  glEnd();
-  glPopAttrib();
+  draw_viewbox();
 
   // render tile guide
   if (tilesize_ > 0 && draw_tile_ == 1) {
@@ -209,7 +202,9 @@ void FrameBufferViewer::PressKey(unsigned char key, int mouse_x, int mouse_y)
 {
   switch (key) {
   // TODO TEST
-  case 'j':
+  case 'l':
+    is_listening_ = !is_listening_;
+#if 0
     {
       FrameBuffer tmp;
       tmp.Resize(2, 2, 4);
@@ -224,6 +219,7 @@ void FrameBufferViewer::PressKey(unsigned char key, int mouse_x, int mouse_y)
     }
     setup_image_card();
     Draw();
+#endif
     break;
   case 'h':
     set_to_home_position();
@@ -265,6 +261,20 @@ void FrameBufferViewer::PressKey(unsigned char key, int mouse_x, int mouse_y)
   default:
     break;
   }
+}
+
+bool FrameBufferViewer::IsListening() const
+{
+  return is_listening_;
+}
+
+void FrameBufferViewer::Listen()
+{
+#if 0
+  static int i = 0;
+
+  std::cout << "timer: " << i++ << "\n";
+#endif
 }
 
 int FrameBufferViewer::LoadImage(const std::string &filename)
@@ -348,6 +358,30 @@ void FrameBufferViewer::setup_image_card()
       viewbox_[3] - viewbox_[1] - databox_[3],
       databox_[2] - databox_[0],
       databox_[3] - databox_[1]);
+}
+
+void FrameBufferViewer::draw_viewbox() const
+{
+  float r, g, b;
+
+  if (IsListening()) {
+    r = .4f;
+    g = .6f;
+    b = .8f;
+  } else {
+    r = g = b = .5f;
+  }
+
+  glPushAttrib(GL_CURRENT_BIT);
+  glLineStipple(1, 0x0F0F);
+  glColor3f(r, g, b);
+  glBegin(GL_LINE_LOOP);
+    glVertex3f(viewbox_[0], viewbox_[1], 0.f);
+    glVertex3f(viewbox_[0], viewbox_[3], 0.f);
+    glVertex3f(viewbox_[2], viewbox_[3], 0.f);
+    glVertex3f(viewbox_[2], viewbox_[1], 0.f);
+  glEnd();
+  glPopAttrib();
 }
 
 static void draw_tile_guide(int width, int height, int tilesize)
