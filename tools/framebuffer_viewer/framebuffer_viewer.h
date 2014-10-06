@@ -5,6 +5,7 @@
 #define FRAMEBUFFER_VIEWER_H
 
 #include "fj_framebuffer.h"
+#include "fj_socket.h"
 #include "image_card.h"
 #include <string>
 
@@ -30,6 +31,8 @@ public:
   void MoveMouse(int x, int y);
   void PressKey(unsigned char key, int mouse_x, int mouse_y);
 
+  void StartListening();
+  void StopListening();
   bool IsListening() const;
   void Listen();
 
@@ -70,6 +73,9 @@ private:
 
   int tilesize_;
   int draw_tile_;
+
+  //TODO TEST
+  Socket server_;
 };
 
 } // namespace xxx

@@ -22,7 +22,7 @@ namespace fj {
 static void draw_tile_guide(int width, int height, int tilesize);
 
 FrameBufferViewer::FrameBufferViewer() :
-    is_listening_(true),
+    is_listening_(false),
     win_width_(0),
     win_height_(0),
     diplay_channel_(DISPLAY_RGB),
@@ -33,6 +33,13 @@ FrameBufferViewer::FrameBufferViewer() :
   set_to_home_position();
   BOX2_SET(databox_, 0, 0, 0, 0);
   BOX2_SET(viewbox_, 0, 0, 0, 0);
+
+  //TODO TEST
+  StartListening();
+#if 0
+  server_.Bind();
+  server_.Listen();
+#endif
 }
 
 FrameBufferViewer::~FrameBufferViewer()
@@ -263,6 +270,26 @@ void FrameBufferViewer::PressKey(unsigned char key, int mouse_x, int mouse_y)
   }
 }
 
+void FrameBufferViewer::StartListening()
+{
+  if (IsListening())
+    return;
+
+  server_.Open();
+  server_.Bind();
+  server_.Listen();
+  is_listening_ = true;
+}
+
+void FrameBufferViewer::StopListening()
+{
+  if (!IsListening())
+    return;
+
+  server_.Close();
+  is_listening_ = false;
+}
+
 bool FrameBufferViewer::IsListening() const
 {
   return is_listening_;
@@ -270,11 +297,33 @@ bool FrameBufferViewer::IsListening() const
 
 void FrameBufferViewer::Listen()
 {
-#if 0
-  static int i = 0;
+  //Socket server;
+  Socket client;
 
-  std::cout << "timer: " << i++ << "\n";
-#endif
+  const int timeout_sec = 0;
+  const int timeout_micro_sec = 0 * 100 * 1000;
+  const int result = server_.AcceptOrTimeout(client, timeout_sec, timeout_micro_sec);
+
+  if (result == -1) {
+    std::cout << "error\n";
+    // TODO ERROR HANDLING
+  }
+  else if (result == 0) {
+    // time out
+  }
+  else {
+    std::cout << "server: accepted\n";
+
+    char ch;
+    client.Read(&ch, 1);
+    std::cout << "ch: " << ch << "\n";
+
+    int j = 0;
+    client.Read(reinterpret_cast<char *>(&j), sizeof(j));
+    std::cout << "j: " << j << "\n";
+    const int i = ntohl(j);
+    std::cout << "i: " << i << "\n";
+  }
 }
 
 int FrameBufferViewer::LoadImage(const std::string &filename)
