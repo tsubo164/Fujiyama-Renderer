@@ -35,7 +35,7 @@ FrameBufferViewer::FrameBufferViewer() :
   BOX2_SET(viewbox_, 0, 0, 0, 0);
 
   //TODO TEST
-  StartListening();
+  //StartListening();
 #if 0
   server_.Bind();
   server_.Listen();
@@ -314,15 +314,46 @@ void FrameBufferViewer::Listen()
   else {
     std::cout << "server: accepted\n";
 
+    int32_t size = 0;
+    client.Receive(reinterpret_cast<char *>(&size), sizeof(size));
+    std::cout << "size: " << size << "\n";
+
+    int32_t type = 0;
+    client.Receive(reinterpret_cast<char *>(&type), sizeof(type));
+    std::cout << "type: " << type << "\n";
+
+    int32_t id = 0;
+    client.Receive(reinterpret_cast<char *>(&id), sizeof(id));
+    std::cout << "id: " << id << "\n";
+
+    int32_t msg[3];
+    msg[0] = 2 * sizeof(msg[0]);
+    msg[1] = 9999;
+    msg[2] = id;
+
+    client.Send(reinterpret_cast<char *>(msg), 3 * sizeof(msg[0]));
+#if 0
+    char ch[5];
+    client.Receive(ch, 5);
+    std::cout << "ch: " << ch[0] << "\n";
+
+    int *j = reinterpret_cast<int *>(&ch[1]);
+    //client.Receive(reinterpret_cast<char *>(j), sizeof(j));
+    std::cout << "j: " << *j << "\n";
+    const int i = ntohl(*j);
+    std::cout << "i: " << i << "\n";
+#endif
+#if 0
     char ch;
-    client.Read(&ch, 1);
+    client.Receive(&ch, 1);
     std::cout << "ch: " << ch << "\n";
 
     int j = 0;
-    client.Read(reinterpret_cast<char *>(&j), sizeof(j));
+    client.Receive(reinterpret_cast<char *>(&j), sizeof(j));
     std::cout << "j: " << j << "\n";
     const int i = ntohl(j);
     std::cout << "i: " << i << "\n";
+#endif
   }
 }
 

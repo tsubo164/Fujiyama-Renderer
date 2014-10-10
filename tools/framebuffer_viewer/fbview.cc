@@ -45,6 +45,7 @@ static int initialize_viewer(const char *filename);
 
 int main(int argc, char **argv)
 {
+  const char *filename = NULL;
   const int WIN_W = 256;
   const int WIN_H = 256;
   char win_title[1024] = "FrameBuffer Viewer";
@@ -64,7 +65,14 @@ int main(int argc, char **argv)
     fprintf(stderr, "error: too long file name.\n");
     return -1;
   }
-  sprintf(win_title, "%s - FrameBuffer Viewer", argv[1]);
+
+  if (strcmp(argv[1], "--listen") == 0) {
+    filename = NULL;
+    sprintf(win_title, "Listen Mode - FrameBuffer Viewer");
+  } else {
+    filename = argv[1];
+    sprintf(win_title, "%s - FrameBuffer Viewer", filename);
+  }
 
   // tipical glut settings
   glutInit(&argc, argv);
@@ -90,7 +98,7 @@ int main(int argc, char **argv)
   }
 #endif
 
-  if (initialize_viewer(argv[1])) {
+  if (initialize_viewer(filename)) {
     return -1;
   }
 
@@ -180,6 +188,11 @@ static int initialize_viewer(const char *filename)
   // register cleanup function
   if (atexit(exit_viewer) != 0) {
     fprintf(stderr, "Could not register viewer_exit()\n");
+  }
+
+  if (filename == NULL) {
+    viewer->StartListening();
+    return 0;
   }
 
   // load image

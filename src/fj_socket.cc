@@ -127,12 +127,12 @@ int Socket::AcceptOrTimeout(Socket &accepted, int sec, int micro_sec)
   }
 }
 
-int Socket::Read(char *data, size_t count)
+int Socket::Receive(char *data, size_t count)
 {
-  return read(fd_, data, count);
+  return recv(fd_, data, count, MSG_WAITALL);
 }
 
-int Socket::Write(const char *data, size_t count)
+int Socket::Send(const char *data, size_t count)
 {
   return write(fd_, data, count);
 }

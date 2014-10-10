@@ -43,8 +43,8 @@ public:
   int Accept(Socket &accepted);
   int AcceptOrTimeout(Socket &accepted, int sec, int micro_sec);
 
-  int Read(char *data, size_t count);
-  int Write(const char *data, size_t count);
+  int Receive(char *data, size_t count);
+  int Send(const char *data, size_t count);
 
 private:
   socket_id fd_;

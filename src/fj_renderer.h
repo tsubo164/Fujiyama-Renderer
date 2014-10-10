@@ -75,6 +75,10 @@ public:
   int RenderScene();
 
 public:
+  // TODO TEST
+  int notify_start();
+  int notify_end();
+
   int prepare_rendering();
   int execute_rendering();
 

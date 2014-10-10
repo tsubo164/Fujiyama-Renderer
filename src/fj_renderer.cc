@@ -17,6 +17,8 @@
 #include "fj_ray.h"
 #include "fj_box.h"
 
+#include "fj_socket.h"
+
 #include <cassert>
 #include <cstring>
 #include <cstdio>
@@ -380,6 +382,9 @@ void Renderer::SetTileReportCallback(void *data,
 
 int Renderer::RenderScene()
 {
+  // TODO TEST
+  notify_start();
+
   int err = 0;
 
   err = prepare_rendering();
@@ -526,6 +531,42 @@ int Renderer::preprocess_lights()
   printf("# Preprocessing Lights Done\n");
   printf("#   %dh %dm %ds\n\n", elapse.hour, elapse.min, elapse.sec);
 
+  return 0;
+}
+
+int Renderer::notify_start()
+{
+  Socket socket;
+  socket.SetAddress("127.0.0.1");
+
+  const int result = socket.Connect();
+
+  if (result == -1) {
+    std::cerr << "cannot connect to fbview\n";
+  }
+
+  int32_t msg[3];
+  int32_t type = 119;
+  int32_t id = 5555;
+
+  msg[0] = 2 * sizeof(msg[0]);
+  msg[1] = type;
+  msg[2] = id;
+
+  socket.Send(reinterpret_cast<char *>(msg), 3 * sizeof(msg[0]));
+
+  int32_t reply[3];
+  size_t nrcv = socket.Receive(reinterpret_cast<char *>(reply), 3 * sizeof(reply[0]));
+  std::cout << "nrcv: " << nrcv << "\n";
+  std::cout << "reply[0]: " << reply[0] << "\n";
+  std::cout << "reply[1]: " << reply[1] << "\n";
+  std::cout << "reply[2]: " << reply[2] << "\n";
+
+  return 0;
+}
+
+int Renderer::notify_end()
+{
   return 0;
 }
 
