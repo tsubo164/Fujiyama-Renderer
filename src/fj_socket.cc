@@ -127,7 +127,7 @@ int Socket::AcceptOrTimeout(Socket &accepted, int sec, int micro_sec)
   }
 }
 
-int Socket::Receive(char *data, size_t count)
+int Socket::Recieve(char *data, size_t count)
 {
   return recv(fd_, data, count, MSG_WAITALL);
 }

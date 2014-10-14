@@ -16,6 +16,8 @@ public:
   FrameInfo() :
       worker_count(0),
       tile_count(0),
+      xres(0),
+      yres(0),
       frame_region(),
       framebuffer(NULL)
   {}
@@ -24,6 +26,8 @@ public:
 public:
   int worker_count;
   int tile_count;
+  int xres;
+  int yres;
   Rectangle frame_region;
   
   const FrameBuffer *framebuffer;

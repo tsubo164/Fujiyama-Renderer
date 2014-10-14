@@ -4,6 +4,7 @@
 #include "framebuffer_viewer.h"
 #include "fj_framebuffer_io.h"
 #include "fj_rectangle.h"
+#include "fj_protocol.h"
 #include "fj_numeric.h"
 #include "fj_mipmap.h"
 #include "fj_box.h"
@@ -33,13 +34,6 @@ FrameBufferViewer::FrameBufferViewer() :
   set_to_home_position();
   BOX2_SET(databox_, 0, 0, 0, 0);
   BOX2_SET(viewbox_, 0, 0, 0, 0);
-
-  //TODO TEST
-  //StartListening();
-#if 0
-  server_.Bind();
-  server_.Listen();
-#endif
 }
 
 FrameBufferViewer::~FrameBufferViewer()
@@ -314,42 +308,79 @@ void FrameBufferViewer::Listen()
   else {
     std::cout << "server: accepted\n";
 
+    Message message;
+    RecieveMessage(client, message);
+
+    std::cout << "type:     " << message.type << "\n";
+
+    switch (message.type) {
+    case MSG_RENDER_FRAME_START:
+      std::cout << "render_id:     " << message.render_id << "\n";
+      std::cout << "xres:          " << message.xres << "\n";
+      std::cout << "yres:          " << message.yres << "\n";
+      std::cout << "channel_count: " << message.channel_count << "\n";
+      std::cout << "x_tile_count:  " << message.x_tile_count << "\n";
+      std::cout << "y_tile_count:  " << message.y_tile_count << "\n";
+
+      fb_.Resize(message.xres, message.yres, message.channel_count);
+      viewbox_[0] = 0;
+      viewbox_[1] = 0;
+      viewbox_[2] = message.xres;
+      viewbox_[3] = message.yres;
+      databox_[0] = viewbox_[0];
+      databox_[1] = viewbox_[1];
+      databox_[2] = viewbox_[2];
+      databox_[3] = viewbox_[3];
+      setup_image_card();
+
+      break;
+    default:
+      break;
+    }
+
+    SendReply(client, message.render_id);
+
+#if 0
     int32_t size = 0;
-    client.Receive(reinterpret_cast<char *>(&size), sizeof(size));
+    client.Recieve(reinterpret_cast<char *>(&size), sizeof(size));
     std::cout << "size: " << size << "\n";
 
     int32_t type = 0;
-    client.Receive(reinterpret_cast<char *>(&type), sizeof(type));
+    client.Recieve(reinterpret_cast<char *>(&type), sizeof(type));
     std::cout << "type: " << type << "\n";
 
     int32_t id = 0;
-    client.Receive(reinterpret_cast<char *>(&id), sizeof(id));
+    client.Recieve(reinterpret_cast<char *>(&id), sizeof(id));
     std::cout << "id: " << id << "\n";
+#endif
 
+#if 0
     int32_t msg[3];
     msg[0] = 2 * sizeof(msg[0]);
     msg[1] = 9999;
-    msg[2] = id;
+    msg[2] = 8888;
 
     client.Send(reinterpret_cast<char *>(msg), 3 * sizeof(msg[0]));
+#endif
+
 #if 0
     char ch[5];
-    client.Receive(ch, 5);
+    client.Recieve(ch, 5);
     std::cout << "ch: " << ch[0] << "\n";
 
     int *j = reinterpret_cast<int *>(&ch[1]);
-    //client.Receive(reinterpret_cast<char *>(j), sizeof(j));
+    //client.Recieve(reinterpret_cast<char *>(j), sizeof(j));
     std::cout << "j: " << *j << "\n";
     const int i = ntohl(*j);
     std::cout << "i: " << i << "\n";
 #endif
 #if 0
     char ch;
-    client.Receive(&ch, 1);
+    client.Recieve(&ch, 1);
     std::cout << "ch: " << ch << "\n";
 
     int j = 0;
-    client.Receive(reinterpret_cast<char *>(&j), sizeof(j));
+    client.Recieve(reinterpret_cast<char *>(&j), sizeof(j));
     std::cout << "j: " << j << "\n";
     const int i = ntohl(j);
     std::cout << "i: " << i << "\n";

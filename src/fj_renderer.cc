@@ -6,6 +6,7 @@
 #include "fj_framebuffer.h"
 #include "fj_rectangle.h"
 #include "fj_property.h"
+#include "fj_protocol.h"
 #include "fj_numeric.h"
 #include "fj_sampler.h"
 #include "fj_shading.h"
@@ -157,6 +158,78 @@ static Interrupt default_tile_done(void *data, const TileInfo *info)
   return CALLBACK_CONTINUE;
 }
 
+// TODO TEST
+static Interrupt default_frame_start2(void *data, const FrameInfo *info)
+{
+  FrameProgress *fp = (FrameProgress *) data;
+
+  fp->timer.Start();
+  printf("# Rendering Frame\n");
+  printf("#   Resolution:   %4d x %d\n", info->xres, info->yres);
+  printf("#   Thread Count: %4d\n", info->worker_count);
+  printf("#   Tile Count:   %4d\n", info->tile_count);
+  printf("\n");
+
+  {
+    Socket socket;
+    socket.SetAddress("127.0.0.1");
+
+    const int result = socket.Connect();
+
+    if (result == -1) {
+      std::cerr << "cannot connect to fbview\n";
+    }
+
+    SendRenderFrameStart(socket,
+        9945,
+        info->xres,
+        info->yres,
+        info->framebuffer->GetChannelCount(),
+        666, //info->x_tile_count,
+        777); //info->y_tile_count);
+#if 0
+    Message message;
+
+    message.type          = MSG_RENDER_FRAME_START;
+    message.render_id     = 9912345;
+    message.xres          = info->xres;
+    message.yres          = info->yres;
+    message.channel_count = 555; //info->channel_count,
+    message.x_tile_count  = 666; //info->x_tile_count,
+    message.y_tile_count  = 777; //info->y_tile_count);
+
+    SendMessage(socket, message);
+#endif
+
+    Message message;
+    RecieveMessage(socket, message);
+    if (message.type != MSG_REPLY_OK) {
+      // TODO ERROR HANDLING
+    }
+
+#if 0
+    int32_t reply[3];
+    size_t nrcv = socket.Recieve(reinterpret_cast<char *>(reply), 3 * sizeof(reply[0]));
+    std::cout << "nrcv: " << nrcv << "\n";
+    std::cout << "reply[0]: " << reply[0] << "\n";
+    std::cout << "reply[1]: " << reply[1] << "\n";
+    std::cout << "reply[2]: " << reply[2] << "\n";
+    std::cout << "\n";
+#endif
+
+    //return 0;
+  }
+
+  {
+    int idx;
+    fp->current_segment = 0;
+    idx = fp->current_segment;
+    fp->progress.Start(fp->iteration_list[idx]);
+  }
+
+  return CALLBACK_CONTINUE;
+}
+
 Renderer::Renderer()
 {
   camera_ = NULL;
@@ -184,9 +257,16 @@ Renderer::Renderer()
   SetUseMaxThread(0);
   SetThreadCount(1);
 
+  // TODO TEST
+  if (0) {
   SetFrameReportCallback(&frame_progress_,
       default_frame_start,
       default_frame_done);
+  } else {
+  SetFrameReportCallback(&frame_progress_,
+      default_frame_start2,
+      default_frame_done);
+  }
 
   SetTileReportCallback(&frame_progress_,
       default_tile_start,
@@ -383,7 +463,7 @@ void Renderer::SetTileReportCallback(void *data,
 int Renderer::RenderScene()
 {
   // TODO TEST
-  notify_start();
+  //notify_start();
 
   int err = 0;
 
@@ -556,7 +636,7 @@ int Renderer::notify_start()
   socket.Send(reinterpret_cast<char *>(msg), 3 * sizeof(msg[0]));
 
   int32_t reply[3];
-  size_t nrcv = socket.Receive(reinterpret_cast<char *>(reply), 3 * sizeof(reply[0]));
+  size_t nrcv = socket.Recieve(reinterpret_cast<char *>(reply), 3 * sizeof(reply[0]));
   std::cout << "nrcv: " << nrcv << "\n";
   std::cout << "reply[0]: " << reply[0] << "\n";
   std::cout << "reply[1]: " << reply[1] << "\n";
@@ -762,6 +842,8 @@ static void render_frame_start(Renderer *renderer, const Tiler *tiler)
   FrameInfo info;
   info.worker_count = renderer->GetThreadCount();
   info.tile_count = tiler->GetTileCount();
+  info.xres = renderer->resolution_[0];
+  info.yres = renderer->resolution_[1];
   info.frame_region = renderer->frame_region_;;
   info.framebuffer = renderer->framebuffer_;
 
