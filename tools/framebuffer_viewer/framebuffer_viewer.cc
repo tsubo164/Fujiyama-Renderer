@@ -29,7 +29,8 @@ FrameBufferViewer::FrameBufferViewer() :
     diplay_channel_(DISPLAY_RGB),
     pressbutton_(MOUSE_BUTTON_NONE),
     tilesize_(0),
-    draw_tile_(1)
+    draw_tile_(1),
+    state_(STATE_NONE)
 {
   set_to_home_position();
   BOX2_SET(databox_, 0, 0, 0, 0);
@@ -90,6 +91,36 @@ void FrameBufferViewer::Draw() const
     glColor3f(.5f, .5f, .5f);
     draw_tile_guide(xviewsize, yviewsize, tilesize_);
     glPopAttrib();
+  }
+
+  // render rendering guide
+      /*
+      GLfloat xmin = tiles[i].region.xmin;
+      GLfloat ymin = tiles[i].region.ymin;// - viewbox_[1];
+      GLfloat xmax = tiles[i].region.xmax;
+      GLfloat ymax = tiles[i].region.ymax;// - viewbox_[1];
+      */
+
+      glTranslatef(0.f, 0.f, 0.1f); 
+      glPushAttrib(GL_CURRENT_BIT);
+      //glLineStipple(1, 0x0F0F);
+      glDisable(GL_LINE_STIPPLE);
+      glColor3f(1, 1, 1);
+      for (size_t i = 0; i < tiles.size(); i++)
+      {
+        if (tiles[i].state == STATE_RENDERING) {
+          GLfloat xmin = tiles[i].region.xmin + 5;
+          GLfloat ymin = tiles[i].region.ymin + 5;// - viewbox_[1];
+          GLfloat xmax = tiles[i].region.xmax - 5;
+          GLfloat ymax = tiles[i].region.ymax - 5;// - viewbox_[1];
+          glBegin(GL_LINE_LOOP);
+            glVertex3f(xmin, ymin, 0.f);
+            glVertex3f(xmin, ymax, 0.f);
+            glVertex3f(xmax, ymax, 0.f);
+            glVertex3f(xmax, ymin, 0.f);
+          glEnd();
+        }
+      glPopAttrib();
   }
 
   // Not swapping the buffers here is intentional.
@@ -204,8 +235,13 @@ void FrameBufferViewer::PressKey(unsigned char key, int mouse_x, int mouse_y)
   switch (key) {
   // TODO TEST
   case 'l':
-    is_listening_ = !is_listening_;
+    if (IsListening()) {
+      StopListening();
+    } else {
+      StartListening();
+    }
 #if 0
+    is_listening_ = !is_listening_;
     {
       FrameBuffer tmp;
       tmp.Resize(2, 2, 4);
@@ -273,6 +309,8 @@ void FrameBufferViewer::StartListening()
   server_.Bind();
   server_.Listen();
   is_listening_ = true;
+
+  state_ = STATE_READY;
 }
 
 void FrameBufferViewer::StopListening()
@@ -280,8 +318,10 @@ void FrameBufferViewer::StopListening()
   if (!IsListening())
     return;
 
-  server_.Close();
+  server_.Shutdown();
   is_listening_ = false;
+
+  state_ = STATE_NONE;
 }
 
 bool FrameBufferViewer::IsListening() const
@@ -289,38 +329,49 @@ bool FrameBufferViewer::IsListening() const
   return is_listening_;
 }
 
+class HOGE {
+public:
+  HOGE() : id(0), before(0), after(0) {}
+  ~HOGE() {}
+  int id;
+  int before;
+  int after;
+};
+static std::vector<HOGE> hoge(80);
+
 void FrameBufferViewer::Listen()
 {
-  //Socket server;
   Socket client;
 
   const int timeout_sec = 0;
-  const int timeout_micro_sec = 0 * 100 * 1000;
+  const int timeout_micro_sec = 0;
   const int result = server_.AcceptOrTimeout(client, timeout_sec, timeout_micro_sec);
 
   if (result == -1) {
     std::cout << "error\n";
     // TODO ERROR HANDLING
+    return;
   }
   else if (result == 0) {
     // time out
+    return;
   }
   else {
-    std::cout << "server: accepted\n";
-
     Message message;
-    RecieveMessage(client, message);
-
-    std::cout << "type:     " << message.type << "\n";
+    int e = RecieveMessage(client, message);
+    if (e < 0) {
+      std::cerr << "server: accepted\n";
+    }
 
     switch (message.type) {
     case MSG_RENDER_FRAME_START:
+    /*
       std::cout << "render_id:     " << message.render_id << "\n";
       std::cout << "xres:          " << message.xres << "\n";
       std::cout << "yres:          " << message.yres << "\n";
       std::cout << "channel_count: " << message.channel_count << "\n";
-      std::cout << "x_tile_count:  " << message.x_tile_count << "\n";
-      std::cout << "y_tile_count:  " << message.y_tile_count << "\n";
+      std::cout << "tile_count:    " << message.tile_count << "\n";
+    */
 
       fb_.Resize(message.xres, message.yres, message.channel_count);
       viewbox_[0] = 0;
@@ -333,12 +384,57 @@ void FrameBufferViewer::Listen()
       databox_[3] = viewbox_[3];
       setup_image_card();
 
+      tiles.clear();
+      tiles.resize(message.tile_count);
+
+      state_ = STATE_RENDERING;
       break;
+
+    case MSG_RENDER_FRAME_DONE:
+      state_ = STATE_READY;
+      {
+        for (int i = 0; i < 80; i++) {
+          if (hoge[i].before == 0) {
+            //std::cout << "MISS BEFORE _________________" << i << "\n";
+          }
+        }
+      }
+      {
+        for (int i = 0; i < 80; i++) {
+          if (hoge[i].after == 0) {
+            std::cout << "MISS AFTER _________________" << i << "\n";
+          }
+        }
+      }
+      break;
+
+    case MSG_RENDER_TILE_START:
+      tiles[message.tile_id].region.xmin = message.xmin;
+      tiles[message.tile_id].region.ymin = message.ymin;
+      tiles[message.tile_id].region.xmax = message.xmax;
+      tiles[message.tile_id].region.ymax = message.ymax;
+      tiles[message.tile_id].state = STATE_RENDERING;
+
+      hoge[message.tile_id].after = 1;
+/*
+      std::cout << "render_id: " << message.render_id << "\n";
+      std::cout << "tile_id:   " << message.tile_id << "\n";
+      std::cout << "xmin:      " << message.xmin << "\n";
+      std::cout << "ymin:      " << message.ymin << "\n";
+      std::cout << "xmax:      " << message.xmax << "\n";
+      std::cout << "ymax:      " << message.ymax << "\n";
+*/
+      break;
+
     default:
+      std::cout << "server: ERROR RECIEVE" << message.type << "\n";
       break;
     }
 
-    SendReply(client, message.render_id);
+    int err = SendReply(client, message.render_id);
+    if (err == -1) {
+      std::cerr << ">>>>>>>>>>>>>>> framebuffer_viewer.c reply START TILE\n";
+    }
 
 #if 0
     int32_t size = 0;
@@ -475,6 +571,26 @@ void FrameBufferViewer::draw_viewbox() const
 {
   float r, g, b;
 
+  switch (state_) {
+  case STATE_NONE:
+    r = g = b = .5f;
+    break;
+  case STATE_READY:
+    r = .4f;
+    g = .6f;
+    b = .8f;
+    break;
+  case STATE_RENDERING:
+    r = .4f;
+    g = .8f;
+    b = .6f;
+    break;
+  default:
+    r = g = b = .5f;
+    break;
+  }
+
+#if 0
   if (IsListening()) {
     r = .4f;
     g = .6f;
@@ -482,6 +598,7 @@ void FrameBufferViewer::draw_viewbox() const
   } else {
     r = g = b = .5f;
   }
+#endif
 
   glPushAttrib(GL_CURRENT_BIT);
   glLineStipple(1, 0x0F0F);

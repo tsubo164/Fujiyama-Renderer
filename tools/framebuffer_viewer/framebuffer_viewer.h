@@ -5,9 +5,12 @@
 #define FRAMEBUFFER_VIEWER_H
 
 #include "fj_framebuffer.h"
+#include "fj_rectangle.h"
 #include "fj_socket.h"
 #include "image_card.h"
+
 #include <string>
+#include <vector>
 
 namespace fj {
 
@@ -76,6 +79,25 @@ private:
 
   //TODO TEST
   Socket server_;
+  int state_;
+  enum {
+    STATE_NONE = 0,
+    STATE_READY,
+    STATE_RENDERING,
+    STATE_DONE
+  };
+
+  class TileStatus {
+  public:
+    TileStatus() :
+        state(STATE_READY), region()
+    {}
+    ~TileStatus() {}
+
+    int state;
+    Rectangle region;
+  };
+  std::vector<TileStatus> tiles;
 };
 
 } // namespace xxx

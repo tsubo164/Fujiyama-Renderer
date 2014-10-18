@@ -19,7 +19,7 @@ Socket::Socket() :
 
 Socket::~Socket()
 {
-  Close();
+  Shutdown();
 }
 
 int Socket::Open()
@@ -36,16 +36,16 @@ int Socket::Open()
   return 0;
 }
 
-void Socket::Close()
-{
-  if (IsOpen()) {
-    close(fd_);
-  }
-}
-
 bool Socket::IsOpen() const
 {
   return fd_ > 2; // stderr
+}
+
+void Socket::Shutdown()
+{
+  if (IsOpen()) {
+    shutdown(fd_, SHUT_RDWR);
+  }
 }
 
 int Socket::GetFileDescriptor() const
@@ -108,7 +108,8 @@ int Socket::AcceptOrTimeout(Socket &accepted, int sec, int micro_sec)
   FD_ZERO(&read_mask);
   FD_SET(fd_, &read_mask);
 
-  const int result = select(fd_ + 1, &read_mask, NULL, NULL, &timeout);
+  //const int result = select(fd_ + 1, &read_mask, NULL, NULL, &timeout);
+  const int result = select(1024, &read_mask, NULL, NULL, &timeout);
   if (result == -1) {
     // error
     return -1;

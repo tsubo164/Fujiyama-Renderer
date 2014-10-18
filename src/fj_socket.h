@@ -29,8 +29,8 @@ public:
   ~Socket();
 
   int Open();
-  void Close();
   bool IsOpen() const;
+  void Shutdown();
 
   int GetFileDescriptor() const;
 

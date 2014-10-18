@@ -25,6 +25,8 @@
 #include <cstdio>
 #include <cfloat>
 
+#include <cerrno>
+
 namespace fj {
 
 static Iteration count_total_samples(const Tiler *tiler,
@@ -185,8 +187,7 @@ static Interrupt default_frame_start2(void *data, const FrameInfo *info)
         info->xres,
         info->yres,
         info->framebuffer->GetChannelCount(),
-        666, //info->x_tile_count,
-        777); //info->y_tile_count);
+        info->tile_count);
 #if 0
     Message message;
 
@@ -230,6 +231,81 @@ static Interrupt default_frame_start2(void *data, const FrameInfo *info)
   return CALLBACK_CONTINUE;
 }
 
+static Interrupt default_frame_done2(void *data, const FrameInfo *info)
+{
+  FrameProgress *fp = (FrameProgress *) data;
+  Elapse elapse;
+
+  elapse = fp->timer.GetElapse();
+  printf("# Frame Done\n");
+  printf("#   %dh %dm %ds\n", elapse.hour, elapse.min, elapse.sec);
+  printf("\n");
+
+  {
+    Socket socket;
+    socket.SetAddress("127.0.0.1");
+
+    const int result = socket.Connect();
+
+    if (result == -1) {
+      std::cerr << "cannot connect to fbview\n";
+    }
+
+    SendRenderFrameDone(socket, 1177);
+
+    Message message;
+    RecieveMessage(socket, message);
+    if (message.type != MSG_REPLY_OK) {
+      // TODO ERROR HANDLING
+    }
+  }
+
+  return CALLBACK_CONTINUE;
+}
+
+static Interrupt default_tile_start2(void *data, const TileInfo *info)
+{
+  Socket socket;
+  socket.SetAddress("127.0.0.1");
+
+  const int result = socket.Connect();
+
+  if (result == -1) {
+    std::cerr << "cannot connect to fbview: " << info->region_id << "\n";
+    std::cout << "************** ERROR *******************\n";
+  }
+
+  //std::cerr << "SENDING: " << info->region_id << "\n";
+
+  int e = SendRenderTileStart(socket, 1177,
+      info->region_id,
+      info->tile_region.xmin,
+      info->tile_region.ymin,
+      info->tile_region.xmax,
+      info->tile_region.ymax);
+  if (e == -1) {
+      std::cerr << "SendRenderTileStart ERROR: " << info->region_id << "\n";
+  }
+
+  Message message;
+  //std::cerr << "<<<<<<<<<<<<< render.c START TILE\n";
+  int err = RecieveMessage(socket, message);
+  if (err == -1) {
+      std::cerr << "RecieveMessage ERROR: " << info->region_id << "\n";
+      std::cerr << "RecieveMessage ERROR: " << strerror(errno) << "\n";
+  }
+  if (message.type != MSG_REPLY_OK) {
+    // TODO ERROR HANDLING
+      std::cerr << "MSG OK ERROR: " << info->region_id << "\n";
+  }
+  //std::cerr << "cannot CONNECT TO FBVIEW: " << info->region_id << "\n";
+  //std::cerr << "<<<<<<<<<<<<< render.c rcv reply START TILE\n";
+/*
+*/
+
+  return CALLBACK_CONTINUE;
+}
+
 Renderer::Renderer()
 {
   camera_ = NULL;
@@ -265,13 +341,20 @@ Renderer::Renderer()
   } else {
   SetFrameReportCallback(&frame_progress_,
       default_frame_start2,
-      default_frame_done);
+      default_frame_done2);
   }
 
-  SetTileReportCallback(&frame_progress_,
-      default_tile_start,
-      default_sample_done,
-      default_tile_done);
+  if (0) {
+    SetTileReportCallback(&frame_progress_,
+        default_tile_start,
+        default_sample_done,
+        default_tile_done);
+  } else {
+    SetTileReportCallback(&frame_progress_,
+        default_tile_start2,
+        default_sample_done,
+        default_tile_done);
+  }
 }
 
 Renderer::~Renderer()
@@ -616,6 +699,7 @@ int Renderer::preprocess_lights()
 
 int Renderer::notify_start()
 {
+#if 0
   Socket socket;
   socket.SetAddress("127.0.0.1");
 
@@ -641,6 +725,7 @@ int Renderer::notify_start()
   std::cout << "reply[0]: " << reply[0] << "\n";
   std::cout << "reply[1]: " << reply[1] << "\n";
   std::cout << "reply[2]: " << reply[2] << "\n";
+#endif
 
   return 0;
 }
@@ -855,6 +940,8 @@ static void render_frame_done(Renderer *renderer, const Tiler *tiler)
   FrameInfo info;
   info.worker_count = renderer->GetThreadCount();
   info.tile_count = tiler->GetTileCount();
+  info.xres = renderer->resolution_[0];
+  info.yres = renderer->resolution_[1];
   info.frame_region = renderer->frame_region_;;
   info.framebuffer = renderer->framebuffer_;
 
