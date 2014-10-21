@@ -54,6 +54,24 @@ int SendRenderTileStart(Socket &socket, int render_id,
   return err;
 }
 
+int SendRenderTileDone(Socket &socket, int render_id,
+    int tile_id, int xmin, int ymin, int xmax, int ymax)
+{
+  int32_t msg[8];
+
+  msg[0] = sizeof(msg) - sizeof(msg[0]);
+  msg[1] = MSG_RENDER_TILE_DONE;
+  msg[2] = render_id;
+  msg[3] = tile_id;
+  msg[4] = xmin;
+  msg[5] = ymin;
+  msg[6] = xmax;
+  msg[7] = ymax;
+
+  const int err = socket.Send(reinterpret_cast<char *>(msg), sizeof(msg));
+  return err;
+}
+
 int SendReply(Socket &socket, int render_id)
 {
   int32_t msg[3];
@@ -137,6 +155,20 @@ int RecieveMessage(Socket &socket, Message &message)
     break;
 
   case MSG_RENDER_TILE_START:
+    if (size_of_msg != 7 * sizeof(body[0])) {
+      break;
+    } else {
+      message.type      = body[1];
+      message.render_id = body[2];
+      message.tile_id   = body[3];
+      message.xmin      = body[4];
+      message.ymin      = body[5];
+      message.xmax      = body[6];
+      message.ymax      = body[7];
+    }
+    break;
+
+  case MSG_RENDER_TILE_DONE:
     if (size_of_msg != 7 * sizeof(body[0])) {
       break;
     } else {

@@ -50,6 +50,9 @@ int SendRenderFrameDone(Socket &socket, int render_id);
 int SendRenderTileStart(Socket &socket, int render_id,
     int tile_id, int xmin, int ymin, int xmax, int ymax);
 
+int SendRenderTileDone(Socket &socket, int render_id,
+    int tile_id, int xmin, int ymin, int xmax, int ymax);
+
 int SendReply(Socket &socket, int render_id);
 
 int RecieveMessage(Socket &socket, Message &message);

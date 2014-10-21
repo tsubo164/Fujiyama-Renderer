@@ -265,6 +265,43 @@ static Interrupt default_frame_done2(void *data, const FrameInfo *info)
 
 static Interrupt default_tile_start2(void *data, const TileInfo *info)
 {
+  int i = 0;
+  int err = 0;
+  Message message;
+  do {
+    i++;
+    Socket socket;
+    socket.SetAddress("127.0.0.1");
+
+    const int result = socket.Connect();
+
+    if (result == -1) {
+      std::cerr << "cannot connect to fbview: " << info->region_id << "\n";
+      std::cout << "************** ERROR *******************\n";
+    }
+
+    err = SendRenderTileStart(socket, 1177,
+        info->region_id,
+        info->tile_region.xmin,
+        info->tile_region.ymin,
+        info->tile_region.xmax,
+        info->tile_region.ymax);
+    if (err == -1) {
+        std::cerr << "SendRenderTileStart ERROR: " << info->region_id << "\n";
+        continue;
+    }
+
+    err = RecieveMessage(socket, message);
+    if (err == -1) {
+        std::cerr << "RecieveMessage ERROR: " << info->region_id << "\n";
+        std::cerr << "RecieveMessage ERROR: " << strerror(errno) << "\n";
+        continue;
+    }
+  } while(err == -1);
+  if (i > 1) {
+  std::cerr << "fbview: " << info->region_id << " == " << i << "\n";
+  }
+#if 0
   Socket socket;
   socket.SetAddress("127.0.0.1");
 
@@ -275,8 +312,6 @@ static Interrupt default_tile_start2(void *data, const TileInfo *info)
     std::cout << "************** ERROR *******************\n";
   }
 
-  //std::cerr << "SENDING: " << info->region_id << "\n";
-
   int e = SendRenderTileStart(socket, 1177,
       info->region_id,
       info->tile_region.xmin,
@@ -286,7 +321,9 @@ static Interrupt default_tile_start2(void *data, const TileInfo *info)
   if (e == -1) {
       std::cerr << "SendRenderTileStart ERROR: " << info->region_id << "\n";
   }
+#endif
 
+#if 0
   Message message;
   //std::cerr << "<<<<<<<<<<<<< render.c START TILE\n";
   int err = RecieveMessage(socket, message);
@@ -294,10 +331,8 @@ static Interrupt default_tile_start2(void *data, const TileInfo *info)
       std::cerr << "RecieveMessage ERROR: " << info->region_id << "\n";
       std::cerr << "RecieveMessage ERROR: " << strerror(errno) << "\n";
   }
-  if (message.type != MSG_REPLY_OK) {
-    // TODO ERROR HANDLING
-      std::cerr << "MSG OK ERROR: " << info->region_id << "\n";
-  }
+#endif
+
   //std::cerr << "cannot CONNECT TO FBVIEW: " << info->region_id << "\n";
   //std::cerr << "<<<<<<<<<<<<< render.c rcv reply START TILE\n";
 /*
@@ -305,6 +340,49 @@ static Interrupt default_tile_start2(void *data, const TileInfo *info)
 
   return CALLBACK_CONTINUE;
 }
+
+static Interrupt default_tile_done2(void *data, const TileInfo *info)
+{
+  int err = 0;
+  do {
+  //for (int i = 0; i < 10; i++) {
+    //int err = 0;
+    Socket socket;
+    socket.SetAddress("127.0.0.1");
+
+    const int result = socket.Connect();
+
+    if (result == -1) {
+      std::cerr << "cannot connect to fbview: " << info->region_id << "\n";
+      continue;
+    }
+
+    err = SendRenderTileDone(socket, 1177,
+        info->region_id,
+        info->tile_region.xmin,
+        info->tile_region.ymin,
+        info->tile_region.xmax,
+        info->tile_region.ymax);
+    if (err == -1) {
+        std::cerr << "SendRenderTileDone ERROR: " << info->region_id << "\n";
+        continue;
+    }
+
+    Message message;
+    err = RecieveMessage(socket, message);
+    if (err == -1) {
+        std::cerr << "RecieveMessage ERROR: " << info->region_id << "\n";
+        std::cerr << "RecieveMessage ERROR: " << strerror(errno) << "\n";
+        continue;
+    }
+
+    //break;
+  //}
+  } while (err == -1);
+
+  return CALLBACK_CONTINUE;
+}
+
 
 Renderer::Renderer()
 {
@@ -353,7 +431,7 @@ Renderer::Renderer()
     SetTileReportCallback(&frame_progress_,
         default_tile_start2,
         default_sample_done,
-        default_tile_done);
+        default_tile_done2);
   }
 }
 
