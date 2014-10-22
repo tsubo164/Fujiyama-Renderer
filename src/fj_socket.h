@@ -17,6 +17,9 @@
   #include <arpa/inet.h>
   #include <unistd.h>
   typedef int socket_id;
+  #define FJ_SHUTDOWN_READ       SHUT_RD
+  #define FJ_SHUTDOWN_WRITE      SHUT_WR
+  #define FJ_SHUTDOWN_READ_WRITE SHUT_RDWR
 #endif
 
 #include <string>
@@ -30,7 +33,10 @@ public:
 
   int Open();
   bool IsOpen() const;
+  void Close();
   void Shutdown();
+  void ShutdownRead();
+  void ShutdownWrite();
 
   int GetFileDescriptor() const;
 

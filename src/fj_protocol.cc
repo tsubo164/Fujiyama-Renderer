@@ -125,7 +125,11 @@ int RecieveMessage(Socket &socket, Message &message)
   }
 
   const int32_t size_of_msg = body[0];
-  socket.Recieve(reinterpret_cast<char *>(&body[1]), size_of_msg);
+  err = socket.Recieve(reinterpret_cast<char *>(&body[1]), size_of_msg);
+  if (err == -1) {
+    std::cout << "HOGEHOGE  " << socket.GetFileDescriptor() << "\n";
+    return -1;
+  }
 
   const int32_t type_of_msg = body[1];
 

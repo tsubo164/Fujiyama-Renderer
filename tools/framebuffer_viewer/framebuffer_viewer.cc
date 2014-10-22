@@ -378,13 +378,6 @@ void FrameBufferViewer::Listen()
 
     switch (message.type) {
     case MSG_RENDER_FRAME_START:
-    /*
-      std::cout << "render_id:     " << message.render_id << "\n";
-      std::cout << "xres:          " << message.xres << "\n";
-      std::cout << "yres:          " << message.yres << "\n";
-      std::cout << "channel_count: " << message.channel_count << "\n";
-      std::cout << "tile_count:    " << message.tile_count << "\n";
-    */
 
       fb_.Resize(message.xres, message.yres, message.channel_count);
       viewbox_[0] = 0;
@@ -408,7 +401,7 @@ void FrameBufferViewer::Listen()
       {
         for (int i = 0; i < 80; i++) {
           if (hoge[i].before == 0) {
-            //std::cout << "MISS BEFORE _________________" << i << "\n";
+            std::cout << "MISS BEFORE _________________" << i << "\n";
           }
         }
       }
@@ -422,6 +415,7 @@ void FrameBufferViewer::Listen()
       break;
 
     case MSG_RENDER_TILE_START:
+      //client.Close();
     hoge[message.tile_id].before = 1;
       tiles[message.tile_id].region.xmin = message.xmin;
       tiles[message.tile_id].region.ymin = message.ymin;
@@ -430,14 +424,10 @@ void FrameBufferViewer::Listen()
       tiles[message.tile_id].state = STATE_RENDERING;
 
       hoge[message.tile_id].after = 1;
-/*
-      std::cout << "render_id: " << message.render_id << "\n";
-      std::cout << "tile_id:   " << message.tile_id << "\n";
-      std::cout << "xmin:      " << message.xmin << "\n";
-      std::cout << "ymin:      " << message.ymin << "\n";
-      std::cout << "xmax:      " << message.xmax << "\n";
-      std::cout << "ymax:      " << message.ymax << "\n";
-*/
+      /*
+      client.ShutdownWrite();
+      return;
+      */
       break;
 
     case MSG_RENDER_TILE_DONE:
@@ -454,52 +444,8 @@ void FrameBufferViewer::Listen()
       std::cerr << ">>>>>>>>>>>>>>> framebuffer_viewer.c reply START TILE\n";
     }
 
-#if 0
-    int32_t size = 0;
-    client.Recieve(reinterpret_cast<char *>(&size), sizeof(size));
-    std::cout << "size: " << size << "\n";
-
-    int32_t type = 0;
-    client.Recieve(reinterpret_cast<char *>(&type), sizeof(type));
-    std::cout << "type: " << type << "\n";
-
-    int32_t id = 0;
-    client.Recieve(reinterpret_cast<char *>(&id), sizeof(id));
-    std::cout << "id: " << id << "\n";
-#endif
-
-#if 0
-    int32_t msg[3];
-    msg[0] = 2 * sizeof(msg[0]);
-    msg[1] = 9999;
-    msg[2] = 8888;
-
-    client.Send(reinterpret_cast<char *>(msg), 3 * sizeof(msg[0]));
-#endif
-
-#if 0
-    char ch[5];
-    client.Recieve(ch, 5);
-    std::cout << "ch: " << ch[0] << "\n";
-
-    int *j = reinterpret_cast<int *>(&ch[1]);
-    //client.Recieve(reinterpret_cast<char *>(j), sizeof(j));
-    std::cout << "j: " << *j << "\n";
-    const int i = ntohl(*j);
-    std::cout << "i: " << i << "\n";
-#endif
-#if 0
-    char ch;
-    client.Recieve(&ch, 1);
-    std::cout << "ch: " << ch << "\n";
-
-    int j = 0;
-    client.Recieve(reinterpret_cast<char *>(&j), sizeof(j));
-    std::cout << "j: " << j << "\n";
-    const int i = ntohl(j);
-    std::cout << "i: " << i << "\n";
-#endif
   }
+  client.Shutdown();
 }
 
 int FrameBufferViewer::LoadImage(const std::string &filename)

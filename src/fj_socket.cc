@@ -19,7 +19,7 @@ Socket::Socket() :
 
 Socket::~Socket()
 {
-  Shutdown();
+  //Shutdown();
 }
 
 int Socket::Open()
@@ -41,10 +41,31 @@ bool Socket::IsOpen() const
   return fd_ > 2; // stderr
 }
 
+void Socket::Close()
+{
+  if (IsOpen()) {
+    close(fd_);
+  }
+}
+
 void Socket::Shutdown()
 {
   if (IsOpen()) {
-    shutdown(fd_, SHUT_RDWR);
+    shutdown(fd_, FJ_SHUTDOWN_READ_WRITE);
+  }
+}
+
+void Socket::ShutdownRead()
+{
+  if (IsOpen()) {
+    shutdown(fd_, FJ_SHUTDOWN_READ);
+  }
+}
+
+void Socket::ShutdownWrite()
+{
+  if (IsOpen()) {
+    shutdown(fd_, FJ_SHUTDOWN_WRITE);
   }
 }
 
@@ -89,7 +110,7 @@ int Socket::Bind()
 
 void Socket::Listen()
 {
-  listen(fd_, 5);
+  listen(fd_, SOMAXCONN);
 }
 
 int Socket::Accept(Socket &accepted)
@@ -108,8 +129,7 @@ int Socket::AcceptOrTimeout(Socket &accepted, int sec, int micro_sec)
   FD_ZERO(&read_mask);
   FD_SET(fd_, &read_mask);
 
-  //const int result = select(fd_ + 1, &read_mask, NULL, NULL, &timeout);
-  const int result = select(1024, &read_mask, NULL, NULL, &timeout);
+  const int result = select(fd_ + 1, &read_mask, NULL, NULL, &timeout);
   if (result == -1) {
     // error
     return -1;
@@ -135,7 +155,7 @@ int Socket::Recieve(char *data, size_t count)
 
 int Socket::Send(const char *data, size_t count)
 {
-  return write(fd_, data, count);
+  return send(fd_, data, count, 0);
 }
 
 SocketList::SocketList() :
