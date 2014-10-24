@@ -19,7 +19,7 @@ Socket::Socket() :
 
 Socket::~Socket()
 {
-  //Shutdown();
+  Close();
 }
 
 int Socket::Open()
@@ -156,43 +156,6 @@ int Socket::Recieve(char *data, size_t count)
 int Socket::Send(const char *data, size_t count)
 {
   return send(fd_, data, count, 0);
-}
-
-SocketList::SocketList() :
-  read_mask_init_(), read_mask_(), max_fd_(0), timeout_()
-{
-  FD_ZERO(&read_mask_init_);
-  read_mask_ = read_mask_init_;
-
-  max_fd_ = 2; // std err
-
-  timeout_.tv_sec = 0;
-  timeout_.tv_usec = 50 * 1000;
-}
-
-SocketList::~SocketList()
-{
-}
-
-void SocketList::Add(const Socket &socket)
-{
-  const int fd = socket.GetFileDescriptor();
-  FD_SET(fd, &read_mask_init_);
-  max_fd_ = fd > max_fd_ ? fd : max_fd_;
-}
-
-int SocketList::Select()
-{
-  read_mask_ = read_mask_init_;
-
-  const int result = select(max_fd_ + 1, &read_mask_, NULL, NULL, &timeout_);
-
-  return result;
-}
-
-bool SocketList::IsReadyToRead(const Socket &socket) const
-{
-  return FD_ISSET(socket.GetFileDescriptor(), &read_mask_);
 }
 
 } // namespace xxx

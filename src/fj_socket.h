@@ -58,23 +58,6 @@ private:
   struct sockaddr_in address_;
 };
 
-class SocketList {
-public:
-  SocketList();
-  ~SocketList();
-
-  void Add(const Socket &socket);
-  int Select();
-
-  bool IsReadyToRead(const Socket &socket) const;
-
-private:
-  fd_set read_mask_init_;
-  fd_set read_mask_;
-  socket_id max_fd_;
-  struct timeval timeout_;
-};
-
 } // namespace xxx
 
 #endif // FJ_XXX_H

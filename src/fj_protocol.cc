@@ -92,29 +92,6 @@ Message::~Message()
 {
 }
 
-int SendMessage(Socket &socket, const Message &message)
-{
-  switch (message.type) {
-
-  case MSG_RENDER_FRAME_START:
-    int32_t msg[7];
-    msg[0] = sizeof(msg) - sizeof(msg[0]);
-    msg[1] = message.type;
-    msg[2] = message.render_id;
-    msg[3] = message.xres;
-    msg[4] = message.yres;
-    msg[5] = message.channel_count;
-    msg[6] = message.tile_count;
-    socket.Send(reinterpret_cast<char *>(msg), sizeof(msg));
-    break;
-
-  default:
-    break;
-  }
-
-  return 0;
-}
-
 int RecieveMessage(Socket &socket, Message &message)
 {
   int32_t body[32] = {0};
@@ -200,6 +177,17 @@ int RecieveMessage(Socket &socket, Message &message)
   }
 
   return 0;
+}
+
+int RecieveEOF(Socket &socket)
+{
+  char unused;
+  const int s = socket.Recieve(&unused, sizeof(unused));
+  if (s == 0) {
+    return 0;
+  } else {
+    return -1;
+  }
 }
 
 } // namespace xxx

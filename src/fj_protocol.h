@@ -40,8 +40,6 @@ public:
 public:
 };
 
-int SendMessage(Socket &socket, const Message &message);
-
 int SendRenderFrameStart(Socket &socket, int render_id,
     int xres, int yres, int channel_count, int tile_count);
 
@@ -56,6 +54,8 @@ int SendRenderTileDone(Socket &socket, int render_id,
 int SendReply(Socket &socket, int render_id);
 
 int RecieveMessage(Socket &socket, Message &message);
+
+int RecieveEOF(Socket &socket);
 
 } // namespace xxx
 

@@ -342,16 +342,6 @@ bool FrameBufferViewer::IsListening() const
   return is_listening_;
 }
 
-class HOGE {
-public:
-  HOGE() : id(0), before(0), after(0) {}
-  ~HOGE() {}
-  int id;
-  int before;
-  int after;
-};
-static std::vector<HOGE> hoge(80);
-
 void FrameBufferViewer::Listen()
 {
   Socket client;
@@ -361,7 +351,6 @@ void FrameBufferViewer::Listen()
   const int result = server_.AcceptOrTimeout(client, timeout_sec, timeout_micro_sec);
 
   if (result == -1) {
-    std::cout << "error\n";
     // TODO ERROR HANDLING
     return;
   }
@@ -371,14 +360,16 @@ void FrameBufferViewer::Listen()
   }
   else {
     Message message;
+
     int e = RecieveMessage(client, message);
     if (e < 0) {
-      std::cerr << "server: accepted\n";
+      // TODO ERROR HANDLING
     }
+    client.Shutdown();
 
     switch (message.type) {
-    case MSG_RENDER_FRAME_START:
 
+    case MSG_RENDER_FRAME_START:
       fb_.Resize(message.xres, message.yres, message.channel_count);
       viewbox_[0] = 0;
       viewbox_[1] = 0;
@@ -389,45 +380,21 @@ void FrameBufferViewer::Listen()
       databox_[2] = viewbox_[2];
       databox_[3] = viewbox_[3];
       setup_image_card();
-
       tiles.clear();
       tiles.resize(message.tile_count);
-
       state_ = STATE_RENDERING;
       break;
 
     case MSG_RENDER_FRAME_DONE:
       state_ = STATE_READY;
-      {
-        for (int i = 0; i < 80; i++) {
-          if (hoge[i].before == 0) {
-            std::cout << "MISS BEFORE _________________" << i << "\n";
-          }
-        }
-      }
-      {
-        for (int i = 0; i < 80; i++) {
-          if (hoge[i].after == 0) {
-            std::cout << "MISS AFTER _________________" << i << "\n";
-          }
-        }
-      }
       break;
 
     case MSG_RENDER_TILE_START:
-      //client.Close();
-    hoge[message.tile_id].before = 1;
       tiles[message.tile_id].region.xmin = message.xmin;
       tiles[message.tile_id].region.ymin = message.ymin;
       tiles[message.tile_id].region.xmax = message.xmax;
       tiles[message.tile_id].region.ymax = message.ymax;
       tiles[message.tile_id].state = STATE_RENDERING;
-
-      hoge[message.tile_id].after = 1;
-      /*
-      client.ShutdownWrite();
-      return;
-      */
       break;
 
     case MSG_RENDER_TILE_DONE:
@@ -435,17 +402,10 @@ void FrameBufferViewer::Listen()
       break;
 
     default:
-      std::cout << "server: ERROR RECIEVE" << message.type << "\n";
+      // TODO ERROR HANDLING
       break;
     }
-
-    int err = SendReply(client, message.render_id);
-    if (err == -1) {
-      std::cerr << ">>>>>>>>>>>>>>> framebuffer_viewer.c reply START TILE\n";
-    }
-
   }
-  client.Shutdown();
 }
 
 int FrameBufferViewer::LoadImage(const std::string &filename)

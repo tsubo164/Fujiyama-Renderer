@@ -189,13 +189,11 @@ static Interrupt default_frame_start2(void *data, const FrameInfo *info)
         info->framebuffer->GetChannelCount(),
         info->tile_count);
 
-    Message message;
-    RecieveMessage(socket, message);
-    if (message.type != MSG_REPLY_OK) {
+    const int err = RecieveEOF(socket);
+    if (err) {
       // TODO ERROR HANDLING
+      return CALLBACK_INTERRUPT;
     }
-
-    socket.Shutdown();
   }
 
   {
@@ -225,18 +223,17 @@ static Interrupt default_frame_done2(void *data, const FrameInfo *info)
     const int result = socket.Connect();
 
     if (result == -1) {
+      // TODO ERROR HANDLING
       std::cerr << "cannot connect to fbview\n";
     }
 
     SendRenderFrameDone(socket, 1177);
 
-    Message message;
-    RecieveMessage(socket, message);
-    if (message.type != MSG_REPLY_OK) {
+    const int err = RecieveEOF(socket);
+    if (err) {
       // TODO ERROR HANDLING
+      return CALLBACK_INTERRUPT;
     }
-
-    socket.Shutdown();
   }
 
   return CALLBACK_CONTINUE;
@@ -244,22 +241,18 @@ static Interrupt default_frame_done2(void *data, const FrameInfo *info)
 
 static Interrupt default_tile_start2(void *data, const TileInfo *info)
 {
+  const int MAX_RETRY = 10;
   int i = 0;
-  int err = 0;
-  Message message;
 
-  //do {
-    i++;
+  for (i = 0; i < MAX_RETRY; i++) {
+    int err = 0;
     Socket socket;
     socket.SetAddress("127.0.0.1");
 
     const int result = socket.Connect();
-
     if (result == -1) {
-      std::cerr << "cannot connect to fbview: " << info->region_id << "\n";
-      std::cout << "************** ERROR *******************\n";
-      socket.Shutdown();
-      //continue;
+      // TODO ERROR HANDLING
+      continue;
     }
 
     err = SendRenderTileStart(socket, 1177,
@@ -269,36 +262,21 @@ static Interrupt default_tile_start2(void *data, const TileInfo *info)
         info->tile_region.xmax,
         info->tile_region.ymax);
     if (err == -1) {
-      std::cerr << "SendRenderTileStart ERROR: " << info->region_id << "\n";
-      std::cerr << "SendRenderTileStart : " << strerror(errno) << "\n";
-      socket.Shutdown();
-      //continue;
-    }
-
-/*
-    char dummy;
-    int s;
-    if ((s = socket.Recieve(&dummy, 1)) != 0) {
-      std::cerr << "Read ERROR: " << info->region_id << "\n";
-      std::cerr << "s: " << s << "\n";
-      std::cerr << "dummy: " << dummy << "\n";
-      std::cerr << "error: " << strerror(errno) << "\n";
-      socket.Shutdown();
+      // TODO ERROR HANDLING
       continue;
     }
-*/
-    err = RecieveMessage(socket, message);
-    if (err == -1) {
-        std::cerr << "RecieveMessage ERROR: " << info->region_id << "\n";
-        std::cerr << "RecieveMessage ERROR: " << strerror(errno) << "\n";
-        socket.Shutdown();
-        //continue;
+
+    err = RecieveEOF(socket);
+    if (err) {
+      // TODO ERROR HANDLING
+      continue;
     }
 
-    socket.Shutdown();
-  //} while(err == -1);
-  if (i > 1) {
-  std::cerr << "fbview: " << info->region_id << " == " << i << "\n";
+    break;
+  }
+
+  if (i == MAX_RETRY) {
+    // TODO ERROR HANDLING
   }
 
   return CALLBACK_CONTINUE;
@@ -306,16 +284,18 @@ static Interrupt default_tile_start2(void *data, const TileInfo *info)
 
 static Interrupt default_tile_done2(void *data, const TileInfo *info)
 {
-  int err = 0;
-  do {
+  const int MAX_RETRY = 10;
+  int i = 0;
+
+  for (i = 0; i < MAX_RETRY; i++) {
+    int err = 0;
     Socket socket;
     socket.SetAddress("127.0.0.1");
 
     const int result = socket.Connect();
 
     if (result == -1) {
-      std::cerr << "cannot connect to fbview: " << info->region_id << "\n";
-      socket.Shutdown();
+      // TODO ERROR HANDLING
       continue;
     }
 
@@ -326,22 +306,22 @@ static Interrupt default_tile_done2(void *data, const TileInfo *info)
         info->tile_region.xmax,
         info->tile_region.ymax);
     if (err == -1) {
-      std::cerr << "SendRenderTileDone ERROR: " << info->region_id << "\n";
-      socket.Shutdown();
+      // TODO ERROR HANDLING
       continue;
     }
 
-    Message message;
-    err = RecieveMessage(socket, message);
-    if (err == -1) {
-      std::cerr << "RecieveMessage ERROR: " << info->region_id << "\n";
-      std::cerr << "RecieveMessage ERROR: " << strerror(errno) << "\n";
-      socket.Shutdown();
-      continue;
+    err = RecieveEOF(socket);
+    if (err) {
+      // TODO ERROR HANDLING
+      return CALLBACK_INTERRUPT;
     }
 
-    socket.Shutdown();
-  } while (err == -1);
+    break;
+  }
+
+  if (i == MAX_RETRY) {
+    // TODO ERROR HANDLING
+  }
 
   return CALLBACK_CONTINUE;
 }
