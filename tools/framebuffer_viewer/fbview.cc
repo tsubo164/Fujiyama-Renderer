@@ -46,7 +46,7 @@ static int initialize_viewer(const char *filename);
 int main(int argc, char **argv)
 {
   const char *filename = NULL;
-  const int WIN_W = 680;
+  const int WIN_W = 660;
   const int WIN_H = 500;
   char win_title[1024] = "FrameBuffer Viewer";
 

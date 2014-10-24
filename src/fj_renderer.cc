@@ -284,6 +284,24 @@ static Interrupt default_tile_start2(void *data, const TileInfo *info)
 
 static Interrupt default_tile_done2(void *data, const TileInfo *info)
 {
+  const int tile_w = info->tile_region.GetSizeX();
+  const int tile_h = info->tile_region.GetSizeY();
+  FrameBuffer tile_fb;
+  tile_fb.Resize(tile_w, tile_h, info->framebuffer->GetChannelCount());
+
+  {
+    int xoffset = info->tile_region.xmin;
+    int yoffset = info->tile_region.ymin;
+    for (int y = 0; y < tile_h; y++) {
+      for (int x = 0; x < tile_w; x++) {
+        int xx = x + xoffset;
+        int yy = y + yoffset;
+        const Color4 color = info->framebuffer->GetColor(xx, yy);
+        tile_fb.SetColor(x, y, color);
+      }
+    }
+  }
+
   const int MAX_RETRY = 10;
   int i = 0;
 
@@ -304,7 +322,8 @@ static Interrupt default_tile_done2(void *data, const TileInfo *info)
         info->tile_region.xmin,
         info->tile_region.ymin,
         info->tile_region.xmax,
-        info->tile_region.ymax);
+        info->tile_region.ymax,
+        tile_fb);
     if (err == -1) {
       // TODO ERROR HANDLING
       continue;

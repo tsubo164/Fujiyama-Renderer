@@ -94,25 +94,21 @@ void FrameBufferViewer::Draw() const
   }
 
   // render rendering guide
-      /*
-      GLfloat xmin = tiles[i].region.xmin;
-      GLfloat ymin = tiles[i].region.ymin;// - viewbox_[1];
-      GLfloat xmax = tiles[i].region.xmax;
-      GLfloat ymax = tiles[i].region.ymax;// - viewbox_[1];
-      */
-
       glTranslatef(0.f, 0.f, 0.1f); 
       glPushAttrib(GL_CURRENT_BIT);
-      //glLineStipple(1, 0x0F0F);
       glDisable(GL_LINE_STIPPLE);
+      //glLineStipple(1, 0x3333);
+      glColor3f(1, 1, 1);
+
       for (size_t i = 0; i < tiles.size(); i++)
       {
         if (tiles[i].state == STATE_RENDERING) {
-          glColor3f(1, 1, 1);
-          GLfloat xmin = tiles[i].region.xmin + 5;
-          GLfloat ymin = tiles[i].region.ymin + 5;// - viewbox_[1];
-          GLfloat xmax = tiles[i].region.xmax - 5;
-          GLfloat ymax = tiles[i].region.ymax - 5;// - viewbox_[1];
+          GLfloat xmin = tiles[i].region.xmin + 5 * 0;
+          GLfloat ymin = tiles[i].region.ymin + 5 * 0;
+          GLfloat xmax = tiles[i].region.xmax - 5 * 0;
+          GLfloat ymax = tiles[i].region.ymax - 5 * 0;
+          ymin = yviewsize - ymin;
+          ymax = yviewsize - ymax;
           glBegin(GL_LINE_LOOP);
             glVertex3f(xmin, ymin, 0.f);
             glVertex3f(xmin, ymax, 0.f);
@@ -120,21 +116,8 @@ void FrameBufferViewer::Draw() const
             glVertex3f(xmax, ymin, 0.f);
           glEnd();
         }
-        if (tiles[i].state == STATE_DONE) {
-          glColor3f(.6, .8, 1);
-          GLfloat xmin = tiles[i].region.xmin + 5;
-          GLfloat ymin = tiles[i].region.ymin + 5;// - viewbox_[1];
-          GLfloat xmax = tiles[i].region.xmax - 5;
-          GLfloat ymax = tiles[i].region.ymax - 5;// - viewbox_[1];
-          glBegin(GL_LINE_LOOP);
-            glVertex3f(xmin, ymin, 0.f);
-            glVertex3f(xmin, ymax, 0.f);
-            glVertex3f(xmax, ymax, 0.f);
-            glVertex3f(xmax, ymin, 0.f);
-          glEnd();
-        }
+      }
       glPopAttrib();
-    }
 
   // Not swapping the buffers here is intentional.
 }
@@ -360,8 +343,9 @@ void FrameBufferViewer::Listen()
   }
   else {
     Message message;
+    FrameBuffer tile_data;
 
-    int e = RecieveMessage(client, message);
+    int e = RecieveMessage(client, message, tile_data);
     if (e < 0) {
       // TODO ERROR HANDLING
     }
@@ -398,7 +382,30 @@ void FrameBufferViewer::Listen()
       break;
 
     case MSG_RENDER_TILE_DONE:
+      tiles[message.tile_id].region.xmin = message.xmin;
+      tiles[message.tile_id].region.ymin = message.ymin;
+      tiles[message.tile_id].region.xmax = message.xmax;
+      tiles[message.tile_id].region.ymax = message.ymax;
       tiles[message.tile_id].state = STATE_DONE;
+
+      {
+        // TODO define gamma function
+        float *pixel = tile_data.GetWritable(0, 0, 0);
+        const int N =
+            tile_data.GetWidth() *
+            tile_data.GetHeight() *
+            tile_data.GetChannelCount();
+        const float gamma = 1 / 2.2;
+        for (int i = 0; i < N; i++) {
+          pixel[i] = pow(pixel[i], gamma);
+        }
+      }
+
+      Copy(fb_, tile_data,
+          tiles[message.tile_id].region.xmin,
+          tiles[message.tile_id].region.ymin);
+
+      setup_image_card();
       break;
 
     default:

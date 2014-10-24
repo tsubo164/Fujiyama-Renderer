@@ -4,7 +4,9 @@
 #ifndef FJ_PROTOCOL_H
 #define FJ_PROTOCOL_H
 
+#include "fj_framebuffer.h"
 #include "fj_types.h"
+#include <vector>
 
 namespace fj {
 
@@ -12,7 +14,6 @@ class Socket;
 
 enum {
   MSG_NONE = 0,
-  MSG_REPLY_OK,
   MSG_RENDER_FRAME_START,
   MSG_RENDER_FRAME_DONE,
   MSG_RENDER_TILE_START,
@@ -49,12 +50,10 @@ int SendRenderTileStart(Socket &socket, int render_id,
     int tile_id, int xmin, int ymin, int xmax, int ymax);
 
 int SendRenderTileDone(Socket &socket, int render_id,
-    int tile_id, int xmin, int ymin, int xmax, int ymax);
+    int tile_id, int xmin, int ymin, int xmax, int ymax,
+    const FrameBuffer &tile);
 
-int SendReply(Socket &socket, int render_id);
-
-int RecieveMessage(Socket &socket, Message &message);
-
+int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile);
 int RecieveEOF(Socket &socket);
 
 } // namespace xxx

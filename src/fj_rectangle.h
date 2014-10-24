@@ -13,9 +13,22 @@ public:
   Rectangle() : xmin(0), ymin(0), xmax(0), ymax(0) {}
   ~Rectangle() {}
 
+  int GetSizeX() const;
+  int GetSizeY() const;
+
 public:
   int xmin, ymin, xmax, ymax;
 };
+
+inline int Rectangle::GetSizeX() const
+{
+  return xmax - xmin;
+}
+
+inline int Rectangle::GetSizeY() const
+{
+  return ymax - ymin;
+}
 
 inline int SizeX(const Rectangle &rect)
 {
