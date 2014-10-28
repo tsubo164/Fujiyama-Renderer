@@ -169,7 +169,9 @@ static void timer(int value)
   if (viewer->IsListening()) {
     viewer->Listen();
     glutPostRedisplay();
-    glutTimerFunc(100, timer, 0);
+
+    const int interval = viewer->IsRendering() ? 1 : 100;
+    glutTimerFunc(interval, timer, 0);
   }
 }
 

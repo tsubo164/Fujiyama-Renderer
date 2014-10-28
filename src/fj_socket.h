@@ -14,6 +14,7 @@
   #include <sys/socket.h>
   #include <sys/types.h>
   #include <netinet/in.h>
+  #include <netinet/tcp.h>
   #include <arpa/inet.h>
   #include <unistd.h>
   typedef int socket_id;
@@ -40,6 +41,7 @@ public:
 
   int GetFileDescriptor() const;
 
+  void SetNoDelay();
   void SetAddress(const std::string &address);
   void SetPort(int port);
 

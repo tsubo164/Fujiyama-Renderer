@@ -425,7 +425,7 @@ static const Property Renderer_properties[] = {
   {PROP_VECTOR2, "sample_time_range",     {0, 1, 0, 0},      set_Renderer_sample_time_range},
   {PROP_VECTOR2, "resolution",            {320, 240, 0, 0},  set_Renderer_resolution},
   {PROP_VECTOR2, "pixelsamples",          {3, 3, 0, 0},      set_Renderer_pixelsamples},
-  {PROP_VECTOR2, "tilesize",              {64, 64, 0, 0},    set_Renderer_tilesize},
+  {PROP_VECTOR2, "tilesize",              {32, 32, 0, 0},    set_Renderer_tilesize},
   {PROP_VECTOR2, "filterwidth",           {2, 2, 0, 0},      set_Renderer_filterwidth},
   {PROP_VECTOR4, "render_region",         {0, 0, 320, 2400}, set_Renderer_render_region},
   {PROP_SCALAR,  "use_max_thread",        {1, 0, 0, 0},      set_Renderer_use_max_thread},

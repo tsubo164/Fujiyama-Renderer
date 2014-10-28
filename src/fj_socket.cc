@@ -74,6 +74,17 @@ int Socket::GetFileDescriptor() const
   return fd_;
 }
 
+void Socket::SetNoDelay()
+{
+  int enable = 1;
+  const int err = setsockopt(fd_, IPPROTO_TCP, TCP_NODELAY,
+      reinterpret_cast<char *>(&enable), sizeof(enable));
+
+  if (err == -1) {
+    // TODO ERROR HANDLING
+  }
+}
+
 void Socket::SetAddress(const std::string &address)
 {
   if (address == "") {
@@ -94,7 +105,9 @@ int Socket::Connect()
 
   len_ = sizeof(address_);
   const int err = connect(fd_, get_sockaddr(&address_), len_);
-  // TODO error handling
+  if (err) {
+    // TODO ERROR HANDLING
+  }
   return err;
 }
 

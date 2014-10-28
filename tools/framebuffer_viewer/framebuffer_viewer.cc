@@ -415,6 +415,11 @@ void FrameBufferViewer::Listen()
   }
 }
 
+bool FrameBufferViewer::IsRendering() const
+{
+  return state_ == STATE_RENDERING;
+}
+
 int FrameBufferViewer::LoadImage(const std::string &filename)
 {
   int err = 0;
@@ -521,16 +526,6 @@ void FrameBufferViewer::draw_viewbox() const
     break;
   }
 
-#if 0
-  if (IsListening()) {
-    r = .4f;
-    g = .6f;
-    b = .8f;
-  } else {
-    r = g = b = .5f;
-  }
-#endif
-
   glPushAttrib(GL_CURRENT_BIT);
   glLineStipple(1, 0x0F0F);
   glColor3f(r, g, b);
@@ -545,16 +540,15 @@ void FrameBufferViewer::draw_viewbox() const
 
 static void draw_tile_guide(int width, int height, int tilesize)
 {
-  int i;
-  const int XNLINES = width / tilesize + 1;
+  const int XNLINES = width  / tilesize + 1;
   const int YNLINES = height / tilesize + 1;
 
   glBegin(GL_LINES);
-  for (i = 0; i < XNLINES; i++) {
+  for (int i = 0; i < XNLINES; i++) {
     glVertex3f(tilesize * i,      0, 0);
     glVertex3f(tilesize * i, height, 0);
   }
-  for (i = 0; i < YNLINES; i++) {
+  for (int i = 0; i < YNLINES; i++) {
     glVertex3f(0,     tilesize * i, 0);
     glVertex3f(width, tilesize * i, 0);
   }

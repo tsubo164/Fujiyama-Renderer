@@ -38,6 +38,7 @@ public:
   void StopListening();
   bool IsListening() const;
   void Listen();
+  bool IsRendering() const;
 
   int LoadImage(const std::string &filename);
 
