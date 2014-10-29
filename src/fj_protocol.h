@@ -26,7 +26,7 @@ public:
   ~Message();
 
   int32_t type;
-  int32_t render_id;
+  int32_t frame_id;
   int32_t xres;
   int32_t yres;
   int32_t channel_count;
@@ -41,15 +41,15 @@ public:
 public:
 };
 
-int SendRenderFrameStart(Socket &socket, int render_id,
+int SendRenderFrameStart(Socket &socket, int32_t frame_id,
     int xres, int yres, int channel_count, int tile_count);
 
-int SendRenderFrameDone(Socket &socket, int render_id);
+int SendRenderFrameDone(Socket &socket, int32_t frame_id);
 
-int SendRenderTileStart(Socket &socket, int render_id,
+int SendRenderTileStart(Socket &socket, int32_t frame_id,
     int tile_id, int xmin, int ymin, int xmax, int ymax);
 
-int SendRenderTileDone(Socket &socket, int render_id,
+int SendRenderTileDone(Socket &socket, int32_t frame_id,
     int tile_id, int xmin, int ymin, int xmax, int ymax,
     const FrameBuffer &tile);
 

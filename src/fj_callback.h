@@ -4,6 +4,7 @@
 #ifndef FJ_CALLBACK_H
 #define FJ_CALLBACK_H
 
+#include "fj_compatibility.h"
 #include "fj_rectangle.h"
 #include <cstddef>
 
@@ -14,6 +15,7 @@ class FrameBuffer;
 class FrameInfo {
 public:
   FrameInfo() :
+      frame_id(0),
       worker_count(0),
       tile_count(0),
       xres(0),
@@ -24,6 +26,7 @@ public:
   ~FrameInfo() {}
 
 public:
+  int32_t frame_id;
   int worker_count;
   int tile_count;
   int xres;
@@ -36,6 +39,7 @@ public:
 class TileInfo {
 public:
   TileInfo() :
+      frame_id(0),
       worker_id(0),
       region_id(0),
       total_region_count(0),
@@ -46,6 +50,7 @@ public:
   ~TileInfo() {}
 
 public:
+  int32_t frame_id;
   int worker_id;
   int region_id;
   int total_region_count;

@@ -4,6 +4,7 @@
 #ifndef FRAMEBUFFER_VIEWER_H
 #define FRAMEBUFFER_VIEWER_H
 
+#include "fj_compatibility.h"
 #include "fj_framebuffer.h"
 #include "fj_rectangle.h"
 #include "fj_socket.h"
@@ -99,6 +100,7 @@ private:
     Rectangle region;
   };
   std::vector<TileStatus> tiles;
+  int32_t frame_id_;
 };
 
 } // namespace xxx

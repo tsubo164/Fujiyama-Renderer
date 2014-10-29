@@ -354,6 +354,11 @@ void FrameBufferViewer::Listen()
     switch (message.type) {
 
     case MSG_RENDER_FRAME_START:
+      if (frame_id_ > 0) {
+        // TODO ERROR HANDLING
+        std::cout << "***** FrameBufferViewer: " << frame_id_ << "\n";
+      }
+      frame_id_   = message.frame_id;
       fb_.Resize(message.xres, message.yres, message.channel_count);
       viewbox_[0] = 0;
       viewbox_[1] = 0;
@@ -370,10 +375,19 @@ void FrameBufferViewer::Listen()
       break;
 
     case MSG_RENDER_FRAME_DONE:
+      if (frame_id_ != message.frame_id) {
+        // TODO ERROR HANDLING
+        std::cout << "***** FrameBufferViewer: " << frame_id_ << "\n";
+      }
       state_ = STATE_READY;
+      frame_id_ = -1;
       break;
 
     case MSG_RENDER_TILE_START:
+      if (frame_id_ != message.frame_id) {
+        // TODO ERROR HANDLING
+        std::cout << "***** FrameBufferViewer: " << frame_id_ << "\n";
+      }
       tiles[message.tile_id].region.xmin = message.xmin;
       tiles[message.tile_id].region.ymin = message.ymin;
       tiles[message.tile_id].region.xmax = message.xmax;
@@ -382,6 +396,10 @@ void FrameBufferViewer::Listen()
       break;
 
     case MSG_RENDER_TILE_DONE:
+      if (frame_id_ != message.frame_id) {
+        // TODO ERROR HANDLING
+        std::cout << "***** FrameBufferViewer: " << frame_id_ << "\n";
+      }
       tiles[message.tile_id].region.xmin = message.xmin;
       tiles[message.tile_id].region.ymin = message.ymin;
       tiles[message.tile_id].region.xmax = message.xmax;

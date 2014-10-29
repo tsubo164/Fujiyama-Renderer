@@ -4,6 +4,7 @@
 #ifndef FJ_RENDERER_H
 #define FJ_RENDERER_H
 
+#include "fj_compatibility.h"
 #include "fj_callback.h"
 #include "fj_progress.h"
 #include "fj_timer.h"
@@ -75,10 +76,6 @@ public:
   int RenderScene();
 
 public:
-  // TODO TEST
-  int notify_start();
-  int notify_end();
-
   int prepare_rendering();
   int execute_rendering();
 
@@ -116,6 +113,8 @@ public:
   FrameReport frame_report_;
   TileReport tile_report_;
   FrameProgress frame_progress_;
+
+  int32_t frame_id_;
 };
 
 } // namespace xxx

@@ -12,22 +12,31 @@
 #include "fj_shading.h"
 #include "fj_camera.h"
 #include "fj_filter.h"
+#include "fj_socket.h"
 #include "fj_vector.h"
 #include "fj_light.h"
 #include "fj_tiler.h"
 #include "fj_ray.h"
 #include "fj_box.h"
 
-#include "fj_socket.h"
-
 #include <cassert>
 #include <cstring>
 #include <cstdio>
 #include <cfloat>
+#include <ctime>
 
 #include <cerrno>
 
 namespace fj {
+
+static int32_t generate_frame_id()
+{
+  const unsigned int seed = static_cast<unsigned int>(clock());
+
+  XorShift xr(seed);
+  const int32_t id = static_cast<int32_t>(XorNextInteger(&xr));
+  return id < 0 ? -id : id;
+}
 
 static Iteration count_total_samples(const Tiler *tiler,
     int x_pixel_samples, int y_pixel_samples,
@@ -97,6 +106,8 @@ static Interrupt default_frame_start(void *data, const FrameInfo *info)
 
   fp->timer.Start();
   printf("# Rendering Frame\n");
+  printf("#   Frame ID:     %4d\n", info->frame_id);
+  printf("#   Resolution:   %4d x %d\n", info->xres, info->yres);
   printf("#   Thread Count: %4d\n", info->worker_count);
   printf("#   Tile Count:   %4d\n", info->tile_count);
   printf("\n");
@@ -167,6 +178,7 @@ static Interrupt default_frame_start2(void *data, const FrameInfo *info)
 
   fp->timer.Start();
   printf("# Rendering Frame\n");
+  printf("#   Frame ID:     %4d\n", info->frame_id);
   printf("#   Resolution:   %4d x %d\n", info->xres, info->yres);
   printf("#   Thread Count: %4d\n", info->worker_count);
   printf("#   Tile Count:   %4d\n", info->tile_count);
@@ -183,7 +195,7 @@ static Interrupt default_frame_start2(void *data, const FrameInfo *info)
     }
 
     SendRenderFrameStart(socket,
-        9945,
+        info->frame_id,
         info->xres,
         info->yres,
         info->framebuffer->GetChannelCount(),
@@ -227,7 +239,7 @@ static Interrupt default_frame_done2(void *data, const FrameInfo *info)
       std::cerr << "cannot connect to fbview\n";
     }
 
-    SendRenderFrameDone(socket, 1177);
+    SendRenderFrameDone(socket, info->frame_id);
 
     const int err = RecieveEOF(socket);
     if (err) {
@@ -255,7 +267,8 @@ static Interrupt default_tile_start2(void *data, const TileInfo *info)
       continue;
     }
 
-    err = SendRenderTileStart(socket, 1177,
+    err = SendRenderTileStart(socket,
+        info->frame_id,
         info->region_id,
         info->tile_region.xmin,
         info->tile_region.ymin,
@@ -317,7 +330,8 @@ static Interrupt default_tile_done2(void *data, const TileInfo *info)
       continue;
     }
 
-    err = SendRenderTileDone(socket, 1177,
+    err = SendRenderTileDone(socket,
+        info->frame_id,
         info->region_id,
         info->tile_region.xmin,
         info->tile_region.ymin,
@@ -585,9 +599,6 @@ void Renderer::SetTileReportCallback(void *data,
 
 int Renderer::RenderScene()
 {
-  // TODO TEST
-  //notify_start();
-
   int err = 0;
 
   err = prepare_rendering();
@@ -654,6 +665,9 @@ int Renderer::execute_rendering()
   const int ypixelsamples = pixelsamples_[1];
   const float xfilterwidth = filterwidth_[0];
   const float yfilterwidth = filterwidth_[1];
+
+  // Frame ID
+  frame_id_ = generate_frame_id();
 
   // Tiler
   Tiler tiler;
@@ -737,19 +751,6 @@ int Renderer::preprocess_lights()
   return 0;
 }
 
-int Renderer::notify_start()
-{
-#if 0
-#endif
-
-  return 0;
-}
-
-int Renderer::notify_end()
-{
-  return 0;
-}
-
 class Worker {
 public:
   Worker() {}
@@ -760,6 +761,7 @@ public:
   int region_id;
   int region_count;
   int xres, yres;
+  int32_t frame_id;
 
   const Camera *camera;
   FrameBuffer *framebuffer;
@@ -794,6 +796,8 @@ static void init_worker(Worker *worker, int id,
   worker->region_count = -1;
   worker->xres = xres;
   worker->yres = yres;
+
+  worker->frame_id = renderer->frame_id_;
 
   // Sampler
   worker->sampler.Initialize(xres, yres, xrate, yrate, xfwidth, yfwidth);
@@ -940,6 +944,7 @@ static void reconstruct_image(Worker *worker)
 static void render_frame_start(Renderer *renderer, const Tiler *tiler)
 {
   FrameInfo info;
+  info.frame_id = renderer->frame_id_;
   info.worker_count = renderer->GetThreadCount();
   info.tile_count = tiler->GetTileCount();
   info.xres = renderer->resolution_[0];
@@ -953,6 +958,7 @@ static void render_frame_start(Renderer *renderer, const Tiler *tiler)
 static void render_frame_done(Renderer *renderer, const Tiler *tiler)
 {
   FrameInfo info;
+  info.frame_id = renderer->frame_id_;
   info.worker_count = renderer->GetThreadCount();
   info.tile_count = tiler->GetTileCount();
   info.xres = renderer->resolution_[0];
@@ -966,6 +972,7 @@ static void render_frame_done(Renderer *renderer, const Tiler *tiler)
 static void render_tile_start(Worker *worker)
 {
   TileInfo info;
+  info.frame_id = worker->frame_id;
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
@@ -979,6 +986,7 @@ static void render_tile_start(Worker *worker)
 static void render_tile_done(Worker *worker)
 {
   TileInfo info;
+  info.frame_id = worker->frame_id;
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;

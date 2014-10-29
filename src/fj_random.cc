@@ -9,6 +9,14 @@ See LICENSE and README
 
 namespace fj {
 
+XorShift::XorShift(unsigned int seed)
+    : state()
+{
+  for (unsigned int i = 0; i < 4; i++) {
+    state[i] = seed = 1812433253U * (seed^(seed>>30)) + i;
+  }
+}
+
 void XorInit(XorShift *xr)
 {
   xr->state[0] = 123456789;

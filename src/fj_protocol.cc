@@ -8,14 +8,14 @@
 
 namespace fj {
 
-int SendRenderFrameStart(Socket &socket, int render_id,
+int SendRenderFrameStart(Socket &socket, int32_t frame_id,
     int xres, int yres, int channel_count, int tile_count)
 {
   int32_t msg[7];
 
   msg[0] = sizeof(msg) - sizeof(msg[0]);
   msg[1] = MSG_RENDER_FRAME_START;
-  msg[2] = render_id;
+  msg[2] = frame_id;
   msg[3] = xres;
   msg[4] = yres;
   msg[5] = channel_count;
@@ -25,26 +25,26 @@ int SendRenderFrameStart(Socket &socket, int render_id,
   return 0;
 }
 
-int SendRenderFrameDone(Socket &socket, int render_id)
+int SendRenderFrameDone(Socket &socket, int32_t frame_id)
 {
   int32_t msg[3];
 
   msg[0] = sizeof(msg) - sizeof(msg[0]);
   msg[1] = MSG_RENDER_FRAME_DONE;
-  msg[2] = render_id;
+  msg[2] = frame_id;
 
   socket.Send(reinterpret_cast<char *>(msg), sizeof(msg));
   return 0;
 }
 
-int SendRenderTileStart(Socket &socket, int render_id,
+int SendRenderTileStart(Socket &socket, int32_t frame_id,
     int tile_id, int xmin, int ymin, int xmax, int ymax)
 {
   int32_t msg[8];
 
   msg[0] = sizeof(msg) - sizeof(msg[0]);
   msg[1] = MSG_RENDER_TILE_START;
-  msg[2] = render_id;
+  msg[2] = frame_id;
   msg[3] = tile_id;
   msg[4] = xmin;
   msg[5] = ymin;
@@ -55,7 +55,7 @@ int SendRenderTileStart(Socket &socket, int render_id,
   return err;
 }
 
-int SendRenderTileDone(Socket &socket, int render_id,
+int SendRenderTileDone(Socket &socket, int32_t frame_id,
     int tile_id, int xmin, int ymin, int xmax, int ymax,
     const FrameBuffer &tile)
 {
@@ -63,7 +63,7 @@ int SendRenderTileDone(Socket &socket, int render_id,
 
   msg[0] = sizeof(msg) - sizeof(msg[0]);
   msg[1] = MSG_RENDER_TILE_DONE;
-  msg[2] = render_id;
+  msg[2] = frame_id;
   msg[3] = tile_id;
   msg[4] = xmin;
   msg[5] = ymin;
@@ -122,7 +122,7 @@ int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile)
       return -1;
     }
     message.type      = body[1];
-    message.render_id = body[2];
+    message.frame_id  = body[2];
     message.tile_id   = body[3];
     message.xmin      = body[4];
     message.ymin      = body[5];
@@ -164,7 +164,7 @@ int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile)
       break;
     } else {
       message.type          = body[1];
-      message.render_id     = body[2];
+      message.frame_id      = body[2];
       message.xres          = body[3];
       message.yres          = body[4];
       message.channel_count = body[5];
@@ -177,7 +177,7 @@ int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile)
       break;
     } else {
       message.type          = body[1];
-      message.render_id     = body[2];
+      message.frame_id      = body[2];
     }
     break;
 
@@ -186,7 +186,7 @@ int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile)
       break;
     } else {
       message.type      = body[1];
-      message.render_id = body[2];
+      message.frame_id  = body[2];
       message.tile_id   = body[3];
       message.xmin      = body[4];
       message.ymin      = body[5];
@@ -200,7 +200,7 @@ int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile)
       break;
     } else {
       message.type      = body[1];
-      message.render_id = body[2];
+      message.frame_id  = body[2];
       message.tile_id   = body[3];
       message.xmin      = body[4];
       message.ymin      = body[5];
