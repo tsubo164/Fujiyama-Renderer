@@ -174,7 +174,34 @@ static Interrupt default_tile_done(void *data, const TileInfo *info)
 // TODO TEST
 static Interrupt default_frame_start2(void *data, const FrameInfo *info)
 {
-  FrameProgress *fp = (FrameProgress *) data;
+  FrameProgress *fp = reinterpret_cast<FrameProgress *>(data);
+
+  if (fp->report_to_viewer) {
+    Socket socket;
+    socket.SetAddress("127.0.0.1");
+
+    const int result = socket.Connect();
+
+    if (result == -1) {
+      std::cerr << "* ERROR: cannot connect to fbview: " << strerror(errno) << "\n";
+      std::cerr << "*   run 'fbview --listen' if not opened yet.\n";
+      std::cerr << "*   press 'l' to switch to listen mode if already opened.\n\n";
+      fp->report_to_viewer = false;
+    }
+    else {
+      SendRenderFrameStart(socket,
+          info->frame_id,
+          info->xres,
+          info->yres,
+          info->framebuffer->GetChannelCount(),
+          info->tile_count);
+
+      const int err = RecieveEOF(socket);
+      if (err) {
+        // TODO ERROR HANDLING
+      }
+    }
+  }
 
   fp->timer.Start();
   printf("# Rendering Frame\n");
@@ -184,51 +211,24 @@ static Interrupt default_frame_start2(void *data, const FrameInfo *info)
   printf("#   Tile Count:   %4d\n", info->tile_count);
   printf("\n");
 
-  {
-    Socket socket;
-    socket.SetAddress("127.0.0.1");
-
-    const int result = socket.Connect();
-
-    if (result == -1) {
-      std::cerr << "cannot connect to fbview\n";
-    }
-
-    SendRenderFrameStart(socket,
-        info->frame_id,
-        info->xres,
-        info->yres,
-        info->framebuffer->GetChannelCount(),
-        info->tile_count);
-
-    const int err = RecieveEOF(socket);
-    if (err) {
-      // TODO ERROR HANDLING
-      return CALLBACK_INTERRUPT;
-    }
-  }
-
-  {
-    int idx;
-    fp->current_segment = 0;
-    idx = fp->current_segment;
-    fp->progress.Start(fp->iteration_list[idx]);
-  }
+  // start progress
+  fp->current_segment = 0;
+  const int idx = fp->current_segment;
+  fp->progress.Start(fp->iteration_list[idx]);
 
   return CALLBACK_CONTINUE;
 }
 
 static Interrupt default_frame_done2(void *data, const FrameInfo *info)
 {
-  FrameProgress *fp = (FrameProgress *) data;
-  Elapse elapse;
+  FrameProgress *fp = reinterpret_cast<FrameProgress *>(data);
+  const Elapse elapse = fp->timer.GetElapse();
 
-  elapse = fp->timer.GetElapse();
   printf("# Frame Done\n");
   printf("#   %dh %dm %ds\n", elapse.hour, elapse.min, elapse.sec);
   printf("\n");
 
-  {
+  if (fp->report_to_viewer == false) {
     Socket socket;
     socket.SetAddress("127.0.0.1");
 
@@ -236,7 +236,7 @@ static Interrupt default_frame_done2(void *data, const FrameInfo *info)
 
     if (result == -1) {
       // TODO ERROR HANDLING
-      std::cerr << "cannot connect to fbview\n";
+      std::cerr << "* ERROR: cannot connect to fbview: " << strerror(errno) << "\n";
     }
 
     SendRenderFrameDone(socket, info->frame_id);
@@ -244,7 +244,6 @@ static Interrupt default_frame_done2(void *data, const FrameInfo *info)
     const int err = RecieveEOF(socket);
     if (err) {
       // TODO ERROR HANDLING
-      return CALLBACK_INTERRUPT;
     }
   }
 
@@ -253,6 +252,11 @@ static Interrupt default_frame_done2(void *data, const FrameInfo *info)
 
 static Interrupt default_tile_start2(void *data, const TileInfo *info)
 {
+  FrameProgress *fp = reinterpret_cast<FrameProgress *>(data);
+  if (fp->report_to_viewer == false) {
+    return CALLBACK_CONTINUE;
+  }
+
   const int MAX_RETRY = 10;
   int i = 0;
 
@@ -297,18 +301,23 @@ static Interrupt default_tile_start2(void *data, const TileInfo *info)
 
 static Interrupt default_tile_done2(void *data, const TileInfo *info)
 {
+  FrameProgress *fp = reinterpret_cast<FrameProgress *>(data);
+  if (fp->report_to_viewer == false) {
+    return CALLBACK_CONTINUE;
+  }
+
   const int tile_w = info->tile_region.GetSizeX();
   const int tile_h = info->tile_region.GetSizeY();
   FrameBuffer tile_fb;
   tile_fb.Resize(tile_w, tile_h, info->framebuffer->GetChannelCount());
 
   {
-    int xoffset = info->tile_region.xmin;
-    int yoffset = info->tile_region.ymin;
+    const int xoffset = info->tile_region.xmin;
+    const int yoffset = info->tile_region.ymin;
     for (int y = 0; y < tile_h; y++) {
       for (int x = 0; x < tile_w; x++) {
-        int xx = x + xoffset;
-        int yy = y + yoffset;
+        const int xx = x + xoffset;
+        const int yy = y + yoffset;
         const Color4 color = info->framebuffer->GetColor(xx, yy);
         tile_fb.SetColor(x, y, color);
       }
@@ -346,7 +355,6 @@ static Interrupt default_tile_done2(void *data, const TileInfo *info)
     err = RecieveEOF(socket);
     if (err) {
       // TODO ERROR HANDLING
-      return CALLBACK_INTERRUPT;
     }
 
     break;
@@ -358,7 +366,6 @@ static Interrupt default_tile_done2(void *data, const TileInfo *info)
 
   return CALLBACK_CONTINUE;
 }
-
 
 Renderer::Renderer()
 {
@@ -620,7 +627,7 @@ int Renderer::RenderScene()
 class Worker;
 static Worker *new_worker_list(int worker_count,
     const Renderer *renderer, const Tiler *tiler);
-static void render_frame_start(Renderer *renderer, const Tiler *tiler);
+static int render_frame_start(Renderer *renderer, const Tiler *tiler);
 static ThreadStatus render_tile(void *data, const ThreadContext *context);
 static void render_frame_done(Renderer *renderer, const Tiler *tiler);
 static void free_worker_list(Worker *worker_list, int worker_count);
@@ -666,6 +673,8 @@ int Renderer::execute_rendering()
   const float xfilterwidth = filterwidth_[0];
   const float yfilterwidth = filterwidth_[1];
 
+  int err = 0;
+
   // Frame ID
   frame_id_ = generate_frame_id();
 
@@ -688,7 +697,11 @@ int Renderer::execute_rendering()
       xfilterwidth, yfilterwidth);
 
   // Run sampling
-  render_frame_start(this, &tiler);
+  err = render_frame_start(this, &tiler);
+  if (err) {
+    render_state = -1;
+    goto cleanup_and_exit;
+  }
 
   MtRunThreadLoop(worker_list, render_tile, thread_count, 0, tile_count);
 
@@ -941,7 +954,7 @@ static void reconstruct_image(Worker *worker)
   }
 }
 
-static void render_frame_start(Renderer *renderer, const Tiler *tiler)
+static int render_frame_start(Renderer *renderer, const Tiler *tiler)
 {
   FrameInfo info;
   info.frame_id = renderer->frame_id_;
@@ -952,7 +965,12 @@ static void render_frame_start(Renderer *renderer, const Tiler *tiler)
   info.frame_region = renderer->frame_region_;;
   info.framebuffer = renderer->framebuffer_;
 
-  CbReportFrameStart(&renderer->frame_report_, &info);
+  const Interrupt interrupt = CbReportFrameStart(&renderer->frame_report_, &info);
+  if (interrupt == CALLBACK_INTERRUPT) {
+    return -1;
+  } else {
+    return 0;
+  }
 }
 
 static void render_frame_done(Renderer *renderer, const Tiler *tiler)

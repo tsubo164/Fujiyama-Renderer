@@ -23,13 +23,17 @@ public:
       timer(),
       progress(),
       iteration_list(),
-      current_segment(0) {}
+      current_segment(0),
+      report_to_viewer(true)
+      {}
   ~FrameProgress() {}
 
   Timer timer;
   Progress progress;
   Iteration iteration_list[10]; // one for 10% 100% in total
   int current_segment;
+
+  bool report_to_viewer;
 };
 
 class Renderer {
