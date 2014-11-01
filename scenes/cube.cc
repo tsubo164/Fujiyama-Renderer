@@ -21,6 +21,11 @@ static Interrupt frame_start(void *data, const FrameInfo *info)
   printf("# Callback Sample -- Frame Start\n");
   return CALLBACK_CONTINUE;
 }
+static Interrupt frame_abort(void *data, const FrameInfo *info)
+{
+  printf("# Callback Sample -- Frame Abort\n");
+  return CALLBACK_CONTINUE;
+}
 static Interrupt frame_done(void *data, const FrameInfo *info)
 {
   printf("# Callback Sample -- Frame Done\n");
@@ -136,6 +141,7 @@ int main(int argc, const char **argv)
   SiSetFrameReportCallback(renderer,
       NULL,
       frame_start,
+      frame_abort,
       frame_done);
   SiSetTileReportCallback(renderer,
       &N,

@@ -25,6 +25,11 @@ Interrupt CbReportFrameStart(FrameReport *report, const FrameInfo *info)
   return report->start(report->data, info);
 }
 
+Interrupt CbReportFrameAbort(FrameReport *report, const FrameInfo *info)
+{
+  return report->abort(report->data, info);
+}
+
 Interrupt CbReportFrameDone(FrameReport *report, const FrameInfo *info)
 {
   return report->done(report->data, info);
@@ -47,10 +52,12 @@ Interrupt CbReportSampleDone(TileReport *report)
 
 void CbSetFrameReport(FrameReport *report, void *data,
     FrameStartCallback frame_start,
+    FrameAbortCallback frame_abort,
     FrameDoneCallback frame_done)
 {
   report->data = data;
   report->start = (frame_start == NULL) ? no_frame_report : frame_start;
+  report->abort = (frame_abort == NULL) ? no_frame_report : frame_abort;
   report->done  = (frame_done  == NULL) ? no_frame_report : frame_done;
 }
 

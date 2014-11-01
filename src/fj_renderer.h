@@ -70,6 +70,7 @@ public:
 
   void SetFrameReportCallback(void *data,
       FrameStartCallback frame_start,
+      FrameAbortCallback frame_abort,
       FrameDoneCallback frame_done);
 
   void SetTileReportCallback(void *data,

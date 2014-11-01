@@ -110,6 +110,7 @@ FJ_API const Property *SiGetPropertyList(const char *type_name);
 /* Callback interfaces */
 FJ_API Status SiSetFrameReportCallback(ID id, void *data,
     FrameStartCallback frame_start,
+    FrameAbortCallback frame_abort,
     FrameDoneCallback frame_done);
 
 FJ_API Status SiSetTileReportCallback(ID id, void *data,

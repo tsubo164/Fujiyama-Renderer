@@ -67,6 +67,7 @@ enum {
 
 typedef int Interrupt;
 typedef Interrupt (*FrameStartCallback)(void *data, const FrameInfo *info);
+typedef Interrupt (*FrameAbortCallback)(void *data, const FrameInfo *info);
 typedef Interrupt (*FrameDoneCallback)(void *data, const FrameInfo *info);
 
 typedef Interrupt (*TileStartCallback)(void *data, const TileInfo *info);
@@ -82,6 +83,7 @@ public:
 public:
   void *data;
   FrameStartCallback start;
+  FrameAbortCallback abort;
   FrameDoneCallback done;
 };
 
@@ -98,15 +100,16 @@ public:
 };
 
 extern Interrupt CbReportFrameStart(FrameReport *report, const FrameInfo *info);
+extern Interrupt CbReportFrameAbort(FrameReport *report, const FrameInfo *info);
 extern Interrupt CbReportFrameDone(FrameReport *report, const FrameInfo *info);
 
 extern Interrupt CbReportTileStart(TileReport *report, const TileInfo *info);
 extern Interrupt CbReportTileDone(TileReport *report, const TileInfo *info);
-
 extern Interrupt CbReportSampleDone(TileReport *report);
 
 extern void CbSetFrameReport(FrameReport *report, void *data,
     FrameStartCallback frame_start,
+    FrameAbortCallback frame_abort,
     FrameDoneCallback frame_done);
 
 extern void CbSetTileReport(TileReport *report, void *data,

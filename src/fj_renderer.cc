@@ -398,10 +398,12 @@ Renderer::Renderer()
   if (0) {
   SetFrameReportCallback(&frame_progress_,
       default_frame_start,
+      NULL,
       default_frame_done);
   } else {
   SetFrameReportCallback(&frame_progress_,
       default_frame_start2,
+      NULL,
       default_frame_done2);
   }
 
@@ -584,11 +586,13 @@ int Renderer::GetThreadCount() const
 
 void Renderer::SetFrameReportCallback(void *data,
     FrameStartCallback frame_start,
+    FrameAbortCallback frame_abort,
     FrameDoneCallback frame_done)
 {
   CbSetFrameReport(&frame_report_,
       data,
       frame_start,
+      frame_abort,
       frame_done);
 }
 

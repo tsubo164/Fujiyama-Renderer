@@ -356,7 +356,9 @@ void FrameBufferViewer::Listen()
     case MSG_RENDER_FRAME_START:
       if (frame_id_ > 0) {
         // TODO ERROR HANDLING
-        std::cout << "***** FrameBufferViewer: " << frame_id_ << "\n";
+        std::cerr << "WARNING: fbview recieved different frame ID: " << message.frame_id << "\n";
+        std::cerr << "WARNING: fbview ignored this message.\n";
+        return;
       }
       frame_id_   = message.frame_id;
       fb_.Resize(message.xres, message.yres, message.channel_count);
@@ -376,8 +378,9 @@ void FrameBufferViewer::Listen()
 
     case MSG_RENDER_FRAME_DONE:
       if (frame_id_ != message.frame_id) {
-        // TODO ERROR HANDLING
-        std::cout << "***** FrameBufferViewer: " << frame_id_ << "\n";
+        std::cerr << "WARNING: fbview recieved different frame ID: " << message.frame_id << "\n";
+        std::cerr << "WARNING: fbview ignored this message.\n";
+        return;
       }
       state_ = STATE_READY;
       frame_id_ = -1;
@@ -385,8 +388,7 @@ void FrameBufferViewer::Listen()
 
     case MSG_RENDER_TILE_START:
       if (frame_id_ != message.frame_id) {
-        // TODO ERROR HANDLING
-        std::cout << "***** FrameBufferViewer: " << frame_id_ << "\n";
+        return;
       }
       tiles[message.tile_id].region.xmin = message.xmin;
       tiles[message.tile_id].region.ymin = message.ymin;
@@ -397,8 +399,7 @@ void FrameBufferViewer::Listen()
 
     case MSG_RENDER_TILE_DONE:
       if (frame_id_ != message.frame_id) {
-        // TODO ERROR HANDLING
-        std::cout << "***** FrameBufferViewer: " << frame_id_ << "\n";
+        return;
       }
       tiles[message.tile_id].region.xmin = message.xmin;
       tiles[message.tile_id].region.ymin = message.ymin;

@@ -923,6 +923,7 @@ Status SiAssignMesh(ID id, const char *name, ID mesh)
 
 Status SiSetFrameReportCallback(ID id, void *data,
     FrameStartCallback frame_start,
+    FrameAbortCallback frame_abort,
     FrameDoneCallback frame_done)
 {
   const Entry entry = decode_id(id);
@@ -932,6 +933,7 @@ Status SiSetFrameReportCallback(ID id, void *data,
     renderer_ptr->SetFrameReportCallback(
         data,
         frame_start,
+        frame_abort,
         frame_done);
     return SI_SUCCESS;
   } else {
