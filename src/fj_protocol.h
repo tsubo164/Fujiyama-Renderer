@@ -16,6 +16,7 @@ enum {
   MSG_NONE = 0,
   MSG_RENDER_FRAME_START,
   MSG_RENDER_FRAME_DONE,
+  MSG_RENDER_FRAME_ABORT,
   MSG_RENDER_TILE_START,
   MSG_RENDER_TILE_DONE
 };
@@ -46,6 +47,8 @@ int SendRenderFrameStart(Socket &socket, int32_t frame_id,
 
 int SendRenderFrameDone(Socket &socket, int32_t frame_id);
 
+int SendRenderFrameAbort(Socket &socket, int32_t frame_id);
+
 int SendRenderTileStart(Socket &socket, int32_t frame_id,
     int tile_id, int xmin, int ymin, int xmax, int ymax);
 
@@ -55,6 +58,8 @@ int SendRenderTileDone(Socket &socket, int32_t frame_id,
 
 int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile);
 int RecieveEOF(Socket &socket);
+
+int RecieveReply(Socket &socket, Message &message);
 
 } // namespace xxx
 

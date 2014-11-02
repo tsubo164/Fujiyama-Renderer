@@ -288,8 +288,16 @@ void FrameBufferViewer::PressKey(unsigned char key, int mouse_x, int mouse_y)
     Draw();
     break;
   case 'q':
-  case '\033': // ESC ASCII code
     exit(EXIT_SUCCESS);
+    break;
+  case '\033': // ESC ASCII code
+    state_ = STATE_INTERRUPTED;
+    /*
+    frame_id_ = -1;
+    for (size_t i = 0; i < tiles.size(); i++) {
+      tiles[i] = TileStatus();
+    }
+    */
     break;
   default:
     break;
@@ -349,15 +357,15 @@ void FrameBufferViewer::Listen()
     if (e < 0) {
       // TODO ERROR HANDLING
     }
-    client.Shutdown();
+    client.ShutdownRead();
 
     switch (message.type) {
 
     case MSG_RENDER_FRAME_START:
       if (frame_id_ > 0) {
         // TODO ERROR HANDLING
-        std::cerr << "WARNING: fbview recieved different frame ID: " << message.frame_id << "\n";
-        std::cerr << "WARNING: fbview ignored this message.\n";
+        std::cerr << "WARNING: fbview recieved another frame ID: " << message.frame_id << "\n";
+        std::cerr << "WARNING: fbview ignored this message.\n\n";
         return;
       }
       frame_id_   = message.frame_id;
@@ -378,11 +386,18 @@ void FrameBufferViewer::Listen()
 
     case MSG_RENDER_FRAME_DONE:
       if (frame_id_ != message.frame_id) {
-        std::cerr << "WARNING: fbview recieved different frame ID: " << message.frame_id << "\n";
+        std::cerr << "WARNING: fbview recieved another frame ID: " << message.frame_id << "\n";
         std::cerr << "WARNING: fbview ignored this message.\n";
         return;
       }
-      state_ = STATE_READY;
+      if (state_ == STATE_RENDERING) {
+        state_ = STATE_READY;
+      } else if (state_ == STATE_INTERRUPTED) {
+        for (size_t i = 0; i < tiles.size(); i++) {
+          tiles[i] = TileStatus();
+        }
+        state_ = STATE_ABORT;
+      }
       frame_id_ = -1;
       break;
 
@@ -430,6 +445,11 @@ void FrameBufferViewer::Listen()
     default:
       // TODO ERROR HANDLING
       break;
+    }
+
+    if (state_ == STATE_INTERRUPTED) {
+      SendRenderFrameAbort(client, message.frame_id);
+      // abort;
     }
   }
 }
@@ -539,6 +559,16 @@ void FrameBufferViewer::draw_viewbox() const
     r = .4f;
     g = .8f;
     b = .6f;
+    break;
+  case STATE_INTERRUPTED:
+    r = 1.f;
+    g = 1.f;
+    b = .0f;
+    break;
+  case STATE_ABORT:
+    r = 1.f;
+    g = .0f;
+    b = .0f;
     break;
   default:
     r = g = b = .5f;

@@ -86,7 +86,9 @@ private:
     STATE_NONE = 0,
     STATE_READY,
     STATE_RENDERING,
-    STATE_DONE
+    STATE_DONE,
+    STATE_INTERRUPTED,
+    STATE_ABORT
   };
 
   class TileStatus {

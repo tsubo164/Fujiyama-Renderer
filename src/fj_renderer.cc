@@ -228,7 +228,7 @@ static Interrupt default_frame_done2(void *data, const FrameInfo *info)
   printf("#   %dh %dm %ds\n", elapse.hour, elapse.min, elapse.sec);
   printf("\n");
 
-  if (fp->report_to_viewer == false) {
+  if (fp->report_to_viewer) {
     Socket socket;
     socket.SetAddress("127.0.0.1");
 
@@ -283,11 +283,24 @@ static Interrupt default_tile_start2(void *data, const TileInfo *info)
       continue;
     }
 
+    {
+      Message message;
+      const int result = RecieveReply(socket, message);
+      if (result == -1) {
+        // no reply
+        break;
+      }
+      if (message.type == MSG_RENDER_FRAME_ABORT) {
+        return CALLBACK_INTERRUPT;
+      }
+    }
+#if 0
     err = RecieveEOF(socket);
     if (err) {
       // TODO ERROR HANDLING
       continue;
     }
+#endif
 
     break;
   }
@@ -991,7 +1004,7 @@ static void render_frame_done(Renderer *renderer, const Tiler *tiler)
   CbReportFrameDone(&renderer->frame_report_, &info);
 }
 
-static void render_tile_start(Worker *worker)
+static int render_tile_start(Worker *worker)
 {
   TileInfo info;
   info.frame_id = worker->frame_id;
@@ -1002,7 +1015,12 @@ static void render_tile_start(Worker *worker)
   info.tile_region = worker->tile_region;
   info.framebuffer = worker->framebuffer;
 
-  CbReportTileStart(&worker->tile_report, &info);
+  const Interrupt interrupt = CbReportTileStart(&worker->tile_report, &info);
+  if (interrupt == CALLBACK_INTERRUPT) {
+    return -1;
+  } else {
+    return 0;
+  }
 }
 
 static void render_tile_done(Worker *worker)
@@ -1064,7 +1082,10 @@ static ThreadStatus render_tile(void *data, const ThreadContext *context)
 
   set_working_region(worker, context->iteration_id);
 
-  render_tile_start(worker);
+  interrupted = render_tile_start(worker);
+  if (interrupted) {
+    return THREAD_LOOP_CANCEL;
+  }
 
   interrupted = integrate_samples(worker);
   reconstruct_image(worker);

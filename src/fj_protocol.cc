@@ -37,6 +37,18 @@ int SendRenderFrameDone(Socket &socket, int32_t frame_id)
   return 0;
 }
 
+int SendRenderFrameAbort(Socket &socket, int32_t frame_id)
+{
+  int32_t msg[3];
+
+  msg[0] = sizeof(msg) - sizeof(msg[0]);
+  msg[1] = MSG_RENDER_FRAME_ABORT;
+  msg[2] = frame_id;
+
+  socket.Send(reinterpret_cast<char *>(msg), sizeof(msg));
+  return 0;
+}
+
 int SendRenderTileStart(Socket &socket, int32_t frame_id,
     int tile_id, int xmin, int ymin, int xmax, int ymax)
 {
@@ -101,6 +113,10 @@ int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile)
   int err = socket.Recieve(reinterpret_cast<char *>(&body[0]), sizeof(body[0]));
   if (err == -1) {
     // TODO ERROR HANDLING
+    return -1;
+  }
+
+  if (err == 0) {
     return -1;
   }
 
@@ -225,6 +241,49 @@ int RecieveEOF(Socket &socket)
   } else {
     return -1;
   }
+}
+
+int RecieveReply(Socket &socket, Message &message)
+{
+  int32_t body[16] = {0};
+
+  // reading size of message
+  int err = socket.Recieve(reinterpret_cast<char *>(&body[0]), sizeof(body[0]));
+  if (err == -1) {
+    // TODO ERROR HANDLING
+    return -1;
+  }
+
+  if (err == 0) {
+    return -1;
+  }
+
+  const int32_t size_of_msg = body[0];
+
+  // reading type of message
+  err = socket.Recieve(reinterpret_cast<char *>(&body[1]), size_of_msg);
+  if (err == -1) {
+    // TODO ERROR HANDLING
+    return -1;
+  }
+
+  const int32_t type_of_msg = body[1];
+
+  switch (type_of_msg) {
+
+  case MSG_RENDER_FRAME_ABORT:
+    if (size_of_msg != 2 * sizeof(body[0])) {
+      break;
+    } else {
+      message.type          = body[1];
+      message.frame_id      = body[2];
+    }
+    break;
+  default:
+    break;
+  }
+
+  return 0;
 }
 
 } // namespace xxx
