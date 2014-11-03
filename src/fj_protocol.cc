@@ -104,13 +104,13 @@ Message::~Message()
 {
 }
 
-int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile)
+int ReceiveMessage(Socket &socket, Message &message, FrameBuffer &tile)
 {
   int32_t body[16] = {0};
   // TODO NEED THIS?  std::vector<int32_t> body(16);
 
   // reading size of message
-  int err = socket.Recieve(reinterpret_cast<char *>(&body[0]), sizeof(body[0]));
+  int err = socket.Receive(reinterpret_cast<char *>(&body[0]), sizeof(body[0]));
   if (err == -1) {
     // TODO ERROR HANDLING
     return -1;
@@ -121,7 +121,7 @@ int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile)
   }
 
   // reading type of message
-  err = socket.Recieve(reinterpret_cast<char *>(&body[1]), sizeof(body[1]));
+  err = socket.Receive(reinterpret_cast<char *>(&body[1]), sizeof(body[1]));
   if (err == -1) {
     // TODO ERROR HANDLING
     return -1;
@@ -132,7 +132,7 @@ int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile)
 
   // special case
   if (type_of_msg == MSG_RENDER_TILE_DONE) {
-    err = socket.Recieve(reinterpret_cast<char *>(&body[2]), 7 * sizeof(body[0]));
+    err = socket.Receive(reinterpret_cast<char *>(&body[2]), 7 * sizeof(body[0]));
     if (err == -1) {
       // TODO ERROR HANDLING
       return -1;
@@ -154,7 +154,7 @@ int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile)
     for (int y = 0; y < tile.GetHeight(); y++) {
       for (int x = 0; x < tile.GetWidth(); x++) {
         float pixel[4] = {0};
-        err = socket.Recieve(reinterpret_cast<char *>(pixel), sizeof(pixel));
+        err = socket.Receive(reinterpret_cast<char *>(pixel), sizeof(pixel));
         if (err == -1) {
           // TODO ERROR HANDLING
         }
@@ -167,7 +167,7 @@ int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile)
   }
 
   //body.resize(size_of_msg);
-  err = socket.Recieve(reinterpret_cast<char *>(&body[2]), size_of_msg - sizeof(body[1]));
+  err = socket.Receive(reinterpret_cast<char *>(&body[2]), size_of_msg - sizeof(body[1]));
   if (err == -1) {
     // TODO ERROR HANDLING
     return -1;
@@ -232,10 +232,10 @@ int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile)
   return 0;
 }
 
-int RecieveEOF(Socket &socket)
+int ReceiveEOF(Socket &socket)
 {
   char unused;
-  const int s = socket.Recieve(&unused, sizeof(unused));
+  const int s = socket.Receive(&unused, sizeof(unused));
   if (s == 0) {
     return 0;
   } else {
@@ -243,12 +243,12 @@ int RecieveEOF(Socket &socket)
   }
 }
 
-int RecieveReply(Socket &socket, Message &message)
+int ReceiveReply(Socket &socket, Message &message)
 {
   int32_t body[16] = {0};
 
   // reading size of message
-  int err = socket.Recieve(reinterpret_cast<char *>(&body[0]), sizeof(body[0]));
+  int err = socket.Receive(reinterpret_cast<char *>(&body[0]), sizeof(body[0]));
   if (err == -1) {
     // TODO ERROR HANDLING
     return -1;
@@ -261,7 +261,7 @@ int RecieveReply(Socket &socket, Message &message)
   const int32_t size_of_msg = body[0];
 
   // reading type of message
-  err = socket.Recieve(reinterpret_cast<char *>(&body[1]), size_of_msg);
+  err = socket.Receive(reinterpret_cast<char *>(&body[1]), size_of_msg);
   if (err == -1) {
     // TODO ERROR HANDLING
     return -1;

@@ -353,7 +353,7 @@ void FrameBufferViewer::Listen()
     Message message;
     FrameBuffer tile_data;
 
-    int e = RecieveMessage(client, message, tile_data);
+    int e = ReceiveMessage(client, message, tile_data);
     if (e < 0) {
       // TODO ERROR HANDLING
     }

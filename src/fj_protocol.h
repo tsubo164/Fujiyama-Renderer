@@ -56,10 +56,10 @@ int SendRenderTileDone(Socket &socket, int32_t frame_id,
     int tile_id, int xmin, int ymin, int xmax, int ymax,
     const FrameBuffer &tile);
 
-int RecieveMessage(Socket &socket, Message &message, FrameBuffer &tile);
-int RecieveEOF(Socket &socket);
+int ReceiveMessage(Socket &socket, Message &message, FrameBuffer &tile);
+int ReceiveEOF(Socket &socket);
 
-int RecieveReply(Socket &socket, Message &message);
+int ReceiveReply(Socket &socket, Message &message);
 
 } // namespace xxx
 

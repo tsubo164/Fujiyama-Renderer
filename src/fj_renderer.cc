@@ -196,7 +196,7 @@ static Interrupt default_frame_start2(void *data, const FrameInfo *info)
           info->framebuffer->GetChannelCount(),
           info->tile_count);
 
-      const int err = RecieveEOF(socket);
+      const int err = ReceiveEOF(socket);
       if (err) {
         // TODO ERROR HANDLING
       }
@@ -241,7 +241,7 @@ static Interrupt default_frame_done2(void *data, const FrameInfo *info)
 
     SendRenderFrameDone(socket, info->frame_id);
 
-    const int err = RecieveEOF(socket);
+    const int err = ReceiveEOF(socket);
     if (err) {
       // TODO ERROR HANDLING
     }
@@ -285,7 +285,7 @@ static Interrupt default_tile_start2(void *data, const TileInfo *info)
 
     {
       Message message;
-      const int result = RecieveReply(socket, message);
+      const int result = ReceiveReply(socket, message);
       if (result == -1) {
         // no reply
         break;
@@ -295,7 +295,7 @@ static Interrupt default_tile_start2(void *data, const TileInfo *info)
       }
     }
 #if 0
-    err = RecieveEOF(socket);
+    err = ReceiveEOF(socket);
     if (err) {
       // TODO ERROR HANDLING
       continue;
@@ -365,7 +365,7 @@ static Interrupt default_tile_done2(void *data, const TileInfo *info)
       continue;
     }
 
-    err = RecieveEOF(socket);
+    err = ReceiveEOF(socket);
     if (err) {
       // TODO ERROR HANDLING
     }
