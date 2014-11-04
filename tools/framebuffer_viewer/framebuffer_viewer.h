@@ -101,7 +101,7 @@ private:
     int state;
     Rectangle region;
   };
-  std::vector<TileStatus> tiles;
+  std::vector<TileStatus> tile_status_;
   int32_t frame_id_;
 };
 

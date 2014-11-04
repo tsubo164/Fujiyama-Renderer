@@ -30,7 +30,10 @@ FrameBufferViewer::FrameBufferViewer() :
     pressbutton_(MOUSE_BUTTON_NONE),
     tilesize_(0),
     draw_tile_(1),
-    state_(STATE_NONE)
+    server_(),
+    state_(STATE_NONE),
+    tile_status_(),
+    frame_id_(-1)
 {
   set_to_home_position();
   BOX2_SET(databox_, 0, 0, 0, 0);
@@ -100,13 +103,13 @@ void FrameBufferViewer::Draw() const
       //glLineStipple(1, 0x3333);
       glColor3f(1, 1, 1);
 
-      for (size_t i = 0; i < tiles.size(); i++)
+      for (size_t i = 0; i < tile_status_.size(); i++)
       {
-        if (tiles[i].state == STATE_RENDERING) {
-          GLfloat xmin = tiles[i].region.xmin + 5 * 0;
-          GLfloat ymin = tiles[i].region.ymin + 5 * 0;
-          GLfloat xmax = tiles[i].region.xmax - 5 * 0;
-          GLfloat ymax = tiles[i].region.ymax - 5 * 0;
+        if (tile_status_[i].state == STATE_RENDERING) {
+          GLfloat xmin = tile_status_[i].region.xmin + 5 * 0;
+          GLfloat ymin = tile_status_[i].region.ymin + 5 * 0;
+          GLfloat xmax = tile_status_[i].region.xmax - 5 * 0;
+          GLfloat ymax = tile_status_[i].region.ymax - 5 * 0;
           ymin = yviewsize - ymin;
           ymax = yviewsize - ymax;
           glBegin(GL_LINE_LOOP);
@@ -294,8 +297,8 @@ void FrameBufferViewer::PressKey(unsigned char key, int mouse_x, int mouse_y)
     state_ = STATE_INTERRUPTED;
     /*
     frame_id_ = -1;
-    for (size_t i = 0; i < tiles.size(); i++) {
-      tiles[i] = TileStatus();
+    for (size_t i = 0; i < tile_status_.size(); i++) {
+      tile_status_[i] = TileStatus();
     }
     */
     break;
@@ -379,8 +382,8 @@ void FrameBufferViewer::Listen()
       databox_[2] = viewbox_[2];
       databox_[3] = viewbox_[3];
       setup_image_card();
-      tiles.clear();
-      tiles.resize(message.tile_count);
+      tile_status_.clear();
+      tile_status_.resize(message.tile_count);
       state_ = STATE_RENDERING;
       break;
 
@@ -393,8 +396,8 @@ void FrameBufferViewer::Listen()
       if (state_ == STATE_RENDERING) {
         state_ = STATE_READY;
       } else if (state_ == STATE_INTERRUPTED) {
-        for (size_t i = 0; i < tiles.size(); i++) {
-          tiles[i] = TileStatus();
+        for (size_t i = 0; i < tile_status_.size(); i++) {
+          tile_status_[i] = TileStatus();
         }
         state_ = STATE_ABORT;
       }
@@ -405,22 +408,22 @@ void FrameBufferViewer::Listen()
       if (frame_id_ != message.frame_id) {
         return;
       }
-      tiles[message.tile_id].region.xmin = message.xmin;
-      tiles[message.tile_id].region.ymin = message.ymin;
-      tiles[message.tile_id].region.xmax = message.xmax;
-      tiles[message.tile_id].region.ymax = message.ymax;
-      tiles[message.tile_id].state = STATE_RENDERING;
+      tile_status_[message.tile_id].region.xmin = message.xmin;
+      tile_status_[message.tile_id].region.ymin = message.ymin;
+      tile_status_[message.tile_id].region.xmax = message.xmax;
+      tile_status_[message.tile_id].region.ymax = message.ymax;
+      tile_status_[message.tile_id].state = STATE_RENDERING;
       break;
 
     case MSG_RENDER_TILE_DONE:
       if (frame_id_ != message.frame_id) {
         return;
       }
-      tiles[message.tile_id].region.xmin = message.xmin;
-      tiles[message.tile_id].region.ymin = message.ymin;
-      tiles[message.tile_id].region.xmax = message.xmax;
-      tiles[message.tile_id].region.ymax = message.ymax;
-      tiles[message.tile_id].state = STATE_DONE;
+      tile_status_[message.tile_id].region.xmin = message.xmin;
+      tile_status_[message.tile_id].region.ymin = message.ymin;
+      tile_status_[message.tile_id].region.xmax = message.xmax;
+      tile_status_[message.tile_id].region.ymax = message.ymax;
+      tile_status_[message.tile_id].state = STATE_DONE;
 
       {
         // TODO define gamma function
@@ -436,8 +439,8 @@ void FrameBufferViewer::Listen()
       }
 
       Copy(fb_, tile_data,
-          tiles[message.tile_id].region.xmin,
-          tiles[message.tile_id].region.ymin);
+          tile_status_[message.tile_id].region.xmin,
+          tile_status_[message.tile_id].region.ymin);
 
       setup_image_card();
       break;
@@ -553,11 +556,11 @@ void FrameBufferViewer::draw_viewbox() const
   case STATE_READY:
     r = .4f;
     g = .6f;
-    b = .8f;
+    b = 1.f;
     break;
   case STATE_RENDERING:
     r = .4f;
-    g = .8f;
+    g = 1.f;
     b = .6f;
     break;
   case STATE_INTERRUPTED:
