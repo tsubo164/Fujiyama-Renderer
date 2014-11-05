@@ -13,7 +13,7 @@ inline static struct sockaddr *get_sockaddr(struct sockaddr_in * addr_in)
 }
 
 Socket::Socket() :
-    fd_(-1), len_(sizeof(address_)), address_()
+    fd_(FJ_INVALID_SOCKET), len_(sizeof(address_)), address_()
 {
 }
 
@@ -22,18 +22,22 @@ Socket::~Socket()
   Close();
 }
 
-int Socket::Open()
+socket_id Socket::Open()
 {
   if (IsOpen()) {
-    return 0;
+    return fd_;
   }
 
   fd_ = socket(AF_INET, SOCK_STREAM, 0);
+  if (fd_ == FJ_INVALID_SOCKET) {
+    return SOCKET_ID_INVALID;
+  }
+
   address_.sin_family = AF_INET;
   SetAddress("");
   SetPort(DEFAULT_PORT);
 
-  return 0;
+  return fd_;
 }
 
 bool Socket::IsOpen() const
@@ -44,7 +48,7 @@ bool Socket::IsOpen() const
 void Socket::Close()
 {
   if (IsOpen()) {
-    close(fd_);
+    fj_close_socket(fd_);
   }
 }
 
@@ -74,15 +78,17 @@ int Socket::GetFileDescriptor() const
   return fd_;
 }
 
-void Socket::SetNoDelay()
+int Socket::SetNoDelay()
 {
   int enable = 1;
-  const int err = setsockopt(fd_, IPPROTO_TCP, TCP_NODELAY,
+  const int result = setsockopt(fd_, IPPROTO_TCP, TCP_NODELAY,
       reinterpret_cast<char *>(&enable), sizeof(enable));
 
-  if (err == -1) {
-    // TODO ERROR HANDLING
+  if (result == FJ_SOCKET_ERROR) {
+    return -1;
   }
+
+  return 0;
 }
 
 void Socket::SetAddress(const std::string &address)
@@ -101,38 +107,57 @@ void Socket::SetPort(int port)
 
 int Socket::Connect()
 {
-  Open();
+  const int fd = Open();
+  if (fd == -1) {
+    return -1;
+  }
 
   len_ = sizeof(address_);
-  const int err = connect(fd_, get_sockaddr(&address_), len_);
-  if (err) {
-    // TODO ERROR HANDLING
+  const int result = connect(fd_, get_sockaddr(&address_), len_);
+  if (result == FJ_SOCKET_ERROR) {
+    return -1;
   }
-  return err;
+
+  return fd_;
 }
 
 int Socket::Bind()
 {
-  Open();
+  const int fd = Open();
+  if (fd == -1) {
+    return -1;
+  }
 
   len_ = sizeof(address_);
-  const int err = bind(fd_, get_sockaddr(&address_), len_);
-  // TODO error handling
-  return err;
+  const int result = bind(fd_, get_sockaddr(&address_), len_);
+  if (result == FJ_SOCKET_ERROR) {
+    return -1;
+  }
+
+  return fd_;
 }
 
-void Socket::Listen()
+int Socket::Listen()
 {
-  listen(fd_, SOMAXCONN);
-}
+  const int result = listen(fd_, SOMAXCONN);
+  if (result == FJ_SOCKET_ERROR) {
+    return -1;
+  }
 
-int Socket::Accept(Socket &accepted)
-{
-  accepted.fd_ = accept(fd_, get_sockaddr(&accepted.address_), &accepted.len_);
   return 0;
 }
 
-int Socket::AcceptOrTimeout(Socket &accepted, int sec, int micro_sec)
+socket_id Socket::Accept(Socket &accepted)
+{
+  accepted.fd_ = accept(fd_, get_sockaddr(&accepted.address_), &accepted.len_);
+  if (accepted.fd_ == FJ_INVALID_SOCKET) {
+    return SOCKET_ID_INVALID;
+  }
+
+  return accepted.fd_;
+}
+
+socket_id Socket::AcceptOrTimeout(Socket &accepted, int sec, int micro_sec)
 {
   struct timeval timeout;
   timeout.tv_sec = sec;
@@ -143,21 +168,19 @@ int Socket::AcceptOrTimeout(Socket &accepted, int sec, int micro_sec)
   FD_SET(fd_, &read_mask);
 
   const int result = select(fd_ + 1, &read_mask, NULL, NULL, &timeout);
-  if (result == -1) {
+  if (result == FJ_SOCKET_ERROR) {
     // error
-    return -1;
+    return SOCKET_ID_INVALID;
   }
   else if (result == 0) {
     // time out
-    return 0;
+    return SOCKET_ID_TIMEOUT;
   }
 
   if (FD_ISSET(fd_, &read_mask)) {
-    Accept(accepted);
-    return fd_;
+    return Accept(accepted);
   } else {
-    // shouldn't be here
-    return -1;
+    return SOCKET_ID_INVALID;
   }
 }
 
