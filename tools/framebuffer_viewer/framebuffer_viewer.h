@@ -15,6 +15,9 @@
 
 namespace fj {
 
+typedef void (*WindowResizeRequest)(void *window, int x_image_res, int y_image_res);
+typedef void (*WindowChangeTitleRequest)(void *window, const char *title);
+
 enum MouseButton {
   MOUSE_BUTTON_NONE = 0,
   MOUSE_BUTTON_LEFT,
@@ -43,7 +46,14 @@ public:
 
   int LoadImage(const std::string &filename);
 
-  void GetImageSize(int databox[4], int viewbox[4], int *nchannels) const;
+  void GetImageSize(int viewbox[4], int databox[4], int *nchannels) const;
+
+  void SetWindowResizeRequest(
+      void *window_object,
+      WindowResizeRequest resize_window);
+  void SetWindowChangeTitleRequest(
+      void *window_object,
+      WindowChangeTitleRequest change_window_title);
 
 private:
   void set_to_home_position();
@@ -78,6 +88,11 @@ private:
 
   int tilesize_;
   int draw_tile_;
+
+  //TODO make class for managing callbacks
+  void *window_object_;
+  WindowResizeRequest resize_window_;
+  WindowChangeTitleRequest change_window_title_;
 
   //TODO make class for icp/status management
   Socket server_;

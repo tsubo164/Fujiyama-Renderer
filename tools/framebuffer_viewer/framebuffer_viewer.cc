@@ -30,6 +30,9 @@ FrameBufferViewer::FrameBufferViewer() :
     pressbutton_(MOUSE_BUTTON_NONE),
     tilesize_(0),
     draw_tile_(1),
+    window_object_(NULL),
+    resize_window_(NULL),
+    change_window_title_(NULL),
     server_(),
     state_(STATE_NONE),
     tile_status_(),
@@ -239,23 +242,6 @@ void FrameBufferViewer::PressKey(unsigned char key, int mouse_x, int mouse_y)
     } else {
       StartListening();
     }
-#if 0
-    is_listening_ = !is_listening_;
-    {
-      FrameBuffer tmp;
-      tmp.Resize(2, 2, 4);
-      for (int y = 0; y < tmp.GetHeight(); y++) {
-        for (int x = 0; x < tmp.GetWidth(); x++) {
-          const Color4 color((x + y)%3 == 0, (x + y)%3 == 1, (x + y)%3 == 2, 0);
-          tmp.SetColor(x, y, color);
-        }
-      }
-
-      Copy(fb_, tmp, -1, 1);
-    }
-    setup_image_card();
-    Draw();
-#endif
     break;
   case 'h':
     set_to_home_position();
@@ -294,13 +280,9 @@ void FrameBufferViewer::PressKey(unsigned char key, int mouse_x, int mouse_y)
     exit(EXIT_SUCCESS);
     break;
   case '\033': // ESC ASCII code
-    state_ = STATE_INTERRUPTED;
-    /*
-    frame_id_ = -1;
-    for (size_t i = 0; i < tile_status_.size(); i++) {
-      tile_status_[i] = TileStatus();
+    if (state_ == STATE_RENDERING) {
+      state_ = STATE_INTERRUPTED;
     }
-    */
     break;
   default:
     break;
@@ -319,6 +301,11 @@ void FrameBufferViewer::StartListening()
 
   state_ = STATE_READY;
   frame_id_ = -1;
+
+  if (change_window_title_ != NULL) {
+    std::string title("READY: listeing to renderer"); 
+    change_window_title_(window_object_, title.c_str());
+  }
 }
 
 void FrameBufferViewer::StopListening()
@@ -331,6 +318,11 @@ void FrameBufferViewer::StopListening()
 
   state_ = STATE_NONE;
   frame_id_ = -1;
+
+  if (change_window_title_ != NULL) {
+    std::string title("DISCONNECTED: 'l' to start listeing"); 
+    change_window_title_(window_object_, title.c_str());
+  }
 }
 
 bool FrameBufferViewer::IsListening() const
@@ -387,6 +379,17 @@ void FrameBufferViewer::Listen()
       tile_status_.clear();
       tile_status_.resize(message.tile_count);
       state_ = STATE_RENDERING;
+
+      if (resize_window_ != NULL) {
+        const int window_margin = 10;
+        const int new_window_size_x = viewbox_[2] - viewbox_[0] + 2 * window_margin;
+        const int new_window_size_y = viewbox_[3] - viewbox_[1] + 2 * window_margin;
+        resize_window_(window_object_, new_window_size_x, new_window_size_y);
+      }
+      if (change_window_title_ != NULL) {
+        std::string title("RENDERING: ESC to stop rendering"); 
+        change_window_title_(window_object_, title.c_str());
+      }
       break;
 
     case MSG_RENDER_FRAME_DONE:
@@ -397,13 +400,22 @@ void FrameBufferViewer::Listen()
       }
       if (state_ == STATE_RENDERING) {
         state_ = STATE_READY;
+        if (change_window_title_ != NULL) {
+          std::string title("READY: listeing to renderer"); 
+          change_window_title_(window_object_, title.c_str());
+        }
       } else if (state_ == STATE_INTERRUPTED) {
         for (size_t i = 0; i < tile_status_.size(); i++) {
           tile_status_[i] = TileStatus();
         }
         state_ = STATE_ABORT;
+        if (change_window_title_ != NULL) {
+          std::string title("IMCOMPLETE: rendering terminated"); 
+          change_window_title_(window_object_, title.c_str());
+        }
       }
       frame_id_ = -1;
+
       break;
 
     case MSG_RENDER_TILE_START:
@@ -453,6 +465,10 @@ void FrameBufferViewer::Listen()
     }
 
     if (state_ == STATE_INTERRUPTED) {
+      if (change_window_title_ != NULL) {
+        std::string title("INTERRUPTED: aborting render process"); 
+        change_window_title_(window_object_, title.c_str());
+      }
       SendRenderFrameAbort(client, message.frame_id);
       // abort;
     }
@@ -513,14 +529,40 @@ int FrameBufferViewer::LoadImage(const std::string &filename)
 
   setup_image_card();
 
+  if (resize_window_ != NULL) {
+    resize_window_(
+        window_object_,
+        viewbox_[2] - viewbox_[0],
+        viewbox_[3] - viewbox_[1]);
+  }
+  if (change_window_title_ != NULL) {
+    change_window_title_(window_object_, filename_.c_str());
+  }
+
   return err;
 }
 
-void FrameBufferViewer::GetImageSize(int databox[4], int viewbox[4], int *nchannels) const
+void FrameBufferViewer::GetImageSize(int viewbox[4], int databox[4], int *nchannels) const
 {
-  BOX2_COPY(databox, databox_);
   BOX2_COPY(viewbox, viewbox_);
+  BOX2_COPY(databox, databox_);
   *nchannels = fb_.GetChannelCount();
+}
+
+void FrameBufferViewer::SetWindowResizeRequest(
+    void *window_object,
+    WindowResizeRequest resize_window)
+{
+  window_object_ = window_object;
+  resize_window_ = resize_window;
+}
+
+void FrameBufferViewer::SetWindowChangeTitleRequest(
+    void *window_object,
+    WindowChangeTitleRequest change_window_title)
+{
+  window_object_ = window_object;
+  change_window_title_ = change_window_title;
 }
 
 void FrameBufferViewer::set_to_home_position()
