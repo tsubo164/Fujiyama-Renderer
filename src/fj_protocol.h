@@ -26,6 +26,7 @@ public:
   Message();
   ~Message();
 
+  int32_t size;
   int32_t type;
   int32_t frame_id;
   int32_t xres;

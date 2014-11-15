@@ -318,6 +318,7 @@ void FrameBufferViewer::StartListening()
   is_listening_ = true;
 
   state_ = STATE_READY;
+  frame_id_ = -1;
 }
 
 void FrameBufferViewer::StopListening()
@@ -329,6 +330,7 @@ void FrameBufferViewer::StopListening()
   is_listening_ = false;
 
   state_ = STATE_NONE;
+  frame_id_ = -1;
 }
 
 bool FrameBufferViewer::IsListening() const

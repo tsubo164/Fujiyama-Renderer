@@ -6,93 +6,123 @@
 #include "fj_color.h"
 #include <iostream>
 
+#define CONVERT_MSG_RENDER_FRAME_START(CONV) do { \
+  CONV(0, size          ) \
+  CONV(1, type          ) \
+  CONV(2, frame_id      ) \
+  CONV(3, xres          ) \
+  CONV(4, yres          ) \
+  CONV(5, channel_count ) \
+  CONV(6, tile_count    ) \
+  } while(0)
+#define SIZEOF_RENDER_FRAME_START \
+       7
+
+#define CONVERT_MSG_RENDER_FRAME_DONE(CONV) \
+  CONV(0, size          ) \
+  CONV(1, type          ) \
+  CONV(2, frame_id      )
+#define SIZEOF_RENDER_FRAME_DONE \
+       3
+
+#define CONVERT_MSG_RENDER_TILE_START(CONV) do { \
+  CONV(0, size          ) \
+  CONV(1, type          ) \
+  CONV(2, frame_id      ) \
+  CONV(3, tile_id       ) \
+  CONV(4, xmin          ) \
+  CONV(5, ymin          ) \
+  CONV(6, xmax          ) \
+  CONV(7, ymax          ) \
+  } while(0)
+#define SIZEOF_RENDER_TILE_START \
+       8
+
+#define CONVERT_MSG_RENDER_TILE_DONE(CONV) do { \
+  CONV(0, size          ) \
+  CONV(1, type          ) \
+  CONV(2, frame_id      ) \
+  CONV(3, tile_id       ) \
+  CONV(4, xmin          ) \
+  CONV(5, ymin          ) \
+  CONV(6, xmax          ) \
+  CONV(7, ymax          ) \
+  CONV(8, channel_count ) \
+  } while(0)
+#define SIZEOF_RENDER_TILE_DONE \
+       9
+
+#define CONVERT_MSG_RENDER_FRAME_ABORT(CONV) \
+  CONV(0, size          ) \
+  CONV(1, type          ) \
+  CONV(2, frame_id      )
+#define SIZEOF_RENDER_FRAME_ABORT \
+       3
+
+#define MSG_TO_ARRAY(i,name) array[i] = name;
+#define ARRAY_TO_MSG(i,name) message.name = body[i];
+
 namespace fj {
 
 int SendRenderFrameStart(Socket &socket, int32_t frame_id,
     int xres, int yres, int channel_count, int tile_count)
 {
-  int32_t msg[7];
-
-  msg[0] = sizeof(msg) - sizeof(msg[0]);
-  msg[1] = MSG_RENDER_FRAME_START;
-  msg[2] = frame_id;
-  msg[3] = xres;
-  msg[4] = yres;
-  msg[5] = channel_count;
-  msg[6] = tile_count;
-
-  socket.Send(reinterpret_cast<char *>(msg), sizeof(msg));
+  int32_t array[SIZEOF_RENDER_FRAME_START];
+  const int32_t size = sizeof(array) - sizeof(array[0]);
+  const int32_t type = MSG_RENDER_FRAME_START;
+  CONVERT_MSG_RENDER_FRAME_START(MSG_TO_ARRAY);
+  socket.Send(reinterpret_cast<char *>(array), sizeof(array));
   return 0;
 }
 
 int SendRenderFrameDone(Socket &socket, int32_t frame_id)
 {
-  int32_t msg[3];
-
-  msg[0] = sizeof(msg) - sizeof(msg[0]);
-  msg[1] = MSG_RENDER_FRAME_DONE;
-  msg[2] = frame_id;
-
-  socket.Send(reinterpret_cast<char *>(msg), sizeof(msg));
+  int32_t array[SIZEOF_RENDER_FRAME_DONE];
+  const int32_t size = sizeof(array) - sizeof(array[0]);
+  const int32_t type = MSG_RENDER_FRAME_DONE;
+  CONVERT_MSG_RENDER_FRAME_DONE(MSG_TO_ARRAY)
+  socket.Send(reinterpret_cast<char *>(array), sizeof(array));
   return 0;
 }
 
 int SendRenderFrameAbort(Socket &socket, int32_t frame_id)
 {
-  int32_t msg[3];
-
-  msg[0] = sizeof(msg) - sizeof(msg[0]);
-  msg[1] = MSG_RENDER_FRAME_ABORT;
-  msg[2] = frame_id;
-
-  socket.Send(reinterpret_cast<char *>(msg), sizeof(msg));
+  int32_t array[SIZEOF_RENDER_FRAME_ABORT];
+  const int32_t size = sizeof(array) - sizeof(array[0]);
+  const int32_t type = MSG_RENDER_FRAME_ABORT;
+  CONVERT_MSG_RENDER_FRAME_ABORT(MSG_TO_ARRAY)
+  socket.Send(reinterpret_cast<char *>(array), sizeof(array));
   return 0;
 }
 
 int SendRenderTileStart(Socket &socket, int32_t frame_id,
     int tile_id, int xmin, int ymin, int xmax, int ymax)
 {
-  int32_t msg[8];
-
-  msg[0] = sizeof(msg) - sizeof(msg[0]);
-  msg[1] = MSG_RENDER_TILE_START;
-  msg[2] = frame_id;
-  msg[3] = tile_id;
-  msg[4] = xmin;
-  msg[5] = ymin;
-  msg[6] = xmax;
-  msg[7] = ymax;
-
-  const int err = socket.Send(reinterpret_cast<char *>(msg), sizeof(msg));
-  return err;
+  int32_t array[SIZEOF_RENDER_TILE_START];
+  const int32_t size = sizeof(array) - sizeof(array[0]);
+  const int32_t type = MSG_RENDER_TILE_START;
+  CONVERT_MSG_RENDER_TILE_START(MSG_TO_ARRAY);
+  socket.Send(reinterpret_cast<char *>(array), sizeof(array));
+  return 0;
 }
 
 int SendRenderTileDone(Socket &socket, int32_t frame_id,
     int tile_id, int xmin, int ymin, int xmax, int ymax,
     const FrameBuffer &tile)
 {
-  int32_t msg[9];
-
-  msg[0] = sizeof(msg) - sizeof(msg[0]);
-  msg[1] = MSG_RENDER_TILE_DONE;
-  msg[2] = frame_id;
-  msg[3] = tile_id;
-  msg[4] = xmin;
-  msg[5] = ymin;
-  msg[6] = xmax;
-  msg[7] = ymax;
-  msg[8] = tile.GetChannelCount();
-
   const int32_t tile_size =
       sizeof(float) *
       tile.GetWidth() *
       tile.GetHeight() *
       tile.GetChannelCount();
-  msg[0] += tile_size;
+  const int32_t channel_count = tile.GetChannelCount();
 
-  int err = socket.Send(reinterpret_cast<char *>(msg), sizeof(msg));
+  int32_t array[SIZEOF_RENDER_TILE_DONE];
+  const int32_t size = sizeof(array) - sizeof(array[0]) + tile_size;
+  const int32_t type = MSG_RENDER_TILE_DONE;
+  CONVERT_MSG_RENDER_TILE_DONE(MSG_TO_ARRAY);
+  int err = socket.Send(reinterpret_cast<char *>(array), sizeof(array));
   err = socket.Send(reinterpret_cast<const char *>(tile.GetReadOnly(0, 0, 0)), tile_size);
-
   return err;
 }
 
@@ -107,7 +137,6 @@ Message::~Message()
 int ReceiveMessage(Socket &socket, Message &message, FrameBuffer &tile)
 {
   int32_t body[16] = {0};
-  // TODO NEED THIS?  std::vector<int32_t> body(16);
 
   // reading size of message
   int err = socket.Receive(reinterpret_cast<char *>(&body[0]), sizeof(body[0]));
@@ -132,19 +161,13 @@ int ReceiveMessage(Socket &socket, Message &message, FrameBuffer &tile)
 
   // special case
   if (type_of_msg == MSG_RENDER_TILE_DONE) {
-    err = socket.Receive(reinterpret_cast<char *>(&body[2]), 7 * sizeof(body[0]));
+    err = socket.Receive(reinterpret_cast<char *>(&body[2]),
+        (SIZEOF_RENDER_TILE_DONE - 2) * sizeof(body[0]));
     if (err == -1) {
       // TODO ERROR HANDLING
       return -1;
     }
-    message.type      = body[1];
-    message.frame_id  = body[2];
-    message.tile_id   = body[3];
-    message.xmin      = body[4];
-    message.ymin      = body[5];
-    message.xmax      = body[6];
-    message.ymax      = body[7];
-    message.channel_count = body[8];
+    CONVERT_MSG_RENDER_TILE_DONE(ARRAY_TO_MSG);
 
     tile.Resize(
         message.xmax - message.xmin,
@@ -176,52 +199,34 @@ int ReceiveMessage(Socket &socket, Message &message, FrameBuffer &tile)
   switch (type_of_msg) {
 
   case MSG_RENDER_FRAME_START:
-    if (size_of_msg != 6 * sizeof(body[0])) {
+    if (size_of_msg != (SIZEOF_RENDER_FRAME_START - 1) * sizeof(body[0])) {
       break;
     } else {
-      message.type          = body[1];
-      message.frame_id      = body[2];
-      message.xres          = body[3];
-      message.yres          = body[4];
-      message.channel_count = body[5];
-      message.tile_count    = body[6];
+      CONVERT_MSG_RENDER_FRAME_START(ARRAY_TO_MSG);
     }
     break;
 
   case MSG_RENDER_FRAME_DONE:
-    if (size_of_msg != 2 * sizeof(body[0])) {
+    if (size_of_msg != (SIZEOF_RENDER_FRAME_DONE - 1) * sizeof(body[0])) {
       break;
     } else {
-      message.type          = body[1];
-      message.frame_id      = body[2];
+      CONVERT_MSG_RENDER_FRAME_DONE(ARRAY_TO_MSG);
     }
     break;
 
   case MSG_RENDER_TILE_START:
-    if (size_of_msg != 7 * sizeof(body[0])) {
+    if (size_of_msg != (SIZEOF_RENDER_TILE_START - 1) * sizeof(body[0])) {
       break;
     } else {
-      message.type      = body[1];
-      message.frame_id  = body[2];
-      message.tile_id   = body[3];
-      message.xmin      = body[4];
-      message.ymin      = body[5];
-      message.xmax      = body[6];
-      message.ymax      = body[7];
+      CONVERT_MSG_RENDER_TILE_START(ARRAY_TO_MSG);
     }
     break;
 
   case MSG_RENDER_TILE_DONE:
-    if (size_of_msg != 7 * sizeof(body[0])) {
+    if (size_of_msg != (SIZEOF_RENDER_TILE_DONE - 1) * sizeof(body[0])) {
       break;
     } else {
-      message.type      = body[1];
-      message.frame_id  = body[2];
-      message.tile_id   = body[3];
-      message.xmin      = body[4];
-      message.ymin      = body[5];
-      message.xmax      = body[6];
-      message.ymax      = body[7];
+      CONVERT_MSG_RENDER_TILE_DONE(ARRAY_TO_MSG);
     }
     break;
 
@@ -272,11 +277,10 @@ int ReceiveReply(Socket &socket, Message &message)
   switch (type_of_msg) {
 
   case MSG_RENDER_FRAME_ABORT:
-    if (size_of_msg != 2 * sizeof(body[0])) {
+    if (size_of_msg != (SIZEOF_RENDER_FRAME_ABORT - 1) * sizeof(body[0])) {
       break;
     } else {
-      message.type          = body[1];
-      message.frame_id      = body[2];
+      CONVERT_MSG_RENDER_FRAME_ABORT(ARRAY_TO_MSG);
     }
     break;
   default:

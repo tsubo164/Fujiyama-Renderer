@@ -79,7 +79,7 @@ private:
   int tilesize_;
   int draw_tile_;
 
-  //TODO TEST
+  //TODO make class for icp/status management
   Socket server_;
   int state_;
   enum {
