@@ -9,8 +9,6 @@
 #include "fj_mipmap.h"
 #include "fj_box.h"
 
-#include "fj_color.h"
-
 #include "compatible_opengl.h"
 #include "load_images.h"
 
@@ -20,6 +18,7 @@
 
 namespace fj {
 
+static bool is_socket_ready = false;
 static void draw_tile_guide(int width, int height, int tilesize);
 
 FrameBufferViewer::FrameBufferViewer() :
@@ -45,6 +44,13 @@ FrameBufferViewer::FrameBufferViewer() :
 
 FrameBufferViewer::~FrameBufferViewer()
 {
+  if (is_socket_ready) {
+    const int err = SocketCleanup();
+    if (err) {
+      std::cerr << "SocketCleanup() failed: " << SocketErrorMessage() << "\n\n";
+    }
+    is_socket_ready = false;
+  }
 }
 
 void FrameBufferViewer::Draw() const
@@ -293,6 +299,16 @@ void FrameBufferViewer::StartListening()
 {
   if (IsListening())
     return;
+
+  if (!is_socket_ready) {
+    const int err = SocketStartup();
+    if (err) {
+      std::cerr << "SocketStartup() failed: " << SocketErrorMessage() << "\n\n";
+      return;
+    } else {
+      is_socket_ready = true;
+    }
+  }
 
   server_.Open();
   server_.Bind();

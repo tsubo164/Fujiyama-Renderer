@@ -29,6 +29,9 @@
 
 namespace fj {
 
+static bool is_socket_ready = true;
+static int renderer_instance_count = 0;
+
 static int32_t generate_frame_id()
 {
   const unsigned int seed = static_cast<unsigned int>(clock());
@@ -98,6 +101,10 @@ static void init_frame_progress(FrameProgress *progress, const Tiler *tiler,
       y_filter_width);
 
   distribute_progress_iterations(progress, total_iteration_count);
+
+  if (!is_socket_ready) {
+    progress->report_to_viewer = false;
+  }
 }
 
 static Interrupt default_frame_start(void *data, const FrameInfo *info)
@@ -431,10 +438,27 @@ Renderer::Renderer()
         default_sample_done,
         default_tile_done2);
   }
+
+  if (renderer_instance_count == 0) {
+    const int err = SocketStartup();
+    if (err) {
+      std::cerr << "SocketStartup() failed: " << SocketErrorMessage() << "\n\n";
+    }
+    is_socket_ready = false;
+  }
+  renderer_instance_count++;
 }
 
 Renderer::~Renderer()
 {
+  if (renderer_instance_count == 1) {
+    const int err = SocketCleanup();
+    if (err) {
+      std::cerr << "SocketCleanup() failed: " << SocketErrorMessage() << "\n\n";
+    }
+    is_socket_ready = false;
+  }
+  renderer_instance_count--;
 }
 
 void Renderer::SetResolution(int xres, int yres)

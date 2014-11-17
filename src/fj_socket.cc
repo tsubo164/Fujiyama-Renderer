@@ -5,11 +5,83 @@
 
 namespace fj {
 
+#if defined(FJ_WINDOWS)
+  // Windows
+  enum {
+    FJ_SHUTDOWN_READ        = SD_RECEIVE,
+    FJ_SHUTDOWN_WRITE       = SD_SEND,
+    FJ_SHUTDOWN_READ_WRITE  = SD_BOTH
+  };
+  enum {
+    FJ_SOCKET_ERROR         = SOCKET_ERROR,
+    FJ_INVALID_SOCKET       = INVALID_SOCKET
+  };
+  inline int close_socket(int fd)
+  {
+    return closesocket(fd);
+  }
+  inline const char *socket_error_message()
+  {
+    return WSAGetLastError();
+  }
+  inline int socket_start_up()
+  {
+    WSADATA wsad;
+    return WSAStartup(MAKEWORD(2, 0), &wsad);
+  }
+  inline int socket_clean_up()
+  {
+    return WSACleanup();
+  }
+#else
+  // MacOSX Linux
+  enum {
+    FJ_SHUTDOWN_READ       = SHUT_RD,
+    FJ_SHUTDOWN_WRITE      = SHUT_WR,
+    FJ_SHUTDOWN_READ_WRITE = SHUT_RDWR
+  };
+  enum {
+    FJ_SOCKET_ERROR         = -1,
+    FJ_INVALID_SOCKET       = -1
+  };
+  inline int close_socket(int fd)
+  {
+    return close(fd);
+  }
+  inline const char *socket_error_message()
+  {
+    return strerror(errno);
+  }
+  inline int socket_start_up()
+  {
+    return 0;
+  }
+  inline int socket_clean_up()
+  {
+    return 0;
+  }
+#endif
+
 const int DEFAULT_PORT = 50505;
 
 inline static struct sockaddr *get_sockaddr(struct sockaddr_in * addr_in)
 {
   return reinterpret_cast<struct sockaddr *>(addr_in);
+}
+
+int SocketStartup()
+{
+  return socket_start_up();
+}
+
+int SocketCleanup()
+{
+  return socket_clean_up();
+}
+
+const char *SocketErrorMessage()
+{
+  return socket_error_message();
 }
 
 Socket::Socket() :
@@ -48,7 +120,7 @@ bool Socket::IsOpen() const
 void Socket::Close()
 {
   if (IsOpen()) {
-    fj_close_socket(fd_);
+    close_socket(fd_);
   }
 }
 

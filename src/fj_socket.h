@@ -5,23 +5,13 @@
 #define FJ_SOCKET_H
 
 #include "fj_compatibility.h"
+#include <string>
 
 #if defined(FJ_WINDOWS)
   // Windows
   #include <winsock2.h>
-  typedef SOCKET socket_id;
-  #define FJ_SHUTDOWN_READ       SD_RECEIVE
-  #define FJ_SHUTDOWN_WRITE      SD_SEND
-  #define FJ_SHUTDOWN_READ_WRITE SD_BOTH
-  #define FJ_SOCKET_ERROR        SOCKET_ERROR
-  #define FJ_INVALID_SOCKET      INVALID_SOCKET
-  inline int fj_close_socket(int fd)
-  {
-    return closesocket(fd);
-  }
-  inline const char *fj_socket_error_message()
-  {
-    return WSAGetLastError();
+  namespace fj {
+    typedef SOCKET socket_id;
   }
 #else
   // MacOSX Linux
@@ -33,30 +23,21 @@
   #include <unistd.h>
   #include <cstring>
   #include <cerrno>
-  typedef int socket_id;
-  #define FJ_SHUTDOWN_READ       SHUT_RD
-  #define FJ_SHUTDOWN_WRITE      SHUT_WR
-  #define FJ_SHUTDOWN_READ_WRITE SHUT_RDWR
-  #define FJ_SOCKET_ERROR        -1
-  #define FJ_INVALID_SOCKET      -1
-  inline int fj_close_socket(int fd)
-  {
-    return close(fd);
-  }
-  inline const char *fj_socket_error_message()
-  {
-    return strerror(errno);
+  namespace fj {
+    typedef int socket_id;
   }
 #endif
 
-#include <string>
+namespace fj {
 
 enum SocketID {
   SOCKET_ID_INVALID = -1,
   SOCKET_ID_TIMEOUT = 0
 };
 
-namespace fj {
+int SocketStartup();
+int SocketCleanup();
+const char *SocketErrorMessage();
 
 class Socket {
 public:
