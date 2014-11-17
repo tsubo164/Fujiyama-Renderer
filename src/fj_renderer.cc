@@ -185,6 +185,7 @@ static Interrupt default_frame_start2(void *data, const FrameInfo *info)
 
   if (fp->report_to_viewer) {
     Socket socket;
+    socket.Open();
     socket.SetAddress("127.0.0.1");
 
     const int result = socket.Connect();
@@ -237,6 +238,7 @@ static Interrupt default_frame_done2(void *data, const FrameInfo *info)
 
   if (fp->report_to_viewer) {
     Socket socket;
+    socket.Open();
     socket.SetAddress("127.0.0.1");
 
     const int result = socket.Connect();
@@ -270,6 +272,7 @@ static Interrupt default_tile_start2(void *data, const TileInfo *info)
   for (i = 0; i < MAX_RETRY; i++) {
     int err = 0;
     Socket socket;
+    socket.Open();
     socket.SetAddress("127.0.0.1");
 
     const int result = socket.Connect();
@@ -350,6 +353,7 @@ static Interrupt default_tile_done2(void *data, const TileInfo *info)
   for (i = 0; i < MAX_RETRY; i++) {
     int err = 0;
     Socket socket;
+    socket.Open();
     socket.SetAddress("127.0.0.1");
 
     const int result = socket.Connect();
