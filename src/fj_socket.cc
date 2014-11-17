@@ -18,7 +18,26 @@ namespace fj {
   }
   inline const char *socket_error_message()
   {
-    return WSAGetLastError();
+    static std::string message;
+
+    LPVOID lpMsgBuf = NULL;
+    FormatMessage( 
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+        FORMAT_MESSAGE_FROM_SYSTEM | 
+        FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        WSAGetLastError(),
+        0, // Default language
+        (LPTSTR) &lpMsgBuf,
+        0,
+        NULL 
+    );
+    // Process any inserts in lpMsgBuf.
+    message = (LPCTSTR) lpMsgBuf;
+    // Free the buffer.
+    LocalFree( lpMsgBuf );
+
+    return message.c_str();
   }
   inline int socket_start_up()
   {

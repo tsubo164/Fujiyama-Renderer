@@ -19,6 +19,12 @@
     typedef SOCKET socket_id;
     typedef int socket_length;
   }
+  #ifdef max
+    #undef max
+  #endif
+  #ifdef min
+    #undef min
+  #endif
 #else
   // MacOSX Linux
   #include <sys/socket.h>
@@ -42,11 +48,11 @@
 
 namespace fj {
 
-int SocketStartup();
-int SocketCleanup();
-const char *SocketErrorMessage();
+FJ_API int SocketStartup();
+FJ_API int SocketCleanup();
+FJ_API const char *SocketErrorMessage();
 
-class Socket {
+class FJ_API Socket {
 public:
   Socket();
   // Closes socket if opened

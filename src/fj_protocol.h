@@ -21,7 +21,7 @@ enum {
   MSG_RENDER_TILE_DONE
 };
 
-class Message {
+class FJ_API Message {
 public:
   Message();
   ~Message();
@@ -43,24 +43,24 @@ public:
 public:
 };
 
-int SendRenderFrameStart(Socket &socket, int32_t frame_id,
+FJ_API int SendRenderFrameStart(Socket &socket, int32_t frame_id,
     int xres, int yres, int channel_count, int tile_count);
 
-int SendRenderFrameDone(Socket &socket, int32_t frame_id);
+FJ_API int SendRenderFrameDone(Socket &socket, int32_t frame_id);
 
-int SendRenderFrameAbort(Socket &socket, int32_t frame_id);
+FJ_API int SendRenderFrameAbort(Socket &socket, int32_t frame_id);
 
-int SendRenderTileStart(Socket &socket, int32_t frame_id,
+FJ_API int SendRenderTileStart(Socket &socket, int32_t frame_id,
     int tile_id, int xmin, int ymin, int xmax, int ymax);
 
-int SendRenderTileDone(Socket &socket, int32_t frame_id,
+FJ_API int SendRenderTileDone(Socket &socket, int32_t frame_id,
     int tile_id, int xmin, int ymin, int xmax, int ymax,
     const FrameBuffer &tile);
 
-int ReceiveMessage(Socket &socket, Message &message, FrameBuffer &tile);
-int ReceiveEOF(Socket &socket);
+FJ_API int ReceiveMessage(Socket &socket, Message &message, FrameBuffer &tile);
+FJ_API int ReceiveEOF(Socket &socket);
 
-int ReceiveReply(Socket &socket, Message &message);
+FJ_API int ReceiveReply(Socket &socket, Message &message);
 
 } // namespace xxx
 

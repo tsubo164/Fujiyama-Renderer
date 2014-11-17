@@ -75,7 +75,7 @@ private:
   int nchannels_;
 };
 
-void Copy(FrameBuffer &dst, const FrameBuffer &src,
+FJ_API void Copy(FrameBuffer &dst, const FrameBuffer &src,
     int src_offsetx, int src_offsety);
 
 } // namespace xxx
