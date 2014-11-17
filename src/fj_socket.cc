@@ -12,10 +12,6 @@ namespace fj {
     FJ_SHUTDOWN_WRITE       = SD_SEND,
     FJ_SHUTDOWN_READ_WRITE  = SD_BOTH
   };
-  enum {
-    FJ_SOCKET_ERROR         = SOCKET_ERROR,
-    FJ_INVALID_SOCKET       = INVALID_SOCKET
-  };
   inline int close_socket(int fd)
   {
     return closesocket(fd);
@@ -39,10 +35,6 @@ namespace fj {
     FJ_SHUTDOWN_READ       = SHUT_RD,
     FJ_SHUTDOWN_WRITE      = SHUT_WR,
     FJ_SHUTDOWN_READ_WRITE = SHUT_RDWR
-  };
-  enum {
-    FJ_SOCKET_ERROR         = -1,
-    FJ_INVALID_SOCKET       = -1
   };
   inline int close_socket(int fd)
   {
@@ -85,7 +77,7 @@ const char *SocketErrorMessage()
 }
 
 Socket::Socket() :
-    fd_(FJ_INVALID_SOCKET), len_(sizeof(address_)), address_()
+    fd_(FJ_SOCKET_INVALID), len_(sizeof(address_)), address_()
 {
 }
 
@@ -101,8 +93,8 @@ socket_id Socket::Open()
   }
 
   fd_ = socket(AF_INET, SOCK_STREAM, 0);
-  if (fd_ == FJ_INVALID_SOCKET) {
-    return SOCKET_ID_INVALID;
+  if (fd_ == FJ_SOCKET_INVALID) {
+    return FJ_SOCKET_INVALID;
   }
 
   address_.sin_family = AF_INET;
@@ -114,7 +106,7 @@ socket_id Socket::Open()
 
 bool Socket::IsOpen() const
 {
-  return fd_ > 2; // stderr
+  return fd_ != FJ_SOCKET_INVALID; // stderr
 }
 
 void Socket::Close()
@@ -180,7 +172,7 @@ void Socket::SetPort(int port)
 int Socket::Connect()
 {
   const int fd = Open();
-  if (fd == -1) {
+  if (fd == FJ_SOCKET_INVALID) {
     return -1;
   }
 
@@ -196,7 +188,7 @@ int Socket::Connect()
 int Socket::Bind()
 {
   const int fd = Open();
-  if (fd == -1) {
+  if (fd == FJ_SOCKET_INVALID) {
     return -1;
   }
 
@@ -222,8 +214,8 @@ int Socket::Listen()
 socket_id Socket::Accept(Socket &accepted)
 {
   accepted.fd_ = accept(fd_, get_sockaddr(&accepted.address_), &accepted.len_);
-  if (accepted.fd_ == FJ_INVALID_SOCKET) {
-    return SOCKET_ID_INVALID;
+  if (accepted.fd_ == FJ_SOCKET_INVALID) {
+    return FJ_SOCKET_INVALID;
   }
 
   return accepted.fd_;
@@ -242,17 +234,17 @@ socket_id Socket::AcceptOrTimeout(Socket &accepted, int sec, int micro_sec)
   const int result = select(fd_ + 1, &read_mask, NULL, NULL, &timeout);
   if (result == FJ_SOCKET_ERROR) {
     // error
-    return SOCKET_ID_INVALID;
+    return FJ_SOCKET_INVALID;
   }
   else if (result == 0) {
     // time out
-    return SOCKET_ID_TIMEOUT;
+    return FJ_SOCKET_TIMEOUT;
   }
 
   if (FD_ISSET(fd_, &read_mask)) {
     return Accept(accepted);
   } else {
-    return SOCKET_ID_INVALID;
+    return FJ_SOCKET_INVALID;
   }
 }
 

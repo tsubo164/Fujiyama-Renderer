@@ -11,7 +11,13 @@
   // Windows
   #include <winsock2.h>
   namespace fj {
+    enum {
+      FJ_SOCKET_TIMEOUT = 0,
+      FJ_SOCKET_ERROR   = SOCKET_ERROR,
+      FJ_SOCKET_INVALID = INVALID_SOCKET
+    };
     typedef SOCKET socket_id;
+    typedef int socket_length;
   }
 #else
   // MacOSX Linux
@@ -24,16 +30,17 @@
   #include <cstring>
   #include <cerrno>
   namespace fj {
+    enum {
+      FJ_SOCKET_TIMEOUT = 0,
+      FJ_SOCKET_ERROR   = -1,
+      FJ_SOCKET_INVALID = -1
+    };
     typedef int socket_id;
+    typedef socklen_t socket_length;
   }
 #endif
 
 namespace fj {
-
-enum SocketID {
-  SOCKET_ID_INVALID = -1,
-  SOCKET_ID_TIMEOUT = 0
-};
 
 int SocketStartup();
 int SocketCleanup();
@@ -72,7 +79,7 @@ public:
 
 private:
   socket_id fd_;
-  socklen_t len_;
+  socket_length len_;
   struct sockaddr_in address_;
 };
 
