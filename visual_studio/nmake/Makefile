@@ -108,6 +108,7 @@ libscene_dll_obj = \
   ..\..\src\fj_procedure.obj \
   ..\..\src\fj_progress.obj \
   ..\..\src\fj_property.obj \
+  ..\..\src\fj_protocol.obj \
   ..\..\src\fj_random.obj \
   ..\..\src\fj_rectangle.obj \
   ..\..\src\fj_renderer.obj \
@@ -116,6 +117,7 @@ libscene_dll_obj = \
   ..\..\src\fj_scene_interface.obj \
   ..\..\src\fj_shader.obj \
   ..\..\src\fj_shading.obj \
+  ..\..\src\fj_socket.obj \
   ..\..\src\fj_texture.obj \
   ..\..\src\fj_tiler.obj \
   ..\..\src\fj_timer.obj \
@@ -225,6 +227,9 @@ libscene_dll_obj = \
 ..\..\src\fj_property.obj : ..\..\src\fj_property.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_property.cc
 
+..\..\src\fj_protocol.obj : ..\..\src\fj_protocol.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_protocol.cc
+
 ..\..\src\fj_random.obj : ..\..\src\fj_random.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_random.cc
 
@@ -248,6 +253,9 @@ libscene_dll_obj = \
 
 ..\..\src\fj_shading.obj : ..\..\src\fj_shading.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_shading.cc
+
+..\..\src\fj_socket.obj : ..\..\src\fj_socket.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_socket.cc
 
 ..\..\src\fj_texture.obj : ..\..\src\fj_texture.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_texture.cc
@@ -278,7 +286,7 @@ libscene_dll_obj = \
 
 $(libscene_dll) : $(libscene_dll_obj)
 	@echo libscene.dll
-	@$(LD) $(LDFLAGS) /out:$@ /DLL  $(libscene_dll_obj)
+	@$(LD) $(LDFLAGS) /out:$@ /DLL ws2_32.lib $(libscene_dll_obj)
 
 libscene_dll_lib = $(out_dir)\libscene.lib
 libscene_dll_exp = $(out_dir)\libscene.exp
@@ -467,7 +475,7 @@ fbview_exe_obj = \
 
 $(fbview_exe) : $(fbview_exe_obj)
 	@echo fbview.exe
-	@$(LD) $(LDFLAGS) /out:$@  libscene.lib $(fbview_exe_obj)
+	@$(LD) $(LDFLAGS) /out:$@  libscene.lib ws2_32.lib $(fbview_exe_obj)
 
 #===============================================================================
 hdr2mip_exe_obj = \

@@ -57,7 +57,7 @@ target_list = [
 	'source_list':        glob(top_dir + '/src/*.cc'),
 	'additional_cflags':  '/D "FJ_DLL_EXPORT"',
 	'additional_ldflags': '/DLL',
-	'additional_libs':    '',
+	'additional_libs':    'ws2_32.lib',
 },
 # sample
 {
@@ -152,7 +152,7 @@ target_list = [
 	'source_list':        glob(top_dir + '/tools/framebuffer_viewer/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '',
-	'additional_libs':    'libscene.lib',
+	'additional_libs':    'libscene.lib ws2_32.lib',
 },
 {
 	'name':               'hdr2mip.exe',
