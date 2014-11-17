@@ -29,7 +29,7 @@
 
 namespace fj {
 
-static bool is_socket_ready = true;
+static bool is_socket_ready = false;
 static int renderer_instance_count = 0;
 
 static int32_t generate_frame_id()
@@ -443,8 +443,10 @@ Renderer::Renderer()
     const int err = SocketStartup();
     if (err) {
       std::cerr << "SocketStartup() failed: " << SocketErrorMessage() << "\n\n";
+      is_socket_ready = false;
+    } else {
+      is_socket_ready = true;
     }
-    is_socket_ready = false;
   }
   renderer_instance_count++;
 }
@@ -455,8 +457,10 @@ Renderer::~Renderer()
     const int err = SocketCleanup();
     if (err) {
       std::cerr << "SocketCleanup() failed: " << SocketErrorMessage() << "\n\n";
+      is_socket_ready = true;
+    } else {
+      is_socket_ready = false;
     }
-    is_socket_ready = false;
   }
   renderer_instance_count--;
 }
