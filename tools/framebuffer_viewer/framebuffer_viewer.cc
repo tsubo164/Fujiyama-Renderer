@@ -426,7 +426,7 @@ void FrameBufferViewer::Listen()
         }
         state_ = STATE_ABORT;
         if (change_window_title_ != NULL) {
-          std::string title("IMCOMPLETE: rendering terminated"); 
+          std::string title("INCOMPLETE: rendering terminated"); 
           change_window_title_(window_object_, title.c_str());
         }
       }

@@ -21,6 +21,7 @@ designed to handle production image rendering.
 
 * Rendering
   + Multi-threaded rendering - dynamic assignement of tile rendering per theread
+  + Rendering preview - fbview shows rendering progress
   + Region rendering - accelerates distribution rendering pipeline
   + Tile based rendering
 

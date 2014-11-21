@@ -1,0 +1,43 @@
+Fujiyama Renderer v0.2.9(Alpha) Release Notes
+=============================================
+
+New features since v0.2.8
+-------------------------
+ * fbview now can show rendering progress by displaying tiles that renderer
+   finished rendering. In order for fbview to receive image data from renderer,
+   run this,
+
+     $ fbview --listen
+  
+   This command starts fbview in listening mode. When fbview is listening
+   (to renderer), it receives images data from renderer. If fbview is
+   already opened, then you can press 'l' to turn listening mode on/off.
+
+   To terminate render process from fbview, press 'ESC' key. It will wait for
+   all ongoing tiles are done. Note that if you terminate render process
+   by typing Ctrl + C in your shell, then renderer stop rendering without
+   notifying fbview. After this, you can recover by hitting 'l' TWICE on fbview.
+
+   The broken line along image indicates the status of the fbview.
+     > gray   - listening mode off
+     > blue   - listening mode on, ready to receive data from renderer
+     > green  - listening mode on, in progress of rendering
+	 > yellow - terminating render process, waiting for all ongoing tiles are done
+	 > red    - incomplete render process, terminated by ESC key
+
+ * Since fbview and renderer communicate with each other using TCP/IP,
+   you need to have propper settings for firewall.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Mesh primitive group
+ * Global illumination
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support
