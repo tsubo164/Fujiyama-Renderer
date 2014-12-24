@@ -39,8 +39,8 @@ public:
   int ReadHeader();
   void ReadAttributeData();
 
-  int GetVertexCount() const;
-  int GetVertexAttributeCount() const;
+  int GetPointCount() const;
+  int GetPointAttributeCount() const;
   int GetFaceCount() const;
   int GetFaceAttributeCount() const;
 
@@ -69,12 +69,12 @@ public:
   void Close();
   bool Fail() const;
 
-  void SetVertexCount(int count);
-  void SetVertexPosition(const Vector *position);
-  void SetVertexNormal(const Vector *normal);
-  void SetVertexColor(const Color *color);
-  void SetVertexTexture(const TexCoord *texcoord);
-  void SetVertexVelocity(const Vector *vel);
+  void SetPointCount(int count);
+  void SetPointPosition(const Vector *position);
+  void SetPointNormal(const Vector *normal);
+  void SetPointColor(const Color *color);
+  void SetPointTexture(const TexCoord *texcoord);
+  void SetPointVelocity(const Vector *vel);
   void SetFaceCount(int count);
   void SetFaceIndex3(const Index3 *index);
   void SetFaceGroupID(const int *id);

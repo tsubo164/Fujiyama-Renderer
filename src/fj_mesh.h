@@ -23,41 +23,41 @@ public:
   Mesh();
   virtual ~Mesh();
 
-  int GetVertexCount() const;
+  int GetPointCount() const;
   int GetFaceCount() const;
-  void SetVertexCount(int count);
+  void SetPointCount(int count);
   void SetFaceCount(int count);
   const Box &GetBounds() const;
 
-  void AddVertexPosition();
-  void AddVertexNormal();
-  void AddVertexColor();
-  void AddVertexTexture();
-  void AddVertexVelocity();
+  void AddPointPosition();
+  void AddPointNormal();
+  void AddPointColor();
+  void AddPointTexture();
+  void AddPointVelocity();
   void AddFaceIndices();
   void AddFaceGroupID();
 
-  Vector   GetVertexPosition(int idx) const;
-  Vector   GetVertexNormal(int idx) const;
-  Color    GetVertexColor(int idx) const;
-  TexCoord GetVertexTexture(int idx) const;
-  Vector   GetVertexVelocity(int idx) const;
+  Vector   GetPointPosition(int idx) const;
+  Vector   GetPointNormal(int idx) const;
+  Color    GetPointColor(int idx) const;
+  TexCoord GetPointTexture(int idx) const;
+  Vector   GetPointVelocity(int idx) const;
   Index3   GetFaceIndices(int idx) const;
   int      GetFaceGroupID(int idx) const;
 
-  void SetVertexPosition(int idx, const Vector &value);
-  void SetVertexNormal(int idx, const Vector &value);
-  void SetVertexColor(int idx, const Color &value);
-  void SetVertexTexture(int idx, const TexCoord &value);
-  void SetVertexVelocity(int idx, const Vector &value);
+  void SetPointPosition(int idx, const Vector &value);
+  void SetPointNormal(int idx, const Vector &value);
+  void SetPointColor(int idx, const Color &value);
+  void SetPointTexture(int idx, const TexCoord &value);
+  void SetPointVelocity(int idx, const Vector &value);
   void SetFaceIndices(int idx, const Index3 &value);
   void SetFaceGroupID(int idx, const int &value);
 
-  bool HasVertexPosition() const;
-  bool HasVertexNormal() const;
-  bool HasVertexColor() const;
-  bool HasVertexTexture() const;
-  bool HasVertexVelocity() const;
+  bool HasPointPosition() const;
+  bool HasPointNormal() const;
+  bool HasPointColor() const;
+  bool HasPointTexture() const;
+  bool HasPointVelocity() const;
   bool HasFaceIndices() const;
   bool HasFaceGroupID() const;
 
@@ -90,9 +90,9 @@ private:
   Box bounds_;
 };
 
-FJ_API void MshGetFaceVertexPosition(const Mesh *mesh, int face_index,
+FJ_API void MshGetFacePointPosition(const Mesh *mesh, int face_index,
     Vector *P0, Vector *P1, Vector *P2);
-FJ_API void MshGetFaceVertexNormal(const Mesh *mesh, int face_index,
+FJ_API void MshGetFacePointNormal(const Mesh *mesh, int face_index,
     Vector *N0, Vector *N1, Vector *N2);
 
 } // namespace xxx

@@ -81,7 +81,7 @@ int main(int argc, const char **argv)
       double area = 0;
       int npt_on_face = 0;
 
-      MshGetFaceVertexPosition(&mesh, i, &P0, &P1, &P2);
+      MshGetFacePointPosition(&mesh, i, &P0, &P1, &P2);
 
       center.x = (P0.x + P1.x + P2.x) / 3;
       center.y = (P0.y + P1.y + P2.y) / 3;
@@ -122,8 +122,8 @@ int main(int argc, const char **argv)
       const int npt_on_face = point_count_list[i];
       int j;
 
-      MshGetFaceVertexPosition(&mesh, i, &P0, &P1, &P2);
-      MshGetFaceVertexNormal(&mesh, i, &N0, &N1, &N2);
+      MshGetFacePointPosition(&mesh, i, &P0, &P1, &P2);
+      MshGetFacePointNormal(&mesh, i, &N0, &N1, &N2);
 
       for (j = 0; j < npt_on_face; j++) {
         Vector normal;

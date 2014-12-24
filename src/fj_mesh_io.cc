@@ -81,7 +81,7 @@ int MeshInput::ReadHeader()
   read_(file_, &nfaces_,      1);
   read_(file_, &nface_attrs_, 1);
 
-  const int TOTAL_ATTR_COUNT = GetVertexAttributeCount() + GetFaceAttributeCount();
+  const int TOTAL_ATTR_COUNT = GetPointAttributeCount() + GetFaceAttributeCount();
   attr_names_.resize(TOTAL_ATTR_COUNT, "");
 
   for (int i = 0; i < TOTAL_ATTR_COUNT; i++) {
@@ -110,12 +110,12 @@ void MeshInput::ReadAttributeData()
   read_(file_, &data_buffer_[0], datasize);
 }
 
-int MeshInput::GetVertexCount() const
+int MeshInput::GetPointCount() const
 {
   return nverts_;
 }
 
-int MeshInput::GetVertexAttributeCount() const
+int MeshInput::GetPointAttributeCount() const
 {
   return nvert_attrs_;
 }
@@ -191,7 +191,7 @@ bool MeshOutput::Fail() const
   return file_.fail();
 }
 
-void MeshOutput::SetVertexCount(int count)
+void MeshOutput::SetPointCount(int count)
 {
   if (count < 0) {
     return;
@@ -199,7 +199,7 @@ void MeshOutput::SetVertexCount(int count)
   nverts_ = count;
 }
 
-void MeshOutput::SetVertexPosition(const Vector *position)
+void MeshOutput::SetPointPosition(const Vector *position)
 {
   if (P_ == NULL && position != NULL) {
     nvert_attrs_++;
@@ -207,7 +207,7 @@ void MeshOutput::SetVertexPosition(const Vector *position)
   P_ = position;
 }
 
-void MeshOutput::SetVertexNormal(const Vector *normal)
+void MeshOutput::SetPointNormal(const Vector *normal)
 {
   if (N_ == NULL && normal != NULL) {
     nvert_attrs_++;
@@ -215,7 +215,7 @@ void MeshOutput::SetVertexNormal(const Vector *normal)
   N_ = normal;
 }
 
-void MeshOutput::SetVertexColor(const Color *color)
+void MeshOutput::SetPointColor(const Color *color)
 {
   if (Cd_ == NULL && color != NULL) {
     nvert_attrs_++;
@@ -223,7 +223,7 @@ void MeshOutput::SetVertexColor(const Color *color)
   Cd_ = color;
 }
 
-void MeshOutput::SetVertexTexture(const TexCoord *texcoord)
+void MeshOutput::SetPointTexture(const TexCoord *texcoord)
 {
   if (uv_ == NULL && texcoord != NULL) {
     nvert_attrs_++;
@@ -231,7 +231,7 @@ void MeshOutput::SetVertexTexture(const TexCoord *texcoord)
   uv_ = texcoord;
 }
 
-void MeshOutput::SetVertexVelocity(const Vector *vel)
+void MeshOutput::SetPointVelocity(const Vector *vel)
 {
   if (velocity_ == NULL && vel != NULL) {
     nvert_attrs_++;
@@ -427,73 +427,73 @@ int MshLoadFile(Mesh *mesh, const char *filename)
     return -1;
   }
 
-  const int TOTAL_ATTR_COUNT = in.GetVertexAttributeCount() + in.GetFaceAttributeCount();
+  const int TOTAL_ATTR_COUNT = in.GetPointAttributeCount() + in.GetFaceAttributeCount();
 
   for (int i = 0; i < TOTAL_ATTR_COUNT; i++) {
     const std::string attrname = in.GetAttributeName(i);
 
     if (attrname == "P") {
-      mesh->SetVertexCount(in.GetVertexCount());
-      mesh->AddVertexPosition();
+      mesh->SetPointCount(in.GetPointCount());
+      mesh->AddPointPosition();
       in.ReadAttributeData();
-      for (int j = 0; j < in.GetVertexCount(); j++) {
+      for (int j = 0; j < in.GetPointCount(); j++) {
         const double *data = (const double *) in.GetDataBuffer();
         Vector P;
         P.x = data[3*j + 0];
         P.y = data[3*j + 1];
         P.z = data[3*j + 2];
-        mesh->SetVertexPosition(j, P);
+        mesh->SetPointPosition(j, P);
       }
     }
     else if (attrname == "N") {
-      mesh->SetVertexCount(in.GetVertexCount());
-      mesh->AddVertexNormal();
+      mesh->SetPointCount(in.GetPointCount());
+      mesh->AddPointNormal();
       in.ReadAttributeData();
-      for (int j = 0; j < in.GetVertexCount(); j++) {
+      for (int j = 0; j < in.GetPointCount(); j++) {
         const double *data = (const double *) in.GetDataBuffer();
         Vector N;
         N.x = data[3*j + 0];
         N.y = data[3*j + 1];
         N.z = data[3*j + 2];
-        mesh->SetVertexNormal(j, N);
+        mesh->SetPointNormal(j, N);
       }
     }
     else if (attrname == "Cd") {
-      mesh->SetVertexCount(in.GetVertexCount());
-      mesh->AddVertexColor();
+      mesh->SetPointCount(in.GetPointCount());
+      mesh->AddPointColor();
       in.ReadAttributeData();
-      for (int j = 0; j < in.GetVertexCount(); j++) {
+      for (int j = 0; j < in.GetPointCount(); j++) {
         const float *data = (const float *) in.GetDataBuffer();
         Color Cd;
         Cd.r = data[3*j + 0];
         Cd.g = data[3*j + 1];
         Cd.b = data[3*j + 2];
-        mesh->SetVertexColor(j, Cd);
+        mesh->SetPointColor(j, Cd);
       }
     }
     else if (attrname == "uv") {
-      mesh->SetVertexCount(in.GetVertexCount());
-      mesh->AddVertexTexture();
+      mesh->SetPointCount(in.GetPointCount());
+      mesh->AddPointTexture();
       in.ReadAttributeData();
-      for (int j = 0; j < in.GetVertexCount(); j++) {
+      for (int j = 0; j < in.GetPointCount(); j++) {
         const float *data = (const float *) in.GetDataBuffer();
         TexCoord texcoord;
         texcoord.u = data[2*j + 0];
         texcoord.v = data[2*j + 1];
-        mesh->SetVertexTexture(j, texcoord);
+        mesh->SetPointTexture(j, texcoord);
       }
     }
     else if (attrname == "velocity") {
-      mesh->SetVertexCount(in.GetVertexCount());
-      mesh->AddVertexVelocity();
+      mesh->SetPointCount(in.GetPointCount());
+      mesh->AddPointVelocity();
       in.ReadAttributeData();
-      for (int j = 0; j < in.GetVertexCount(); j++) {
+      for (int j = 0; j < in.GetPointCount(); j++) {
         const double *data = (const double *) in.GetDataBuffer();
         Vector velocity;
         velocity.x = data[3*j + 0];
         velocity.y = data[3*j + 1];
         velocity.z = data[3*j + 2];
-        mesh->SetVertexVelocity(j, velocity);
+        mesh->SetPointVelocity(j, velocity);
       }
     }
     else if (attrname == "indices") {

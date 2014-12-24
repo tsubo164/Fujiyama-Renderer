@@ -89,7 +89,7 @@ int main(int argc, const char **argv)
     return -1;
   }
 
-  nverts = mesh.GetVertexCount();
+  nverts = mesh.GetPointCount();
   printf("nverts: %d\n", nverts);
   nfaces = mesh.GetFaceCount();
   printf("nfaces: %d\n", nfaces);
@@ -103,7 +103,7 @@ int main(int argc, const char **argv)
     Box bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
     for (i = 0; i < nverts; i++) {
       Vector pos;
-      pos = mesh.GetVertexPosition(i);
+      pos = mesh.GetPointPosition(i);
       BoxAddPoint(&bounds, pos);
     }
     zmin = bounds.min.z;
@@ -120,8 +120,8 @@ int main(int argc, const char **argv)
     double freq = .2;
     double znml = 0;
 
-    pos = mesh.GetVertexPosition(i);
-    nml = mesh.GetVertexNormal(i);
+    pos = mesh.GetPointPosition(i);
+    nml = mesh.GetPointNormal(i);
 
     znml = (pos.z - zmin) / (zmax - zmin);
 
@@ -147,10 +147,10 @@ int main(int argc, const char **argv)
   }
 
   // setup MshOutput
-  out.SetVertexCount(nverts);
-  out.SetVertexPosition(&P[0]);
-  out.SetVertexNormal(&N[0]);
-  out.SetVertexVelocity(&velocity[0]);
+  out.SetPointCount(nverts);
+  out.SetPointPosition(&P[0]);
+  out.SetPointNormal(&N[0]);
+  out.SetPointVelocity(&velocity[0]);
   out.SetFaceCount(nfaces);
   out.SetFaceIndex3(&indices[0]);
 

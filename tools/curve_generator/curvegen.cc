@@ -110,7 +110,7 @@ int main(int argc, const char **argv)
     Vector P2;
     double area = 0;
 
-    MshGetFaceVertexPosition(&mesh, i, &P0, &P1, &P2);
+    MshGetFacePointPosition(&mesh, i, &P0, &P1, &P2);
     area = TriComputeArea(P0, P1, P2);
 
     ncurves_on_face[i] = 100000 * area;
@@ -140,8 +140,8 @@ int main(int argc, const char **argv)
     Vector N1;
     Vector N2;
 
-    MshGetFaceVertexPosition(&mesh, i, &P0, &P1, &P2);
-    MshGetFaceVertexNormal(&mesh, i, &N0, &N1, &N2);
+    MshGetFacePointPosition(&mesh, i, &P0, &P1, &P2);
+    MshGetFacePointNormal(&mesh, i, &N0, &N1, &N2);
 
     for (j = 0; j < ncurves_on_face[i]; j++) {
       double gravity;
@@ -334,12 +334,12 @@ static int gen_hair(int argc, const char **argv)
   }
 
   {
-    const int64_t N = mesh.GetVertexCount();
+    const int64_t N = mesh.GetPointCount();
     Box bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
     int p;
     for (p = 0; p < N; p++) {
       Vector pt;
-      pt = mesh.GetVertexPosition(p);
+      pt = mesh.GetPointPosition(p);
       BoxAddPoint(&bounds, pt);
     }
     ymin = bounds.min.y;
@@ -363,7 +363,7 @@ static int gen_hair(int argc, const char **argv)
     double ycenter, ynml;
     double zcenter, znml;
 
-    MshGetFaceVertexPosition(&mesh, i, &P0, &P1, &P2);
+    MshGetFacePointPosition(&mesh, i, &P0, &P1, &P2);
     area = TriComputeArea(P0, P1, P2);
 
     ycenter = (P0.y + P1.y + P2.y) / 3.;
@@ -404,8 +404,8 @@ static int gen_hair(int argc, const char **argv)
     Vector N1;
     Vector N2;
 
-    MshGetFaceVertexPosition(&mesh, i, &P0, &P1, &P2);
-    MshGetFaceVertexNormal(&mesh, i, &N0, &N1, &N2);
+    MshGetFacePointPosition(&mesh, i, &P0, &P1, &P2);
+    MshGetFacePointNormal(&mesh, i, &N0, &N1, &N2);
 
     for (j = 0; j < ncurves_on_face[i]; j++) {
       double u, v, t;

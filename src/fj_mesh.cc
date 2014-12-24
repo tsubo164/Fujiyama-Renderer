@@ -8,11 +8,11 @@
 #include "fj_ray.h"
 
 #define ATTRIBUTE_LIST(ATTR) \
-  ATTR(Vertex, Vector,   P_,        Position) \
-  ATTR(Vertex, Vector,   N_,        Normal) \
-  ATTR(Vertex, Color,    Cd_,       Color) \
-  ATTR(Vertex, TexCoord, uv_,       Texture) \
-  ATTR(Vertex, Vector,   velocity_, Velocity) \
+  ATTR(Point, Vector,   P_,        Position) \
+  ATTR(Point, Vector,   N_,        Normal) \
+  ATTR(Point, Color,    Cd_,       Color) \
+  ATTR(Point, TexCoord, uv_,       Texture) \
+  ATTR(Point, Vector,   velocity_, Velocity) \
   ATTR(Face,   Index3,   indices_,  Indices) \
   ATTR(Face,   int,      face_group_id_,  GroupID)
 
@@ -63,7 +63,7 @@ Mesh::~Mesh()
 {
 }
 
-int Mesh::GetVertexCount() const
+int Mesh::GetPointCount() const
 {
   return nverts_;
 }
@@ -73,7 +73,7 @@ int Mesh::GetFaceCount() const
   return nfaces_;
 }
 
-void Mesh::SetVertexCount(int count)
+void Mesh::SetPointCount(int count)
 {
   nverts_ = count;
 }
@@ -103,43 +103,43 @@ int Mesh::CreateFaceGroup(const std::string &group_name)
 
 void Mesh::ComputeNormals()
 {
-  if (!HasVertexPosition() || !HasFaceIndices())
+  if (!HasPointPosition() || !HasFaceIndices())
     return;
 
-  const int nverts = GetVertexCount();
+  const int nverts = GetPointCount();
   const int nfaces = GetFaceCount();
 
-  if (!HasVertexNormal()) {
-    AddVertexNormal();
+  if (!HasPointNormal()) {
+    AddPointNormal();
   }
 
   // initialize N
   for (int i = 0; i < nverts; i++) {
-    SetVertexNormal(i, Vector(0, 0, 0));
+    SetPointNormal(i, Vector(0, 0, 0));
   }
 
   // compute N
   for (int i = 0; i < nfaces; i++) {
     const Index3 face = GetFaceIndices(i);
 
-    const Vector P0 = GetVertexPosition(face.i0);
-    const Vector P1 = GetVertexPosition(face.i1);
-    const Vector P2 = GetVertexPosition(face.i2);
+    const Vector P0 = GetPointPosition(face.i0);
+    const Vector P1 = GetPointPosition(face.i1);
+    const Vector P2 = GetPointPosition(face.i2);
 
     const Vector Ng = TriComputeFaceNormal(P0, P1, P2);
-    const Vector N0 = GetVertexNormal(face.i0) + Ng;
-    const Vector N1 = GetVertexNormal(face.i1) + Ng;
-    const Vector N2 = GetVertexNormal(face.i2) + Ng;
+    const Vector N0 = GetPointNormal(face.i0) + Ng;
+    const Vector N1 = GetPointNormal(face.i1) + Ng;
+    const Vector N2 = GetPointNormal(face.i2) + Ng;
 
-    SetVertexNormal(face.i0, N0);
-    SetVertexNormal(face.i1, N1);
-    SetVertexNormal(face.i2, N2);
+    SetPointNormal(face.i0, N0);
+    SetPointNormal(face.i1, N1);
+    SetPointNormal(face.i2, N2);
   }
 
   // normalize N
   for (int i = 0; i < nverts; i++) {
-    Vector N = GetVertexNormal(i);
-    SetVertexNormal(i, Normalize(&N));
+    Vector N = GetPointNormal(i);
+    SetPointNormal(i, Normalize(&N));
   }
 }
 
@@ -160,14 +160,14 @@ bool Mesh::ray_intersect(Index prim_id, Real time,
   const Index3 face = GetFaceIndices(prim_id);
 
   /* TODO make function */
-  Vector P0 = GetVertexPosition(face.i0);
-  Vector P1 = GetVertexPosition(face.i1);
-  Vector P2 = GetVertexPosition(face.i2);
+  Vector P0 = GetPointPosition(face.i0);
+  Vector P1 = GetPointPosition(face.i1);
+  Vector P2 = GetPointPosition(face.i2);
 
-  if (HasVertexVelocity()) {
-    const Vector velocity0 = GetVertexVelocity(face.i0);
-    const Vector velocity1 = GetVertexVelocity(face.i1);
-    const Vector velocity2 = GetVertexVelocity(face.i2);
+  if (HasPointVelocity()) {
+    const Vector velocity0 = GetPointVelocity(face.i0);
+    const Vector velocity1 = GetPointVelocity(face.i1);
+    const Vector velocity2 = GetPointVelocity(face.i2);
 
     P0 += time * velocity0;
     P1 += time * velocity1;
@@ -190,18 +190,18 @@ bool Mesh::ray_intersect(Index prim_id, Real time,
   // we don't know N at time sampled point with velocity motion blur
   // just using N from mesh data
   // intersect info
-  const Vector N0 = GetVertexNormal(face.i0);
-  const Vector N1 = GetVertexNormal(face.i1);
-  const Vector N2 = GetVertexNormal(face.i2);
+  const Vector N0 = GetPointNormal(face.i0);
+  const Vector N1 = GetPointNormal(face.i1);
+  const Vector N2 = GetPointNormal(face.i2);
   isect->N = TriComputeNormal(N0, N1, N2, u, v);
 
   // TODO TMP uv handling
   // UV = (1-u-v) * UV0 + u * UV1 + v * UV2
-  if (HasVertexTexture()) {
+  if (HasPointTexture()) {
     const float t = 1 - u - v;
-    const TexCoord uv0 = GetVertexTexture(face.i0);
-    const TexCoord uv1 = GetVertexTexture(face.i1);
-    const TexCoord uv2 = GetVertexTexture(face.i2);
+    const TexCoord uv0 = GetPointTexture(face.i0);
+    const TexCoord uv1 = GetPointTexture(face.i1);
+    const TexCoord uv2 = GetPointTexture(face.i2);
     isect->uv.u = t * uv0.u + u * uv1.u + v * uv2.u;
     isect->uv.v = t * uv0.v + u * uv1.v + v * uv2.v;
 
@@ -230,16 +230,16 @@ void Mesh::get_primitive_bounds(Index prim_id, Box *bounds) const
 {
   const Index3 face = GetFaceIndices(prim_id);
 
-  const Vector P0 = GetVertexPosition(face.i0);
-  const Vector P1 = GetVertexPosition(face.i1);
-  const Vector P2 = GetVertexPosition(face.i2);
+  const Vector P0 = GetPointPosition(face.i0);
+  const Vector P1 = GetPointPosition(face.i1);
+  const Vector P2 = GetPointPosition(face.i2);
 
   TriComputeBounds(P0, P1, P2, bounds);
 
-  if (HasVertexVelocity()) {
-    const Vector velocity0 = GetVertexVelocity(face.i0);
-    const Vector velocity1 = GetVertexVelocity(face.i1);
-    const Vector velocity2 = GetVertexVelocity(face.i2);
+  if (HasPointVelocity()) {
+    const Vector velocity0 = GetPointVelocity(face.i0);
+    const Vector velocity1 = GetPointVelocity(face.i1);
+    const Vector velocity2 = GetPointVelocity(face.i2);
 
     const Vector P0_close = P0 + velocity0;
     const Vector P1_close = P1 + velocity1;
@@ -261,24 +261,24 @@ Index Mesh::get_primitive_count() const
   return GetFaceCount();
 }
 
-void MshGetFaceVertexPosition(const Mesh *mesh, int face_index,
+void MshGetFacePointPosition(const Mesh *mesh, int face_index,
     Vector *P0, Vector *P1, Vector *P2)
 {
   const Index3 face = mesh->GetFaceIndices(face_index);
 
-  *P0 = mesh->GetVertexPosition(face.i0);
-  *P1 = mesh->GetVertexPosition(face.i1);
-  *P2 = mesh->GetVertexPosition(face.i2);
+  *P0 = mesh->GetPointPosition(face.i0);
+  *P1 = mesh->GetPointPosition(face.i1);
+  *P2 = mesh->GetPointPosition(face.i2);
 }
 
-void MshGetFaceVertexNormal(const Mesh *mesh, int face_index,
+void MshGetFacePointNormal(const Mesh *mesh, int face_index,
     Vector *N0, Vector *N1, Vector *N2)
 {
   const Index3 face = mesh->GetFaceIndices(face_index);
 
-  *N0 = mesh->GetVertexNormal(face.i0);
-  *N1 = mesh->GetVertexNormal(face.i1);
-  *N2 = mesh->GetVertexNormal(face.i2);
+  *N0 = mesh->GetPointNormal(face.i0);
+  *N1 = mesh->GetPointNormal(face.i1);
+  *N2 = mesh->GetPointNormal(face.i2);
 }
 
 } // namespace xxx

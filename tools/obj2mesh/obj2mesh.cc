@@ -209,10 +209,10 @@ int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename)
     return -1;
   }
 
-  out.SetVertexCount(buffer->nverts);
-  out.SetVertexPosition(&buffer->P[0]);
-  out.SetVertexNormal(&buffer->N[0]);
-  out.SetVertexTexture(&buffer->uv[0]);
+  out.SetPointCount(buffer->nverts);
+  out.SetPointPosition(&buffer->P[0]);
+  out.SetPointNormal(&buffer->N[0]);
+  out.SetPointTexture(&buffer->uv[0]);
   out.SetFaceCount(buffer->nfaces);
   out.SetFaceIndex3(&buffer->vertex_indices[0]);
 

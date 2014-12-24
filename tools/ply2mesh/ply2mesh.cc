@@ -216,10 +216,10 @@ int main(int argc, const char **argv)
   }
 
   // setup MeshOutput
-  out.SetVertexCount(nverts);
-  out.SetVertexPosition(&P[0]);
-  out.SetVertexNormal(&N[0]);
-  out.SetVertexTexture(&uv[0]);
+  out.SetPointCount(nverts);
+  out.SetPointPosition(&P[0]);
+  out.SetPointNormal(&N[0]);
+  out.SetPointTexture(&uv[0]);
   out.SetFaceCount(ntris);
   out.SetFaceIndex3(&index_array[0]);
 
