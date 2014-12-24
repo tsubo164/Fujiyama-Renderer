@@ -194,7 +194,7 @@ int ObjParser::Parse(std::istream &stream)
     else if (tag == "f") {
       triplets.Clear();
 
-      while (iss) {
+      while (iss.tellg() > 0) {
         Triplet triplet = get_triplet(iss);
         reindicing(v_count_, vt_count_, vn_count_, &triplet);
         triplets.Push(triplet);

@@ -74,8 +74,8 @@ private:
   virtual void get_bounds(Box *bounds) const;
   virtual Index get_primitive_count() const;
 
-  int nverts_;
-  int nfaces_;
+  int point_count_;
+  int face_count_;
 
   std::vector<Vector>   P_;
   std::vector<Vector>   N_;

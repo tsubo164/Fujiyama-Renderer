@@ -45,8 +45,8 @@ bool Mesh::Has##Class##Label() const \
 
 void Mesh::Clear()
 {
-  nverts_ = 0;
-  nfaces_ = 0;
+  point_count_ = 0;
+  face_count_ = 0;
   bounds_ = Box();
 
 #define ATTR(Class, Type, Name, Label) std::vector<Type>().swap(Name);
@@ -54,7 +54,7 @@ void Mesh::Clear()
 #undef ATTR
 }
 
-Mesh::Mesh() : nverts_(0), nfaces_(0), bounds_()
+Mesh::Mesh() : point_count_(0), face_count_(0), bounds_()
 {
   face_group_name_[""] = 0;
 }
@@ -65,22 +65,22 @@ Mesh::~Mesh()
 
 int Mesh::GetPointCount() const
 {
-  return nverts_;
+  return point_count_;
 }
 
 int Mesh::GetFaceCount() const
 {
-  return nfaces_;
+  return face_count_;
 }
 
 void Mesh::SetPointCount(int count)
 {
-  nverts_ = count;
+  point_count_ = count;
 }
 
 void Mesh::SetFaceCount(int count)
 {
-  nfaces_ = count;
+  face_count_ = count;
 }
 
 const Box &Mesh::GetBounds() const

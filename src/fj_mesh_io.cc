@@ -499,6 +499,7 @@ int MshLoadFile(Mesh *mesh, const char *filename)
     else if (attrname == "indices") {
       mesh->SetFaceCount(in.GetFaceCount());
       mesh->AddFaceIndices();
+    std::cout << "Face Count: " << in.GetFaceCount() << "\n";
       in.ReadAttributeData();
       for (int j = 0; j < in.GetFaceCount(); j++) {
         const Index *data = (const Index *) in.GetDataBuffer();
