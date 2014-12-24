@@ -65,6 +65,12 @@ private:
   {
     // TODO IMPLEMENT THIS
     //N.push_back(Vector(x, y, z));
+    /*
+    std::cout << "(" <<
+      x << ", " <<
+      y << ", " <<
+      z << ")\n";
+    */
   }
 
   virtual void read_f(long index_count,
@@ -216,6 +222,12 @@ int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename)
   out.SetFaceCount(buffer->nfaces);
   out.SetFaceIndex3(&buffer->vertex_indices[0]);
 
+  out.SetVertexNormal(
+      &buffer->N[0], buffer->N.size(),
+      &buffer->normal_indices[0], buffer->normal_indices.size());
+  std::cout << "N.size: " << buffer->N.size() << "\n";
+  std::cout << "Nind.size: " << buffer->normal_indices.size() << "\n";
+
   // TODO TEST
   if (!buffer->face_group_id.empty()) {
     out.SetFaceGroupID(&buffer->face_group_id[0]);
@@ -241,6 +253,8 @@ int ObjBufferComputeNormals(ObjBuffer *buffer)
   if (!N.empty()) {
     return 0;
   }
+  //TODO TEST
+  //return 0;
 
   N.resize(nverts);
 

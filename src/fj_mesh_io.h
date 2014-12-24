@@ -51,10 +51,10 @@ private:
   std::ifstream file_;
 
   int version_;
-  int nverts_;
-  int nvert_attrs_;
-  int nfaces_;
-  int nface_attrs_;
+  int point_count_;
+  int point_attr_count_;
+  int face_count_;
+  int face_attr_count_;
 
   std::vector<char> data_buffer_;
   std::vector<std::string> attr_names_;
@@ -79,6 +79,10 @@ public:
   void SetFaceIndex3(const Index3 *index);
   void SetFaceGroupID(const int *id);
 
+  void SetVertexNormal(
+      const Vector *value, int value_count,
+      const Index3 *index, int index_count);
+
   void WriteFile();
 
 private:
@@ -88,10 +92,10 @@ private:
   std::ofstream file_;
 
   int version_;
-  int nverts_;
-  int nvert_attrs_;
-  int nfaces_;
-  int nface_attrs_;
+  int point_count_;
+  int point_attr_count_;
+  int face_count_;
+  int face_attr_count_;
 
   const Vector *P_;
   const Vector *N_;
@@ -100,6 +104,11 @@ private:
   const Vector *velocity_;
   const Index3 *indices_;
   const int *face_group_id_;
+
+  const Vector *vertex_normal_value_;
+  const Index3 *vertex_normal_index_;
+  int vertex_normal_value_count_;
+  int vertex_normal_index_count_;
 };
 
 // high level interface for loading mesh file

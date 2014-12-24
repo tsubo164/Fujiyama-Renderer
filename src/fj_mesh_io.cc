@@ -27,10 +27,10 @@ inline void read_(std::ifstream &file, T *dst, int64_t count)
 
 MeshInput::MeshInput() :
     version_(0),
-    nverts_(0),
-    nvert_attrs_(0),
-    nfaces_(0),
-    nface_attrs_(0)
+    point_count_(0),
+    point_attr_count_(0),
+    face_count_(0),
+    face_attr_count_(0)
 {
 }
 
@@ -76,10 +76,10 @@ int MeshInput::ReadHeader()
     return -1;
   }
 
-  read_(file_, &nverts_,      1);
-  read_(file_, &nvert_attrs_, 1);
-  read_(file_, &nfaces_,      1);
-  read_(file_, &nface_attrs_, 1);
+  read_(file_, &point_count_,      1);
+  read_(file_, &point_attr_count_, 1);
+  read_(file_, &face_count_,      1);
+  read_(file_, &face_attr_count_, 1);
 
   const int TOTAL_ATTR_COUNT = GetPointAttributeCount() + GetFaceAttributeCount();
   attr_names_.resize(TOTAL_ATTR_COUNT, "");
@@ -112,22 +112,22 @@ void MeshInput::ReadAttributeData()
 
 int MeshInput::GetPointCount() const
 {
-  return nverts_;
+  return point_count_;
 }
 
 int MeshInput::GetPointAttributeCount() const
 {
-  return nvert_attrs_;
+  return point_attr_count_;
 }
 
 int MeshInput::GetFaceCount() const
 {
-  return nfaces_;
+  return face_count_;
 }
 
 int MeshInput::GetFaceAttributeCount() const
 {
-  return nface_attrs_;
+  return face_attr_count_;
 }
 
 const char *MeshInput::GetDataBuffer() const
@@ -151,17 +151,22 @@ inline void write_(std::ofstream &file, const T *src, int64_t count)
 
 MeshOutput::MeshOutput() :
     version_(MSH_FILE_VERSION),
-    nverts_(0),
-    nvert_attrs_(0),
-    nfaces_(0),
-    nface_attrs_(0),
+    point_count_(0),
+    point_attr_count_(0),
+    face_count_(0),
+    face_attr_count_(0),
     P_(NULL),
     N_(NULL),
     Cd_(NULL),
     uv_(NULL),
     velocity_(NULL),
     indices_(NULL),
-    face_group_id_(NULL)
+    face_group_id_(NULL),
+
+    vertex_normal_value_(NULL),
+    vertex_normal_index_(NULL),
+    vertex_normal_value_count_(0),
+    vertex_normal_index_count_(0)
 {
 }
 
@@ -196,13 +201,13 @@ void MeshOutput::SetPointCount(int count)
   if (count < 0) {
     return;
   }
-  nverts_ = count;
+  point_count_ = count;
 }
 
 void MeshOutput::SetPointPosition(const Vector *position)
 {
   if (P_ == NULL && position != NULL) {
-    nvert_attrs_++;
+    point_attr_count_++;
   }
   P_ = position;
 }
@@ -210,7 +215,7 @@ void MeshOutput::SetPointPosition(const Vector *position)
 void MeshOutput::SetPointNormal(const Vector *normal)
 {
   if (N_ == NULL && normal != NULL) {
-    nvert_attrs_++;
+    point_attr_count_++;
   }
   N_ = normal;
 }
@@ -218,7 +223,7 @@ void MeshOutput::SetPointNormal(const Vector *normal)
 void MeshOutput::SetPointColor(const Color *color)
 {
   if (Cd_ == NULL && color != NULL) {
-    nvert_attrs_++;
+    point_attr_count_++;
   }
   Cd_ = color;
 }
@@ -226,7 +231,7 @@ void MeshOutput::SetPointColor(const Color *color)
 void MeshOutput::SetPointTexture(const TexCoord *texcoord)
 {
   if (uv_ == NULL && texcoord != NULL) {
-    nvert_attrs_++;
+    point_attr_count_++;
   }
   uv_ = texcoord;
 }
@@ -234,7 +239,7 @@ void MeshOutput::SetPointTexture(const TexCoord *texcoord)
 void MeshOutput::SetPointVelocity(const Vector *vel)
 {
   if (velocity_ == NULL && vel != NULL) {
-    nvert_attrs_++;
+    point_attr_count_++;
   }
   velocity_ = vel;
 }
@@ -244,13 +249,13 @@ void MeshOutput::SetFaceCount(int count)
   if (count < 0) {
     return;
   }
-  nfaces_ = count;
+  face_count_ = count;
 }
 
 void MeshOutput::SetFaceIndex3(const Index3 *index)
 {
   if (indices_ == NULL && index != NULL) {
-    nface_attrs_++;
+    face_attr_count_++;
   }
   indices_ = index;
 }
@@ -258,9 +263,19 @@ void MeshOutput::SetFaceIndex3(const Index3 *index)
 void MeshOutput::SetFaceGroupID(const int *id)
 {
   if (face_group_id_ == NULL && id != NULL) {
-    nface_attrs_++;
+    face_attr_count_++;
   }
   face_group_id_ = id;
+}
+
+void MeshOutput::SetVertexNormal(
+    const Vector *value, int value_count,
+    const Index3 *index, int index_count)
+{
+  vertex_normal_value_ = value;
+  vertex_normal_index_ = index;
+  vertex_normal_value_count_ = value_count;
+  vertex_normal_index_count_ = index_count;
 }
 
 void MeshOutput::WriteFile()
@@ -269,10 +284,10 @@ void MeshOutput::WriteFile()
 
   write_(file_, magic, MSH_MAGIC_SIZE);
   write_(file_, &version_,     1);
-  write_(file_, &nverts_,      1);
-  write_(file_, &nvert_attrs_, 1);
-  write_(file_, &nfaces_,      1);
-  write_(file_, &nface_attrs_, 1);
+  write_(file_, &point_count_,      1);
+  write_(file_, &point_attr_count_, 1);
+  write_(file_, &face_count_,      1);
+  write_(file_, &face_attr_count_, 1);
 
   write_attribute_name("P");
   write_attribute_name("N");
@@ -328,9 +343,9 @@ void MeshOutput::write_attribute_data(const std::string &name)
   if (name == "P") {
     if (P_ == NULL)
       return;
-    const size_t datasize = 3 * sizeof(double) * nverts_;
+    const size_t datasize = 3 * sizeof(double) * point_count_;
     write_(file_, &datasize, 1);
-    for (int i = 0; i < nverts_; i++) {
+    for (int i = 0; i < point_count_; i++) {
       double pos[3] = {0, 0, 0};
       pos[0] = P_[i].x;
       pos[1] = P_[i].y;
@@ -341,9 +356,9 @@ void MeshOutput::write_attribute_data(const std::string &name)
   else if (name == "N") {
     if (N_ == NULL)
       return;
-    const size_t datasize = 3 * sizeof(double) * nverts_;
+    const size_t datasize = 3 * sizeof(double) * point_count_;
     write_(file_, &datasize, 1);
-    for (int i = 0; i < nverts_; i++) {
+    for (int i = 0; i < point_count_; i++) {
       double nml[3] = {0, 0, 0};
       nml[0] = N_[i].x;
       nml[1] = N_[i].y;
@@ -354,9 +369,9 @@ void MeshOutput::write_attribute_data(const std::string &name)
   else if (name == "Cd") {
     if (Cd_ == NULL)
       return;
-    const size_t datasize = 3 * sizeof(float) * nverts_;
+    const size_t datasize = 3 * sizeof(float) * point_count_;
     write_(file_, &datasize, 1);
-    for (int i = 0; i < nverts_; i++) {
+    for (int i = 0; i < point_count_; i++) {
       float col[3] = {0, 0, 0};
       col[0] = Cd_[i].r;
       col[1] = Cd_[i].g;
@@ -367,9 +382,9 @@ void MeshOutput::write_attribute_data(const std::string &name)
   else if (name == "uv") {
     if (uv_ == NULL)
       return;
-    const size_t datasize = 2 * sizeof(float) * nverts_;
+    const size_t datasize = 2 * sizeof(float) * point_count_;
     write_(file_, &datasize, 1);
-    for (int i = 0; i < nverts_; i++) {
+    for (int i = 0; i < point_count_; i++) {
       float texcoord[2] = {0, 0};
       texcoord[0] = uv_[i].u;
       texcoord[1] = uv_[i].v;
@@ -379,9 +394,9 @@ void MeshOutput::write_attribute_data(const std::string &name)
   else if (name == "velocity") {
     if (velocity_ == NULL)
       return;
-    const size_t datasize = 3 * sizeof(double) * nverts_;
+    const size_t datasize = 3 * sizeof(double) * point_count_;
     write_(file_, &datasize, 1);
-    for (int i = 0; i < nverts_; i++) {
+    for (int i = 0; i < point_count_; i++) {
       double vel[3] = {0, 0, 0};
       vel[0] = velocity_[i].x;
       vel[1] = velocity_[i].y;
@@ -392,9 +407,9 @@ void MeshOutput::write_attribute_data(const std::string &name)
   else if (name == "indices") {
     if (indices_ == NULL)
       return;
-    const size_t datasize = 3 * sizeof(int) * nfaces_;
+    const size_t datasize = 3 * sizeof(int) * face_count_;
     write_(file_, &datasize, 1);
-    for (int i = 0; i < nfaces_; i++) {
+    for (int i = 0; i < face_count_; i++) {
       Index idx[3] = {0, 0, 0};
       idx[0] = indices_[i].i0;
       idx[1] = indices_[i].i1;
@@ -405,9 +420,9 @@ void MeshOutput::write_attribute_data(const std::string &name)
   else if (name == "face_group_id") {
     if (face_group_id_ == NULL)
       return;
-    const size_t datasize = sizeof(int) * nfaces_;
+    const size_t datasize = sizeof(int) * face_count_;
     write_(file_, &datasize, 1);
-    for (int i = 0; i < nfaces_; i++) {
+    for (int i = 0; i < face_count_; i++) {
       const int id = face_group_id_[i];
       write_(file_, &id, 1);
     }
