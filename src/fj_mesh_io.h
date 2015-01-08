@@ -39,6 +39,7 @@ public:
   int ReadHeader();
   void ReadAttributeData();
 
+  int GetVertexAttributeCount() const;
   int GetPointCount() const;
   int GetPointAttributeCount() const;
   int GetFaceCount() const;
@@ -51,6 +52,7 @@ private:
   std::ifstream file_;
 
   int version_;
+  int vertex_attr_count_;
   int point_count_;
   int point_attr_count_;
   int face_count_;
@@ -92,6 +94,7 @@ private:
   std::ofstream file_;
 
   int version_;
+  int vertex_attr_count_;
   int point_count_;
   int point_attr_count_;
   int face_count_;

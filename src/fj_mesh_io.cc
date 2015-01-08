@@ -27,6 +27,7 @@ inline void read_(std::ifstream &file, T *dst, int64_t count)
 
 MeshInput::MeshInput() :
     version_(0),
+    vertex_attr_count_(0),
     point_count_(0),
     point_attr_count_(0),
     face_count_(0),
@@ -76,13 +77,15 @@ int MeshInput::ReadHeader()
     return -1;
   }
 
-  read_(file_, &point_count_,      1);
-  read_(file_, &point_attr_count_, 1);
-  read_(file_, &face_count_,      1);
-  read_(file_, &face_attr_count_, 1);
+  //read_(file_, &vertex_attr_count_, 1);
+  read_(file_, &point_count_,       1);
+  read_(file_, &point_attr_count_,  1);
+  read_(file_, &face_count_,        1);
+  read_(file_, &face_attr_count_,   1);
 
   const int TOTAL_ATTR_COUNT = GetPointAttributeCount() + GetFaceAttributeCount();
   attr_names_.resize(TOTAL_ATTR_COUNT, "");
+  std::cout << "TOTAL_ATTR_COUNT: " << TOTAL_ATTR_COUNT << "\n";
 
   for (int i = 0; i < TOTAL_ATTR_COUNT; i++) {
     char attrname[MAX_ATTRNAME_SIZE] = {'\0'};
@@ -108,6 +111,11 @@ void MeshInput::ReadAttributeData()
   data_buffer_.resize(datasize);
 
   read_(file_, &data_buffer_[0], datasize);
+}
+
+int MeshInput::GetVertexAttributeCount() const
+{
+  return vertex_attr_count_;
 }
 
 int MeshInput::GetPointCount() const
@@ -151,6 +159,7 @@ inline void write_(std::ofstream &file, const T *src, int64_t count)
 
 MeshOutput::MeshOutput() :
     version_(MSH_FILE_VERSION),
+    vertex_attr_count_(0),
     point_count_(0),
     point_attr_count_(0),
     face_count_(0),
@@ -272,6 +281,9 @@ void MeshOutput::SetVertexNormal(
     const Vector *value, int value_count,
     const Index3 *index, int index_count)
 {
+  if (vertex_normal_value_ == NULL && value != NULL) {
+    vertex_attr_count_++;
+  }
   vertex_normal_value_ = value;
   vertex_normal_index_ = index;
   vertex_normal_value_count_ = value_count;
@@ -283,11 +295,12 @@ void MeshOutput::WriteFile()
   char magic[] = MSH_FILE_MAGIC;
 
   write_(file_, magic, MSH_MAGIC_SIZE);
-  write_(file_, &version_,     1);
-  write_(file_, &point_count_,      1);
-  write_(file_, &point_attr_count_, 1);
-  write_(file_, &face_count_,      1);
-  write_(file_, &face_attr_count_, 1);
+  write_(file_, &version_,           1);
+  //write_(file_, &vertex_attr_count_, 1);
+  write_(file_, &point_count_,       1);
+  write_(file_, &point_attr_count_,  1);
+  write_(file_, &face_count_,        1);
+  write_(file_, &face_attr_count_,   1);
 
   write_attribute_name("P");
   write_attribute_name("N");
@@ -327,6 +340,9 @@ void MeshOutput::write_attribute_name(const std::string &name)
     return;
   }
   else if (name == "face_group_id" && face_group_id_ == NULL) {
+    return;
+  }
+  else if (name == "vertex_normal_value" && vertex_normal_value_ == NULL) {
     return;
   }
   else {
@@ -442,7 +458,10 @@ int MshLoadFile(Mesh *mesh, const char *filename)
     return -1;
   }
 
-  const int TOTAL_ATTR_COUNT = in.GetPointAttributeCount() + in.GetFaceAttributeCount();
+  const int TOTAL_ATTR_COUNT = in.GetPointAttributeCount() + in.GetFaceAttributeCount()
+    + in.GetVertexAttributeCount();
+
+  std::cout << "TOTAL_ATTR_COUNT: " << TOTAL_ATTR_COUNT << "\n";
 
   for (int i = 0; i < TOTAL_ATTR_COUNT; i++) {
     const std::string attrname = in.GetAttributeName(i);
