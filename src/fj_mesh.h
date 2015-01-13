@@ -5,6 +5,7 @@
 #define FJ_MESH_H
 
 #include "fj_compatibility.h"
+#include "fj_vertex_attribute.h"
 #include "fj_primitive_set.h"
 #include "fj_tex_coord.h"
 #include "fj_vector.h"
@@ -28,6 +29,77 @@ public:
   void SetPointCount(int count);
   void SetFaceCount(int count);
   const Box &GetBounds() const;
+
+  //TODO TEST
+  bool HasVertexNormal() const;
+  Vector GetVertexNormal(Index vertex_id) const;
+
+  template<typename T>
+  class VertexAttributeAccessor {
+  public:
+    typedef T Value;
+
+    VertexAttributeAccessor(VertexAttribute<T> &attribute) : attr_(attribute) {}
+    ~VertexAttributeAccessor() {}
+
+    void ResizeValue(Index size) { attr_.ResizeValue(size); }
+    void ResizeIndex(Index size) { attr_.ResizeIndex(size); }
+
+    Index PushValue(const Value &value)
+    {
+      attr_.PushValue(value);
+      return attr_.GetValueCount() - 1;
+    }
+    Index PushIndex(Index index);
+    Value Get(Index vertex_id) const { return attr_.Get(vertex_id); }
+
+    void SetValue(Index offset, const Value &value) { attr_.SetValue(offset, value); }
+    void SetIndex(Index offset, const Index index) { attr_.SetIndex(offset, index); }
+
+    Value GetValue(Index offset) const { return attr_.GetValue(offset); };
+    Index GetIndex(Index offset) const { return attr_.GetIndex(offset); };
+    Index GetValueCount() const { return attr_.GetValueCount(); }
+    Index GetIndexCount() const { return attr_.GetIndexCount(); }
+  private:
+    VertexAttribute<T> &attr_;
+  };
+  VertexAttributeAccessor<Vector> GetVertexNormal()
+  {
+    return VertexAttributeAccessor<Vector>(vertex_normal_);
+  }
+
+#if 0
+  class PointAttributeAccessor {
+  public:
+    typedef T Value;
+    Index Push(const Value &value);
+    Value Get(Index point_id) const;
+
+    Value GetValue(Index offset) const;
+    Index GetIndex(Index offset) const;
+    Index GetValueCount() const;
+    Index GetIndexCount() const;
+  private:
+  }
+#endif
+
+#if n
+  void CreateVertexNormal(Index value_count, Index index_count);
+  void SetVertexNormalValue(Index offset, const Vector &value);
+  void SetVertexNormalIndex(Index offset, Index index);
+  Vector GetVertexNormalValue(Index offset) const;
+  Index  GetVertexNormalIndex(Index offset) const;
+  Index GetVertexNormalValueCount() const;
+  Index GetVertexNormalIndexCount() const;
+#else
+  Index  PushVertexNormalValue(const Vector &value);
+  Index  PushVertexNormalIndex(Index index);
+  Vector GetVertexNormalValue(Index offset) const;
+  Index  GetVertexNormalIndex(Index offset) const;
+  Index  GetVertexNormalValueCount() const;
+  Index  GetVertexNormalIndexCount() const;
+  void ShrinkToFit();
+#endif
 
   void AddPointPosition();
   void AddPointNormal();
@@ -76,6 +148,9 @@ private:
 
   int point_count_;
   int face_count_;
+
+  //TODO TEST
+  VertexAttribute<Vector> vertex_normal_;
 
   std::vector<Vector>   P_;
   std::vector<Vector>   N_;

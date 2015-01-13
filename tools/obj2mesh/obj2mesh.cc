@@ -50,26 +50,47 @@ public:
   std::map<std::string, int> group_name_to_id;
   int current_group_id;
 
+  Mesh mesh;
+
 private:
   // overriding callbacks
   virtual void read_v (int ncomponents, double x, double y, double z, double w)
   {
     P.push_back(Vector(x, y, z));
     nverts++;
+
+    /*
+    std::cout << "v: (" <<
+      x << ", " <<
+      y << ", " <<
+      z << ")\n";
+    */
   }
   virtual void read_vt(int ncomponents, double x, double y, double z, double w)
   {
     uv.push_back(TexCoord(x, y));
+
+    /*
+    std::cout << "vt: (" <<
+      x << ", " <<
+      y << ", " <<
+      z << ")\n";
+    */
   }
   virtual void read_vn(int ncomponents, double x, double y, double z, double w)
   {
     // TODO IMPLEMENT THIS
-    //N.push_back(Vector(x, y, z));
+    N.push_back(Vector(x, y, z));
     /*
-    std::cout << "(" <<
+    std::cout << "vn: (" <<
       x << ", " <<
       y << ", " <<
       z << ")\n";
+    */
+    /*
+    Mesh::VertexAttributeAccessor<Vector> normal = mesh.GetVertexNormal();
+    std::cout << "---> " << normal.PushValue(Vector(x, y, z));
+    std::cout << "--->\n";
     */
   }
 
@@ -79,6 +100,11 @@ private:
     const long *vn_indices)
   {
     const int ntriangles = index_count - 2;
+    /*
+    static int n = 0;
+    std::cout << "n: " << n << ")\n";
+    n++;
+    */
 
     for (int i = 0; i < ntriangles; i++) {
       if (v_indices != NULL) {
@@ -215,18 +241,26 @@ int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename)
     return -1;
   }
 
+  // TODO TEST
+  /*
+  Mesh::VertexAttributeAccessor<Vector> normals = buffer->mesh.GetVertexNormal();
+  const Index vertex_count = normals.GetIndexCount();
+  for (Index i = 0; i < vertex_count; i++) {
+    const Vector N = normals.Get(i);
+    std::cout << "N: " << N << "\n";
+  }
+  */
+
   out.SetPointCount(buffer->nverts);
   out.SetPointPosition(&buffer->P[0]);
-  out.SetPointNormal(&buffer->N[0]);
-  out.SetPointTexture(&buffer->uv[0]);
+  //out.SetPointNormal(&buffer->N[0]);
+  //out.SetPointTexture(&buffer->uv[0]);
   out.SetFaceCount(buffer->nfaces);
   out.SetFaceIndex3(&buffer->vertex_indices[0]);
 
   out.SetVertexNormal(
       &buffer->N[0], buffer->N.size(),
       &buffer->normal_indices[0], buffer->normal_indices.size());
-  std::cout << "N.size: " << buffer->N.size() << "\n";
-  std::cout << "Nind.size: " << buffer->normal_indices.size() << "\n";
 
   // TODO TEST
   if (!buffer->face_group_id.empty()) {

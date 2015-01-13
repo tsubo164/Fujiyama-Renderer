@@ -77,13 +77,14 @@ int MeshInput::ReadHeader()
     return -1;
   }
 
-  //read_(file_, &vertex_attr_count_, 1);
+  read_(file_, &vertex_attr_count_, 1);
   read_(file_, &point_count_,       1);
   read_(file_, &point_attr_count_,  1);
   read_(file_, &face_count_,        1);
   read_(file_, &face_attr_count_,   1);
 
-  const int TOTAL_ATTR_COUNT = GetPointAttributeCount() + GetFaceAttributeCount();
+  const int TOTAL_ATTR_COUNT = GetPointAttributeCount() + GetFaceAttributeCount()
+      + GetVertexAttributeCount();
   attr_names_.resize(TOTAL_ATTR_COUNT, "");
   std::cout << "TOTAL_ATTR_COUNT: " << TOTAL_ATTR_COUNT << "\n";
 
@@ -296,7 +297,7 @@ void MeshOutput::WriteFile()
 
   write_(file_, magic, MSH_MAGIC_SIZE);
   write_(file_, &version_,           1);
-  //write_(file_, &vertex_attr_count_, 1);
+  write_(file_, &vertex_attr_count_, 1);
   write_(file_, &point_count_,       1);
   write_(file_, &point_attr_count_,  1);
   write_(file_, &face_count_,        1);
@@ -309,6 +310,8 @@ void MeshOutput::WriteFile()
   write_attribute_name("velocity");
   write_attribute_name("indices");
   write_attribute_name("face_group_id");
+  // TODO TEST
+  write_attribute_name("vertex_normal");
 
   write_attribute_data("P");
   write_attribute_data("N");
@@ -317,6 +320,8 @@ void MeshOutput::WriteFile()
   write_attribute_data("velocity");
   write_attribute_data("indices");
   write_attribute_data("face_group_id");
+  // TODO TEST
+  write_attribute_data("vertex_normal");
 }
 
 void MeshOutput::write_attribute_name(const std::string &name)
@@ -342,7 +347,7 @@ void MeshOutput::write_attribute_name(const std::string &name)
   else if (name == "face_group_id" && face_group_id_ == NULL) {
     return;
   }
-  else if (name == "vertex_normal_value" && vertex_normal_value_ == NULL) {
+  else if (name == "vertex_normal" && vertex_normal_value_ == NULL) {
     return;
   }
   else {
@@ -443,6 +448,43 @@ void MeshOutput::write_attribute_data(const std::string &name)
       write_(file_, &id, 1);
     }
   }
+#if 0
+#endif
+  else if (name == "vertex_normal") {
+    if (vertex_normal_value_ == NULL)
+      return;
+    const size_t datasize =
+        sizeof(vertex_normal_value_count_) +
+        3 * sizeof(double) * vertex_normal_value_count_ +
+        sizeof(vertex_normal_index_count_) +
+        3 * sizeof(double) * vertex_normal_index_count_;
+    write_(file_, &datasize, 1);
+
+      std::cout << "vertex_normal_value_count: " << vertex_normal_value_count_ << "\n";
+    write_(file_, &vertex_normal_value_count_, 1);
+    for (int i = 0; i < vertex_normal_value_count_; i++) {
+      double value[3] = {0, 0, 0};
+      value[0] = vertex_normal_value_[i].x;
+      value[1] = vertex_normal_value_[i].y;
+      value[2] = vertex_normal_value_[i].z;
+      write_(file_, value, 3);
+      std::cout << "vertex_normal_value[" << i << "]: " <<
+          vertex_normal_value_[i] << std::endl;
+    }
+      std::cout << "vertex_normal_index_count: " << vertex_normal_index_count_ << "\n";
+    write_(file_, &vertex_normal_index_count_, 1);
+    for (int i = 0; i < vertex_normal_index_count_; i++) {
+      Index index[3] = {0, 0, 0};
+      index[0] = vertex_normal_index_[i].i0;
+      index[1] = vertex_normal_index_[i].i1;
+      index[2] = vertex_normal_index_[i].i2;
+      write_(file_, index, 3);
+      std::cout << "index[" << i << "]: " <<
+          index[0] << ", " <<
+          index[1] << ", " <<
+          index[2] << "\n";
+    }
+  }
 }
 
 int MshLoadFile(Mesh *mesh, const char *filename)
@@ -459,7 +501,7 @@ int MshLoadFile(Mesh *mesh, const char *filename)
   }
 
   const int TOTAL_ATTR_COUNT = in.GetPointAttributeCount() + in.GetFaceAttributeCount()
-    + in.GetVertexAttributeCount();
+      + in.GetVertexAttributeCount();
 
   std::cout << "TOTAL_ATTR_COUNT: " << TOTAL_ATTR_COUNT << "\n";
 
@@ -553,6 +595,68 @@ int MshLoadFile(Mesh *mesh, const char *filename)
         const int group_id = data[j];
         mesh->SetFaceGroupID(j, group_id);
       }
+    }
+    else if (attrname == "vertex_normal") {
+      in.ReadAttributeData();
+      const Index *data = (const Index *) in.GetDataBuffer();
+      const Index value_count = *data;
+      std::cout << "value_count: " << value_count << "\n";
+      data++;
+      const double *ddata = (const double *) data;
+      Mesh::VertexAttributeAccessor<Vector> vertex_normal = mesh->GetVertexNormal();
+      vertex_normal.ResizeValue(value_count);
+      for (Index j = 0; j < value_count; j++) {
+        std::cout << "ddata[" << j << "]: " <<
+            ddata[0] << ", " <<
+            ddata[1] << ", " <<
+            ddata[2] << "\n";
+        const Vector value(
+            ddata[0],
+            ddata[1],
+            ddata[2]);
+        vertex_normal.SetValue(j, value);
+        /*
+        */
+        ddata += 3;
+      }
+      const Index *idata = (const Index *) ddata;
+      const Index index_count = *idata;
+      idata++;
+      std::cout << "index_count: " << index_count << "\n";
+      vertex_normal.ResizeIndex(index_count * 3);
+      for (Index j = 0; j < index_count; j++) {
+        std::cout << "idata[" << j << "]: " <<
+            idata[0] << ", " <<
+            idata[1] << ", " <<
+            idata[2] << "\n";
+        vertex_normal.SetIndex(j * 3 + 0, idata[0]);
+        vertex_normal.SetIndex(j * 3 + 1, idata[1]);
+        vertex_normal.SetIndex(j * 3 + 2, idata[2]);
+        /*
+        */
+        idata += 3;
+      }
+      /*
+      */
+      {
+        Mesh::VertexAttributeAccessor<Vector> normals = mesh->GetVertexNormal();
+        const Index count = normals.GetValueCount();
+        for (Index i = 0; i < count; i++) {
+          //const Vector N = normals.Get(i);
+          //std::cout << "-----> N: " << N << "\n";
+          std::cout << "-----> Value: " << normals.GetValue(i) << "\n";
+        }
+      }
+      {
+        Mesh::VertexAttributeAccessor<Vector> normals = mesh->GetVertexNormal();
+        const Index count = normals.GetIndexCount();
+        for (Index i = 0; i < count; i++) {
+          //const Vector N = normals.Get(i);
+          //std::cout << "-----> N: " << N << "\n";
+          std::cout << "-----> Index: " << normals.GetIndex(i) << "\n";
+        }
+      }
+
     }
   }
 

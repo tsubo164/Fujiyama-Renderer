@@ -74,33 +74,41 @@ private:
   std::vector<long> normal_;
 };
 
-static Triplet get_triplet(std::istream &is)
+static bool get_triplet(std::istream &is, Triplet &triplet)
 {
-  Triplet triplet;
+  Triplet tri;
 
-  is >> triplet.v;
-  triplet.has_v = true;
+  is >> tri.v;
+  if (!is) {
+    return false;
+  }
+
+  tri.has_v = true;
   if (is.get() != '/') {
-    return triplet;
+    triplet = tri;
+    return true;
   }
 
   if (is.peek() == '/') {
     is.get(); // skip '/'
-    is >> triplet.vn;
-    triplet.has_vn = true;
-    return triplet;
+    is >> tri.vn;
+    tri.has_vn = true;
+    triplet = tri;
+    return true;
   }
 
-  is >> triplet.vt;
-  triplet.has_vt = true;
+  is >> tri.vt;
+  tri.has_vt = true;
   if (is.get() != '/') {
-    return triplet;
+    triplet = tri;
+    return true;
   }
 
-  is >> triplet.vn;
-  triplet.has_vn = true;
+  is >> tri.vn;
+  tri.has_vn = true;
 
-  return triplet;
+  triplet = tri;
+  return true;
 }
 
 static Vertex get_vector(std::istream &is)
@@ -194,8 +202,12 @@ int ObjParser::Parse(std::istream &stream)
     else if (tag == "f") {
       triplets.Clear();
 
-      while (iss.tellg() > 0) {
-        Triplet triplet = get_triplet(iss);
+      for (;;) {
+        Triplet triplet;
+        if(!get_triplet(iss, triplet)) {
+          break;
+        }
+
         reindicing(v_count_, vt_count_, vn_count_, &triplet);
         triplets.Push(triplet);
       }
@@ -204,7 +216,7 @@ int ObjParser::Parse(std::istream &stream)
           triplets.Count(),
           triplets.GetVertex(),
           triplets.GetTexture(),
-          triplets.GetVertex());
+          triplets.GetNormal());
       f_count_++;
     }
     else if (tag == "g") {

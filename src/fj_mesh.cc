@@ -54,9 +54,73 @@ void Mesh::Clear()
 #undef ATTR
 }
 
+static void get_point_normals(const Mesh &mesh, Index face_index,
+    Vector &N0, Vector &N1, Vector &N2)
+{
+    const Index3 face = mesh.GetFaceIndices(face_index);
+
+    N0 = mesh.GetPointNormal(face.i0);
+    N1 = mesh.GetPointNormal(face.i1);
+    N2 = mesh.GetPointNormal(face.i2);
+}
+
+static void get_vertex_normals(const Mesh &mesh, Index face_index,
+    Vector &N0, Vector &N1, Vector &N2)
+{
+    N0 = mesh.GetVertexNormal(3 * face_index + 0);
+    N1 = mesh.GetVertexNormal(3 * face_index + 1);
+    N2 = mesh.GetVertexNormal(3 * face_index + 2);
+}
+
+static Vector compute_shading_normal(const Mesh &mesh, Index face_index, double u, double v)
+{
+  Vector N0, N1, N2;
+
+  if (mesh.HasVertexNormal()) {
+    get_vertex_normals(mesh, face_index, N0, N1, N2);
+  }
+  else {
+    get_point_normals(mesh, face_index, N0, N1, N2);
+  }
+
+  return TriComputeNormal(N0, N1, N2, u, v);
+}
+
 Mesh::Mesh() : point_count_(0), face_count_(0), bounds_()
 {
   face_group_name_[""] = 0;
+
+  //TODO TEST
+#if 0
+  vertex_normal_.ResizeValue(6);
+  vertex_normal_.ResizeIndex(12*3);
+
+  vertex_normal_.SetValue(0, Vector(0, 1, 0));
+  vertex_normal_.SetValue(1, Vector(-1, 0, 0));
+  vertex_normal_.SetValue(2, Vector(1, 0, 0));
+  vertex_normal_.SetValue(3, Vector(0, 0, -1));
+  vertex_normal_.SetValue(4, Vector(0, 0, 1));
+  vertex_normal_.SetValue(5, Vector(0, -1, 0));
+
+  const Index indices[] = {
+      0, 0, 0,
+      0, 0, 0,
+      1, 1, 1,
+      1, 1, 1,
+      2, 2, 2,
+      2, 2, 2,
+      3, 3, 3,
+      3, 3, 3,
+      4, 4, 4,
+      4, 4, 4,
+      5, 5, 5,
+      5, 5, 5};
+  for (int i = 0; i < static_cast<int>(sizeof(indices)/sizeof(indices[0])); i++) {
+    vertex_normal_.SetIndex(i, indices[i]);
+  }
+  /*
+  */
+#endif
 }
 
 Mesh::~Mesh()
@@ -86,6 +150,22 @@ void Mesh::SetFaceCount(int count)
 const Box &Mesh::GetBounds() const
 {
   return bounds_;
+}
+
+//TODO TEST
+bool Mesh::HasVertexNormal() const
+{
+  return !vertex_normal_.IsEmpty();
+}
+
+Vector Mesh::GetVertexNormal(Index vertex_id) const
+{
+  if (HasVertexNormal()) {
+    return vertex_normal_.Get(vertex_id);
+  }
+  else {
+    return Vector(0, 0, 0);
+  }
 }
 
 int Mesh::CreateFaceGroup(const std::string &group_name)
@@ -190,10 +270,13 @@ bool Mesh::ray_intersect(Index prim_id, Real time,
   // we don't know N at time sampled point with velocity motion blur
   // just using N from mesh data
   // intersect info
+  /*
   const Vector N0 = GetPointNormal(face.i0);
   const Vector N1 = GetPointNormal(face.i1);
   const Vector N2 = GetPointNormal(face.i2);
   isect->N = TriComputeNormal(N0, N1, N2, u, v);
+  */
+  isect->N = compute_shading_normal(*this, prim_id, u, v);
 
   // TODO TMP uv handling
   // UV = (1-u-v) * UV0 + u * UV1 + v * UV2

@@ -5,6 +5,7 @@
 #define FJ_VECTOR_H
 
 #include "fj_types.h"
+#include <iostream>
 #include <cmath>
 
 namespace fj {
@@ -276,6 +277,14 @@ inline Vector Cross(const Vector &a, const Vector &b)
 inline Vector LerpVec3(const Vector &a, const Vector &b, Real t)
 {
   return (1 - t) * a + t * b;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const Vector &a)
+{
+  return os << "(" <<
+    a.x << ", " <<
+    a.y << ", " <<
+    a.z << ")";
 }
 
 } // namespace xxx
