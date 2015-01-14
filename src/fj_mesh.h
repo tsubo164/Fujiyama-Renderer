@@ -39,30 +39,68 @@ public:
   public:
     typedef T Value;
 
+  public:
     VertexAttributeAccessor(VertexAttribute<T> &attribute) : attr_(attribute) {}
     ~VertexAttributeAccessor() {}
 
-    void ResizeValue(Index size) { attr_.ResizeValue(size); }
-    void ResizeIndex(Index size) { attr_.ResizeIndex(size); }
+    // Resize
+    void ResizeValue(Index size)
+    {
+      attr_.ResizeValue(size);
+    }
+    void ResizeIndex(Index size)
+    {
+      attr_.ResizeIndex(size);
+    }
 
+    // Push
     Index PushValue(const Value &value)
     {
       attr_.PushValue(value);
       return attr_.GetValueCount() - 1;
     }
-    Index PushIndex(Index index);
+    Index PushIndex(Index index)
+    {
+      attr_.PushIndex(index);
+      return attr_.GetIndexCount() - 1;
+    }
+
+    // Set
+    void SetValue(Index offset, const Value &value)
+    {
+      attr_.SetValue(offset, value);
+    }
+    void SetIndex(Index offset, const Index index)
+    {
+      attr_.SetIndex(offset, index);
+    }
+
+    // Get
+    Value GetValue(Index offset) const
+    {
+      return attr_.GetValue(offset);
+    }
+    Index GetIndex(Index offset) const
+    {
+      return attr_.GetIndex(offset);
+    }
+
+    // Count
+    Index GetValueCount() const
+    {
+      return attr_.GetValueCount();
+    }
+    Index GetIndexCount() const
+    {
+      return attr_.GetIndexCount();
+    }
+
     Value Get(Index vertex_id) const { return attr_.Get(vertex_id); }
 
-    void SetValue(Index offset, const Value &value) { attr_.SetValue(offset, value); }
-    void SetIndex(Index offset, const Index index) { attr_.SetIndex(offset, index); }
-
-    Value GetValue(Index offset) const { return attr_.GetValue(offset); };
-    Index GetIndex(Index offset) const { return attr_.GetIndex(offset); };
-    Index GetValueCount() const { return attr_.GetValueCount(); }
-    Index GetIndexCount() const { return attr_.GetIndexCount(); }
   private:
     VertexAttribute<T> &attr_;
   };
+
   VertexAttributeAccessor<Vector> GetVertexNormal()
   {
     return VertexAttributeAccessor<Vector>(vertex_normal_);

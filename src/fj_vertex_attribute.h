@@ -25,6 +25,7 @@ public:
     return value_.empty();
   }
 
+  // Resize
   void ResizeValue(Index size)
   {
     value_.resize(size);
@@ -33,28 +34,50 @@ public:
   {
     index_.resize(size);
   }
-  void Resize(Index value_count, Index index_count)
+
+  // Get
+  Value GetValue(Index offset) const
   {
-    value_.resize(value_count);
-    index_.resize(index_count);
+    if (out_of_range(value_, offset)) {
+      return Value();
+    }
+    return value_[offset];
+  }
+  Index GetIndex(Index offset) const
+  {
+    if (out_of_range(index_, offset)) {
+      return Index();
+    }
+    return index_[offset];
   }
 
-  Value GetValue(Index offset) const { return value_[offset]; }
-  Index GetIndex(Index offset) const { return index_[offset]; }
+  // Set
   void SetValue(Index offset, const Value &value)
   {
+    if (out_of_range(value_, offset)) {
+      return;
+    }
     value_[offset] = value;
   }
   void SetIndex(Index offset, Index index)
   {
+    if (out_of_range(index_, offset)) {
+      return;
+    }
     index_[offset] = index;
   }
 
+  // Push
   void PushValue(const Value &value)
   {
     value_.push_back(value);
   }
+  void PushIndex(const Index &index)
+  {
+    index_.push_back(index);
+  }
 
+  // Count
   Index GetValueCount() const
   {
     return value_.size();
@@ -64,10 +87,10 @@ public:
     return index_.size();
   }
 
-  // TODO
+  // TODO better name like Lookup
   Value Get(Index index) const
   {
-    if (index < 0 || index >= static_cast<Index>(index_.size())) {
+    if (out_of_range(index_, index)) {
       return Value();
     }
     return value_[index_[index]];
@@ -79,16 +102,13 @@ public:
     std::vector<Index>().swap(index_);
   }
 
-  const T &operator[](Index i) const
+private:
+  template <typename T2>
+  bool out_of_range(const std::vector<T2> v, std::size_t i) const
   {
-    return value_[index_[i]];
-  }
-  T &operator[](Index i)
-  {
-    return value_[index_[i]];
+    return i < 0 || i >= v.size();
   }
 
-private:
   std::vector<Value> value_;
   std::vector<Index> index_;
 };
