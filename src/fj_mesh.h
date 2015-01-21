@@ -34,7 +34,7 @@ public:
   bool HasVertexNormal() const;
   Vector GetVertexNormal(Index vertex_id) const;
 
-  template<typename T>
+  template <typename T>
   class VertexAttributeAccessor {
   public:
     typedef T Value;
@@ -106,10 +106,17 @@ public:
     return VertexAttributeAccessor<Vector>(vertex_normal_);
   }
 
-#if 0
+  template <typename T>
   class PointAttributeAccessor {
   public:
     typedef T Value;
+
+  public:
+    PointAttributeAccessor(std::vector<Value> &value, std::vector<Index> &index)
+        : value_(value), index_(index) {}
+    ~PointAttributeAccessor() {}
+
+/*
     Index Push(const Value &value);
     Value Get(Index point_id) const;
 
@@ -117,8 +124,12 @@ public:
     Index GetIndex(Index offset) const;
     Index GetValueCount() const;
     Index GetIndexCount() const;
+*/
   private:
-  }
+    std::vector<Value> &value_;
+    std::vector<Index> &index_;
+  };
+#if 0
 #endif
 
 #if n

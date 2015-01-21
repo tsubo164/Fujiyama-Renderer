@@ -58,40 +58,14 @@ private:
   {
     P.push_back(Vector(x, y, z));
     nverts++;
-
-    /*
-    std::cout << "v: (" <<
-      x << ", " <<
-      y << ", " <<
-      z << ")\n";
-    */
   }
   virtual void read_vt(int ncomponents, double x, double y, double z, double w)
   {
     uv.push_back(TexCoord(x, y));
-
-    /*
-    std::cout << "vt: (" <<
-      x << ", " <<
-      y << ", " <<
-      z << ")\n";
-    */
   }
   virtual void read_vn(int ncomponents, double x, double y, double z, double w)
   {
-    // TODO IMPLEMENT THIS
     N.push_back(Vector(x, y, z));
-    /*
-    std::cout << "vn: (" <<
-      x << ", " <<
-      y << ", " <<
-      z << ")\n";
-    */
-    /*
-    Mesh::VertexAttributeAccessor<Vector> normal = mesh.GetVertexNormal();
-    std::cout << "---> " << normal.PushValue(Vector(x, y, z));
-    std::cout << "--->\n";
-    */
   }
 
   virtual void read_f(long index_count,
@@ -100,11 +74,6 @@ private:
     const long *vn_indices)
   {
     const int ntriangles = index_count - 2;
-    /*
-    static int n = 0;
-    std::cout << "n: " << n << ")\n";
-    n++;
-    */
 
     for (int i = 0; i < ntriangles; i++) {
       if (v_indices != NULL) {
@@ -287,8 +256,6 @@ int ObjBufferComputeNormals(ObjBuffer *buffer)
   if (!N.empty()) {
     return 0;
   }
-  //TODO TEST
-  //return 0;
 
   N.resize(nverts);
 
