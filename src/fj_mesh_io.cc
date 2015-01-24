@@ -86,7 +86,6 @@ int MeshInput::ReadHeader()
   const int TOTAL_ATTR_COUNT = GetPointAttributeCount() + GetFaceAttributeCount()
       + GetVertexAttributeCount();
   attr_names_.resize(TOTAL_ATTR_COUNT, "");
-  std::cout << "TOTAL_ATTR_COUNT: " << TOTAL_ATTR_COUNT << "\n";
 
   for (int i = 0; i < TOTAL_ATTR_COUNT; i++) {
     char attrname[MAX_ATTRNAME_SIZE] = {'\0'};
@@ -310,7 +309,7 @@ void MeshOutput::WriteFile()
   write_attribute_name("velocity");
   write_attribute_name("indices");
   write_attribute_name("face_group_id");
-  // TODO TEST
+
   write_attribute_name("vertex_normal");
 
   write_attribute_data("P");
@@ -320,7 +319,7 @@ void MeshOutput::WriteFile()
   write_attribute_data("velocity");
   write_attribute_data("indices");
   write_attribute_data("face_group_id");
-  // TODO TEST
+
   write_attribute_data("vertex_normal");
 }
 
@@ -448,8 +447,6 @@ void MeshOutput::write_attribute_data(const std::string &name)
       write_(file_, &id, 1);
     }
   }
-#if 0
-#endif
   else if (name == "vertex_normal") {
     if (vertex_normal_value_ == NULL)
       return;
@@ -460,9 +457,7 @@ void MeshOutput::write_attribute_data(const std::string &name)
         3 * sizeof(double) * vertex_normal_index_count_;
     write_(file_, &datasize, 1);
 
-      /*
-      std::cout << "vertex_normal_value_count: " << vertex_normal_value_count_ << "\n";
-      */
+    // write vertex normal values
     write_(file_, &vertex_normal_value_count_, 1);
     for (int i = 0; i < vertex_normal_value_count_; i++) {
       double value[3] = {0, 0, 0};
@@ -470,14 +465,9 @@ void MeshOutput::write_attribute_data(const std::string &name)
       value[1] = vertex_normal_value_[i].y;
       value[2] = vertex_normal_value_[i].z;
       write_(file_, value, 3);
-      /*
-      std::cout << "vertex_normal_value[" << i << "]: " <<
-          vertex_normal_value_[i] << std::endl;
-      */
     }
-      /*
-      std::cout << "vertex_normal_index_count: " << vertex_normal_index_count_ << "\n";
-      */
+
+    // write vertex normal indices
     write_(file_, &vertex_normal_index_count_, 1);
     for (int i = 0; i < vertex_normal_index_count_; i++) {
       Index index[3] = {0, 0, 0};
@@ -485,12 +475,6 @@ void MeshOutput::write_attribute_data(const std::string &name)
       index[1] = vertex_normal_index_[i].i1;
       index[2] = vertex_normal_index_[i].i2;
       write_(file_, index, 3);
-      /*
-      std::cout << "index[" << i << "]: " <<
-          index[0] << ", " <<
-          index[1] << ", " <<
-          index[2] << "\n";
-      */
     }
   }
 }
@@ -510,8 +494,6 @@ int MshLoadFile(Mesh *mesh, const char *filename)
 
   const int TOTAL_ATTR_COUNT = in.GetPointAttributeCount() + in.GetFaceAttributeCount()
       + in.GetVertexAttributeCount();
-
-  std::cout << "TOTAL_ATTR_COUNT: " << TOTAL_ATTR_COUNT << "\n";
 
   for (int i = 0; i < TOTAL_ATTR_COUNT; i++) {
     const std::string attrname = in.GetAttributeName(i);
@@ -540,7 +522,6 @@ int MshLoadFile(Mesh *mesh, const char *filename)
         N.y = data[3*j + 1];
         N.z = data[3*j + 2];
         mesh->SetPointNormal(j, N);
-        //std::cout << "==========> N: " << N << "\n";
       }
     }
     else if (attrname == "Cd") {
@@ -584,7 +565,6 @@ int MshLoadFile(Mesh *mesh, const char *filename)
     else if (attrname == "indices") {
       mesh->SetFaceCount(in.GetFaceCount());
       mesh->AddFaceIndices();
-    std::cout << "Face Count: " << in.GetFaceCount() << "\n";
       in.ReadAttributeData();
       for (int j = 0; j < in.GetFaceCount(); j++) {
         const Index *data = (const Index *) in.GetDataBuffer();
@@ -609,72 +589,32 @@ int MshLoadFile(Mesh *mesh, const char *filename)
       in.ReadAttributeData();
       const Index *data = (const Index *) in.GetDataBuffer();
       const Index value_count = *data;
-      std::cout << "value_count: " << value_count << "\n";
       data++;
+
+      // read vertex normal values
       const double *ddata = (const double *) data;
       Mesh::VertexAttributeAccessor<Vector> vertex_normal = mesh->GetVertexNormal();
       vertex_normal.ResizeValue(value_count);
       for (Index j = 0; j < value_count; j++) {
-        /*
-        std::cout << "ddata[" << j << "]: " <<
-            ddata[0] << ", " <<
-            ddata[1] << ", " <<
-            ddata[2] << "\n";
-        */
         const Vector value(
             ddata[0],
             ddata[1],
             ddata[2]);
         vertex_normal.SetValue(j, value);
-        /*
-        */
         ddata += 3;
       }
+
+      // read vertex normal indices
       const Index *idata = (const Index *) ddata;
       const Index index_count = *idata;
       idata++;
-      std::cout << "index_count: " << index_count << "\n";
       vertex_normal.ResizeIndex(index_count * 3);
       for (Index j = 0; j < index_count; j++) {
-        /*
-        std::cout << "idata[" << j << "]: " <<
-            idata[0] << ", " <<
-            idata[1] << ", " <<
-            idata[2] << "\n";
-        */
         vertex_normal.SetIndex(j * 3 + 0, idata[0]);
         vertex_normal.SetIndex(j * 3 + 1, idata[1]);
         vertex_normal.SetIndex(j * 3 + 2, idata[2]);
-        /*
-        */
         idata += 3;
       }
-      std::cout << "DONE index_count: " << index_count << "\n";
-      /*
-      */
-      {
-        Mesh::VertexAttributeAccessor<Vector> normals = mesh->GetVertexNormal();
-        const Index count = normals.GetValueCount();
-        for (Index i = 0; i < count; i++) {
-          //const Vector N = normals.Get(i);
-          //std::cout << "-----> N: " << N << "\n";
-          /*
-          std::cout << "-----> Value: " << normals.GetValue(i) << "\n";
-          */
-        }
-      }
-      {
-        Mesh::VertexAttributeAccessor<Vector> normals = mesh->GetVertexNormal();
-        const Index count = normals.GetIndexCount();
-        for (Index i = 0; i < count; i++) {
-          //const Vector N = normals.Get(i);
-          //std::cout << "-----> N: " << N << "\n";
-          /*
-          std::cout << "-----> Index: " << normals.GetIndex(i) << "\n";
-          */
-        }
-      }
-
     }
   }
 
