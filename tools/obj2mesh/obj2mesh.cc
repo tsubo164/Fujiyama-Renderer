@@ -27,7 +27,7 @@ static const char USAGE[] =
 class ObjBuffer : public obj::ObjParser {
 public:
   ObjBuffer() :
-      nverts(0), nfaces(0),
+      vertex_count(0), face_count(0),
       current_group_id(0)
   {
     // default group name and id
@@ -36,39 +36,36 @@ public:
   virtual ~ObjBuffer() {}
 
 public:
-  long nverts;
-  long nfaces;
+  long vertex_count;
+  long face_count;
 
-  std::vector<Vector>   P;
-  std::vector<Vector>   N;
-  std::vector<TexCoord> uv;
-  std::vector<Index3>   vertex_indices;
+  std::vector<Vector>   vertex_position;
+  std::vector<Vector>   vertex_normal;
+  std::vector<TexCoord> vertex_texture;
+  std::vector<Index3>   position_indices;
   std::vector<Index3>   texture_indices;
   std::vector<Index3>   normal_indices;
 
-  // TODO TEST
   std::vector<Vector>   point_normal;
 
   std::vector<int>      face_group_id;
   std::map<std::string, int> group_name_to_id;
   int current_group_id;
 
-  Mesh mesh;
-
 private:
   // overriding callbacks
   virtual void read_v (int ncomponents, double x, double y, double z, double w)
   {
-    P.push_back(Vector(x, y, z));
-    nverts++;
+    vertex_position.push_back(Vector(x, y, z));
+    vertex_count++;
   }
   virtual void read_vt(int ncomponents, double x, double y, double z, double w)
   {
-    uv.push_back(TexCoord(x, y));
+    vertex_texture.push_back(TexCoord(x, y));
   }
   virtual void read_vn(int ncomponents, double x, double y, double z, double w)
   {
-    N.push_back(Vector(x, y, z));
+    vertex_normal.push_back(Vector(x, y, z));
   }
 
   virtual void read_f(long index_count,
@@ -84,7 +81,7 @@ private:
             v_indices[0],
             v_indices[i + 1],
             v_indices[i + 2]);
-        vertex_indices.push_back(tri_index);
+        position_indices.push_back(tri_index);
       }
 
       if (vt_indices != NULL) {
@@ -106,7 +103,7 @@ private:
       set_face_group_id();
     }
 
-    nfaces += ntriangles;
+    face_count += ntriangles;
   }
 
   virtual void read_g(const std::vector<std::string> &group_name_list)
@@ -149,8 +146,8 @@ private:
   }
 };
 
-extern int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename);
-extern int ObjBufferComputeNormals(ObjBuffer *buffer);
+extern int ObjBufferToMeshFile(const ObjBuffer &buffer, const char *filename);
+extern int ObjBufferComputeNormals(ObjBuffer &buffer);
 
 int main(int argc, const char **argv)
 {
@@ -181,20 +178,20 @@ int main(int argc, const char **argv)
     return -1;
   }
 
-  err = ObjBufferComputeNormals(&buffer);
+  err = ObjBufferComputeNormals(buffer);
   if (err) {
     // TODO error handling
     return -1;
   }
 
-  err = ObjBufferToMeshFile(&buffer, out_filename);
+  err = ObjBufferToMeshFile(buffer, out_filename);
   if (err) {
     // TODO error handling
     return -1;
   }
 
-  std::cout << "nverts: " << buffer.nverts << "\n";
-  std::cout << "nfaces: " << buffer.nfaces << "\n";
+  std::cout << "vertex_count: " << buffer.vertex_count << "\n";
+  std::cout << "face_count:   " << buffer.face_count << "\n";
   std::cout << "face group count: " << buffer.group_name_to_id.size() << "\n";
   for (std::map<std::string, int>::const_iterator it = buffer.group_name_to_id.begin();
     it != buffer.group_name_to_id.end(); ++it) {
@@ -204,7 +201,7 @@ int main(int argc, const char **argv)
   return 0;
 }
 
-int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename)
+int ObjBufferToMeshFile(const ObjBuffer &buffer, const char *filename)
 {
   MeshOutput out;
 
@@ -213,34 +210,25 @@ int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename)
     return -1;
   }
 
-  // TODO TEST
-  /*
-  Mesh::VertexAttributeAccessor<Vector> normals = buffer->mesh.GetVertexNormal();
-  const Index vertex_count = normals.GetIndexCount();
-  for (Index i = 0; i < vertex_count; i++) {
-    const Vector N = normals.Get(i);
-    std::cout << "N: " << N << "\n";
+  // set attributes
+  out.SetPointCount(buffer.vertex_count);
+  out.SetPointPosition(&buffer.vertex_position[0]);
+  out.SetFaceCount(buffer.face_count);
+  out.SetFaceIndex3(&buffer.position_indices[0]);
+
+  // set normal attribute
+  if (!buffer.point_normal.empty()) {
+    out.SetPointNormal(&buffer.point_normal[0]);
   }
-  */
-
-  out.SetPointCount(buffer->nverts);
-  out.SetPointPosition(&buffer->P[0]);
-  //out.SetPointNormal(&buffer->N[0]);
-  //out.SetPointTexture(&buffer->uv[0]);
-  out.SetFaceCount(buffer->nfaces);
-  out.SetFaceIndex3(&buffer->vertex_indices[0]);
-
-  if (!buffer->point_normal.empty()) {
-    out.SetPointNormal(&buffer->point_normal[0]);
-  } else {
+  else if (!buffer.vertex_normal.empty()) {
     out.SetVertexNormal(
-        &buffer->N[0], buffer->N.size(),
-        &buffer->normal_indices[0], buffer->normal_indices.size());
+        &buffer.vertex_normal[0], buffer.vertex_normal.size(),
+        &buffer.normal_indices[0], buffer.normal_indices.size());
   }
 
   // TODO TEST
-  if (!buffer->face_group_id.empty()) {
-    out.SetFaceGroupID(&buffer->face_group_id[0]);
+  if (!buffer.face_group_id.empty()) {
+    out.SetFaceGroupID(&buffer.face_group_id[0]);
   }
 
   out.WriteFile();
@@ -248,27 +236,26 @@ int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename)
   return 0;
 }
 
-int ObjBufferComputeNormals(ObjBuffer *buffer)
+int ObjBufferComputeNormals(ObjBuffer &buffer)
 {
-  const int nverts = buffer->nverts;
-  const int nfaces = buffer->nfaces;
-  std::vector<Vector> &P = buffer->P;
-  std::vector<Vector> &N = buffer->point_normal;
-  std::vector<Index3> &indices = buffer->vertex_indices;
+  const int vertex_count = buffer.vertex_count;
+  const int face_count = buffer.face_count;
+  std::vector<Vector> &P = buffer.vertex_position;
+  std::vector<Vector> &N = buffer.point_normal;
+  std::vector<Index3> &indices = buffer.position_indices;
 
   if (P.empty() || indices.empty()) {
     return -1;
   }
 
-  if (!buffer->N.empty()) {
-    std::cout << "N NOT empty!!\n";
+  if (!buffer.vertex_normal.empty()) {
     return 0;
   }
 
-  N.resize(nverts);
+  N.resize(vertex_count);
 
   // accumulate N
-  for (int i = 0; i < nfaces; i++) {
+  for (int i = 0; i < face_count; i++) {
     const int i0 = indices[i].i0;
     const int i1 = indices[i].i1;
     const int i2 = indices[i].i2;
@@ -281,7 +268,7 @@ int ObjBufferComputeNormals(ObjBuffer *buffer)
   }
 
   // normalize N
-  for (int i = 0; i < nverts; i++) {
+  for (int i = 0; i < vertex_count; i++) {
     Normalize(&N[i]);
   }
 
