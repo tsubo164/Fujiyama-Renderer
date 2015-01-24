@@ -46,6 +46,9 @@ public:
   std::vector<Index3>   texture_indices;
   std::vector<Index3>   normal_indices;
 
+  // TODO TEST
+  std::vector<Vector>   point_normal;
+
   std::vector<int>      face_group_id;
   std::map<std::string, int> group_name_to_id;
   int current_group_id;
@@ -227,9 +230,13 @@ int ObjBufferToMeshFile(ObjBuffer *buffer, const char *filename)
   out.SetFaceCount(buffer->nfaces);
   out.SetFaceIndex3(&buffer->vertex_indices[0]);
 
-  out.SetVertexNormal(
-      &buffer->N[0], buffer->N.size(),
-      &buffer->normal_indices[0], buffer->normal_indices.size());
+  if (!buffer->point_normal.empty()) {
+    out.SetPointNormal(&buffer->point_normal[0]);
+  } else {
+    out.SetVertexNormal(
+        &buffer->N[0], buffer->N.size(),
+        &buffer->normal_indices[0], buffer->normal_indices.size());
+  }
 
   // TODO TEST
   if (!buffer->face_group_id.empty()) {
@@ -246,14 +253,15 @@ int ObjBufferComputeNormals(ObjBuffer *buffer)
   const int nverts = buffer->nverts;
   const int nfaces = buffer->nfaces;
   std::vector<Vector> &P = buffer->P;
-  std::vector<Vector> &N = buffer->N;
+  std::vector<Vector> &N = buffer->point_normal;
   std::vector<Index3> &indices = buffer->vertex_indices;
 
   if (P.empty() || indices.empty()) {
     return -1;
   }
 
-  if (!N.empty()) {
+  if (!buffer->N.empty()) {
+    std::cout << "N NOT empty!!\n";
     return 0;
   }
 

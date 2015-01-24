@@ -104,7 +104,7 @@ public:
 
 private:
   template <typename T2>
-  bool out_of_range(const std::vector<T2> v, std::size_t i) const
+  bool out_of_range(const std::vector<T2> &v, std::size_t i) const
   {
     return i < 0 || i >= v.size();
   }

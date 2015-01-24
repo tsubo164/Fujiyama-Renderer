@@ -460,7 +460,9 @@ void MeshOutput::write_attribute_data(const std::string &name)
         3 * sizeof(double) * vertex_normal_index_count_;
     write_(file_, &datasize, 1);
 
+      /*
       std::cout << "vertex_normal_value_count: " << vertex_normal_value_count_ << "\n";
+      */
     write_(file_, &vertex_normal_value_count_, 1);
     for (int i = 0; i < vertex_normal_value_count_; i++) {
       double value[3] = {0, 0, 0};
@@ -468,10 +470,14 @@ void MeshOutput::write_attribute_data(const std::string &name)
       value[1] = vertex_normal_value_[i].y;
       value[2] = vertex_normal_value_[i].z;
       write_(file_, value, 3);
+      /*
       std::cout << "vertex_normal_value[" << i << "]: " <<
           vertex_normal_value_[i] << std::endl;
+      */
     }
+      /*
       std::cout << "vertex_normal_index_count: " << vertex_normal_index_count_ << "\n";
+      */
     write_(file_, &vertex_normal_index_count_, 1);
     for (int i = 0; i < vertex_normal_index_count_; i++) {
       Index index[3] = {0, 0, 0};
@@ -479,10 +485,12 @@ void MeshOutput::write_attribute_data(const std::string &name)
       index[1] = vertex_normal_index_[i].i1;
       index[2] = vertex_normal_index_[i].i2;
       write_(file_, index, 3);
+      /*
       std::cout << "index[" << i << "]: " <<
           index[0] << ", " <<
           index[1] << ", " <<
           index[2] << "\n";
+      */
     }
   }
 }
@@ -532,6 +540,7 @@ int MshLoadFile(Mesh *mesh, const char *filename)
         N.y = data[3*j + 1];
         N.z = data[3*j + 2];
         mesh->SetPointNormal(j, N);
+        //std::cout << "==========> N: " << N << "\n";
       }
     }
     else if (attrname == "Cd") {
@@ -606,10 +615,12 @@ int MshLoadFile(Mesh *mesh, const char *filename)
       Mesh::VertexAttributeAccessor<Vector> vertex_normal = mesh->GetVertexNormal();
       vertex_normal.ResizeValue(value_count);
       for (Index j = 0; j < value_count; j++) {
+        /*
         std::cout << "ddata[" << j << "]: " <<
             ddata[0] << ", " <<
             ddata[1] << ", " <<
             ddata[2] << "\n";
+        */
         const Vector value(
             ddata[0],
             ddata[1],
@@ -625,10 +636,12 @@ int MshLoadFile(Mesh *mesh, const char *filename)
       std::cout << "index_count: " << index_count << "\n";
       vertex_normal.ResizeIndex(index_count * 3);
       for (Index j = 0; j < index_count; j++) {
+        /*
         std::cout << "idata[" << j << "]: " <<
             idata[0] << ", " <<
             idata[1] << ", " <<
             idata[2] << "\n";
+        */
         vertex_normal.SetIndex(j * 3 + 0, idata[0]);
         vertex_normal.SetIndex(j * 3 + 1, idata[1]);
         vertex_normal.SetIndex(j * 3 + 2, idata[2]);
@@ -636,6 +649,7 @@ int MshLoadFile(Mesh *mesh, const char *filename)
         */
         idata += 3;
       }
+      std::cout << "DONE index_count: " << index_count << "\n";
       /*
       */
       {
@@ -644,7 +658,9 @@ int MshLoadFile(Mesh *mesh, const char *filename)
         for (Index i = 0; i < count; i++) {
           //const Vector N = normals.Get(i);
           //std::cout << "-----> N: " << N << "\n";
+          /*
           std::cout << "-----> Value: " << normals.GetValue(i) << "\n";
+          */
         }
       }
       {
@@ -653,7 +669,9 @@ int MshLoadFile(Mesh *mesh, const char *filename)
         for (Index i = 0; i < count; i++) {
           //const Vector N = normals.Get(i);
           //std::cout << "-----> N: " << N << "\n";
+          /*
           std::cout << "-----> Index: " << normals.GetIndex(i) << "\n";
+          */
         }
       }
 
