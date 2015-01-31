@@ -231,6 +231,22 @@ int ObjBufferToMeshFile(const ObjBuffer &buffer, const char *filename)
     out.SetFaceGroupID(&buffer.face_group_id[0]);
   }
 
+  // TODO TEST
+  std::vector<std::string> group_names(buffer.group_name_to_id.size());
+  for (std::map<std::string,int>::const_iterator it = buffer.group_name_to_id.begin();
+      it != buffer.group_name_to_id.end();
+      ++it) {
+    const int id = it->second;
+    group_names[id] = it->first;
+  }
+  for (std::size_t i = 0; i < group_names.size(); i++) {
+    std::cout << "group id: " << i << " -> [" << group_names[i] << "]\n";
+  }
+  if (!group_names.empty()) {
+    out.SetFaceGroupNameCount(group_names.size());
+    out.SetFaceGroupName(&group_names[0]);
+  }
+
   out.WriteFile();
 
   return 0;

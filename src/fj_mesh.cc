@@ -176,7 +176,7 @@ int Mesh::CreateFaceGroup(const std::string &group_name)
   const int new_id = static_cast<int>(face_group_name_.size());
   face_group_name_[group_name] = new_id;
 
-  return 0;
+  return new_id;
 }
 
 void Mesh::ComputeNormals()

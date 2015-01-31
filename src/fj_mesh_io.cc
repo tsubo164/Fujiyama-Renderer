@@ -31,7 +31,9 @@ MeshInput::MeshInput() :
     point_count_(0),
     point_attr_count_(0),
     face_count_(0),
-    face_attr_count_(0)
+    face_attr_count_(0),
+
+    face_group_count_(0)
 {
 }
 
@@ -82,6 +84,8 @@ int MeshInput::ReadHeader()
   read_(file_, &point_attr_count_,  1);
   read_(file_, &face_count_,        1);
   read_(file_, &face_attr_count_,   1);
+
+  read_(file_, &face_group_count_,  1);
 
   const int TOTAL_ATTR_COUNT = GetPointAttributeCount() + GetFaceAttributeCount()
       + GetVertexAttributeCount();
@@ -138,6 +142,11 @@ int MeshInput::GetFaceAttributeCount() const
   return face_attr_count_;
 }
 
+int MeshInput::GetFaceGroupCount() const
+{
+  return face_group_count_;
+}
+
 const char *MeshInput::GetDataBuffer() const
 {
   return &data_buffer_[0];
@@ -157,6 +166,15 @@ inline void write_(std::ofstream &file, const T *src, int64_t count)
   file.write(reinterpret_cast<const char*>(src), sizeof(*src) * count);
 }
 
+inline void write(std::ofstream &file, const std::string &src)
+{
+  const std::string &name = src;
+  const size_t namesize = name.length() + 1;
+
+  write_(file, &namesize, 1);
+  write_(file, &name[0], namesize);
+}
+
 MeshOutput::MeshOutput() :
     version_(MSH_FILE_VERSION),
     vertex_attr_count_(0),
@@ -164,6 +182,9 @@ MeshOutput::MeshOutput() :
     point_attr_count_(0),
     face_count_(0),
     face_attr_count_(0),
+
+    face_group_count_(0),
+
     P_(NULL),
     N_(NULL),
     Cd_(NULL),
@@ -171,6 +192,8 @@ MeshOutput::MeshOutput() :
     velocity_(NULL),
     indices_(NULL),
     face_group_id_(NULL),
+
+    face_group_name_(NULL),
 
     vertex_normal_value_(NULL),
     vertex_normal_index_(NULL),
@@ -290,6 +313,22 @@ void MeshOutput::SetVertexNormal(
   vertex_normal_index_count_ = index_count;
 }
 
+void MeshOutput::SetFaceGroupName(const std::string *name)
+{
+  if (face_group_name_ == NULL && name != NULL) {
+    face_attr_count_++;
+  }
+  face_group_name_ = name;
+}
+
+void MeshOutput::SetFaceGroupNameCount(int count)
+{
+  if (count < 0) {
+    return;
+  }
+  face_group_count_ = count;
+}
+
 void MeshOutput::WriteFile()
 {
   char magic[] = MSH_FILE_MAGIC;
@@ -302,6 +341,8 @@ void MeshOutput::WriteFile()
   write_(file_, &face_count_,        1);
   write_(file_, &face_attr_count_,   1);
 
+  write_(file_, &face_group_count_,  1);
+
   write_attribute_name("P");
   write_attribute_name("N");
   write_attribute_name("Cd");
@@ -309,6 +350,8 @@ void MeshOutput::WriteFile()
   write_attribute_name("velocity");
   write_attribute_name("indices");
   write_attribute_name("face_group_id");
+
+  write_attribute_name("face_group_name");
 
   write_attribute_name("vertex_normal");
 
@@ -319,6 +362,8 @@ void MeshOutput::WriteFile()
   write_attribute_data("velocity");
   write_attribute_data("indices");
   write_attribute_data("face_group_id");
+
+  write_attribute_data("face_group_name");
 
   write_attribute_data("vertex_normal");
 }
@@ -344,6 +389,9 @@ void MeshOutput::write_attribute_name(const std::string &name)
     return;
   }
   else if (name == "face_group_id" && face_group_id_ == NULL) {
+    return;
+  }
+  else if (name == "face_group_name" && face_group_name_ == NULL) {
     return;
   }
   else if (name == "vertex_normal" && vertex_normal_value_ == NULL) {
@@ -445,6 +493,22 @@ void MeshOutput::write_attribute_data(const std::string &name)
     for (int i = 0; i < face_count_; i++) {
       const int id = face_group_id_[i];
       write_(file_, &id, 1);
+    }
+  }
+  else if (name == "face_group_name") {
+    if (face_group_name_ == NULL)
+      return;
+    size_t datasize = 0;
+    for (int i = 0; i < face_group_count_; i++) {
+      const std::string &name = face_group_name_[i];
+      const std::size_t namesize = name.length() + 1;
+      const std::size_t thisdata = sizeof(namesize) + sizeof(char) * namesize;
+      datasize += thisdata;
+    }
+    write_(file_, &datasize, 1);
+    for (int i = 0; i < face_group_count_; i++) {
+      const std::string &name = face_group_name_[i];
+      write(file_, name);
     }
   }
   else if (name == "vertex_normal") {
@@ -583,6 +647,22 @@ int MshLoadFile(Mesh *mesh, const char *filename)
         const int *data = (const int *) in.GetDataBuffer();
         const int group_id = data[j];
         mesh->SetFaceGroupID(j, group_id);
+      }
+    }
+    else if (attrname == "face_group_name") {
+      in.ReadAttributeData();
+      const char *data = (const char *) in.GetDataBuffer();
+
+      for (int j = 0; j < in.GetFaceGroupCount(); j++) {
+        const std::size_t *sdata = (const std::size_t *) data;
+        const std::size_t namesize = *sdata;
+        sdata++;
+        const char *cdata = (const char *) sdata;
+        std::cout << "namesize: " << namesize << "\n";
+        const std::string name(cdata);
+        cdata += namesize;
+        std::cout << "GROUP: [" << name << "] --> ID: " << mesh->CreateFaceGroup(name) << "\n";
+        data = cdata;
       }
     }
     else if (attrname == "vertex_normal") {
