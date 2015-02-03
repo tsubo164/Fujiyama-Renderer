@@ -14,6 +14,8 @@
 #include "fj_timer.h"
 #include "fj_box.h"
 
+#include <map>
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -116,6 +118,26 @@ static ID find_accelerator(ID primset)
     }
   }
   return SI_BADID;
+}
+
+// TODO TEST
+typedef std::map<ID,ID> IDMap;
+IDMap object_to_primset;
+static void push_idmap_entry(IDMap &map, ID key, ID value)
+{
+  IDMap::const_iterator it = map.find(key);
+  if (it == map.end()) {
+    map[key] = value;
+  }
+}
+static ID find_idmap_entry(IDMap &map, ID key)
+{
+  IDMap::const_iterator it = map.find(key);
+  if (it != map.end()) {
+    return it->second;
+  } else {
+    return SI_BADID;
+  }
 }
 
 /* the global error code */
@@ -310,9 +332,9 @@ Status SiAddObjectToGroup(ID group, ID object)
   return SI_SUCCESS;
 }
 
-ID SiNewObjectInstance(ID primset_id)
+ID SiNewObjectInstance(ID primset)
 {
-  const ID accel_id = find_accelerator(primset_id);
+  const ID accel_id = find_accelerator(primset);
   const Entry entry = decode_id(accel_id);
 
   if (entry.type == Type_Accelerator) {
@@ -369,7 +391,11 @@ ID SiNewObjectInstance(ID primset_id)
   }
 
   set_errno(SI_ERR_NONE);
-  return encode_id(Type_ObjectInstance, GET_LAST_ADDED_ID(ObjectInstance));
+  //return encode_id(Type_ObjectInstance, GET_LAST_ADDED_ID(ObjectInstance));
+
+  const ID obj_id = encode_id(Type_ObjectInstance, GET_LAST_ADDED_ID(ObjectInstance));
+  push_idmap_entry(object_to_primset, obj_id, primset);
+  return obj_id;
 }
 
 ID SiNewFrameBuffer(const char *arg)
@@ -674,6 +700,8 @@ Status SiAssignShader(ID object, ID shader)
 {
   ObjectInstance *object_ptr = NULL;
   Shader *shader_ptr = NULL;
+  int shading_group_id = 0;
+
   {
     const Entry entry = decode_id(object);
 
@@ -695,8 +723,24 @@ Status SiAssignShader(ID object, ID shader)
       return SI_FAIL;
   }
 
+  {
+    const ID primset_id = find_idmap_entry(object_to_primset, object);
+    const Entry entry = decode_id(primset_id);
+    std::cout << "object: " << object << " -> primset: " << primset_id << "\n";
+
+    if (entry.type == Type_Mesh) {
+      const Mesh *mesh = get_scene()->GetMesh(entry.index);
+      shading_group_id = mesh->LookupFaceGroup("Base");
+      std::cout << "group_id: " << shading_group_id << "\n";
+      if (shading_group_id == -1) {
+        shading_group_id = 0;
+      }
+    }
+  }
+
   // TODO shading_group_id
-  object_ptr->SetShader(shader_ptr, 0);
+  object_ptr->SetShader(shader_ptr, shading_group_id);
+  //object_ptr->SetShader(shader_ptr, 0);
   return SI_SUCCESS;
 }
 

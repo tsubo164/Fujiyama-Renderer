@@ -69,7 +69,7 @@ FJ_API Status SiRunProcedure(ID procedure);
 
 FJ_API Status SiAddObjectToGroup(ID group, ID object);
 
-FJ_API ID SiNewObjectInstance(ID primset_id);
+FJ_API ID SiNewObjectInstance(ID primset);
 FJ_API ID SiNewFrameBuffer(const char *arg);
 FJ_API ID SiNewObjectGroup(void);
 FJ_API ID SiNewPointCloud(const char *filename);

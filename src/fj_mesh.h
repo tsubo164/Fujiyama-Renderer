@@ -183,6 +183,7 @@ public:
   bool HasFaceGroupID() const;
 
   int CreateFaceGroup(const std::string &group_name);
+  int LookupFaceGroup(const std::string &group_name) const;
 
   void ComputeNormals();
   void ComputeBounds();

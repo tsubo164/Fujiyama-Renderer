@@ -179,6 +179,16 @@ int Mesh::CreateFaceGroup(const std::string &group_name)
   return new_id;
 }
 
+int Mesh::LookupFaceGroup(const std::string &group_name) const
+{
+  std::map<std::string, int>::const_iterator it = face_group_name_.find(group_name);
+  if (it != face_group_name_.end()) {
+    return it->second;
+  } else {
+    return -1;
+  }
+}
+
 void Mesh::ComputeNormals()
 {
   if (!HasPointPosition() || !HasFaceIndices())
