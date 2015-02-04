@@ -315,11 +315,12 @@ static CommandResult AssignCamera_run(const CommandArgument *args)
 static const int AssignShader_args[] = {
   ARG_COMMAND_NAME,
   ARG_ENTRY_ID,
+  ARG_GROUP_NAME,
   ARG_ENTRY_ID};
 static CommandResult AssignShader_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.status = SiAssignShader(args[1].id, args[2].id);
+  result.status = SiAssignShader(args[1].id, args[2].str, args[3].id);
   return result;
 }
 

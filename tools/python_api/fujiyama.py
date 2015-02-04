@@ -248,8 +248,8 @@ class SceneInterface:
 		cmd = 'NewMesh %s %s' % (name, temp_filename)
 		self.commands.append(cmd)
 
-	def AssignShader(self, object_instance, shader):
-		cmd = 'AssignShader %s %s' % (object_instance, shader)
+	def AssignShader(self, object_instance, shading_group, shader):
+		cmd = 'AssignShader %s %s %s' % (object_instance, shading_group, shader)
 		self.commands.append(cmd)
 
 	def AssignTexture(self, shader, prop_name, texture):

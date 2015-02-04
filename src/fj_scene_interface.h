@@ -90,7 +90,7 @@ FJ_API Status SiAssignTurbulence(ID id, const char *name, ID turbulence);
 FJ_API Status SiAssignTexture(ID id, const char *name, ID texture);
 FJ_API Status SiAssignVolume(ID id, const char *name, ID volume);
 FJ_API Status SiAssignCamera(ID renderer, ID camera);
-FJ_API Status SiAssignShader(ID object, ID shader);
+FJ_API Status SiAssignShader(ID object, const char *shading_group, ID shader);
 FJ_API Status SiAssignMesh(ID id, const char *name, ID mesh);
 
 /* Property interfaces */

@@ -187,6 +187,8 @@ static int build_arguments(Parser *parser,
 
     case ARG_PROPERTY_NAME:
       break;
+    case ARG_GROUP_NAME:
+      break;
     case ARG_FILE_PATH:
       break;
     case ARG_STRING:

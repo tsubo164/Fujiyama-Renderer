@@ -696,7 +696,7 @@ ID SiNewMesh(const char *filename)
   return mesh_id;
 }
 
-Status SiAssignShader(ID object, ID shader)
+Status SiAssignShader(ID object, const char *shading_group, ID shader)
 {
   ObjectInstance *object_ptr = NULL;
   Shader *shader_ptr = NULL;
@@ -722,7 +722,6 @@ Status SiAssignShader(ID object, ID shader)
     if (shader_ptr == NULL)
       return SI_FAIL;
   }
-
   {
     const ID primset_id = find_idmap_entry(object_to_primset, object);
     const Entry entry = decode_id(primset_id);
@@ -730,7 +729,13 @@ Status SiAssignShader(ID object, ID shader)
 
     if (entry.type == Type_Mesh) {
       const Mesh *mesh = get_scene()->GetMesh(entry.index);
-      shading_group_id = mesh->LookupFaceGroup("Base");
+      const std::string shading_group_name(shading_group);
+
+      if (shading_group_name == "WHOLE_GROUP") {
+        shading_group_name == "";
+      }
+
+      shading_group_id = mesh->LookupFaceGroup(shading_group_name);
       std::cout << "group_id: " << shading_group_id << "\n";
       if (shading_group_id == -1) {
         shading_group_id = 0;
