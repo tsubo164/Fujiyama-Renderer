@@ -25,7 +25,7 @@
 
 namespace fj {
 
-enum { TYPE_ID_OFFSET = 10000000 };
+static const int TYPE_ID_OFFSET = 10000000;
 
 enum EntryType {
   Type_Begin = 0,
@@ -71,58 +71,11 @@ static void set_scene(Scene *scene)
   the_scene = scene;
 }
 
-/* ID map for link an ID to another ID */
-class IDmapEntry {
-public:
-  IDmapEntry() : key(0), value(0) {}
-  ~IDmapEntry() {}
-
-public:
-  ID key, value;
-};
-
-// TODO use std::map
-class IDmap {
-public:
-  IDmap() : entry_count(0), entry() {}
-  ~IDmap() {}
-
-public:
-  int entry_count;
-  IDmapEntry entry[1024];
-};
-
-static IDmap primset_to_accel;
-
-static void push_idmap_endtry(ID key, ID value)
-{
-  const int index = primset_to_accel.entry_count;
-
-  /* TODO check count */
-  if (index == 1024)
-    return;
-
-  primset_to_accel.entry[index].key = key;
-  primset_to_accel.entry[index].value = value;
-  primset_to_accel.entry_count++;
-}
-
-static ID find_accelerator(ID primset)
-{
-  int i;
-  for (i = 0; i < primset_to_accel.entry_count; i++) {
-    const IDmapEntry *stored_entry = &primset_to_accel.entry[i];
-
-    if (stored_entry->key == primset) {
-      return stored_entry->value;
-    }
-  }
-  return SI_BADID;
-}
-
-// TODO TEST
+// binding ID to ID
 typedef std::map<ID,ID> IDMap;
 IDMap object_to_primset;
+IDMap primset_to_accelerator;
+
 static void push_idmap_entry(IDMap &map, ID key, ID value)
 {
   IDMap::const_iterator it = map.find(key);
@@ -130,6 +83,7 @@ static void push_idmap_entry(IDMap &map, ID key, ID value)
     map[key] = value;
   }
 }
+
 static ID find_idmap_entry(IDMap &map, ID key)
 {
   IDMap::const_iterator it = map.find(key);
@@ -138,6 +92,26 @@ static ID find_idmap_entry(IDMap &map, ID key)
   } else {
     return SI_BADID;
   }
+}
+
+static void bind_primset_to_accelerator(ID primset, ID accel)
+{
+  push_idmap_entry(primset_to_accelerator, primset, accel);
+}
+
+static ID find_accelerator_from(ID primset)
+{
+  return find_idmap_entry(primset_to_accelerator, primset);
+}
+
+static void bind_object_to_primset(ID object, ID primset)
+{
+  push_idmap_entry(object_to_primset, object, primset);
+}
+
+static ID find_primset_from(ID object)
+{
+  return find_idmap_entry(object_to_primset, object);
 }
 
 /* the global error code */
@@ -334,7 +308,7 @@ Status SiAddObjectToGroup(ID group, ID object)
 
 ID SiNewObjectInstance(ID primset)
 {
-  const ID accel_id = find_accelerator(primset);
+  const ID accel_id = find_accelerator_from(primset);
   const Entry entry = decode_id(accel_id);
 
   if (entry.type == Type_Accelerator) {
@@ -391,10 +365,10 @@ ID SiNewObjectInstance(ID primset)
   }
 
   set_errno(SI_ERR_NONE);
-  //return encode_id(Type_ObjectInstance, GET_LAST_ADDED_ID(ObjectInstance));
 
   const ID obj_id = encode_id(Type_ObjectInstance, GET_LAST_ADDED_ID(ObjectInstance));
-  push_idmap_entry(object_to_primset, obj_id, primset);
+  bind_object_to_primset(obj_id, primset);
+
   return obj_id;
 }
 
@@ -456,7 +430,7 @@ ID SiNewPointCloud(const char *filename)
 
   ptc_id = encode_id(Type_PointCloud, GET_LAST_ADDED_ID(PointCloud));
   accel_id = encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
-  push_idmap_endtry(ptc_id, accel_id);
+  bind_primset_to_accelerator(ptc_id, accel_id);
 
   set_errno(SI_ERR_NONE);
   return ptc_id;
@@ -582,7 +556,7 @@ ID SiNewVolume(void)
 
   volume_id = encode_id(Type_Volume, GET_LAST_ADDED_ID(Volume));
   /* volume id should map to itself because it doesn't need accelerator */
-  push_idmap_endtry(volume_id, volume_id);
+  bind_primset_to_accelerator(volume_id, volume_id);
 
   PropSetAllDefaultValues(volume, get_builtin_type_property_list(Type_Volume));
 
@@ -618,7 +592,7 @@ ID SiNewCurve(const char *filename)
 
   curve_id = encode_id(Type_Curve, GET_LAST_ADDED_ID(Curve));
   accel_id = encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
-  push_idmap_endtry(curve_id, accel_id);
+  bind_primset_to_accelerator(curve_id, accel_id);
 
   set_errno(SI_ERR_NONE);
   return curve_id;
@@ -690,7 +664,7 @@ ID SiNewMesh(const char *filename)
 
   mesh_id = encode_id(Type_Mesh, GET_LAST_ADDED_ID(Mesh));
   accel_id = encode_id(Type_Accelerator, GET_LAST_ADDED_ID(Accelerator));
-  push_idmap_endtry(mesh_id, accel_id);
+  bind_primset_to_accelerator(mesh_id, accel_id);
 
   set_errno(SI_ERR_NONE);
   return mesh_id;
@@ -723,29 +697,26 @@ Status SiAssignShader(ID object, const char *shading_group, ID shader)
       return SI_FAIL;
   }
   {
-    const ID primset_id = find_idmap_entry(object_to_primset, object);
+    const ID primset_id = find_primset_from(object);
     const Entry entry = decode_id(primset_id);
-    std::cout << "object: " << object << " -> primset: " << primset_id << "\n";
+    const std::string shading_group_name(shading_group);
+
+    if (shading_group_name == "NONE") {
+      shading_group_name == "";
+    }
 
     if (entry.type == Type_Mesh) {
       const Mesh *mesh = get_scene()->GetMesh(entry.index);
-      const std::string shading_group_name(shading_group);
-
-      if (shading_group_name == "WHOLE_GROUP") {
-        shading_group_name == "";
-      }
-
       shading_group_id = mesh->LookupFaceGroup(shading_group_name);
-      std::cout << "group_id: " << shading_group_id << "\n";
-      if (shading_group_id == -1) {
-        shading_group_id = 0;
-      }
+    }
+
+    if (shading_group_id == -1) {
+      // TODO warn group not found
+      shading_group_id = 0;
     }
   }
 
-  // TODO shading_group_id
   object_ptr->SetShader(shader_ptr, shading_group_id);
-  //object_ptr->SetShader(shader_ptr, 0);
   return SI_SUCCESS;
 }
 

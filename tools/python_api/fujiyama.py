@@ -249,7 +249,12 @@ class SceneInterface:
 		self.commands.append(cmd)
 
 	def AssignShader(self, object_instance, shading_group, shader):
-		cmd = 'AssignShader %s %s %s' % (object_instance, shading_group, shader)
+		if shading_group == 'DEFAULT_SHADING_GROUP':
+			group = 'NONE'
+		else:
+			group = shading_group
+
+		cmd = 'AssignShader %s %s %s' % (object_instance, group, shader)
 		self.commands.append(cmd)
 
 	def AssignTexture(self, shader, prop_name, texture):
