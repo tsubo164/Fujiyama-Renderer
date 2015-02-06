@@ -658,10 +658,9 @@ int MshLoadFile(Mesh *mesh, const char *filename)
         const std::size_t namesize = *sdata;
         sdata++;
         const char *cdata = (const char *) sdata;
-        std::cout << "namesize: " << namesize << "\n";
         const std::string name(cdata);
         cdata += namesize;
-        std::cout << "GROUP: [" << name << "] --> ID: " << mesh->CreateFaceGroup(name) << "\n";
+        mesh->CreateFaceGroup(name);
         data = cdata;
       }
     }
