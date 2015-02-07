@@ -116,7 +116,6 @@ private:
       face_group_id.resize(nfaces, default_group_id);
     }
 #endif
-
     current_group_id = lookup_group_or_create_new(group_name_list[0]);
   }
 
@@ -197,6 +196,7 @@ int main(int argc, const char **argv)
     it != buffer.group_name_to_id.end(); ++it) {
     std::cout << "  name: [" << it->first << "] -> ID: " << it->second << "\n";
   }
+  std::cout << "\n";
 
   return 0;
 }
@@ -226,12 +226,12 @@ int ObjBufferToMeshFile(const ObjBuffer &buffer, const char *filename)
         &buffer.normal_indices[0], buffer.normal_indices.size());
   }
 
-  // TODO TEST
+  // set group id
   if (!buffer.face_group_id.empty()) {
     out.SetFaceGroupID(&buffer.face_group_id[0]);
   }
 
-  // TODO TEST
+  // flatten group names
   std::vector<std::string> group_names(buffer.group_name_to_id.size());
   for (std::map<std::string,int>::const_iterator it = buffer.group_name_to_id.begin();
       it != buffer.group_name_to_id.end();
@@ -239,9 +239,7 @@ int ObjBufferToMeshFile(const ObjBuffer &buffer, const char *filename)
     const int id = it->second;
     group_names[id] = it->first;
   }
-  for (std::size_t i = 0; i < group_names.size(); i++) {
-    std::cout << "group id: " << i << " -> [" << group_names[i] << "]\n";
-  }
+  // set group names
   if (!group_names.empty()) {
     out.SetFaceGroupNameCount(group_names.size());
     out.SetFaceGroupName(&group_names[0]);
