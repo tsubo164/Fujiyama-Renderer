@@ -31,7 +31,7 @@ public:
   ~CommandArgument() {}
 
 public:
-  char *str;
+  const char *str;
   double num;
   ID id;
 };

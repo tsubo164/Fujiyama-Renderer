@@ -701,10 +701,6 @@ Status SiAssignShader(ID object, const char *shading_group, ID shader)
     const Entry entry = decode_id(primset_id);
     const std::string shading_group_name(shading_group);
 
-    if (shading_group_name == "NONE") {
-      shading_group_name == "";
-    }
-
     if (entry.type == Type_Mesh) {
       const Mesh *mesh = get_scene()->GetMesh(entry.index);
       shading_group_id = mesh->LookupFaceGroup(shading_group_name);

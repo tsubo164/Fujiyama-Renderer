@@ -141,9 +141,9 @@ static int build_arguments(Parser *parser,
 
   for (i = 0; i < command->arg_count; i++) {
     CommandArgument *arg = &arguments[i];
-    const int *type = &command->arg_types[i];
+    const int type = command->arg_types[i];
 
-    switch(*type) {
+    switch(type) {
     case ARG_NEW_ENTRY_ID:
       if (TblLookup(parser->table, arg->str)) {
         parse_error(parser, PSR_ERR_NAME_EXISTS);
@@ -188,6 +188,9 @@ static int build_arguments(Parser *parser,
     case ARG_PROPERTY_NAME:
       break;
     case ARG_GROUP_NAME:
+      if (strcmp(arg->str, "DEFAULT_SHADING_GROUP") == 0) {
+        arg->str = "";
+      }
       break;
     case ARG_FILE_PATH:
       break;
