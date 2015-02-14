@@ -397,9 +397,8 @@ void FrameBufferViewer::Listen()
       state_ = STATE_RENDERING;
 
       if (resize_window_ != NULL) {
-        const int window_margin = 10;
-        const int new_window_size_x = viewbox_[2] - viewbox_[0] + 2 * window_margin;
-        const int new_window_size_y = viewbox_[3] - viewbox_[1] + 2 * window_margin;
+        const int new_window_size_x = viewbox_[2] - viewbox_[0];
+        const int new_window_size_y = viewbox_[3] - viewbox_[1];
         resize_window_(window_object_, new_window_size_x, new_window_size_y);
       }
       if (change_window_title_ != NULL) {

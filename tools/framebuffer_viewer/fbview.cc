@@ -188,7 +188,7 @@ static void timer(int value)
 
 static void window_resize_callback(void *win, int x_image_res, int y_image_res)
 {
-  const int window_margin = 10;
+  const int window_margin = 20;
   const int new_window_size_x = x_image_res + 2 * window_margin;
   const int new_window_size_y = y_image_res + 2 * window_margin;
   glutReshapeWindow(
