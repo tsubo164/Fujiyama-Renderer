@@ -69,7 +69,8 @@ public:
 
   int GetFileDescriptor() const;
 
-  int SetNoDelay();
+  int EnableNoDelay();
+  int EnableReuseAddr();
   void SetAddress(const std::string &address);
   void SetPort(int port);
 

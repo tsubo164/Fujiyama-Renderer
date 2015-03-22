@@ -2,6 +2,7 @@
 // See LICENSE and README
 
 #include "fj_socket.h"
+#include <cstring>
 
 namespace fj {
 
@@ -132,6 +133,8 @@ void Socket::Close()
 {
   if (IsOpen()) {
     close_socket(fd_);
+    fd_ = FJ_SOCKET_INVALID;
+    std::memset(&address_, 0, sizeof(address_));
   }
 }
 
@@ -161,10 +164,23 @@ int Socket::GetFileDescriptor() const
   return fd_;
 }
 
-int Socket::SetNoDelay()
+int Socket::EnableNoDelay()
 {
   int enable = 1;
   const int result = setsockopt(fd_, IPPROTO_TCP, TCP_NODELAY,
+      reinterpret_cast<char *>(&enable), sizeof(enable));
+
+  if (result == FJ_SOCKET_ERROR) {
+    return -1;
+  }
+
+  return 0;
+}
+
+int Socket::EnableReuseAddr()
+{
+  int enable = 1;
+  const int result = setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR,
       reinterpret_cast<char *>(&enable), sizeof(enable));
 
   if (result == FJ_SOCKET_ERROR) {

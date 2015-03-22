@@ -311,6 +311,7 @@ void FrameBufferViewer::StartListening()
   }
 
   server_.Open();
+  server_.EnableReuseAddr();
   server_.Bind();
   server_.Listen();
   is_listening_ = true;
@@ -330,6 +331,7 @@ void FrameBufferViewer::StopListening()
     return;
 
   server_.Shutdown();
+  server_.Close();
   is_listening_ = false;
 
   state_ = STATE_NONE;
