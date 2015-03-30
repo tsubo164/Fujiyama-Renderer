@@ -66,6 +66,7 @@ designed to handle production image rendering.
   + Pluggable shader DSO - shaders can be written in C/C++ 
   + Subsurface scattering - implemented in shader
   + Bump mapping - perturb normals based on mipmap images
+  + Primitive groups - multiple shader assignment on triangle mesh
 
 * Acceleratotion structure
   + Grid accelerator - for meshes (dense distribution)

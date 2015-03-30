@@ -1,0 +1,25 @@
+Fujiyama Renderer v0.3.0(Alpha) Release Notes
+=============================================
+
+New features since v0.2.9
+-------------------------
+ * Mesh primitive group has been supported. Different shaders can be assigned to
+   each primitive group. Shading group tagged by 'g' in wavefront obj file is
+   converted to primitive group in Fujiyama.
+
+ * Vertex normals for mesh has been implemented. Normals can be cusped at
+   vertex-shared points.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Adaptive pixel sampling
+ * Deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Global illumination
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support
