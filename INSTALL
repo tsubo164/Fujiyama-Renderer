@@ -53,5 +53,16 @@ In order to install Fujiyama library and tools, run make with/without prefix.
 
 See also Fujiyama Documentation at http://fujiyama-renderer.com/docs/index.html
 
+  Download data
+-----------------
+In order to render scene files that come with distribution, you need to download
+geometry/image data from other sites. Go to
+
+http://fujiyama-renderer.com/downloads.html
+
+and find websites where you can get the data. If you couldn't find the data
+don't worry. Just replace the file name with your owns. Fujiyama can read
+*.ply, *.obj, *.hdr, *.jpg as input data.
+
 http://fujiyama-renderer.com/
 Copyright (c) 2011-2014 Hiroshi Tsubokawa
