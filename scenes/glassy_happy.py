@@ -34,29 +34,29 @@ si.NewShader('dome_shader', 'ConstantShader')
 si.NewShader('floor_shader', 'PlasticShader')
 
 #Mesh
-si.NewMesh('armadillo_mesh', '../../mesh/armadillo.mesh')
-si.NewMesh('happy_mesh', '../../mesh/happy.mesh')
-si.NewMesh('horse_mesh', '../../mesh/horse.mesh')
-si.NewMesh('dome_mesh', '../../mesh/dome.mesh')
-si.NewMesh('floor_mesh', '../../mesh/floor.mesh')
+si.NewMesh('armadillo_mesh', '../../ply/armadillo.ply')
+si.NewMesh('happy_mesh', '../../ply/happy.ply')
+si.NewMesh('horse_mesh', '../../ply/horse.ply')
+si.NewMesh('dome_mesh', '../../ply/dome.ply')
+si.NewMesh('floor_mesh', '../../ply/floor.ply')
 
 #ObjectInstance
 si.NewObjectInstance('armadillo1', 'armadillo_mesh')
-si.AssignShader('armadillo1', 'armadillo_shader')
+si.AssignShader('armadillo1', 'DEFAULT_SHADING_GROUP', 'armadillo_shader')
 si.SetProperty3('armadillo1', 'translate', -2, 0, -3)
 
 si.NewObjectInstance('happy1', 'happy_mesh')
-si.AssignShader('happy1', 'happy_shader')
+si.AssignShader('happy1', 'DEFAULT_SHADING_GROUP', 'happy_shader')
 
 si.NewObjectInstance('horse1', 'horse_mesh')
-si.AssignShader('horse1', 'horse_shader')
+si.AssignShader('horse1', 'DEFAULT_SHADING_GROUP', 'horse_shader')
 si.SetProperty3('horse1', 'translate', 2, 0, -3)
 
 si.NewObjectInstance('dome1', 'dome_mesh')
-si.AssignShader('dome1', 'dome_shader')
+si.AssignShader('dome1', 'DEFAULT_SHADING_GROUP', 'dome_shader')
 
 si.NewObjectInstance('floor1', 'floor_mesh')
-si.AssignShader('floor1', 'floor_shader')
+si.AssignShader('floor1', 'DEFAULT_SHADING_GROUP', 'floor_shader')
 
 #FrameBuffer
 si.NewFrameBuffer('fb1', 'rgba')
