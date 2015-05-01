@@ -159,7 +159,7 @@ si.NewRenderer('ren1')
 si.AssignCamera('ren1', 'cam1')
 si.AssignFrameBuffer('ren1', 'fb1')
 si.SetProperty2('ren1', 'resolution', 640, 480)
-#SetProperty2 ren1 resolution 160 120
+#si.SetProperty2('ren1', 'resolution', 160, 120)
 
 #Rendering
 si.RenderScene('ren1')
