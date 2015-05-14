@@ -118,7 +118,7 @@ si.SetProperty3('light31', 'translate', 13.3907, 12, 9.08986)
 si.SetProperty1('light31', 'intensity', 0.03125)
 
 #Texture
-si.NewTexture('tex1', '../../mip/glacier.mip')
+si.NewTexture('tex1', '../../hdr/glacier.hdr')
 
 #Shader
 si.NewShader('curve_shader', 'HairShader')

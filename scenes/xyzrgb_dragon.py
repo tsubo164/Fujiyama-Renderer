@@ -115,7 +115,7 @@ si.SetProperty3('light31', 'translate', 13.3907, 12, 9.08986)
 si.SetProperty1('light31', 'intensity', 0.03125)
 
 #Texture
-si.NewTexture('tex1', '../../mip/pisa.mip')
+si.NewTexture('tex1', '../../hdr/pisa.hdr')
 
 #Shader
 si.NewShader('xyzrgb_dragon_shader0', 'PlasticShader')
