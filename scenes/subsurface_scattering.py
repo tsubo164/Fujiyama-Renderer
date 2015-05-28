@@ -60,23 +60,23 @@ si.SetProperty3('head_shader4', 'scattering_coefficient', .255, .321, .377)
 si.SetProperty3('head_shader4', 'absorption_coefficient', .00011, .00024, .0014)
 
 #Mesh
-si.NewMesh('head_mesh', '../../mesh/head.mesh')
+si.NewMesh('head_mesh', '../../obj/head.obj')
 
 #ObjectInstance
 si.NewObjectInstance('head1', 'head_mesh')
-si.AssignShader('head1', 'head_shader1')
+si.AssignShader('head1', 'DEFAULT_SHADING_GROUP', 'head_shader1')
 si.SetProperty3('head1', 'translate', -.3, .5, 0)
 
 si.NewObjectInstance('head2', 'head_mesh')
-si.AssignShader('head2', 'head_shader2')
+si.AssignShader('head2', 'DEFAULT_SHADING_GROUP', 'head_shader2')
 si.SetProperty3('head2', 'translate', .3, .5, 0)
 
 si.NewObjectInstance('head3', 'head_mesh')
-si.AssignShader('head3', 'head_shader3')
+si.AssignShader('head3', 'DEFAULT_SHADING_GROUP', 'head_shader3')
 si.SetProperty3('head3', 'translate', -.3, 0, 0)
 
 si.NewObjectInstance('head4', 'head_mesh')
-si.AssignShader('head4', 'head_shader4')
+si.AssignShader('head4', 'DEFAULT_SHADING_GROUP', 'head_shader4')
 si.SetProperty3('head4', 'translate', .3, 0, 0)
 
 #ObjectGroup
