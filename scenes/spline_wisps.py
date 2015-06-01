@@ -52,19 +52,19 @@ si.AssignTurbulence('proc1', 'turbulence', 'turbulence_data')
 si.RunProcedure('proc1')
 
 #Mesh
-si.NewMesh('dome_mesh', '../../mesh/dome.mesh')
-si.NewMesh('floor_mesh', '../../mesh/floor.mesh')
+si.NewMesh('dome_mesh', '../../ply/dome.ply')
+si.NewMesh('floor_mesh', '../../ply/floor.ply')
 
 #ObjectInstance
 si.NewObjectInstance('volume1', 'volume_data')
-si.AssignShader('volume1', 'volume_shader')
+si.AssignShader('volume1', 'DEFAULT_SHADING_GROUP', 'volume_shader')
 si.SetProperty3('volume1', 'translate', 0, .75, 0)
 
 si.NewObjectInstance('floor1', 'floor_mesh')
-si.AssignShader('floor1', 'floor_shader')
+si.AssignShader('floor1', 'DEFAULT_SHADING_GROUP', 'floor_shader')
 
 si.NewObjectInstance('dome1', 'dome_mesh')
-si.AssignShader('dome1', 'dome_shader')
+si.AssignShader('dome1', 'DEFAULT_SHADING_GROUP', 'dome_shader')
 
 #ObjectGroup
 si.NewObjectGroup('group1')
