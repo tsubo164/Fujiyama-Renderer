@@ -22,7 +22,7 @@ si.NewLight('light1', 'PointLight')
 si.SetProperty3('light1', 'translate', -10, 12, 10)
 
 #Texture
-si.NewTexture('tex1', '../../mip/ennis.mip')
+si.NewTexture('tex1', '../../hdr/ennis.hdr')
 
 #Shader
 si.NewShader('dragon_shader', 'PlasticShader')
@@ -36,22 +36,22 @@ si.SetProperty3('dome_shader', 'diffuse', .8, .8, .8)
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
-si.NewMesh('dragon_mesh', '../../mesh/dragon.mesh')
-si.NewMesh('floor_mesh', '../../mesh/floor.mesh')
-si.NewMesh('dome_mesh', '../../mesh/dome.mesh')
+si.NewMesh('dragon_mesh', '../../ply/dragon.ply')
+si.NewMesh('floor_mesh', '../../ply/floor.ply')
+si.NewMesh('dome_mesh', '../../ply/dome.ply')
 
 #ObjectInstance
 si.NewObjectInstance('dragon1', 'dragon_mesh')
-si.AssignShader('dragon1', 'dragon_shader')
+si.AssignShader('dragon1', 'DEFAULT_SHADING_GROUP', 'dragon_shader')
 
 si.SetProperty3('dragon1', 'rotate', 0, -90, 0)
 si.SetProperty3('dragon1', 'scale', .5, .5, .5)
 
 si.NewObjectInstance('floor1', 'floor_mesh')
-si.AssignShader('floor1', 'floor_shader')
+si.AssignShader('floor1', 'DEFAULT_SHADING_GROUP', 'floor_shader')
 
 si.NewObjectInstance('dome1', 'dome_mesh')
-si.AssignShader('dome1', 'dome_shader')
+si.AssignShader('dome1', 'DEFAULT_SHADING_GROUP', 'dome_shader')
 
 #ObjectGroup
 si.NewObjectGroup('group1')
