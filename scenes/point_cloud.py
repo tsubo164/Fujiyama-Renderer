@@ -23,7 +23,7 @@ si.SetProperty3('light1', 'rotate', 0, rot, 0)
 si.SetProperty1('light1', 'sample_count', 32)
 
 #Texture
-si.NewTexture('tex1', '../../mip/austria.mip')
+si.NewTexture('tex1', '../../hdr/austria.hdr')
 si.AssignTexture('light1', 'environment_map', 'tex1');
 
 #Shader
@@ -40,18 +40,18 @@ si.AssignTexture('dome_shader', 'texture', 'tex1')
 si.NewPointCloud('ptc_data', '../../ptc/bunny.ptc')
 
 #Mesh
-si.NewMesh('dome_mesh', '../../mesh/dome.mesh')
-si.NewMesh('floor_mesh', '../../mesh/floor.mesh')
+si.NewMesh('dome_mesh', '../../ply/dome.ply')
+si.NewMesh('floor_mesh', '../../ply/floor.ply')
 
 #ObjectInstance
 si.NewObjectInstance('floor1', 'floor_mesh')
-si.AssignShader('floor1', 'floor_shader')
+si.AssignShader('floor1', 'DEFAULT_SHADING_GROUP', 'floor_shader')
 
 si.NewObjectInstance('point_cloud1', 'ptc_data')
-si.AssignShader('point_cloud1', 'ptc_shader1')
+si.AssignShader('point_cloud1', 'DEFAULT_SHADING_GROUP', 'ptc_shader1')
 
 si.NewObjectInstance('dome1', 'dome_mesh')
-si.AssignShader('dome1', 'dome_shader')
+si.AssignShader('dome1', 'DEFAULT_SHADING_GROUP', 'dome_shader')
 si.SetProperty3('dome1', 'rotate', 0, rot, 0)
 
 #ObjectGroup
