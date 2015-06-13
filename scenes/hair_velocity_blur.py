@@ -26,7 +26,7 @@ si.SetProperty3('light1', 'rotate', 0, rot, 0)
 si.SetProperty1('light1', 'sample_count', 32)
 
 #Texture
-si.NewTexture('tex1', '../../mip/pisa.mip')
+si.NewTexture('tex1', '../../hdr/pisa.hdr')
 si.AssignTexture('light1', 'environment_map', 'tex1');
 
 #Shader
@@ -39,8 +39,8 @@ si.NewShader('dome_shader', 'ConstantShader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
-si.NewMesh('head_mesh', '../../mesh/head.mesh')
-si.NewMesh('dome_mesh', '../../mesh/dome.mesh')
+si.NewMesh('head_mesh', '../../obj/head.obj')
+si.NewMesh('dome_mesh', '../../ply/dome.ply')
 
 #Curve
 si.NewCurve('hair_curve', '../../crv/hair.crv')
@@ -48,16 +48,16 @@ si.NewCurve('hair_curve', '../../crv/hair.crv')
 #ObjectInstance
 si.NewObjectInstance('head1', 'head_mesh')
 si.SetProperty3('head1', 'rotate', 0, obj_rot, 0)
-si.AssignShader('head1', 'head_shader')
+si.AssignShader('head1', 'DEFAULT_SHADING_GROUP', 'head_shader')
 
 si.NewObjectInstance('hair1', 'hair_curve')
 si.SetProperty3('hair1', 'rotate', 0, obj_rot, 0)
-si.AssignShader('hair1', 'hair_shader')
+si.AssignShader('hair1', 'DEFAULT_SHADING_GROUP', 'hair_shader')
 
 si.NewObjectInstance('dome1', 'dome_mesh')
 si.SetProperty3('dome1', 'rotate', 0, rot, 0)
 si.SetProperty3('dome1', 'scale', -.5, .5, .5)
-si.AssignShader('dome1', 'dome_shader')
+si.AssignShader('dome1', 'DEFAULT_SHADING_GROUP', 'dome_shader')
 
 #ObjectGroup
 # Create shadow_target for some objects.
