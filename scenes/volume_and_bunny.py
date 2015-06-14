@@ -37,19 +37,19 @@ si.NewShader('volume_shader1', 'VolumeShader')
 si.NewVolume('volume_data')
 
 #Mesh
-si.NewMesh('bunny_mesh', '../../mesh/bunny.mesh')
-si.NewMesh('floor_mesh', '../../mesh/floor.mesh')
+si.NewMesh('bunny_mesh', '../../ply/bunny.ply')
+si.NewMesh('floor_mesh', '../../ply/floor.ply')
 
 #ObjectInstance
-si.NewObjectInstance('obj1', 'bunny_mesh')
-si.AssignShader('obj1', 'bunny_shader')
+si.NewObjectInstance('bunny1', 'bunny_mesh')
+si.AssignShader('bunny1', 'DEFAULT_SHADING_GROUP', 'bunny_shader')
 
 si.NewObjectInstance('floor1', 'floor_mesh')
 si.SetProperty3('floor1', 'translate', 3, -1.5, 3)
-si.AssignShader('floor1', 'floor_shader')
+si.AssignShader('floor1', 'DEFAULT_SHADING_GROUP', 'floor_shader')
 
 si.NewObjectInstance('volume1', 'volume_data')
-si.AssignShader('volume1', 'volume_shader1')
+si.AssignShader('volume1', 'DEFAULT_SHADING_GROUP', 'volume_shader1')
 
 #FrameBuffer
 si.NewFrameBuffer('fb1', 'rgba')
