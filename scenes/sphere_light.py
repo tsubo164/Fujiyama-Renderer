@@ -39,34 +39,34 @@ si.NewShader('sphere_shader', 'ConstantShader')
 si.SetProperty3('sphere_shader', 'diffuse', intensity, intensity, intensity)
 
 #Mesh
-si.NewMesh('teapot_mesh', '../../mesh/teapot.mesh')
-si.NewMesh('bunny_mesh', '../../mesh/bunny.mesh')
-si.NewMesh('floor_mesh', '../../mesh/floor.mesh')
-si.NewMesh('sphere_mesh', '../../mesh/sphere.mesh')
+si.NewMesh('teapot_mesh', '../../ply/teapot.ply')
+si.NewMesh('bunny_mesh', '../../ply/bunny.ply')
+si.NewMesh('floor_mesh', '../../ply/floor.ply')
+si.NewMesh('sphere_mesh', '../../ply/sphere.ply')
 
 #ObjectInstance
 distance = 1.5
 si.NewObjectInstance('teapot1', 'teapot_mesh')
 si.SetProperty3('teapot1', 'translate', -distance, 0, distance)
-si.AssignShader('teapot1', 'teapot_shader')
+si.AssignShader('teapot1', 'DEFAULT_SHADING_GROUP', 'teapot_shader')
 
 si.NewObjectInstance('teapot2', 'teapot_mesh')
 si.SetProperty3('teapot2', 'translate', distance, 0, -distance)
-si.AssignShader('teapot2', 'teapot_shader')
+si.AssignShader('teapot2', 'DEFAULT_SHADING_GROUP', 'teapot_shader')
 
 si.NewObjectInstance('bunny1', 'bunny_mesh')
 si.SetProperty3('bunny1', 'translate', distance, 0, distance)
-si.AssignShader('bunny1', 'bunny_shader')
+si.AssignShader('bunny1', 'DEFAULT_SHADING_GROUP', 'bunny_shader')
 
 si.NewObjectInstance('bunny2', 'bunny_mesh')
 si.SetProperty3('bunny2', 'translate', -distance, 0, -distance)
-si.AssignShader('bunny2', 'bunny_shader')
+si.AssignShader('bunny2', 'DEFAULT_SHADING_GROUP', 'bunny_shader')
 
 si.NewObjectInstance('floor1', 'floor_mesh')
-si.AssignShader('floor1', 'floor_shader')
+si.AssignShader('floor1', 'DEFAULT_SHADING_GROUP', 'floor_shader')
 
 si.NewObjectInstance('sphere1', 'sphere_mesh')
-si.AssignShader('sphere1', 'sphere_shader')
+si.AssignShader('sphere1', 'DEFAULT_SHADING_GROUP', 'sphere_shader')
 si.SetProperty3('sphere1', 'translate', 0, 2, 0)
 si.SetProperty3('sphere1', 'scale', .5, .5, .5)
 
