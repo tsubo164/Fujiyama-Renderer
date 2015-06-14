@@ -25,7 +25,7 @@ si.SetProperty3('light1', 'scale', scale, scale, scale)
 si.SetProperty1('light1', 'sample_count', 8)
 
 #Texture
-si.NewTexture('tex1', '../../mip/grace-new.mip')
+si.NewTexture('tex1', '../../hdr/grace-new.hdr')
 
 #Shader
 si.NewShader('armadillo_shader', 'PlasticShader')
@@ -40,20 +40,20 @@ si.NewShader('dome_shader', 'ConstantShader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
-si.NewMesh('armadillo_mesh', '../../mesh/armadillo.mesh')
-si.NewMesh('floor_mesh', '../../mesh/floor.mesh')
-si.NewMesh('dome_mesh', '../../mesh/dome.mesh')
+si.NewMesh('armadillo_mesh', '../../ply/armadillo.ply')
+si.NewMesh('floor_mesh', '../../ply/floor.ply')
+si.NewMesh('dome_mesh', '../../ply/dome.ply')
 
 #ObjectInstance
 si.NewObjectInstance('armadillo1', 'armadillo_mesh')
-si.AssignShader('armadillo1', 'armadillo_shader')
+si.AssignShader('armadillo1', 'DEFAULT_SHADING_GROUP', 'armadillo_shader')
 
 si.NewObjectInstance('floor1', 'floor_mesh')
-si.AssignShader('floor1', 'floor_shader')
+si.AssignShader('floor1', 'DEFAULT_SHADING_GROUP', 'floor_shader')
 
 si.NewObjectInstance('dome1', 'dome_mesh')
 si.SetProperty3('dome1', 'rotate', 0, -90, 0)
-si.AssignShader('dome1', 'dome_shader')
+si.AssignShader('dome1', 'DEFAULT_SHADING_GROUP', 'dome_shader')
 
 #ObjectGroup
 si.NewObjectGroup('group1')
