@@ -135,15 +135,15 @@ si.NewMesh('dome_mesh',   '../../ply/dome.ply')
 
 #ObjectInstance
 si.NewObjectInstance('teapot1', 'teapot_mesh')
-si.AssignShader('teapot1', 'teapot_shader')
+si.AssignShader('teapot1', 'DEFAULT_SHADING_GROUP', 'teapot_shader')
 
 si.NewObjectInstance('floor1', 'floor_mesh')
-si.AssignShader('floor1', 'floor_shader')
+si.AssignShader('floor1', 'DEFAULT_SHADING_GROUP', 'floor_shader')
 
 si.NewObjectInstance('dome1', 'dome_mesh')
 si.SetProperty3('dome1', 'scale', .5, .5, .5)
 si.SetProperty3('dome1', 'rotate', 0, 30, 0)
-si.AssignShader('dome1', 'dome_shader')
+si.AssignShader('dome1', 'DEFAULT_SHADING_GROUP', 'dome_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #ObjectGroup
