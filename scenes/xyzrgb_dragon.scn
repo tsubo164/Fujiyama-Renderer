@@ -129,15 +129,15 @@ NewObjectInstance  xyzrgb_dragon1 xyzrgb_dragon_mesh
 SetProperty3       xyzrgb_dragon1 scale .5 .5 .5
 SetProperty3       xyzrgb_dragon1 rotate 0 -35 0
 SetProperty3       xyzrgb_dragon1 translate .2 0 0
-AssignShader       xyzrgb_dragon1 xyzrgb_dragon_shader0
+AssignShader       xyzrgb_dragon1 DEFAULT_SHADING_GROUP xyzrgb_dragon_shader0
 
 NewObjectInstance  floor1  floor_mesh
-AssignShader       floor1  floor_shader
+AssignShader       floor1 DEFAULT_SHADING_GROUP  floor_shader
 
 NewObjectInstance  dome1   dome_mesh
 SetProperty3       dome1   scale .5 .5 .5
 SetProperty3       dome1   rotate 0 180 0
-AssignShader       dome1   dome_shader
+AssignShader       dome1 DEFAULT_SHADING_GROUP   dome_shader
 AssignTexture      dome_shader texture tex1
 
 #ObjectGroup
