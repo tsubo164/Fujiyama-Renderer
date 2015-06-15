@@ -24,9 +24,7 @@ si.SetProperty3('light1', 'rotate', 0, rot, 0)
 si.SetProperty1('light1', 'sample_count', 32)
 
 #Texture
-#si.NewTexture('tex1', '../../mip/austria.mip')
-#si.NewTexture('tex1', '../../mip/ladefense.mip')
-si.NewTexture('tex1', '../../mip/grossglockner02.mip')
+si.NewTexture('tex1', '../../hdr/grossglockner02.hdr')
 si.AssignTexture('light1', 'environment_map', 'tex1');
 
 #Shader
@@ -40,22 +38,21 @@ si.NewShader('dome_shader', 'ConstantShader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
-#si.NewMesh('dragon_mesh', '../../mesh/dragon.mesh')
 si.NewMesh('dragon_mesh', '../../mesh/dragon_vel.mesh')
-si.NewMesh('dome_mesh', '../../mesh/dome.mesh')
-si.NewMesh('floor_mesh', '../../mesh/floor.mesh')
+si.NewMesh('dome_mesh', '../../ply/dome.ply')
+si.NewMesh('floor_mesh', '../../ply/floor.ply')
 
 #ObjectInstance
 si.NewObjectInstance('dragon1', 'dragon_mesh')
 si.SetProperty3('dragon1', 'rotate', 0, -90, 0)
 si.SetProperty3('dragon1', 'scale', .5, .5, .5)
-si.AssignShader('dragon1', 'dragon_shader')
+si.AssignShader('dragon1', 'DEFAULT_SHADING_GROUP', 'dragon_shader')
 
 si.NewObjectInstance('floor1', 'floor_mesh')
-si.AssignShader('floor1', 'floor_shader')
+si.AssignShader('floor1', 'DEFAULT_SHADING_GROUP', 'floor_shader')
 
 si.NewObjectInstance('dome1', 'dome_mesh')
-si.AssignShader('dome1', 'dome_shader')
+si.AssignShader('dome1', 'DEFAULT_SHADING_GROUP', 'dome_shader')
 si.SetProperty3('dome1', 'rotate', 0, rot, 0)
 
 #ObjectGroup
