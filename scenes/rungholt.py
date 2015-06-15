@@ -28,7 +28,7 @@ si.SetProperty3('light1', 'rotate', 0, rot, 0)
 si.SetProperty1('light1', 'sample_count', 128)
 
 #Texture
-si.NewTexture('tex1', '../../mip/austria.mip')
+si.NewTexture('tex1', '../../hdr/austria.hdr')
 si.AssignTexture('light1', 'environment_map', 'tex1')
 
 #Shader
