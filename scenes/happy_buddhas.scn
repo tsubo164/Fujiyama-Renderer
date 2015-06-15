@@ -159,90 +159,90 @@ NewObjectInstance buddha0 buddha_mesh
 SetProperty3 buddha0 translate -0 0 -0
 SetProperty3 buddha0 rotate 0 0 0
 SetProperty3 buddha0 scale 0.6 0.6 0.6
-AssignShader buddha0 buddha_shader0
+AssignShader buddha0 DEFAULT_SHADING_GROUP buddha_shader0
 NewObjectInstance buddha1 buddha_mesh
 SetProperty3 buddha1 translate -0 0 -1.5
 SetProperty3 buddha1 rotate 0 30 0
 SetProperty3 buddha1 scale 0.6 0.6 0.6
-AssignShader buddha1 buddha_shader1
+AssignShader buddha1 DEFAULT_SHADING_GROUP buddha_shader1
 NewObjectInstance buddha2 buddha_mesh
 SetProperty3 buddha2 translate -0 0 -3
 SetProperty3 buddha2 rotate 0 60 0
 SetProperty3 buddha2 scale 0.6 0.6 0.6
-AssignShader buddha2 buddha_shader2
+AssignShader buddha2 DEFAULT_SHADING_GROUP buddha_shader2
 NewObjectInstance buddha3 buddha_mesh
 SetProperty3 buddha3 translate -0 0 -4.5
 SetProperty3 buddha3 rotate 0 90 0
 SetProperty3 buddha3 scale 0.6 0.6 0.6
-AssignShader buddha3 buddha_shader3
+AssignShader buddha3 DEFAULT_SHADING_GROUP buddha_shader3
 NewObjectInstance buddha4 buddha_mesh
 SetProperty3 buddha4 translate -1.5 0 -0
 SetProperty3 buddha4 rotate 0 120 0
 SetProperty3 buddha4 scale 0.6 0.6 0.6
-AssignShader buddha4 buddha_shader4
+AssignShader buddha4 DEFAULT_SHADING_GROUP buddha_shader4
 NewObjectInstance buddha5 buddha_mesh
 SetProperty3 buddha5 translate -1.5 0 -1.5
 SetProperty3 buddha5 rotate 0 150 0
 SetProperty3 buddha5 scale 0.6 0.6 0.6
-AssignShader buddha5 buddha_shader5
+AssignShader buddha5 DEFAULT_SHADING_GROUP buddha_shader5
 NewObjectInstance buddha6 buddha_mesh
 SetProperty3 buddha6 translate -1.5 0 -3
 SetProperty3 buddha6 rotate 0 180 0
 SetProperty3 buddha6 scale 0.6 0.6 0.6
-AssignShader buddha6 buddha_shader6
+AssignShader buddha6 DEFAULT_SHADING_GROUP buddha_shader6
 NewObjectInstance buddha7 buddha_mesh
 SetProperty3 buddha7 translate -1.5 0 -4.5
 SetProperty3 buddha7 rotate 0 210 0
 SetProperty3 buddha7 scale 0.6 0.6 0.6
-AssignShader buddha7 buddha_shader7
+AssignShader buddha7 DEFAULT_SHADING_GROUP buddha_shader7
 NewObjectInstance buddha8 buddha_mesh
 SetProperty3 buddha8 translate -3 0 -0
 SetProperty3 buddha8 rotate 0 240 0
 SetProperty3 buddha8 scale 0.6 0.6 0.6
-AssignShader buddha8 buddha_shader8
+AssignShader buddha8 DEFAULT_SHADING_GROUP buddha_shader8
 NewObjectInstance buddha9 buddha_mesh
 SetProperty3 buddha9 translate -3 0 -1.5
 SetProperty3 buddha9 rotate 0 270 0
 SetProperty3 buddha9 scale 0.6 0.6 0.6
-AssignShader buddha9 buddha_shader9
+AssignShader buddha9 DEFAULT_SHADING_GROUP buddha_shader9
 NewObjectInstance buddha10 buddha_mesh
 SetProperty3 buddha10 translate -3 0 -3
 SetProperty3 buddha10 rotate 0 300 0
 SetProperty3 buddha10 scale 0.6 0.6 0.6
-AssignShader buddha10 buddha_shader10
+AssignShader buddha10 DEFAULT_SHADING_GROUP buddha_shader10
 NewObjectInstance buddha11 buddha_mesh
 SetProperty3 buddha11 translate -3 0 -4.5
 SetProperty3 buddha11 rotate 0 330 0
 SetProperty3 buddha11 scale 0.6 0.6 0.6
-AssignShader buddha11 buddha_shader11
+AssignShader buddha11 DEFAULT_SHADING_GROUP buddha_shader11
 NewObjectInstance buddha12 buddha_mesh
 SetProperty3 buddha12 translate -4.5 0 -0
 SetProperty3 buddha12 rotate 0 360 0
 SetProperty3 buddha12 scale 0.6 0.6 0.6
-AssignShader buddha12 buddha_shader12
+AssignShader buddha12 DEFAULT_SHADING_GROUP buddha_shader12
 NewObjectInstance buddha13 buddha_mesh
 SetProperty3 buddha13 translate -4.5 0 -1.5
 SetProperty3 buddha13 rotate 0 390 0
 SetProperty3 buddha13 scale 0.6 0.6 0.6
-AssignShader buddha13 buddha_shader13
+AssignShader buddha13 DEFAULT_SHADING_GROUP buddha_shader13
 NewObjectInstance buddha14 buddha_mesh
 SetProperty3 buddha14 translate -4.5 0 -3
 SetProperty3 buddha14 rotate 0 420 0
 SetProperty3 buddha14 scale 0.6 0.6 0.6
-AssignShader buddha14 buddha_shader14
+AssignShader buddha14 DEFAULT_SHADING_GROUP buddha_shader14
 NewObjectInstance buddha15 buddha_mesh
 SetProperty3 buddha15 translate -4.5 0 -4.5
 SetProperty3 buddha15 rotate 0 450 0
 SetProperty3 buddha15 scale 0.6 0.6 0.6
-AssignShader buddha15 buddha_shader15
+AssignShader buddha15 DEFAULT_SHADING_GROUP buddha_shader15
 
 NewObjectInstance  floor1  floor_mesh
 SetProperty3       floor1  translate -2 0 -2
-AssignShader       floor1  floor_shader
+AssignShader       floor1 DEFAULT_SHADING_GROUP  floor_shader
 
 NewObjectInstance  dome1   dome_mesh
 SetProperty3       dome1   scale .5 .5 .5
-AssignShader       dome1   dome_shader
+AssignShader       dome1 DEFAULT_SHADING_GROUP   dome_shader
 AssignTexture      dome_shader texture tex1
 
 #ObjectGroup
