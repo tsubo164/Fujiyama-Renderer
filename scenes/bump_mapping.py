@@ -19,11 +19,11 @@ si.SetProperty3('cam1', 'translate', 0, 0, 10)
 rot = 110
 
 #Texture
-si.NewTexture('env_tex1', '../../mip/pisa.mip')
-si.NewTexture('rock_tex1', '../../mip/rock.mip')
-si.NewTexture('rust_tex1', '../../mip/rust.mip')
-si.NewTexture('concrete_tex1', '../../mip/concrete.mip')
-si.NewTexture('pattern_tex1', '../../mip/pattern.mip')
+si.NewTexture('env_tex1', '../../hdr/pisa.hdr')
+si.NewTexture('rock_tex1', '../../jpg/rock.jpg')
+si.NewTexture('rust_tex1', '../../jpg/rust.jpg')
+si.NewTexture('concrete_tex1', '../../jpg/concrete.jpg')
+si.NewTexture('pattern_tex1', '../../jpg/pattern.jpg')
 
 #Light
 si.NewLight('light1', 'DomeLight')
@@ -61,32 +61,32 @@ si.NewShader('dome_shader', 'ConstantShader')
 si.AssignTexture('dome_shader', 'texture', 'env_tex1')
 
 #Mesh
-si.NewMesh('sphere_mesh', '../../mesh/sphere_uv.mesh')
-si.NewMesh('dome_mesh', '../../mesh/dome.mesh')
+si.NewMesh('sphere_mesh', '../../ply/sphere_uv.ply')
+si.NewMesh('dome_mesh', '../../ply/dome.ply')
 
 #ObjectInstance
 si.NewObjectInstance('sphere1', 'sphere_mesh')
 si.SetProperty3('sphere1', 'translate', -1.7, 1.2, 0)
-si.AssignShader('sphere1', 'sphere_shader1')
+si.AssignShader('sphere1', 'DEFAULT_SHADING_GROUP', 'sphere_shader1')
 
 si.NewObjectInstance('sphere2', 'sphere_mesh')
 si.SetProperty3('sphere2', 'translate', 1.7, 1.2, 0)
 si.SetProperty3('sphere2', 'rotate', 0, 20, 0)
-si.AssignShader('sphere2', 'sphere_shader2')
+si.AssignShader('sphere2', 'DEFAULT_SHADING_GROUP', 'sphere_shader2')
 
 si.NewObjectInstance('sphere3', 'sphere_mesh')
 si.SetProperty3('sphere3', 'translate', -1.7, -1.2, 0)
 si.SetProperty3('sphere3', 'rotate', 0, 20, 0)
-si.AssignShader('sphere3', 'sphere_shader3')
+si.AssignShader('sphere3', 'DEFAULT_SHADING_GROUP', 'sphere_shader3')
 
 si.NewObjectInstance('sphere4', 'sphere_mesh')
 si.SetProperty3('sphere4', 'translate', 1.7, -1.2, 0)
-si.AssignShader('sphere4', 'sphere_shader4')
+si.AssignShader('sphere4', 'DEFAULT_SHADING_GROUP', 'sphere_shader4')
 
 si.NewObjectInstance('dome1', 'dome_mesh')
 si.SetProperty3('dome1', 'rotate', 0, rot, 0)
 si.SetProperty3('dome1', 'scale', -.5, .5, .5)
-si.AssignShader('dome1', 'dome_shader')
+si.AssignShader('dome1', 'DEFAULT_SHADING_GROUP', 'dome_shader')
 
 #ObjectGroup
 # Create shadow_target for sphere1.
