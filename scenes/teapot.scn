@@ -126,16 +126,16 @@ NewMesh dome_mesh   ../../mesh/dome.mesh
 
 #ObjectInstance
 NewObjectInstance teapot1 teapot_mesh
-AssignShader teapot1      teapot_shader
+AssignShader teapot1 DEFAULT_SHADING_GROUP     teapot_shader
 
 NewObjectInstance  floor1  floor_mesh
 SetProperty3       floor1  translate -2 0 -2
-AssignShader       floor1  floor_shader
+AssignShader       floor1 DEFAULT_SHADING_GROUP floor_shader
 
 NewObjectInstance  dome1       dome_mesh
 SetProperty3       dome1       scale .5 .5 .5
 SetProperty3       dome1       rotate 0 30 0
-AssignShader       dome1       dome_shader
+AssignShader       dome1 DEFAULT_SHADING_GROUP      dome_shader
 AssignTexture      dome_shader texture tex1
 
 #ObjectGroup
