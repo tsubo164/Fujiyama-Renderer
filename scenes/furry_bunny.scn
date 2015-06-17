@@ -137,19 +137,19 @@ NewMesh dome_mesh  ../../mesh/dome.mesh
 
 #ObjectInstance
 NewObjectInstance  bunny1 bunny_mesh
-AssignShader       bunny1 bunny_shader
+AssignShader       bunny1 DEFAULT_SHADING_GROUP bunny_shader
 
 NewObjectInstance  floor1 floor_mesh
 SetProperty3       floor1 translate 3 0 3
-AssignShader       floor1 floor_shader
+AssignShader       floor1 DEFAULT_SHADING_GROUP floor_shader
 
 NewObjectInstance  dome1       dome_mesh
 SetProperty3       dome1       scale .5 .5 .5
-AssignShader       dome1       dome_shader
+AssignShader       dome1  DEFAULT_SHADING_GROUP      dome_shader
 AssignTexture      dome_shader texture tex1
 
 NewObjectInstance  curve1 curve_data
-AssignShader       curve1 curve_shader
+AssignShader       curve1 DEFAULT_SHADING_GROUP curve_shader
 
 #ObjectGroup
 NewObjectGroup     group1
