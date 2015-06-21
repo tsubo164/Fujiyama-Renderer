@@ -3,6 +3,10 @@
 # 1 hair curve and 1 head object with 1 dome light with an HDRI
 # Copyright (c) 2011-2014 Hiroshi Tsubokawa
 
+# NOTE How to make hair.crv
+# $ obj2mesh head.obj  head.mesh
+# $ curvegen --hair head.mesh hair.crv
+
 import fujiyama
 
 si = fujiyama.SceneInterface()

@@ -6,6 +6,10 @@
 # The sample image was rendered by v0.0.2.
 # Copyright (c) 2011-2014 Hiroshi Tsubokawa
 
+# NOTE How to make bunny.crv
+# $ ply2mesh bunny.ply  bunny.mesh
+# $ curvegen bunny.mesh bunny.crv
+
 import fujiyama
 si = fujiyama.SceneInterface()
 
