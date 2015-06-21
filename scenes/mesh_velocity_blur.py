@@ -3,6 +3,10 @@
 # 1 point cloud with 1 dome light with an HDRI
 # Copyright (c) 2011-2014 Hiroshi Tsubokawa
 
+# NOTE How to make dragon_vel.mesh
+# $ ply2mesh dragon.ply  dragon.mesh
+# $ velgen   dragon.mesh dragon_vel.mesh
+
 import fujiyama
 
 si = fujiyama.SceneInterface()
