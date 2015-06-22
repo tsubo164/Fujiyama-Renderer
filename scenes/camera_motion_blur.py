@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # 1 dragon with 1 point light
-# Copyright (c) 2011-2014 Hiroshi Tsubokawa
+# Copyright (c) 2011-2015 Hiroshi Tsubokawa
 
 import fujiyama
 

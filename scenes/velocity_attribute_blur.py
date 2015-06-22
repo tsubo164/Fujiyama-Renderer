@@ -2,7 +2,7 @@
 
 # 1 point cloud with 1 dome light with an HDRI
 # This point cloud has velocity attribute
-# Copyright (c) 2011-2014 Hiroshi Tsubokawa
+# Copyright (c) 2011-2015 Hiroshi Tsubokawa
 
 import fujiyama
 
