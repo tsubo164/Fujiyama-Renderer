@@ -118,7 +118,7 @@ int main(int argc, const char **argv)
     return -1;
   }
   SiSetProperty3(object, "rotate", 0, 10, 0);
-  SiAssignShader(object, shader);
+  SiAssignShader(object, "DEFAULT_SHADING_GROUP", shader);
 
   // FrameBuffer
   framebuffer = SiNewFrameBuffer("rgba");
