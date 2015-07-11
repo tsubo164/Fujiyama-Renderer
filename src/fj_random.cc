@@ -93,7 +93,7 @@ void XorSolidDiskRand(XorShift *xr, Vector2 *out_position)
     out_position->x = 2 * XorNextFloat01(xr) - 1;
     out_position->y = 2 * XorNextFloat01(xr) - 1;
 
-    if (Dot2(*out_position, *out_position) <= 1) {
+    if (Dot(*out_position, *out_position) <= 1) {
       break;
     }
   }
@@ -108,7 +108,7 @@ void XorHollowDiskRand(XorShift *xr, Vector2 *out_position)
     out_position->x = 2 * XorNextFloat01(xr) - 1;
     out_position->y = 2 * XorNextFloat01(xr) - 1;
 
-    dot = Dot2(*out_position, *out_position);
+    dot = Dot(*out_position, *out_position);
 
     if (dot > 0 && dot <= 1) {
       break;
@@ -138,7 +138,7 @@ double XorGaussianRand(XorShift *xr)
     P.x = 2 * XorNextFloat01(xr) - 1;
     P.y = 2 * XorNextFloat01(xr) - 1;
 
-    dot = Dot2(P, P);
+    dot = Dot(P, P);
 
     if (dot > 0 && dot <= 1) {
       break;

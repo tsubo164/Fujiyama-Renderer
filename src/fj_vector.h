@@ -6,22 +6,27 @@
 
 #include "fj_types.h"
 #include <iostream>
+#include <cassert>
 #include <cmath>
 
 namespace fj {
 
 class Vector2 {
 public:
-  Vector2() : x(0), y(0) {}
-  Vector2(Real xx, Real yy) : x(xx), y(yy) {}
+  Vector2()
+    : x(0), y(0) {}
+  Vector2(Real xx, Real yy)
+    : x(xx), y(yy) {}
+  Vector2(const Vector2 &a)
+    : x(a[0]), y(a[1]) {}
   ~Vector2() {}
 
-  const Real &operator[](int i) const
+  Real operator[](int i) const
   {
     switch(i) {
     case 0: return x;
     case 1: return y;
-    default: return x; // TODO ERROR HANDLING
+    default: assert(!"bounds error at Vector2::get");
     }
   }
   Real &operator[](int i)
@@ -29,58 +34,163 @@ public:
     switch(i) {
     case 0: return x;
     case 1: return y;
-    default: return x; // TODO ERROR HANDLING
+    default: assert(!"bounds error at Vector2::set");
     }
+  }
+
+  const Vector2 &operator=(const Vector2 &a)
+  {
+    (*this)[0] = a[0];
+    (*this)[1] = a[1];
+    return *this;
+  }
+  const Vector2 &operator+=(const Vector2 &a)
+  {
+    (*this)[0] += a[0];
+    (*this)[1] += a[1];
+    return *this;
+  }
+  const Vector2 &operator-=(const Vector2 &a)
+  {
+    (*this)[0] -= a[0];
+    (*this)[1] -= a[1];
+    return *this;
+  }
+  const Vector2 &operator*=(const Vector2 &a)
+  {
+    (*this)[0] *= a[0];
+    (*this)[1] *= a[1];
+    return *this;
+  }
+  const Vector2 &operator/=(const Vector2 &a)
+  {
+    (*this)[0] /= a[0];
+    (*this)[1] /= a[1];
+    return *this;
+  }
+  const Vector2 &operator*=(Real scalar)
+  {
+    (*this)[0] *= scalar;
+    (*this)[1] *= scalar;
+    return *this;
+  }
+  const Vector2 &operator/=(Real scalar)
+  {
+    // no checking zero division
+    const Real inv = 1./scalar;
+    return *this *= inv;
   }
 
   Real x, y;
 };
 
-inline Real Dot2(const Vector2 &a, const Vector2 &b)
+inline Vector2 operator+(const Vector2 &a, const Vector2 &b)
 {
-  return
-    a.x * b.x +
-    a.y * b.y;
+  return Vector2(
+    a[0] + b[0],
+    a[1] + b[1]);
 }
 
-class Vector4 {
-public:
-  Vector4() : e_() {}
-  Vector4(Real x, Real y, Real z, Real w)
-  {
-    e_[0] = x;
-    e_[1] = y;
-    e_[2] = z;
-    e_[3] = w;
-  }
-  ~Vector4() {}
+inline Vector2 operator-(const Vector2 &a, const Vector2 &b)
+{
+  return Vector2(
+    a[0] - b[0],
+    a[1] - b[1]);
+}
 
-  const Real &operator[](int i) const
-  {
-    return e_[i];
-  }
-  Real &operator[](int i)
-  {
-    return e_[i];
-  }
+inline Vector2 operator*(const Vector2 &a, const Vector2 &b)
+{
+  return Vector2(
+    a[0] * b[0],
+    a[1] * b[1]);
+}
 
-private:
-  Real e_[4];
-};
+inline Vector2 operator/(const Vector2 &a, const Vector2 &b)
+{
+  return Vector2(
+    a[0] / b[0],
+    a[1] / b[1]);
+}
+
+inline Vector2 operator*(const Vector2 &a, Real scalar)
+{
+  return Vector2(
+    a[0] * scalar,
+    a[1] * scalar);
+}
+
+inline Vector2 operator*(Real scalar, const Vector2 &a)
+{
+  return a * scalar;
+}
+
+inline Vector2 operator/(const Vector2 &a, Real scalar)
+{
+  // no checking zero division
+  const Real inv = 1./scalar;
+  return a * inv;
+}
+
+inline Vector2 operator-(const Vector2 &a)
+{
+  return -1 * a;
+}
+
+inline Real Dot(const Vector2 &a, const Vector2 &b)
+{
+  return
+    a[0] * b[0] +
+    a[1] * b[1];
+}
+
+inline Real Length(const Vector2 &a)
+{
+  return std::sqrt(Dot(a, a));
+}
+
+inline const Vector2 &Normalize(Vector2 *a)
+{
+  const Real len = Length(*a);
+  if (len == 0)
+    return *a;
+  return *a /= len;
+}
+
+inline Vector2 GetNormalized(const Vector2 &a)
+{
+  Vector2 b(a);
+  return Normalize(&b);
+}
+
+inline Vector2 Lerp(const Vector2 &a, const Vector2 &b, Real t)
+{
+  return (1 - t) * a + t * b;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const Vector2 &a)
+{
+  return os << "(" <<
+    a[0] << ", " <<
+    a[1] << ")";
+}
 
 class Vector {
 public:
-  Vector() : x(0), y(0), z(0) {}
-  Vector(Real xx, Real yy, Real zz) : x(xx), y(yy), z(zz) {}
+  Vector()
+    : x(0), y(0), z(0) {}
+  Vector(Real xx, Real yy, Real zz)
+    : x(xx), y(yy), z(zz) {}
+  Vector(const Vector &a)
+    : x(a[0]), y(a[1]), z(a[2]) {}
   ~Vector() {}
 
-  const Real &operator[](int i) const
+  Real operator[](int i) const
   {
     switch(i) {
     case 0: return x;
     case 1: return y;
     case 2: return z;
-    default: return x; // TODO ERROR HANDLING
+    default: assert(!"bounds error at Vector::get");
     }
   }
   Real &operator[](int i)
@@ -89,11 +199,17 @@ public:
     case 0: return x;
     case 1: return y;
     case 2: return z;
-    default: return x; // TODO ERROR HANDLING
+    default: assert(!"bounds error at Vector::set");
     }
   }
 
-#if 0
+  const Vector &operator=(const Vector &a)
+  {
+    (*this)[0] = a[0];
+    (*this)[1] = a[1];
+    (*this)[2] = a[2];
+    return *this;
+  }
   const Vector &operator+=(const Vector &a)
   {
     (*this)[0] += a[0];
@@ -106,6 +222,20 @@ public:
     (*this)[0] -= a[0];
     (*this)[1] -= a[1];
     (*this)[2] -= a[2];
+    return *this;
+  }
+  const Vector &operator*=(const Vector &a)
+  {
+    (*this)[0] *= a[0];
+    (*this)[1] *= a[1];
+    (*this)[2] *= a[2];
+    return *this;
+  }
+  const Vector &operator/=(const Vector &a)
+  {
+    (*this)[0] /= a[0];
+    (*this)[1] /= a[1];
+    (*this)[2] /= a[2];
     return *this;
   }
   const Vector &operator*=(Real scalar)
@@ -121,102 +251,48 @@ public:
     const Real inv = 1./scalar;
     return *this *= inv;
   }
-#endif
-  const Vector &operator+=(const Vector &a)
-  {
-    x += a.x;
-    y += a.y;
-    z += a.z;
-    return *this;
-  }
-  const Vector &operator-=(const Vector &a)
-  {
-    x -= a.x;
-    y -= a.y;
-    z -= a.z;
-    return *this;
-  }
-  const Vector &operator*=(const Vector &a)
-  {
-    x *= a.x;
-    y *= a.y;
-    z *= a.z;
-    return *this;
-  }
-  const Vector &operator/=(const Vector &a)
-  {
-    x /= a.x;
-    y /= a.y;
-    z /= a.z;
-    return *this;
-  }
-  const Vector &operator*=(Real scalar)
-  {
-    x *= scalar;
-    y *= scalar;
-    z *= scalar;
-    return *this;
-  }
-  const Vector &operator/=(Real scalar)
-  {
-    // no checking zero division
-    const Real inv = 1./scalar;
-    return *this *= inv;
-  }
 
   Real x, y, z;
 };
 
 inline Vector operator+(const Vector &a, const Vector &b)
 {
-#if 0
   return Vector(
     a[0] + b[0],
     a[1] + b[1],
     a[2] + b[2]);
-#endif
-  return Vector(
-    a.x + b.x,
-    a.y + b.y,
-    a.z + b.z);
 }
 
 inline Vector operator-(const Vector &a, const Vector &b)
 {
-#if 0
   return Vector(
     a[0] - b[0],
     a[1] - b[1],
     a[2] - b[2]);
-#endif
-  return Vector(
-    a.x - b.x,
-    a.y - b.y,
-    a.z - b.z);
 }
 
 inline Vector operator*(const Vector &a, const Vector &b)
 {
   return Vector(
-    a.x * b.x,
-    a.y * b.y,
-    a.z * b.z);
+    a[0] * b[0],
+    a[1] * b[1],
+    a[2] * b[2]);
 }
 
 inline Vector operator/(const Vector &a, const Vector &b)
 {
   return Vector(
-    a.x / b.x,
-    a.y / b.y,
-    a.z / b.z);
+    a[0] / b[0],
+    a[1] / b[1],
+    a[2] / b[2]);
 }
 
 inline Vector operator*(const Vector &a, Real scalar)
 {
   return Vector(
-    a.x * scalar,
-    a.y * scalar,
-    a.z * scalar);
+    a[0] * scalar,
+    a[1] * scalar,
+    a[2] * scalar);
 }
 
 inline Vector operator*(Real scalar, const Vector &a)
@@ -228,26 +304,33 @@ inline Vector operator/(const Vector &a, Real scalar)
 {
   // no checking zero division
   const Real inv = 1./scalar;
-  return Vector(
-    a.x * inv,
-    a.y * inv,
-    a.z * inv);
+  return a * inv;
 }
 
 inline Vector operator-(const Vector &a)
 {
+  return -1 * a;
+}
+
+inline Real Dot(const Vector &a, const Vector &b)
+{
+  return
+    a[0] * b[0] +
+    a[1] * b[1] +
+    a[2] * b[2];
+}
+
+inline Vector Cross(const Vector &a, const Vector &b)
+{
   return Vector(
-    -a.x,
-    -a.y,
-    -a.z);
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0]);
 }
 
 inline Real Length(const Vector &a)
 {
-  return std::sqrt(
-    a.x * a.x +
-    a.y * a.y +
-    a.z * a.z);
+  return std::sqrt(Dot(a, a));
 }
 
 inline const Vector &Normalize(Vector *a)
@@ -258,23 +341,13 @@ inline const Vector &Normalize(Vector *a)
   return *a /= len;
 }
 
-inline Real Dot(const Vector &a, const Vector &b)
+inline Vector GetNormalized(const Vector &a)
 {
-  return
-    a.x * b.x +
-    a.y * b.y +
-    a.z * b.z;
+  Vector b(a);
+  return Normalize(&b);
 }
 
-inline Vector Cross(const Vector &a, const Vector &b)
-{
-  return Vector(
-    a.y * b.z - a.z * b.y,
-    a.z * b.x - a.x * b.z,
-    a.x * b.y - a.y * b.x);
-}
-
-inline Vector LerpVec3(const Vector &a, const Vector &b, Real t)
+inline Vector Lerp(const Vector &a, const Vector &b, Real t)
 {
   return (1 - t) * a + t * b;
 }
@@ -282,9 +355,169 @@ inline Vector LerpVec3(const Vector &a, const Vector &b, Real t)
 inline std::ostream &operator<<(std::ostream &os, const Vector &a)
 {
   return os << "(" <<
-    a.x << ", " <<
-    a.y << ", " <<
-    a.z << ")";
+    a[0] << ", " <<
+    a[1] << ", " <<
+    a[2] << ")";
+}
+
+class Vector4 {
+public:
+  Vector4()
+    : x(0), y(0), z(0), w(0) {}
+  Vector4(Real xx, Real yy, Real zz, Real ww)
+    : x(xx), y(yy), z(zz), w(ww) {}
+  Vector4(const Vector4 &a)
+    : x(a[0]), y(a[1]), z(a[2]), w(a[3]) {}
+  ~Vector4() {}
+
+  Real operator[](int i) const
+  {
+    switch(i) {
+    case 0: return x;
+    case 1: return y;
+    case 2: return z;
+    case 3: return w;
+    default: assert(!"bounds error at Vector4::get");
+    }
+  }
+  Real &operator[](int i)
+  {
+    switch(i) {
+    case 0: return x;
+    case 1: return y;
+    case 2: return z;
+    case 3: return w;
+    default: assert(!"bounds error at Vector4::set");
+    }
+  }
+
+  const Vector4 &operator=(const Vector4 &a)
+  {
+    (*this)[0] = a[0];
+    (*this)[1] = a[1];
+    (*this)[2] = a[2];
+    (*this)[3] = a[3];
+    return *this;
+  }
+  const Vector4 &operator+=(const Vector4 &a)
+  {
+    (*this)[0] += a[0];
+    (*this)[1] += a[1];
+    (*this)[2] += a[2];
+    (*this)[3] += a[3];
+    return *this;
+  }
+  const Vector4 &operator-=(const Vector4 &a)
+  {
+    (*this)[0] -= a[0];
+    (*this)[1] -= a[1];
+    (*this)[2] -= a[2];
+    (*this)[3] -= a[3];
+    return *this;
+  }
+  const Vector4 &operator*=(const Vector4 &a)
+  {
+    (*this)[0] *= a[0];
+    (*this)[1] *= a[1];
+    (*this)[2] *= a[2];
+    (*this)[3] *= a[3];
+    return *this;
+  }
+  const Vector4 &operator/=(const Vector4 &a)
+  {
+    (*this)[0] /= a[0];
+    (*this)[1] /= a[1];
+    (*this)[2] /= a[2];
+    (*this)[3] /= a[3];
+    return *this;
+  }
+  const Vector4 &operator*=(Real scalar)
+  {
+    (*this)[0] *= scalar;
+    (*this)[1] *= scalar;
+    (*this)[2] *= scalar;
+    (*this)[3] *= scalar;
+    return *this;
+  }
+  const Vector4 &operator/=(Real scalar)
+  {
+    // no checking zero division
+    const Real inv = 1./scalar;
+    return *this *= inv;
+  }
+
+  Real x, y, z, w;
+};
+
+inline Vector4 operator+(const Vector4 &a, const Vector4 &b)
+{
+  return Vector4(
+    a[0] + b[0],
+    a[1] + b[1],
+    a[2] + b[2],
+    a[3] + b[3]);
+}
+
+inline Vector4 operator-(const Vector4 &a, const Vector4 &b)
+{
+  return Vector4(
+    a[0] - b[0],
+    a[1] - b[1],
+    a[2] - b[2],
+    a[3] - b[3]);
+}
+
+inline Vector4 operator*(const Vector4 &a, const Vector4 &b)
+{
+  return Vector4(
+    a[0] * b[0],
+    a[1] * b[1],
+    a[2] * b[2],
+    a[3] * b[3]);
+}
+
+inline Vector4 operator/(const Vector4 &a, const Vector4 &b)
+{
+  return Vector4(
+    a[0] / b[0],
+    a[1] / b[1],
+    a[2] / b[2],
+    a[3] / b[3]);
+}
+
+inline Vector4 operator*(const Vector4 &a, Real scalar)
+{
+  return Vector4(
+    a[0] * scalar,
+    a[1] * scalar,
+    a[2] * scalar,
+    a[3] * scalar);
+}
+
+inline Vector4 operator*(Real scalar, const Vector4 &a)
+{
+  return a * scalar;
+}
+
+inline Vector4 operator/(const Vector4 &a, Real scalar)
+{
+  // no checking zero division
+  const Real inv = 1./scalar;
+  return a * inv;
+}
+
+inline Vector4 operator-(const Vector4 &a)
+{
+  return -1 * a;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const Vector4 &a)
+{
+  return os << "(" <<
+    a[0] << ", " <<
+    a[1] << ", " <<
+    a[2] << ", " <<
+    a[3] << ")";
 }
 
 } // namespace xxx

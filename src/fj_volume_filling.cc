@@ -18,11 +18,11 @@ void LerpWispConstrolPoint(WispsControlPoint *cp,
     const WispsControlPoint *cp0, const WispsControlPoint *cp1,
     Real t)
 {
-  cp->orig = LerpVec3(cp0->orig, cp1->orig, t);
-  cp->udir = LerpVec3(cp0->udir, cp1->udir, t);
-  cp->vdir = LerpVec3(cp0->vdir, cp1->vdir, t);
-  cp->wdir = LerpVec3(cp0->wdir, cp1->wdir, t);
-  cp->noise_space = LerpVec3(cp0->noise_space, cp1->noise_space, t);
+  cp->orig = Lerp(cp0->orig, cp1->orig, t);
+  cp->udir = Lerp(cp0->udir, cp1->udir, t);
+  cp->vdir = Lerp(cp0->vdir, cp1->vdir, t);
+  cp->wdir = Lerp(cp0->wdir, cp1->wdir, t);
+  cp->noise_space = Lerp(cp0->noise_space, cp1->noise_space, t);
   Normalize(&cp->udir);
   Normalize(&cp->vdir);
   Normalize(&cp->wdir);
