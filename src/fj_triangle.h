@@ -37,10 +37,14 @@ FJ_API void TriComputeDerivatives(
     const TexCoord &tex0, const TexCoord &tex1, const TexCoord &tex2,
     Vector *dPdu, Vector *dPdv);
 
-FJ_API int TriRayIntersect(
+FJ_API bool TriRayIntersect(
     const Vector &vert0, const Vector &vert1, const Vector &vert2,
     const Vector &orig, const Vector &dir, int cull_backfaces,
     Real *t, Real *u, Real *v);
+
+FJ_API bool TriBoxIntersect(
+    const Vector &vert0, const Vector &vert1, const Vector &vert2,
+    const Vector &boxcenter, const Vector &boxhalfsize);
 
 } // namespace xxx
 
