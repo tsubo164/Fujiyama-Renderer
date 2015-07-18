@@ -303,6 +303,17 @@ bool Mesh::ray_intersect(Index prim_id, Real time,
   return true;
 }
 
+bool Mesh::box_intersect(Index prim_id, const Box &box) const
+{
+  Vector P0, P1, P2;
+  get_point_positions(*this, prim_id, P0, P1, P2);
+
+  const Vector centroid = BoxCentroid(box);
+  const Vector halfsize = .5 * BoxSize(box);
+
+  return TriBoxIntersect(P0, P1, P2, centroid, halfsize);
+}
+
 void Mesh::get_primitive_bounds(Index prim_id, Box *bounds) const
 {
   Vector P0, P1, P2;

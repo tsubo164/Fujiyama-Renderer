@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2015 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2015 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_grid_accelerator.h"
 #include "fj_intersection.h"
@@ -37,6 +35,9 @@ static void compute_grid_cellsizes(int nprimitives,
 /* TODO move this somewhere */
 static bool prim_ray_intersect(const PrimitiveSet *primset, int prim_id,
     Real time, const Ray &ray, Intersection *isect);
+
+static Box get_grid_cell(const Box &grid_bounds, const Vector &cell_size,
+    int x, int y, int z);
 
 GridAccelerator::GridAccelerator() : cells_(), cellsize_(), bounds_()
 {
@@ -99,6 +100,10 @@ int GridAccelerator::build()
   cellsize_tmp.y = (bounds_tmp.max.y - bounds_tmp.min.y) / YNCELLS;
   cellsize_tmp.z = (bounds_tmp.max.z - bounds_tmp.min.z) / ZNCELLS;
 
+  // TODO TEST
+  int total_cell_count = 0;
+  int added_cell_count = 0;
+
   for (int i = 0; i < NPRIMS; i++) {
     const int primid = i;
     Box primbbox;
@@ -124,6 +129,13 @@ int GridAccelerator::build()
     for (int z = Z0; z < Z1; z++) {
       for (int y = Y0; y < Y1; y++) {
         for (int x = X0; x < X1; x++) {
+          total_cell_count++;
+
+          const Box cellbox = get_grid_cell(bounds_tmp, cellsize_tmp, x, y, z);
+          if (!primset->BoxIntersect(primid, cellbox)) {
+            continue;
+          }
+
           const int cell_id = z * YNCELLS * XNCELLS + y * XNCELLS + x;
           Cell *newcell = new_cell();
 
@@ -141,10 +153,16 @@ int GridAccelerator::build()
             cells_tmp[cell_id] = newcell;
             cells_tmp[cell_id]->next = oldcell;
           }
+          added_cell_count++;
         }
       }
     }
   }
+
+  std::cout << "-------------------------------------\n";
+  std::cout << "total_cell_count: " << total_cell_count << "\n";
+  std::cout << "added_cell_count: " << added_cell_count << "\n";
+  std::cout << "reduced:          " << 100. * added_cell_count/total_cell_count << "%\n";
 
   // commit
   cells_.swap(cells_tmp);
@@ -248,13 +266,8 @@ bool GridAccelerator::intersect(const Ray &ray, Real time, Intersection *isect) 
         continue;
 
       // check if the hit point is inside the cell
-      Box cellbox;
-      cellbox.min.x = bounds_.min.x + cell_id[0] * cellsize_[0];
-      cellbox.min.y = bounds_.min.y + cell_id[1] * cellsize_[1];
-      cellbox.min.z = bounds_.min.z + cell_id[2] * cellsize_[2];
-      cellbox.max.x = cellbox.min.x + cellsize_[0];
-      cellbox.max.y = cellbox.min.y + cellsize_[1];
-      cellbox.max.z = cellbox.min.z + cellsize_[2];
+      const Box cellbox = get_grid_cell(bounds_, cellsize_,
+          cell_id[0], cell_id[1], cell_id[2]);
       const Vector P_hit = RayPointAt(ray, isect_tmp->t_hit);
       const bool inside_cell = BoxContainsPoint(cellbox, P_hit);
 
@@ -352,6 +365,21 @@ static bool prim_ray_intersect(const PrimitiveSet *primset, int prim_id,
   }
 
   return true;
+}
+
+static Box get_grid_cell(const Box &grid_bounds, const Vector &cell_size,
+    int x, int y, int z)
+{
+  Box cellbox;
+
+  cellbox.min.x = grid_bounds.min.x + x * cell_size.x;
+  cellbox.min.y = grid_bounds.min.y + y * cell_size.y;
+  cellbox.min.z = grid_bounds.min.z + z * cell_size.z;
+  cellbox.max.x = cellbox.min.x + cell_size.x;
+  cellbox.max.y = cellbox.min.y + cell_size.y;
+  cellbox.max.z = cellbox.min.z + cell_size.z;
+
+  return cellbox;
 }
 
 } // namespace xxx

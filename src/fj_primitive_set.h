@@ -24,6 +24,11 @@ public:
     return ray_intersect(prim_id, time, ray, isect);
   }
 
+  bool BoxIntersect(Index prim_id, const Box &box) const
+  {
+    return box_intersect(prim_id, box);
+  }
+
   void GetPrimitiveBounds(Index prim_id, Box *bounds) const
   {
     get_primitive_bounds(prim_id, bounds);
@@ -42,6 +47,10 @@ public:
 private:
   virtual bool ray_intersect(Index prim_id, Real time,
       const Ray &ray, Intersection *isect) const = 0;
+  virtual bool box_intersect(Index prim_id, const Box &box) const
+  {
+    return true;
+  }
   virtual void get_primitive_bounds(Index prim_id, Box *bounds) const = 0;
   virtual void get_bounds(Box *bounds) const = 0;
   virtual Index get_primitive_count() const = 0;

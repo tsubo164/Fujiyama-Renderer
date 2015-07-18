@@ -192,6 +192,7 @@ public:
 private:
   virtual bool ray_intersect(Index prim_id, Real time,
       const Ray &ray, Intersection *isect) const;
+  virtual bool box_intersect(Index prim_id, const Box &box) const;
   virtual void get_primitive_bounds(Index prim_id, Box *bounds) const;
   virtual void get_bounds(Box *bounds) const;
   virtual Index get_primitive_count() const;
