@@ -4,9 +4,6 @@
 #include "fj_box.h"
 #include "fj_numeric.h"
 
-#include <cstdio>
-#include <cfloat>
-
 namespace fj {
 
 void BoxExpand(Box *box, Real delta)
@@ -17,37 +14,37 @@ void BoxExpand(Box *box, Real delta)
 
 void BoxReverseInfinite(Box *box)
 {
-  box->min = Vector( FLT_MAX,  FLT_MAX,  FLT_MAX);
-  box->max = Vector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+  box->min = Vector( REAL_MAX,  REAL_MAX,  REAL_MAX);
+  box->max = Vector(-REAL_MAX, -REAL_MAX, -REAL_MAX);
 }
 
 bool BoxContainsPoint(const Box &box, const Vector &point)
 {
-  if ((point.x < box.min.x) || (point.x > box.max.x)) return false;
-  if ((point.y < box.min.y) || (point.y > box.max.y)) return false;
-  if ((point.z < box.min.z) || (point.z > box.max.z)) return false;
+  if ((point[0] < box.min[0]) || (point[0] > box.max[0])) return false;
+  if ((point[1] < box.min[1]) || (point[1] > box.max[1])) return false;
+  if ((point[2] < box.min[2]) || (point[2] > box.max[2])) return false;
 
   return true;
 }
 
 void BoxAddPoint(Box *box, const Vector &point)
 {
-  box->min.x = Min(box->min.x, point.x);
-  box->min.y = Min(box->min.y, point.y);
-  box->min.z = Min(box->min.z, point.z);
-  box->max.x = Max(box->max.x, point.x);
-  box->max.y = Max(box->max.y, point.y);
-  box->max.z = Max(box->max.z, point.z);
+  box->min[0] = Min(box->min[0], point[0]);
+  box->min[1] = Min(box->min[1], point[1]);
+  box->min[2] = Min(box->min[2], point[2]);
+  box->max[0] = Max(box->max[0], point[0]);
+  box->max[1] = Max(box->max[1], point[1]);
+  box->max[2] = Max(box->max[2], point[2]);
 }
 
 void BoxAddBox(Box *box, const Box &otherbox)
 {
-  box->min.x = Min(box->min.x, otherbox.min.x);
-  box->min.y = Min(box->min.y, otherbox.min.y);
-  box->min.z = Min(box->min.z, otherbox.min.z);
-  box->max.x = Max(box->max.x, otherbox.max.x);
-  box->max.y = Max(box->max.y, otherbox.max.y);
-  box->max.z = Max(box->max.z, otherbox.max.z);
+  box->min[0] = Min(box->min[0], otherbox.min[0]);
+  box->min[1] = Min(box->min[1], otherbox.min[1]);
+  box->min[2] = Min(box->min[2], otherbox.min[2]);
+  box->max[0] = Max(box->max[0], otherbox.max[0]);
+  box->max[1] = Max(box->max[1], otherbox.max[1]);
+  box->max[2] = Max(box->max[2], otherbox.max[2]);
 }
 
 bool BoxRayIntersect(const Box &box,
@@ -57,20 +54,20 @@ bool BoxRayIntersect(const Box &box,
 {
   Real tmin, tmax, tymin, tymax, tzmin, tzmax;
 
-  if (raydir.x >= 0) {
-    tmin = (box.min.x - rayorig.x) / raydir.x;
-    tmax = (box.max.x - rayorig.x) / raydir.x;
+  if (raydir[0] >= 0) {
+    tmin = (box.min[0] - rayorig[0]) / raydir[0];
+    tmax = (box.max[0] - rayorig[0]) / raydir[0];
   } else {
-    tmin = (box.max.x - rayorig.x) / raydir.x;
-    tmax = (box.min.x - rayorig.x) / raydir.x;
+    tmin = (box.max[0] - rayorig[0]) / raydir[0];
+    tmax = (box.min[0] - rayorig[0]) / raydir[0];
   }
 
-  if (raydir.y >= 0) {
-    tymin = (box.min.y - rayorig.y) / raydir.y;
-    tymax = (box.max.y - rayorig.y) / raydir.y;
+  if (raydir[1] >= 0) {
+    tymin = (box.min[1] - rayorig[1]) / raydir[1];
+    tymax = (box.max[1] - rayorig[1]) / raydir[1];
   } else {
-    tymin = (box.max.y - rayorig.y) / raydir.y;
-    tymax = (box.min.y - rayorig.y) / raydir.y;
+    tymin = (box.max[1] - rayorig[1]) / raydir[1];
+    tymax = (box.min[1] - rayorig[1]) / raydir[1];
   }
 
   if ((tmin > tymax) || (tymin > tmax))
@@ -81,12 +78,12 @@ bool BoxRayIntersect(const Box &box,
   if (tymax < tmax)
     tmax = tymax;
 
-  if (raydir.z >= 0) {
-    tzmin = (box.min.z - rayorig.z) / raydir.z;
-    tzmax = (box.max.z - rayorig.z) / raydir.z;
+  if (raydir[2] >= 0) {
+    tzmin = (box.min[2] - rayorig[2]) / raydir[2];
+    tzmax = (box.max[2] - rayorig[2]) / raydir[2];
   } else {
-    tzmin = (box.max.z - rayorig.z) / raydir.z;
-    tzmax = (box.min.z - rayorig.z) / raydir.z;
+    tzmin = (box.max[2] - rayorig[2]) / raydir[2];
+    tzmax = (box.min[2] - rayorig[2]) / raydir[2];
   }
 
   if ((tmin > tzmax) || (tzmin > tmax))
@@ -122,11 +119,9 @@ Real BoxDiagonal(const Box &box)
   return .5 * Length(size);
 }
 
-void BoxPrint(const Box &box)
+std::ostream &operator<<(std::ostream &os, const Box &box)
 {
-  printf("(%g, %g, %g) (%g, %g, %g)\n",
-      box.min.x, box.min.y, box.min.z,
-      box.max.x, box.max.y, box.max.z);
+  return os << "(" << box.min << ", " << box.max << ")";
 }
 
 } // namespace xxx

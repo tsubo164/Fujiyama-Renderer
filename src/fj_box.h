@@ -6,6 +6,7 @@
 
 #include "fj_vector.h"
 #include "fj_types.h"
+#include <iostream>
 
 namespace fj {
 
@@ -37,7 +38,7 @@ FJ_API Vector BoxSize(const Box &box);
 FJ_API Vector BoxCentroid(const Box &box);
 FJ_API Real BoxDiagonal(const Box &box);
 
-FJ_API void BoxPrint(const Box &box);
+FJ_API std::ostream &operator<<(std::ostream &os, const Box &box);
 
 } // namespace xxx
 
