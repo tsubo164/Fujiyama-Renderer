@@ -19,20 +19,21 @@ static const int GRID_MAXCELLS = 512;
 class Cell {
 public:
   Cell() : prim_id(0), next(NULL) {}
+  Cell(int primid) : prim_id(primid), next(NULL) {}
   ~Cell() {}
 
   int prim_id;
   Cell *next;
 };
 
-static Cell *new_cell() { return new Cell(); }
-static void free_cell(Cell *cell) { delete cell; }
+static Cell *new_cell(int prim_id) { return new Cell(prim_id); }
+static void free_cell(Cell *cell)  { delete cell; }
 
-static void compute_grid_cellsizes(int nprimitives,
-    Real xwidth, Real ywidth, Real zwidth,
+static Real max_component(const Vector &a);
+static void compute_grid_cellsizes(int nprimitives, const Vector &grid_size,
     int *xncells, int *yncells, int *zncells);
 
-/* TODO move this somewhere */
+// TODO move this somewhere
 static bool prim_ray_intersect(const PrimitiveSet *primset, int prim_id,
     Real time, const Ray &ray, Intersection *isect);
 
@@ -41,9 +42,6 @@ static Box get_grid_cell(const Box &grid_bounds, const Vector &cell_size,
 
 GridAccelerator::GridAccelerator() : cells_(), cellsize_(), bounds_()
 {
-  cellsize_[0] = 0;
-  cellsize_[1] = 0;
-  cellsize_[2] = 0;
 }
 
 GridAccelerator::~GridAccelerator()
@@ -88,36 +86,29 @@ int GridAccelerator::build()
   BoxExpand(&bounds_tmp, PADDING);
 
   NPRIMS = primset->GetPrimitiveCount();
-  compute_grid_cellsizes(NPRIMS, 
-      bounds_tmp.max.x - bounds_tmp.min.x,
-      bounds_tmp.max.y - bounds_tmp.min.y,
-      bounds_tmp.max.z - bounds_tmp.min.z,
-      &XNCELLS, &YNCELLS, &ZNCELLS);
+  compute_grid_cellsizes(NPRIMS, BoxSize(bounds_tmp), &XNCELLS, &YNCELLS, &ZNCELLS);
 
   cells_tmp.resize(XNCELLS * YNCELLS * ZNCELLS, NULL);
-
-  cellsize_tmp.x = (bounds_tmp.max.x - bounds_tmp.min.x) / XNCELLS;
-  cellsize_tmp.y = (bounds_tmp.max.y - bounds_tmp.min.y) / YNCELLS;
-  cellsize_tmp.z = (bounds_tmp.max.z - bounds_tmp.min.z) / ZNCELLS;
+  cellsize_tmp = (bounds_tmp.max - bounds_tmp.min) / Vector(XNCELLS, YNCELLS, ZNCELLS);
 
   // TODO TEST
   int total_cell_count = 0;
   int added_cell_count = 0;
 
   for (int i = 0; i < NPRIMS; i++) {
-    const int primid = i;
+    const int prim_id = i;
     Box primbbox;
 
-    primset->GetPrimitiveBounds(primid, &primbbox);
+    primset->GetPrimitiveBounds(prim_id, &primbbox);
     BoxExpand(&primbbox, HALF_PADDING);
 
-    /* compute the ranges of cell indices. e.g. [X0 .. X1) */
-    int X0 = (int) floor((primbbox.min.x - bounds_tmp.min.x) / cellsize_tmp.x);
-    int X1 = (int) floor((primbbox.max.x - bounds_tmp.min.x) / cellsize_tmp.x) + 1;
-    int Y0 = (int) floor((primbbox.min.y - bounds_tmp.min.y) / cellsize_tmp.y);
-    int Y1 = (int) floor((primbbox.max.y - bounds_tmp.min.y) / cellsize_tmp.y) + 1;
-    int Z0 = (int) floor((primbbox.min.z - bounds_tmp.min.z) / cellsize_tmp.z);
-    int Z1 = (int) floor((primbbox.max.z - bounds_tmp.min.z) / cellsize_tmp.z) + 1;
+    // compute the ranges of cell indices. e.g. [X0 .. X1)
+    int X0 = static_cast<int>(floor((primbbox.min.x - bounds_tmp.min.x) / cellsize_tmp.x));
+    int X1 = static_cast<int>(floor((primbbox.max.x - bounds_tmp.min.x) / cellsize_tmp.x) + 1);
+    int Y0 = static_cast<int>(floor((primbbox.min.y - bounds_tmp.min.y) / cellsize_tmp.y));
+    int Y1 = static_cast<int>(floor((primbbox.max.y - bounds_tmp.min.y) / cellsize_tmp.y) + 1);
+    int Z0 = static_cast<int>(floor((primbbox.min.z - bounds_tmp.min.z) / cellsize_tmp.z));
+    int Z1 = static_cast<int>(floor((primbbox.max.z - bounds_tmp.min.z) / cellsize_tmp.z) + 1);
     X0 = Clamp(X0, 0, XNCELLS);
     X1 = Clamp(X1, 0, XNCELLS);
     Y0 = Clamp(Y0, 0, YNCELLS);
@@ -125,26 +116,19 @@ int GridAccelerator::build()
     Z0 = Clamp(Z0, 0, ZNCELLS);
     Z1 = Clamp(Z1, 0, ZNCELLS);
 
-    /* add cell list which holds face id inside the cell */
+    // add cell list which holds face id inside the cell
     for (int z = Z0; z < Z1; z++) {
       for (int y = Y0; y < Y1; y++) {
         for (int x = X0; x < X1; x++) {
           total_cell_count++;
 
           const Box cellbox = get_grid_cell(bounds_tmp, cellsize_tmp, x, y, z);
-          if (!primset->BoxIntersect(primid, cellbox)) {
+          if (!primset->BoxIntersect(prim_id, cellbox)) {
             continue;
           }
 
           const int cell_id = z * YNCELLS * XNCELLS + y * XNCELLS + x;
-          Cell *newcell = new_cell();
-
-          if (newcell == NULL) {
-            /* TODO error handling */
-            return -1;
-          }
-          newcell->prim_id = primid;
-          newcell->next = NULL;
+          Cell *newcell = new_cell(prim_id);
 
           if (cells_tmp[cell_id] == NULL) {
             cells_tmp[cell_id] = newcell;
@@ -319,34 +303,25 @@ const char *GridAccelerator::get_name() const
   return ACCELERATOR_NAME;
 }
 
-static void compute_grid_cellsizes(int nprimitives,
-    Real xwidth, Real ywidth, Real zwidth,
+static Real max_component(const Vector &a)
+{
+  return Max(Max(a[0], a[1]), a[2]);
+}
+
+static void compute_grid_cellsizes(int nprimitives, const Vector &grid_size,
     int *xncells, int *yncells, int *zncells)
 {
-  Real max_width = 0;
-  if (xwidth > ywidth && xwidth > zwidth) {
-    max_width = xwidth;
-  }
-  else if (ywidth > zwidth) {
-    max_width = ywidth;
-  }
-  else {
-    max_width = zwidth;
-  }
-
+  const Real max_width = max_component(grid_size);
   const Real cube_root = 3 * pow(nprimitives, 1./3);
   const Real ncells_per_unit_dist = cube_root / max_width;
 
-  int XNCELLS = (int) floor(xwidth * ncells_per_unit_dist + .5);
-  int YNCELLS = (int) floor(ywidth * ncells_per_unit_dist + .5);
-  int ZNCELLS = (int) floor(zwidth * ncells_per_unit_dist + .5);
-  XNCELLS = Clamp(XNCELLS, 1, GRID_MAXCELLS);
-  YNCELLS = Clamp(YNCELLS, 1, GRID_MAXCELLS);
-  ZNCELLS = Clamp(ZNCELLS, 1, GRID_MAXCELLS);
+  const int XNCELLS = static_cast<int>(floor(grid_size[0] * ncells_per_unit_dist + .5));
+  const int YNCELLS = static_cast<int>(floor(grid_size[1] * ncells_per_unit_dist + .5));
+  const int ZNCELLS = static_cast<int>(floor(grid_size[2] * ncells_per_unit_dist + .5));
 
-  *xncells = XNCELLS;
-  *yncells = YNCELLS;
-  *zncells = ZNCELLS;
+  *xncells = Clamp(XNCELLS, 1, GRID_MAXCELLS);
+  *yncells = Clamp(YNCELLS, 1, GRID_MAXCELLS);
+  *zncells = Clamp(ZNCELLS, 1, GRID_MAXCELLS);
 }
 
 static bool prim_ray_intersect(const PrimitiveSet *primset, int prim_id,
