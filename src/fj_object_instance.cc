@@ -317,16 +317,16 @@ void ObjectInstance::merge_sampled_bounds()
 
   // extend bounds when rotated to ensure object is always inside bounds
   if (transform_samples_.rotate.sample_count > 1) {
-    const Real diagonal = BoxDiagonal(original_bounds);
+    const Real half_diagonal = .5 * Length(BoxDiagonal(original_bounds));
     const Vector centroid = BoxCentroid(original_bounds);
 
     original_bounds = Box(
-        centroid.x - diagonal,
-        centroid.y - diagonal,
-        centroid.z - diagonal,
-        centroid.x + diagonal,
-        centroid.y + diagonal,
-        centroid.z + diagonal);
+        centroid.x - half_diagonal,
+        centroid.y - half_diagonal,
+        centroid.z - half_diagonal,
+        centroid.x + half_diagonal,
+        centroid.y + half_diagonal,
+        centroid.z + half_diagonal);
   }
 
   // compute maximum scale over sampling time

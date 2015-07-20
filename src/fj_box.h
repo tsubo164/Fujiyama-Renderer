@@ -34,9 +34,8 @@ FJ_API bool BoxRayIntersect(const Box &box,
     Real ray_tmin, Real ray_tmax,
     Real *hit_tmin, Real *hit_tmax);
 
-FJ_API Vector BoxSize(const Box &box);
 FJ_API Vector BoxCentroid(const Box &box);
-FJ_API Real BoxDiagonal(const Box &box);
+FJ_API Vector BoxDiagonal(const Box &box);
 
 FJ_API std::ostream &operator<<(std::ostream &os, const Box &box);
 

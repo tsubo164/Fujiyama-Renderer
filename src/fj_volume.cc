@@ -84,7 +84,7 @@ void Volume::Resize(int xres, int yres, int zres)
 void Volume::SetBounds(const Box &bounds)
 {
   bounds_ = bounds;
-  size_ = BoxSize(bounds_);
+  size_ = BoxDiagonal(bounds_);
 
   compute_filter_size();
 }

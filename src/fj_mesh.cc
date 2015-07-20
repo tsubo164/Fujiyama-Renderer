@@ -309,7 +309,7 @@ bool Mesh::box_intersect(Index prim_id, const Box &box) const
   get_point_positions(*this, prim_id, P0, P1, P2);
 
   const Vector centroid = BoxCentroid(box);
-  const Vector halfsize = .5 * BoxSize(box);
+  const Vector halfsize = .5 * BoxDiagonal(box);
 
   return TriBoxIntersect(P0, P1, P2, centroid, halfsize);
 }

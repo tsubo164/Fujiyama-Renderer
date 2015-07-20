@@ -86,7 +86,7 @@ int GridAccelerator::build()
   BoxExpand(&bounds_tmp, PADDING);
 
   NPRIMS = primset->GetPrimitiveCount();
-  compute_grid_cellsizes(NPRIMS, BoxSize(bounds_tmp), &XNCELLS, &YNCELLS, &ZNCELLS);
+  compute_grid_cellsizes(NPRIMS, BoxDiagonal(bounds_tmp), &XNCELLS, &YNCELLS, &ZNCELLS);
 
   cells_tmp.resize(XNCELLS * YNCELLS * ZNCELLS, NULL);
   cellsize_tmp = (bounds_tmp.max - bounds_tmp.min) / Vector(XNCELLS, YNCELLS, ZNCELLS);

@@ -103,20 +103,14 @@ bool BoxRayIntersect(const Box &box,
   return hit;
 }
 
-Vector BoxSize(const Box &box)
-{
-  return box.max - box.min;
-}
-
 Vector BoxCentroid(const Box &box)
 {
   return .5 * (box.min + box.max);
 }
 
-Real BoxDiagonal(const Box &box)
+Vector BoxDiagonal(const Box &box)
 {
-  const Vector size = BoxSize(box);
-  return .5 * Length(size);
+  return box.max - box.min;
 }
 
 std::ostream &operator<<(std::ostream &os, const Box &box)
