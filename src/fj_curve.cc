@@ -176,8 +176,8 @@ void Curve::cache_split_depth()
   }
 }
 
-bool Curve::ray_intersect(Index prim_id, Real time,
-    const Ray &ray, Intersection *isect) const
+bool Curve::ray_intersect(Index prim_id, const Ray &ray,
+    Real time, Intersection *isect) const
 {
   Matrix world_to_ray;
   Bezier3 bezier;

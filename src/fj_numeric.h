@@ -18,6 +18,11 @@ inline Real Abs(Real x)
   return std::abs(x);
 }
 
+inline Real Floor(Real x)
+{
+  return std::floor(x);
+}
+
 inline Real Min(Real x, Real y)
 {
   return x < y ? x : y;

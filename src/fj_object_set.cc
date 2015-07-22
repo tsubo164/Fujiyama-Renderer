@@ -54,8 +54,8 @@ void ObjectSet::ComputeBounds()
   }
 }
 
-bool ObjectSet::ray_intersect(Index prim_id, Real time,
-    const Ray &ray, Intersection *isect) const
+bool ObjectSet::ray_intersect(Index prim_id, const Ray &ray,
+    Real time, Intersection *isect) const
 {
   const ObjectInstance *obj = GetObject(prim_id);
   return obj->RayIntersect(ray, time, isect);

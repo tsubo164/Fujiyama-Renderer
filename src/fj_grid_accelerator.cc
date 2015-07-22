@@ -8,9 +8,6 @@
 #include "fj_types.h"
 #include "fj_ray.h"
 
-#include <utility>
-#include <cstddef>
-
 namespace fj {
 
 static const char ACCELERATOR_NAME[] = "Uniform-Grid";
@@ -26,17 +23,19 @@ public:
   Cell *next;
 };
 
-static Cell *new_cell(int prim_id) { return new Cell(prim_id); }
-static void free_cell(Cell *cell)  { delete cell; }
+static Cell *new_cell(int prim_id)
+{
+  return new Cell(prim_id);
+}
+
+static void free_cell(Cell *cell)
+{
+  delete cell;
+}
 
 static Real max_component(const Vector &a);
 static void compute_grid_cellsizes(int nprimitives, const Vector &grid_size,
     int *xncells, int *yncells, int *zncells);
-
-// TODO move this somewhere
-static bool prim_ray_intersect(const PrimitiveSet *primset, int prim_id,
-    Real time, const Ray &ray, Intersection *isect);
-
 static Box get_grid_cell(const Box &grid_bounds, const Vector &cell_size,
     int x, int y, int z);
 
@@ -69,27 +68,23 @@ GridAccelerator::~GridAccelerator()
 
 int GridAccelerator::build()
 {
-  int NPRIMS = 0;
-  int XNCELLS = 0;
-  int YNCELLS = 0;
-  int ZNCELLS = 0;
-  Box bounds_tmp;
-  Vector cellsize_tmp;
-  std::vector<Cell*> cells_tmp;
-
   const PrimitiveSet *primset = GetPrimitiveSet();
-
   const Real PADDING = GetBoundsPadding();
   const Real HALF_PADDING = .5 * PADDING;
 
+  Box bounds_tmp;
   primset->GetBounds(&bounds_tmp);
   BoxExpand(&bounds_tmp, PADDING);
 
-  NPRIMS = primset->GetPrimitiveCount();
+  int XNCELLS = 0;
+  int YNCELLS = 0;
+  int ZNCELLS = 0;
+  const int NPRIMS = primset->GetPrimitiveCount();
   compute_grid_cellsizes(NPRIMS, BoxDiagonal(bounds_tmp), &XNCELLS, &YNCELLS, &ZNCELLS);
 
-  cells_tmp.resize(XNCELLS * YNCELLS * ZNCELLS, NULL);
-  cellsize_tmp = (bounds_tmp.max - bounds_tmp.min) / Vector(XNCELLS, YNCELLS, ZNCELLS);
+  std::vector<Cell*> cells_tmp(XNCELLS * YNCELLS * ZNCELLS, NULL);
+  const Vector cellsize_tmp =
+      (bounds_tmp.max - bounds_tmp.min) / Vector(XNCELLS, YNCELLS, ZNCELLS);
 
   // TODO TEST
   int total_cell_count = 0;
@@ -103,12 +98,12 @@ int GridAccelerator::build()
     BoxExpand(&primbbox, HALF_PADDING);
 
     // compute the ranges of cell indices. e.g. [X0 .. X1)
-    int X0 = static_cast<int>(floor((primbbox.min.x - bounds_tmp.min.x) / cellsize_tmp.x));
-    int X1 = static_cast<int>(floor((primbbox.max.x - bounds_tmp.min.x) / cellsize_tmp.x) + 1);
-    int Y0 = static_cast<int>(floor((primbbox.min.y - bounds_tmp.min.y) / cellsize_tmp.y));
-    int Y1 = static_cast<int>(floor((primbbox.max.y - bounds_tmp.min.y) / cellsize_tmp.y) + 1);
-    int Z0 = static_cast<int>(floor((primbbox.min.z - bounds_tmp.min.z) / cellsize_tmp.z));
-    int Z1 = static_cast<int>(floor((primbbox.max.z - bounds_tmp.min.z) / cellsize_tmp.z) + 1);
+    int X0 = static_cast<int>(Floor((primbbox.min.x - bounds_tmp.min.x) / cellsize_tmp.x));
+    int X1 = static_cast<int>(Floor((primbbox.max.x - bounds_tmp.min.x) / cellsize_tmp.x) + 1);
+    int Y0 = static_cast<int>(Floor((primbbox.min.y - bounds_tmp.min.y) / cellsize_tmp.y));
+    int Y1 = static_cast<int>(Floor((primbbox.max.y - bounds_tmp.min.y) / cellsize_tmp.y) + 1);
+    int Z0 = static_cast<int>(Floor((primbbox.min.z - bounds_tmp.min.z) / cellsize_tmp.z));
+    int Z1 = static_cast<int>(Floor((primbbox.max.z - bounds_tmp.min.z) / cellsize_tmp.z) + 1);
     X0 = Clamp(X0, 0, XNCELLS);
     X1 = Clamp(X1, 0, XNCELLS);
     Y0 = Clamp(Y0, 0, YNCELLS);
@@ -120,6 +115,7 @@ int GridAccelerator::build()
     for (int z = Z0; z < Z1; z++) {
       for (int y = Y0; y < Y1; y++) {
         for (int x = X0; x < X1; x++) {
+          // TODO TEST
           total_cell_count++;
 
           const Box cellbox = get_grid_cell(bounds_tmp, cellsize_tmp, x, y, z);
@@ -137,16 +133,20 @@ int GridAccelerator::build()
             cells_tmp[cell_id] = newcell;
             cells_tmp[cell_id]->next = oldcell;
           }
+          // TODO TEST
           added_cell_count++;
         }
       }
     }
   }
 
-  std::cout << "-------------------------------------\n";
-  std::cout << "total_cell_count: " << total_cell_count << "\n";
-  std::cout << "added_cell_count: " << added_cell_count << "\n";
-  std::cout << "reduced:          " << 100. * added_cell_count/total_cell_count << "%\n";
+  if (0) {
+    // TODO TEST
+    std::cout << "-------------------------------------\n";
+    std::cout << "total_cell_count: " << total_cell_count << "\n";
+    std::cout << "added_cell_count: " << added_cell_count << "\n";
+    std::cout << "reduced:          " << 100. * added_cell_count/total_cell_count << "%\n";
+  }
 
   // commit
   cells_.swap(cells_tmp);
@@ -161,16 +161,16 @@ int GridAccelerator::build()
 
 bool GridAccelerator::intersect(const Ray &ray, Real time, Intersection *isect) const
 {
-  int NCELLS[3];
-  int cell_id[3];
-  int cell_step[3];
-  int cell_end[3];
+  int NCELLS[3]    = {0, 0, 0};
+  int cell_id[3]   = {0, 0, 0};
+  int cell_step[3] = {0, 0, 0};
+  int cell_end[3]  = {0, 0, 0};
   const PrimitiveSet *primset = GetPrimitiveSet();
 
   // check intersection with overall bounds
   // to get boxhit_tmin and boxhit_tmax
-  Real boxhit_tmin;
-  Real boxhit_tmax;
+  Real boxhit_tmin = REAL_MAX;
+  Real boxhit_tmax = REAL_MAX;
   if (!BoxRayIntersect(bounds_, ray.orig, ray.dir, ray.tmin, ray.tmax,
         &boxhit_tmin, &boxhit_tmax)) {
     return 0;
@@ -196,16 +196,15 @@ bool GridAccelerator::intersect(const Ray &ray, Real time, Intersection *isect) 
   NCELLS[1] = ncells_[1];
   NCELLS[2] = ncells_[2];
 
-  // TODO grid_min should be a member?
   const Vector &grid_min = bounds_.min;
   const Vector &dir = ray.dir;
-  Real t_next[3];
-  Real t_delta[3];
+  Real t_next[3]  = {0, 0, 0};
+  Real t_delta[3] = {0, 0, 0};
 
   // setup 3D DDA
   for (int i = 0; i < 3; i++) {
-    cell_id[i] = (int) floor((start[i] - grid_min[i]) / cellsize_[i]);
-    cell_id[i] = Clamp(cell_id[i], 0, NCELLS[i]-1);
+    cell_id[i] = static_cast<int>(Floor((start[i] - grid_min[i]) / cellsize_[i]));
+    cell_id[i] = Clamp(cell_id[i], 0, NCELLS[i] - 1);
 
     if (dir[i] > 0) {
       t_next[i] = t_start +
@@ -245,9 +244,10 @@ bool GridAccelerator::intersect(const Ray &ray, Real time, Intersection *isect) 
 
     // loop over face list that associated in current cell
     for (Cell *cell = cells_[id]; cell != NULL; cell = cell->next) {
-      const bool hittmp = prim_ray_intersect(primset, cell->prim_id, time, ray, isect_tmp);
-      if (!hittmp)
+      const bool hittmp = primset->RayIntersect(cell->prim_id, ray, time, isect_tmp);
+      if (!hittmp) {
         continue;
+      }
 
       // check if the hit point is inside the cell
       const Box cellbox = get_grid_cell(bounds_, cellsize_,
@@ -255,8 +255,9 @@ bool GridAccelerator::intersect(const Ray &ray, Real time, Intersection *isect) 
       const Vector P_hit = RayPointAt(ray, isect_tmp->t_hit);
       const bool inside_cell = BoxContainsPoint(cellbox, P_hit);
 
-      if (!inside_cell)
+      if (!inside_cell) {
         continue;
+      }
 
       // update info ONLY if isect->t_hit renewed
       if (isect_tmp->t_hit < isect_min->t_hit) {
@@ -271,27 +272,33 @@ bool GridAccelerator::intersect(const Ray &ray, Real time, Intersection *isect) 
 
     // advance to the next cell
     if ((t_next[0] < t_next[1]) && (t_next[0] < t_next[2])) {
-      if (t_end < t_next[0])
+      if (t_end < t_next[0]) {
         break;
+      }
       cell_id[0] += cell_step[0];
-      if (cell_id[0] == cell_end[0])
+      if (cell_id[0] == cell_end[0]) {
         break;
+      }
       t_next[0] += t_delta[0];
     }
     else if ((t_next[2] < t_next[1])) {
-      if (t_end < t_next[2])
+      if (t_end < t_next[2]) {
         break;
+      }
       cell_id[2] += cell_step[2];
-      if (cell_id[2] == cell_end[2])
+      if (cell_id[2] == cell_end[2]) {
         break;
+      }
       t_next[2] += t_delta[2];
     }
     else {
-      if (t_end < t_next[1])
+      if (t_end < t_next[1]) {
         break;
+      }
       cell_id[1] += cell_step[1];
-      if (cell_id[1] == cell_end[1])
+      if (cell_id[1] == cell_end[1]) {
         break;
+      }
       t_next[1] += t_delta[1];
     }
   }
@@ -315,31 +322,13 @@ static void compute_grid_cellsizes(int nprimitives, const Vector &grid_size,
   const Real cube_root = 3 * pow(nprimitives, 1./3);
   const Real ncells_per_unit_dist = cube_root / max_width;
 
-  const int XNCELLS = static_cast<int>(floor(grid_size[0] * ncells_per_unit_dist + .5));
-  const int YNCELLS = static_cast<int>(floor(grid_size[1] * ncells_per_unit_dist + .5));
-  const int ZNCELLS = static_cast<int>(floor(grid_size[2] * ncells_per_unit_dist + .5));
+  const int XNCELLS = static_cast<int>(Floor(grid_size[0] * ncells_per_unit_dist + .5));
+  const int YNCELLS = static_cast<int>(Floor(grid_size[1] * ncells_per_unit_dist + .5));
+  const int ZNCELLS = static_cast<int>(Floor(grid_size[2] * ncells_per_unit_dist + .5));
 
   *xncells = Clamp(XNCELLS, 1, GRID_MAXCELLS);
   *yncells = Clamp(YNCELLS, 1, GRID_MAXCELLS);
   *zncells = Clamp(ZNCELLS, 1, GRID_MAXCELLS);
-}
-
-static bool prim_ray_intersect(const PrimitiveSet *primset, int prim_id,
-    Real time, const Ray &ray, Intersection *isect)
-{
-  const bool hit = primset->RayIntersect(prim_id, time, ray, isect);
-
-  if (!hit) {
-    isect->t_hit = REAL_MAX;
-    return false;
-  }
-
-  if (isect->t_hit < ray.tmin || ray.tmax < isect->t_hit) {
-    isect->t_hit = REAL_MAX;
-    return false;
-  }
-
-  return true;
 }
 
 static Box get_grid_cell(const Box &grid_bounds, const Vector &cell_size,
@@ -347,12 +336,8 @@ static Box get_grid_cell(const Box &grid_bounds, const Vector &cell_size,
 {
   Box cellbox;
 
-  cellbox.min.x = grid_bounds.min.x + x * cell_size.x;
-  cellbox.min.y = grid_bounds.min.y + y * cell_size.y;
-  cellbox.min.z = grid_bounds.min.z + z * cell_size.z;
-  cellbox.max.x = cellbox.min.x + cell_size.x;
-  cellbox.max.y = cellbox.min.y + cell_size.y;
-  cellbox.max.z = cellbox.min.z + cell_size.z;
+  cellbox.min = grid_bounds.min + Vector(x, y, z) * cell_size;
+  cellbox.max = cellbox.min + cell_size;
 
   return cellbox;
 }

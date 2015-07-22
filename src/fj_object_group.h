@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2015 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2015 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #ifndef FJ_OBJECT_GROUP_H
 #define FJ_OBJECT_GROUP_H

@@ -19,34 +19,17 @@ public:
   PrimitiveSet() {}
   virtual ~PrimitiveSet() {}
 
-  bool RayIntersect(Index prim_id, Real time, const Ray &ray, Intersection *isect) const
-  {
-    return ray_intersect(prim_id, time, ray, isect);
-  }
+  bool RayIntersect(Index prim_id, const Ray &ray, Real time, Intersection *isect) const;
+  bool BoxIntersect(Index prim_id, const Box &box) const;
 
-  bool BoxIntersect(Index prim_id, const Box &box) const
-  {
-    return box_intersect(prim_id, box);
-  }
-
-  void GetPrimitiveBounds(Index prim_id, Box *bounds) const
-  {
-    get_primitive_bounds(prim_id, bounds);
-  }
-
-  void GetBounds(Box *bounds) const
-  {
-    get_bounds(bounds);
-  }
-
-  Index GetPrimitiveCount() const
-  {
-    return get_primitive_count();
-  }
+  void GetPrimitiveBounds(Index prim_id, Box *bounds) const;
+  void GetBounds(Box *bounds) const;
+  Index GetPrimitiveCount() const;
 
 private:
-  virtual bool ray_intersect(Index prim_id, Real time,
-      const Ray &ray, Intersection *isect) const = 0;
+  virtual bool ray_intersect(Index prim_id, const Ray &ray,
+      Real time, Intersection *isect) const = 0;
+  // TODO make this pure virtual
   virtual bool box_intersect(Index prim_id, const Box &box) const
   {
     return true;

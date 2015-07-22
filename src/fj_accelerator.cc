@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2015 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2015 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_accelerator.h"
 #include "fj_primitive_set.h"
@@ -20,8 +18,8 @@ public:
   virtual ~NullPrimitiveSet() {}
 
 private:
-  virtual bool ray_intersect(Index prim_id, Real time,
-      const Ray &ray, Intersection *isect) const { return false; }
+  virtual bool ray_intersect(Index prim_id, const Ray &ray,
+      Real time, Intersection *isect) const { return false; }
   virtual void get_primitive_bounds(Index prim_id, Box *bounds) const { *bounds = Box(); }
   virtual void get_bounds(Box *bounds) const { *bounds = Box(); }
   virtual Index get_primitive_count() const { return 0; }

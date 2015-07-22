@@ -67,10 +67,6 @@ static void free_bvhnode_recursive(BVHNode *node);
 static BVHNode *build_bvh(Primitive **prims, int begin, int end, int axis);
 static int find_median(Primitive **prims, int begin, int end, int axis);
 
-// TODO move this somewhere
-static bool prim_ray_intersect(const PrimitiveSet *primset, int prim_id,
-    const Ray &ray, Real time, Intersection *isect);
-
 BVHAccelerator::BVHAccelerator() : root(NULL)
 {
 }
@@ -144,7 +140,7 @@ static bool intersect_bvh_recursive(const PrimitiveSet *primset,
   }
 
   if (node->is_leaf()) {
-    return prim_ray_intersect(primset, node->prim_id, ray, time, isect);
+    return primset->RayIntersect(node->prim_id, ray, time, isect);
   }
 
   Intersection isect_left, isect_right;
@@ -183,7 +179,7 @@ static bool intersect_bvh_loop(const PrimitiveSet *primset,
 
   for (;;) {
     if (node->is_leaf()) {
-      const bool hittmp = prim_ray_intersect(primset, node->prim_id, ray, time, isect_tmp);
+      const bool hittmp = primset->RayIntersect(node->prim_id, ray, time, isect_tmp);
       if (hittmp && isect_tmp->t_hit < isect_min->t_hit) {
         std::swap(isect_min, isect_tmp);
         hit = hittmp;
@@ -335,24 +331,6 @@ static int find_median(Primitive **prims, int begin, int end, int axis)
   }
 
   return mid + 1;
-}
-
-static bool prim_ray_intersect(const PrimitiveSet *primset, int prim_id,
-    const Ray &ray, Real time, Intersection *isect)
-{
-  const bool hit = primset->RayIntersect(prim_id, time, ray, isect);
-
-  if (!hit) {
-    isect->t_hit = REAL_MAX;
-    return false;
-  }
-
-  if (isect->t_hit < ray.tmin || ray.tmax < isect->t_hit) {
-    isect->t_hit = REAL_MAX;
-    return false;
-  }
-
-  return true;
 }
 
 } // namespace xxx

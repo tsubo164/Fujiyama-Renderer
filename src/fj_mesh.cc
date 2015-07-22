@@ -239,8 +239,8 @@ void Mesh::ComputeBounds()
   }
 }
 
-bool Mesh::ray_intersect(Index prim_id, Real time,
-    const Ray &ray, Intersection *isect) const
+bool Mesh::ray_intersect(Index prim_id, const Ray &ray,
+    Real time, Intersection *isect) const
 {
   Vector P0, P1, P2;
   get_point_positions(*this, prim_id, P0, P1, P2);
