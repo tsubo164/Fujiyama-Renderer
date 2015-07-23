@@ -6,8 +6,6 @@
 #include "fj_numeric.h"
 #include "fj_ray.h"
 
-#include <cstdio>
-
 #define ATTRIBUTE_LIST(ATTR) \
   ATTR(Point, Vector,   P_,        Position) \
   ATTR(Point, Vector,   velocity_, Velocity) \
@@ -87,7 +85,7 @@ bool PointCloud::ray_intersect(Index prim_id, const Ray &ray,
 */
   const Vector P = GetPointPosition(prim_id);
   const Vector velocity = GetPointVelocity(prim_id);
-  const double radius = GetPointRadius(prim_id);
+  const Real radius = GetPointRadius(prim_id);
 
   const Vector center = P + time * velocity;
   const Vector orig_local = ray.orig - center;
@@ -119,6 +117,39 @@ bool PointCloud::ray_intersect(Index prim_id, const Ray &ray,
   isect->t_hit = t_hit;
 
   return true;
+}
+
+bool PointCloud::box_intersect(Index prim_id, const Box &box) const
+{
+  /* On Faster Sphere-Box Overlap Testing
+   * Thomas Larsson, Tomas Akenine-Möller & Eric Lengyel
+   */
+  const Vector center = GetPointPosition(prim_id);
+  const Real radius = GetPointRadius(prim_id);
+  const Vector &min = box.min;
+  const Vector &max = box.max;
+  Real d = 0;
+  Real e = 0;
+
+  for (int i = 0; i < 3; i++) {
+    if ((e = center[i] - min[i]) < 0.) {
+      if (e < -radius) {
+        return false;
+      } else {
+        d = d + e * e;
+      }
+    } else if ((e = center[i] - max[i]) > 0.) {
+      if (e > radius) {
+        return false;
+      } else {
+        d = d + e * e;
+      }
+    }
+  }
+  if (d <= radius) {
+    return true;
+  }
+  return false;
 }
 
 void PointCloud::get_primitive_bounds(Index prim_id, Box *bounds) const
