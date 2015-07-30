@@ -34,6 +34,8 @@ FJ_API bool BoxRayIntersect(const Box &box,
     Real ray_tmin, Real ray_tmax,
     Real *hit_tmin, Real *hit_tmax);
 
+FJ_API bool BoxBoxIntersect(const Box &a, const Box &b);
+
 FJ_API Vector BoxCentroid(const Box &box);
 FJ_API Vector BoxDiagonal(const Box &box);
 
