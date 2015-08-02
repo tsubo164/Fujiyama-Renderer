@@ -121,6 +121,7 @@ bool PointCloud::ray_intersect(Index prim_id, const Ray &ray,
 
 bool PointCloud::box_intersect(Index prim_id, const Box &box) const
 {
+  // TODO support velocity
   /* On Faster Sphere-Box Overlap Testing
    * Thomas Larsson, Tomas Akenine-Möller & Eric Lengyel
    */

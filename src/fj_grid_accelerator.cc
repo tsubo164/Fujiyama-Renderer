@@ -140,7 +140,7 @@ int GridAccelerator::build()
     }
   }
 
-  if (0) {
+  if (1) {
     // TODO TEST
     std::cout << "-------------------------------------\n";
     std::cout << "total_cell_count: " << total_cell_count << "\n";

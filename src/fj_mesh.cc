@@ -305,6 +305,7 @@ bool Mesh::ray_intersect(Index prim_id, const Ray &ray,
 
 bool Mesh::box_intersect(Index prim_id, const Box &box) const
 {
+  // TODO support velocity
   Vector P0, P1, P2;
   get_point_positions(*this, prim_id, P0, P1, P2);
 

@@ -85,6 +85,8 @@ static int converge_bezier3(const Bezier3 &bezier,
     Real *v_hit, Real *P_hit);
 static void time_sample_bezier3(Bezier3 *bezier, Real time);
 
+static bool box_bezier3_intersect(const Box &box, const Bezier3 &bezier, int depth);
+
 /* helper functions */
 static inline Vector mid_point(const Vector &a, const Vector &b)
 {
@@ -219,6 +221,16 @@ bool Curve::ray_intersect(Index prim_id, const Ray &ray,
     const Color Cd_curve1 = GetVertexColor(i1);
     isect->Cd = ColLerp(Cd_curve0, Cd_curve1, v_hit);
   }
+
+  return hit;
+}
+
+bool Curve::box_intersect(Index prim_id, const Box &box) const
+{
+  // TODO support velocity
+  Bezier3 bezier;
+  get_bezier3(this, prim_id, &bezier);
+  const bool hit = box_bezier3_intersect(box, bezier, 5);
 
   return hit;
 }
@@ -376,6 +388,27 @@ static void time_sample_bezier3(Bezier3 *bezier, Real time)
   for (int i = 0; i < 4; i++) {
     bezier->cp[i].P += time * bezier->velocity[i];
   }
+}
+
+static bool box_bezier3_intersect(const Box &box, const Bezier3 &bezier, int depth)
+{
+  if (depth == 1) {
+    Box bounds;
+    get_bezier3_bounds(bezier, &bounds);
+    const Real radius = get_bezier3_max_radius(bezier);
+    BoxExpand(&bounds, radius);
+    return BoxBoxIntersect(box, bounds);
+  }
+
+  Bezier3 bezier_left;
+  Bezier3 bezier_right;
+
+  split_bezier3(bezier, &bezier_left, &bezier_right);
+
+  const bool hit_left  = box_bezier3_intersect(box, bezier_left,  depth - 1); 
+  const bool hit_right = box_bezier3_intersect(box, bezier_right, depth - 1); 
+
+  return hit_left || hit_right;
 }
 
 static Vector eval_bezier3(const ControlPoint *cp, Real t)
