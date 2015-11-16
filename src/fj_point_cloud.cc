@@ -72,6 +72,9 @@ void PointCloud::ComputeBounds()
   }
 }
 
+static bool box_capsule_intersect(const Box &box,
+    const Vector &P0, const Vector &P1, Real radiul, int depth);
+
 bool PointCloud::ray_intersect(Index prim_id, const Ray &ray,
     Real time, Intersection *isect) const
 {
@@ -121,7 +124,16 @@ bool PointCloud::ray_intersect(Index prim_id, const Ray &ray,
 
 bool PointCloud::box_intersect(Index prim_id, const Box &box) const
 {
-  // TODO support velocity
+  // TODO implement better way
+  const Vector velocity = GetPointVelocity(prim_id);
+  const Vector P0 = GetPointPosition(prim_id);
+  const Vector P1 = P0 + velocity;
+  const Real radius = GetPointRadius(prim_id);
+  const int recursive_depth = 5;
+
+  return box_capsule_intersect(box, P0, P1, radius, recursive_depth);
+
+#if 0
   /* On Faster Sphere-Box Overlap Testing
    * Thomas Larsson, Tomas Akenine-Möller & Eric Lengyel
    */
@@ -150,6 +162,31 @@ bool PointCloud::box_intersect(Index prim_id, const Box &box) const
   if (d <= radius) {
     return true;
   }
+  return false;
+#endif
+}
+
+static bool box_capsule_intersect(const Box &box,
+    const Vector &P0, const Vector &P1, Real radius, int depth)
+{
+  if (depth == 1) {
+    Box bounds(P0, P1);
+    BoxExpand(&bounds, radius);
+    return BoxBoxIntersect(box, bounds);
+  }
+
+  const Vector mid = (P0 + P1) / 2;
+
+  const bool hit_left =  box_capsule_intersect(box, P0, mid, radius, depth - 1);
+  if (hit_left) {
+    return true;
+  }
+
+  const bool hit_right = box_capsule_intersect(box, mid, P1, radius, depth - 1);
+  if (hit_right) {
+    return true;
+  }
+
   return false;
 }
 

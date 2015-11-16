@@ -6,6 +6,19 @@
 
 namespace fj {
 
+Box::Box(const Vector &P0, const Vector &P1)
+{
+  for (int i = 0; i < 3; i++) {
+    if (P0[i] < P1[i]) {
+      min[i] = P0[i];
+      max[i] = P1[i];
+    } else {
+      min[i] = P1[i];
+      max[i] = P0[i];
+    }
+  }
+}
+
 void BoxExpand(Box *box, Real delta)
 {
   box->min -= Vector(delta, delta, delta);

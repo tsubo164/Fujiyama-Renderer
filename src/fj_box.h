@@ -13,6 +13,7 @@ namespace fj {
 class FJ_API Box {
 public:
   Box() : min(), max() {}
+  Box(const Vector &P0, const Vector &P1);
   Box(Real xmin, Real ymin, Real zmin, Real xmax, Real ymax, Real zmax)
     : min(xmin, ymin, zmin), max(xmax, ymax, zmax) {}
   ~Box() {}
