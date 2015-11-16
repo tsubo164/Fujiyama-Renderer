@@ -598,6 +598,10 @@ void FrameBufferViewer::set_to_home_position()
 
 void FrameBufferViewer::setup_image_card()
 {
+  if (fb_.IsEmpty()) {
+    return;
+  }
+
   image_.Init(fb_.GetReadOnly(0, 0, 0),
       fb_.GetChannelCount(), diplay_channel_,
       databox_[0],
