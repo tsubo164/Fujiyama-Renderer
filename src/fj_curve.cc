@@ -406,9 +406,16 @@ static bool box_bezier3_intersect(const Box &box, const Bezier3 &bezier, int dep
   split_bezier3(bezier, &bezier_left, &bezier_right);
 
   const bool hit_left  = box_bezier3_intersect(box, bezier_left,  depth - 1); 
-  const bool hit_right = box_bezier3_intersect(box, bezier_right, depth - 1); 
+  if (hit_left) {
+    return true;
+  }
 
-  return hit_left || hit_right;
+  const bool hit_right = box_bezier3_intersect(box, bezier_right, depth - 1); 
+  if (hit_right) {
+    return true;
+  }
+
+  return false;
 }
 
 static Vector eval_bezier3(const ControlPoint *cp, Real t)
