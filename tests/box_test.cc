@@ -12,7 +12,7 @@ using namespace fj;
 int main()
 {
   {
-    Box box(-1, -1, -1, 1, 1, 1);
+    Box box(Vector(-1, -1, -1), Vector(1, 1, 1));
     Vector orig;
     Vector dir(0, 0, 1);
     Real ray_tmin = 0;
@@ -28,7 +28,7 @@ int main()
     TEST(TestDoubleEq(hit_tmax, 1));
   }
   {
-    Box box(-1, -1, -1, 1, 1, 1);
+    Box box(Vector(-1, -1, -1), Vector(1, 1, 1));
     Vector orig(0, 0, -2);
     Vector dir(0, 0, 1);
     Real ray_tmin = 0;
@@ -44,7 +44,7 @@ int main()
     TEST(TestDoubleEq(hit_tmax, 3));
   }
   {
-    Box box(-1, -1, -1, 1, 1, 1);
+    Box box(Vector(-1, -1, -1), Vector(1, 1, 1));
     Vector orig(0, 0, -2);
     Vector dir(0, 0, 1);
     Real ray_tmin = 0;
@@ -60,7 +60,7 @@ int main()
     TEST(TestDoubleEq(hit_tmax, 3));
   }
   {
-    Box box(-1, -1, -1, 1, 1, 1);
+    Box box(Vector(-1, -1, -1), Vector(1, 1, 1));
     Vector orig(0, 0, 2);
     Vector dir(0, 0, 1);
     Real ray_tmin = 0;
@@ -76,7 +76,7 @@ int main()
     TEST(TestDoubleEq(hit_tmax, FLT_MAX));
   }
   {
-    Box box(-1, -1, -1, 1, 1, 1);
+    Box box(Vector(-1, -1, -1), Vector(1, 1, 1));
     Vector orig(0, 0, -2);
     Vector dir(0, 0, 1);
     Real ray_tmin = 0;
@@ -92,7 +92,8 @@ int main()
     TEST(TestDoubleEq(hit_tmax, FLT_MAX));
   }
   {
-    Box box(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+    Box box;
+    box.ReverseInfinite();
     Vector orig;
     Vector dir(0, 0, 1);
     Real ray_tmin = 0;

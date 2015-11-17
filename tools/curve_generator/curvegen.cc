@@ -335,7 +335,9 @@ static int gen_hair(int argc, const char **argv)
 
   {
     const int64_t N = mesh.GetPointCount();
-    Box bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+    Box bounds;
+    bounds.ReverseInfinite();
+
     int p;
     for (p = 0; p < N; p++) {
       Vector pt;

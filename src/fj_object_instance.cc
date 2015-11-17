@@ -320,13 +320,8 @@ void ObjectInstance::merge_sampled_bounds()
     const Real half_diagonal = .5 * Length(BoxDiagonal(original_bounds));
     const Vector centroid = BoxCentroid(original_bounds);
 
-    original_bounds = Box(
-        centroid.x - half_diagonal,
-        centroid.y - half_diagonal,
-        centroid.z - half_diagonal,
-        centroid.x + half_diagonal,
-        centroid.y + half_diagonal,
-        centroid.z + half_diagonal);
+    original_bounds = Box(centroid, centroid);
+    original_bounds.Expand(half_diagonal);
   }
 
   // compute maximum scale over sampling time

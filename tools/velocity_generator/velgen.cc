@@ -100,7 +100,9 @@ int main(int argc, const char **argv)
   std::vector<Index3> indices(nfaces);
 
   {
-    Box bounds(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+    Box bounds;
+    bounds.ReverseInfinite();
+
     for (i = 0; i < nverts; i++) {
       Vector pos;
       pos = mesh.GetPointPosition(i);
