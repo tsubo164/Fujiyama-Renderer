@@ -23,6 +23,16 @@ inline Real Floor(Real x)
   return std::floor(x);
 }
 
+inline Real Ceil(Real x)
+{
+  return std::ceil(x);
+}
+
+inline Real Sqrt(Real x)
+{
+  return std::sqrt(x);
+}
+
 inline Real Min(Real x, Real y)
 {
   return x < y ? x : y;

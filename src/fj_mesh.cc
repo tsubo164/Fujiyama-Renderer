@@ -303,9 +303,106 @@ bool Mesh::ray_intersect(Index prim_id, const Ray &ray,
   return true;
 }
 
+struct SubTri {
+  SubTri(): P0(), P1(), P2(), vel0(), vel1(), vel2() {}
+  ~SubTri() {}
+  Vector P0, P1, P2;
+  Vector vel0, vel1, vel2;
+};
+
+static bool box_tri_intersect(const Box &box, const SubTri &tri)
+{
+  const int N_STEPS = 16 / 2;
+  const Vector step0 = tri.vel0 / N_STEPS;
+  const Vector step1 = tri.vel1 / N_STEPS;
+  const Vector step2 = tri.vel2 / N_STEPS;
+
+  for (int i = 0; i < N_STEPS; i++) {
+    const Vector P0 = tri.P0 + i * step0;
+    const Vector P1 = tri.P1 + i * step1;
+    const Vector P2 = tri.P2 + i * step2;
+
+    Box segment_bounds;
+    TriComputeBounds(P0, P1, P2, &segment_bounds);
+    segment_bounds.AddPoint(P0 + step0);
+    segment_bounds.AddPoint(P1 + step1);
+    segment_bounds.AddPoint(P2 + step2);
+
+    if (BoxBoxIntersect(segment_bounds, box)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static bool box_tri_intersect_recursive(const Box &box, const SubTri &tri, int depth);
+
+static bool box_tri_intersect_recursive(const Box &box, const SubTri &tri, int depth)
+{
+  if (depth == 1) {
+    return box_tri_intersect(box, tri);
+  }
+
+  const Vector P01 = (tri.P0 + tri.P1) / 2;
+  const Vector P12 = (tri.P1 + tri.P2) / 2;
+  const Vector P20 = (tri.P2 + tri.P0) / 2;
+  const Vector vel01 = (tri.vel0 + tri.vel1) / 2;
+  const Vector vel12 = (tri.vel1 + tri.vel2) / 2;
+  const Vector vel20 = (tri.vel2 + tri.vel0) / 2;
+
+  SubTri t;
+  t.P0 = tri.P0;
+  t.P1 = P01;
+  t.P2 = P20;
+  t.vel0 = tri.vel0;
+  t.vel1 = vel01;
+  t.vel2 = vel20;
+  if (box_tri_intersect_recursive(box, t, depth - 1)) {
+    return true;
+  }
+
+  t.P0 = P01;
+  t.P1 = tri.P1;
+  t.P2 = P12;
+  t.vel0 = vel01;
+  t.vel1 = tri.vel1;
+  t.vel2 = vel12;
+  if (box_tri_intersect_recursive(box, t, depth - 1)) {
+    return true;
+  }
+
+  t.P0 = P12;
+  t.P1 = tri.P2;
+  t.P2 = P20;
+  t.vel0 = vel12;
+  t.vel1 = tri.vel2;
+  t.vel2 = vel20;
+  if (box_tri_intersect_recursive(box, t, depth - 1)) {
+    return true;
+  }
+
+  t.P0 = P01;
+  t.P1 = P12;
+  t.P2 = P20;
+  t.vel0 = vel01;
+  t.vel1 = vel12;
+  t.vel2 = vel20;
+  if (box_tri_intersect_recursive(box, t, depth - 1)) {
+    return true;
+  }
+
+  return false;
+}
+
 bool Mesh::box_intersect(Index prim_id, const Box &box) const
 {
-  // TODO support velocity
+  const int recursive_depth = 1;
+  SubTri t;
+  get_point_positions(*this, prim_id, t.P0, t.P1, t.P2);
+  get_point_velocity(*this, prim_id, t.vel0, t.vel1, t.vel2);
+  return box_tri_intersect_recursive(box, t, recursive_depth);
+
+#if 0
   Vector P0, P1, P2;
   get_point_positions(*this, prim_id, P0, P1, P2);
 
@@ -313,6 +410,7 @@ bool Mesh::box_intersect(Index prim_id, const Box &box) const
   const Vector halfsize = .5 * BoxDiagonal(box);
 
   return TriBoxIntersect(P0, P1, P2, centroid, halfsize);
+#endif
 }
 
 void Mesh::get_primitive_bounds(Index prim_id, Box *bounds) const
