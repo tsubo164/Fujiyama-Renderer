@@ -124,7 +124,7 @@ bool PointCloud::box_intersect(Index prim_id, const Box &box) const
   const Vector velocity = GetPointVelocity(prim_id);
   const Vector P0 = GetPointPosition(prim_id);
   const Real radius = GetPointRadius(prim_id);
-  const int N_STEPS = 32;
+  const int N_STEPS = 16;
   const Vector step = velocity / N_STEPS;
 
   for (int i = 0; i < N_STEPS; i++) {
