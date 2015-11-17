@@ -230,12 +230,12 @@ void Mesh::ComputeNormals()
 
 void Mesh::ComputeBounds()
 {
-  BoxReverseInfinite(&bounds_);
+  bounds_.ReverseInfinite();
 
   for (int i = 0; i < GetFaceCount(); i++) {
     Box tri_bounds;
     GetPrimitiveBounds(i, &tri_bounds);
-    BoxAddBox(&bounds_, tri_bounds);
+    bounds_.AddBox(tri_bounds);
   }
 }
 
@@ -312,7 +312,7 @@ struct SubTri {
 
 static bool box_tri_intersect(const Box &box, const SubTri &tri)
 {
-  const int N_STEPS = 16 / 2;
+  const int N_STEPS = 8;
   const Vector step0 = tri.vel0 / N_STEPS;
   const Vector step1 = tri.vel1 / N_STEPS;
   const Vector step2 = tri.vel2 / N_STEPS;
@@ -406,8 +406,8 @@ bool Mesh::box_intersect(Index prim_id, const Box &box) const
   Vector P0, P1, P2;
   get_point_positions(*this, prim_id, P0, P1, P2);
 
-  const Vector centroid = BoxCentroid(box);
-  const Vector halfsize = .5 * BoxDiagonal(box);
+  const Vector centroid = box.Centroid();
+  const Vector halfsize = .5 * box.Diagonal();
 
   return TriBoxIntersect(P0, P1, P2, centroid, halfsize);
 #endif
@@ -428,9 +428,9 @@ void Mesh::get_primitive_bounds(Index prim_id, Box *bounds) const
     const Vector P1_close = P1 + velocity1;
     const Vector P2_close = P2 + velocity2;
 
-    BoxAddPoint(bounds, P0_close);
-    BoxAddPoint(bounds, P1_close);
-    BoxAddPoint(bounds, P2_close);
+    bounds->AddPoint(P0_close);
+    bounds->AddPoint(P1_close);
+    bounds->AddPoint(P2_close);
   }
 }
 

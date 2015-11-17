@@ -25,11 +25,11 @@ void TriComputeBounds(
     const Vector &vert0, const Vector &vert1, const Vector &vert2,
     Box *box)
 {
-  BoxReverseInfinite(box);
+  box->ReverseInfinite();
 
-  BoxAddPoint(box, vert0);
-  BoxAddPoint(box, vert1);
-  BoxAddPoint(box, vert2);
+  box->AddPoint(vert0);
+  box->AddPoint(vert1);
+  box->AddPoint(vert2);
 }
 
 Vector TriComputeFaceNormal(
