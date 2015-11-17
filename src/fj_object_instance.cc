@@ -317,8 +317,8 @@ void ObjectInstance::merge_sampled_bounds()
 
   // extend bounds when rotated to ensure object is always inside bounds
   if (transform_samples_.rotate.sample_count > 1) {
-    const Real half_diagonal = .5 * Length(BoxDiagonal(original_bounds));
-    const Vector centroid = BoxCentroid(original_bounds);
+    const Real half_diagonal = .5 * Length(original_bounds.Diagonal());
+    const Vector centroid = original_bounds.Centroid();
 
     original_bounds = Box(centroid, centroid);
     original_bounds.Expand(half_diagonal);
@@ -334,7 +334,7 @@ void ObjectInstance::merge_sampled_bounds()
 
   // accumulate all bounds over sampling time
   Box merged_bounds;
-  BoxReverseInfinite(&merged_bounds);
+  merged_bounds.ReverseInfinite();
 
   for (int i = 0; i < transform_samples_.translate.sample_count; i++) {
     const Real *T = transform_samples_.translate.samples[i].vector;
@@ -349,7 +349,7 @@ void ObjectInstance::merge_sampled_bounds()
 
     Box sample_bounds = original_bounds;
     XfmTransformBounds(&transform, &sample_bounds);
-    BoxAddBox(&merged_bounds, sample_bounds);
+    merged_bounds.AddBox(sample_bounds);
   }
 
   bounds_ = merged_bounds;

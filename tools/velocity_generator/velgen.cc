@@ -104,9 +104,8 @@ int main(int argc, const char **argv)
     bounds.ReverseInfinite();
 
     for (i = 0; i < nverts; i++) {
-      Vector pos;
-      pos = mesh.GetPointPosition(i);
-      BoxAddPoint(&bounds, pos);
+      const Vector pos = mesh.GetPointPosition(i);
+      bounds.AddPoint(pos);
     }
     zmin = bounds.min.z;
     zmax = bounds.max.z;

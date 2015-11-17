@@ -340,9 +340,8 @@ static int gen_hair(int argc, const char **argv)
 
     int p;
     for (p = 0; p < N; p++) {
-      Vector pt;
-      pt = mesh.GetPointPosition(p);
-      BoxAddPoint(&bounds, pt);
+      const Vector pt = mesh.GetPointPosition(p);
+      bounds.AddPoint(pt);
     }
     ymin = bounds.min.y;
     ymax = bounds.max.y;
