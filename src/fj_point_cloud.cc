@@ -63,12 +63,12 @@ const Box &PointCloud::GetBounds() const
 
 void PointCloud::ComputeBounds()
 {
-  BoxReverseInfinite(&bounds_); 
+  bounds_.ReverseInfinite(); 
 
   for (int i = 0; i < GetPointCount(); i++) {
     Box ptbox;
     GetPrimitiveBounds(i, &ptbox);
-    BoxAddBox(&bounds_, ptbox);
+    bounds_.AddBox(ptbox);
   }
 }
 
@@ -124,7 +124,6 @@ bool PointCloud::ray_intersect(Index prim_id, const Ray &ray,
 
 bool PointCloud::box_intersect(Index prim_id, const Box &box) const
 {
-  // TODO implement better way
   const Vector velocity = GetPointVelocity(prim_id);
   const Vector P0 = GetPointPosition(prim_id);
   const Vector P1 = P0 + velocity;
@@ -132,38 +131,6 @@ bool PointCloud::box_intersect(Index prim_id, const Box &box) const
   const int recursive_depth = 5;
 
   return box_capsule_intersect(box, P0, P1, radius, recursive_depth);
-
-#if 0
-  /* On Faster Sphere-Box Overlap Testing
-   * Thomas Larsson, Tomas Akenine-Möller & Eric Lengyel
-   */
-  const Vector center = GetPointPosition(prim_id);
-  const Real radius = GetPointRadius(prim_id);
-  const Vector &min = box.min;
-  const Vector &max = box.max;
-  Real d = 0;
-  Real e = 0;
-
-  for (int i = 0; i < 3; i++) {
-    if ((e = center[i] - min[i]) < 0.) {
-      if (e < -radius) {
-        return false;
-      } else {
-        d = d + e * e;
-      }
-    } else if ((e = center[i] - max[i]) > 0.) {
-      if (e > radius) {
-        return false;
-      } else {
-        d = d + e * e;
-      }
-    }
-  }
-  if (d <= radius) {
-    return true;
-  }
-  return false;
-#endif
 }
 
 static bool box_capsule_intersect(const Box &box,
@@ -171,7 +138,7 @@ static bool box_capsule_intersect(const Box &box,
 {
   if (depth == 1) {
     Box bounds(P0, P1);
-    BoxExpand(&bounds, radius);
+    bounds.Expand(radius);
     return BoxBoxIntersect(box, bounds);
   }
 
@@ -196,12 +163,10 @@ void PointCloud::get_primitive_bounds(Index prim_id, Box *bounds) const
   const Vector velocity = GetPointVelocity(prim_id);
   const Real radius = GetPointRadius(prim_id);
 
-  *bounds = Box(
-      P.x, P.y, P.z,
-      P.x, P.y, P.z);
+  *bounds = Box(P, P);
 
-  BoxAddPoint(bounds, P + velocity);
-  BoxExpand(bounds, radius);
+  bounds->AddPoint(P + velocity);
+  bounds->Expand(radius);
 }
 void PointCloud::get_bounds(Box *bounds) const
 {

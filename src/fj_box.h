@@ -18,11 +18,23 @@ public:
     : min(xmin, ymin, zmin), max(xmax, ymax, zmax) {}
   ~Box() {}
 
+  void Expand(Real delta);
+  void ReverseInfinite();
+
+  bool ContainsPoint(const Vector &point);
+  void AddPoint(const Vector &point);
+  void AddBox(const Box &other);
+
+  Vector Centroid() const;
+  Vector Diagonal() const;
+
 public:
   Vector min;
   Vector max;
 };
 
+//------------------------------------------------------------------------------
+// TODO remove non-member functions
 FJ_API void BoxExpand(Box *box, Real delta);
 FJ_API void BoxReverseInfinite(Box *box);
 
@@ -30,15 +42,16 @@ FJ_API bool BoxContainsPoint(const Box &box, const Vector &point);
 FJ_API void BoxAddPoint(Box *box, const Vector &point);
 FJ_API void BoxAddBox(Box *box, const Box &otherbox);
 
+FJ_API Vector BoxCentroid(const Box &box);
+FJ_API Vector BoxDiagonal(const Box &box);
+//------------------------------------------------------------------------------
+
 FJ_API bool BoxRayIntersect(const Box &box,
     const Vector &rayorig, const Vector &raydir,
     Real ray_tmin, Real ray_tmax,
     Real *hit_tmin, Real *hit_tmax);
 
 FJ_API bool BoxBoxIntersect(const Box &a, const Box &b);
-
-FJ_API Vector BoxCentroid(const Box &box);
-FJ_API Vector BoxDiagonal(const Box &box);
 
 FJ_API std::ostream &operator<<(std::ostream &os, const Box &box);
 

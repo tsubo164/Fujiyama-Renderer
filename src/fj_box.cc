@@ -19,6 +19,58 @@ Box::Box(const Vector &P0, const Vector &P1)
   }
 }
 
+void Box::Expand(Real delta)
+{
+  min -= Vector(delta, delta, delta);
+  max += Vector(delta, delta, delta);
+}
+
+void Box::ReverseInfinite()
+{
+  min = Vector( REAL_MAX,  REAL_MAX,  REAL_MAX);
+  max = Vector(-REAL_MAX, -REAL_MAX, -REAL_MAX);
+}
+
+bool Box::ContainsPoint(const Vector &point)
+{
+  if ((point[0] < min[0]) || (max[0] < point[0])) { return false; }
+  if ((point[1] < min[1]) || (max[1] < point[1])) { return false; }
+  if ((point[2] < min[2]) || (max[2] < point[2])) { return false; }
+
+  return true;
+}
+
+void Box::AddPoint(const Vector &point)
+{
+  min[0] = Min(min[0], point[0]);
+  min[1] = Min(min[1], point[1]);
+  min[2] = Min(min[2], point[2]);
+  max[0] = Max(max[0], point[0]);
+  max[1] = Max(max[1], point[1]);
+  max[2] = Max(max[2], point[2]);
+}
+
+void Box::AddBox(const Box &other)
+{
+  min[0] = Min(min[0], other.min[0]);
+  min[1] = Min(min[1], other.min[1]);
+  min[2] = Min(min[2], other.min[2]);
+  max[0] = Max(max[0], other.max[0]);
+  max[1] = Max(max[1], other.max[1]);
+  max[2] = Max(max[2], other.max[2]);
+}
+
+Vector Box::Centroid() const
+{
+  return .5 * (min + max);
+}
+
+Vector Box::Diagonal() const
+{
+  return max - min;
+}
+//------------------------------------------------------------------------------
+
 void BoxExpand(Box *box, Real delta)
 {
   box->min -= Vector(delta, delta, delta);
