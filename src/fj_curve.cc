@@ -227,7 +227,7 @@ bool Curve::ray_intersect(Index prim_id, const Ray &ray,
 
 bool Curve::box_intersect(Index prim_id, const Box &box) const
 {
-  const int recursive_depth = 6;
+  const int recursive_depth = 5;
   Bezier3 bezier;
   get_bezier3(this, prim_id, &bezier);
   const bool hit = box_bezier3_intersect_recursive(box, bezier, recursive_depth);
@@ -422,7 +422,7 @@ static bool box_bezier3_intersect(const Box &box, const Bezier3 &bezier)
 
 static bool box_bezier3_intersect_recursive(const Box &box, const Bezier3 &bezier, int depth)
 {
-  if (depth == 1) {
+  if (depth == 0) {
     return box_bezier3_intersect(box, bezier);
   }
 

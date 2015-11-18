@@ -339,7 +339,7 @@ static bool box_tri_intersect_recursive(const Box &box, const SubTri &tri, int d
 
 static bool box_tri_intersect_recursive(const Box &box, const SubTri &tri, int depth)
 {
-  if (depth == 1) {
+  if (depth == 0) {
     return box_tri_intersect(box, tri);
   }
 
@@ -396,7 +396,7 @@ static bool box_tri_intersect_recursive(const Box &box, const SubTri &tri, int d
 
 bool Mesh::box_intersect(Index prim_id, const Box &box) const
 {
-  const int recursive_depth = 1;
+  const int recursive_depth = 0;
   SubTri t;
   get_point_positions(*this, prim_id, t.P0, t.P1, t.P2);
   get_point_velocity(*this, prim_id, t.vel0, t.vel1, t.vel2);
