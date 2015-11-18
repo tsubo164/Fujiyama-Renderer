@@ -138,13 +138,13 @@ void Curve::ComputeBounds()
 {
   Real max_radius = 0;
 
-  BoxReverseInfinite(&bounds_);
+  bounds_.ReverseInfinite();
 
   for (int i = 0; i < GetCurveCount(); i++) {
     Box bezier_bounds;
 
     GetPrimitiveBounds(i, &bezier_bounds);
-    BoxAddBox(&bounds_, bezier_bounds);
+    bounds_.AddBox(bezier_bounds);
 
     Bezier3 bezier;
     get_bezier3(this, i, &bezier);
@@ -153,7 +153,7 @@ void Curve::ComputeBounds()
     max_radius = Max(max_radius, bezier_max_radius);
   }
 
-  BoxExpand(&bounds_, max_radius);
+  bounds_.Expand(max_radius);
 
   /* TODO find a better place to put this */
   cache_split_depth();
@@ -216,7 +216,7 @@ bool Curve::ray_intersect(Index prim_id, const Ray &ray,
 
     // Cd
     const int i0 = GetCurveIndices(prim_id);
-    const int i1 = GetCurveIndices(prim_id) + 2;
+    const int i1 = GetCurveIndices(prim_id) + 3;
     const Color Cd_curve0 = GetVertexColor(i0);
     const Color Cd_curve1 = GetVertexColor(i1);
     isect->Cd = ColLerp(Cd_curve0, Cd_curve1, v_hit);
@@ -227,13 +227,6 @@ bool Curve::ray_intersect(Index prim_id, const Ray &ray,
 
 bool Curve::box_intersect(Index prim_id, const Box &box) const
 {
-#if 0
-  Box b;
-  get_primitive_bounds(prim_id, &b);
-  return BoxBoxIntersect(b, box);
-#endif
-
-  // TODO support velocity
   const int recursive_depth = 6;
   Bezier3 bezier;
   get_bezier3(this, prim_id, &bezier);
@@ -253,7 +246,7 @@ void Curve::get_primitive_bounds(Index prim_id, Box *bounds) const
 
   Box bounds_shutter_close;
   get_bezier3_bounds(bezier, &bounds_shutter_close);
-  BoxAddBox(bounds, bounds_shutter_close);
+  bounds->AddBox(bounds_shutter_close);
 }
 
 void Curve::get_bounds(Box *bounds) const
@@ -535,14 +528,14 @@ static Real get_bezier3_width(const Bezier3 &bezier, Real t)
 
 static void get_bezier3_bounds(const Bezier3 &bezier, Box *bounds)
 {
-  BoxReverseInfinite(bounds);
+  bounds->ReverseInfinite();
 
   for (int i = 0; i < 4; i++) {
-    BoxAddPoint(bounds, bezier.cp[i].P);
+    bounds->AddPoint(bezier.cp[i].P);
   }
 
   const Real max_radius = get_bezier3_max_radius(bezier);
-  BoxExpand(bounds, max_radius);
+  bounds->Expand(max_radius);
 }
 
 static void get_bezier3(const Curve *curve, int prim_id, Bezier3 *bezier)
