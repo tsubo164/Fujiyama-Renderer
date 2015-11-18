@@ -58,7 +58,7 @@ inline Real Lerp(Real a, Real b, Real t)
   return (1 - t) * a + t * b;
 }
 
-inline Real SmoothStep(Real x, Real a, Real b)
+inline Real SmoothStep(Real a, Real b, Real x)
 {
   const Real t = (x-a) / (b-a);
 

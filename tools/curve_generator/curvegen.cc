@@ -237,7 +237,7 @@ int main(int argc, const char **argv)
         src_Q.z = src_P->z * freq.z + offset.z;
 
         C_noise = amp * PerlinNoise(src_Q, 2, .5, 2);
-        C_noise = SmoothStep(C_noise, .55, .75);
+        C_noise = SmoothStep(.55, .75, C_noise);
         *dst_Cd = ColLerp(C_dark, C_light, C_noise);
       }
 
@@ -505,7 +505,7 @@ static int gen_hair(int argc, const char **argv)
               Q.z = curr_P.z * freq;
               noise_vec = PerlinNoise3d(Q, 2, .5, 2);
 
-              vmult = SmoothStep(k, 1, N_CURVES_PER_HAIR);
+              vmult = SmoothStep(1, N_CURVES_PER_HAIR, k);
 
               curr_v.x = vmult * amp * noise_vec.x;
               curr_v.y = vmult * amp * noise_vec.y;
