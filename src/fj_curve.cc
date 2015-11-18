@@ -85,7 +85,7 @@ static int converge_bezier3(const Bezier3 &bezier,
     Real *v_hit, Real *P_hit);
 static void time_sample_bezier3(Bezier3 *bezier, Real time);
 
-static bool box_bezier3_intersect(const Box &box, const Bezier3 &bezier, int depth);
+static bool box_bezier3_intersect_recursive(const Box &box, const Bezier3 &bezier, int depth);
 
 /* helper functions */
 static inline Vector mid_point(const Vector &a, const Vector &b)
@@ -227,10 +227,17 @@ bool Curve::ray_intersect(Index prim_id, const Ray &ray,
 
 bool Curve::box_intersect(Index prim_id, const Box &box) const
 {
+#if 0
+  Box b;
+  get_primitive_bounds(prim_id, &b);
+  return BoxBoxIntersect(b, box);
+#endif
+
   // TODO support velocity
+  const int recursive_depth = 6;
   Bezier3 bezier;
   get_bezier3(this, prim_id, &bezier);
-  const bool hit = box_bezier3_intersect(box, bezier, 5);
+  const bool hit = box_bezier3_intersect_recursive(box, bezier, recursive_depth);
 
   return hit;
 }
@@ -390,14 +397,40 @@ static void time_sample_bezier3(Bezier3 *bezier, Real time)
   }
 }
 
-static bool box_bezier3_intersect(const Box &box, const Bezier3 &bezier, int depth)
+static bool box_bezier3_intersect(const Box &box, const Bezier3 &bezier)
+{
+  const int N_STEPS = 1;
+  const Vector step0 = bezier.velocity[0] / N_STEPS;
+  const Vector step1 = bezier.velocity[1] / N_STEPS;
+  const Vector step2 = bezier.velocity[2] / N_STEPS;
+  const Vector step3 = bezier.velocity[3] / N_STEPS;
+
+  for (int i = 0; i < N_STEPS; i++) {
+    const Vector P0 = bezier.cp[0].P + i * step0;
+    const Vector P1 = bezier.cp[1].P + i * step1;
+    const Vector P2 = bezier.cp[2].P + i * step2;
+    const Vector P3 = bezier.cp[3].P + i * step3;
+
+    Box segment_bounds(P0, P1);
+    segment_bounds.AddPoint(P2);
+    segment_bounds.AddPoint(P3);
+
+    segment_bounds.AddPoint(P0 + step0);
+    segment_bounds.AddPoint(P1 + step1);
+    segment_bounds.AddPoint(P2 + step2);
+    segment_bounds.AddPoint(P3 + step3);
+
+    if (BoxBoxIntersect(segment_bounds, box)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static bool box_bezier3_intersect_recursive(const Box &box, const Bezier3 &bezier, int depth)
 {
   if (depth == 1) {
-    Box bounds;
-    get_bezier3_bounds(bezier, &bounds);
-    const Real radius = get_bezier3_max_radius(bezier);
-    BoxExpand(&bounds, radius);
-    return BoxBoxIntersect(box, bounds);
+    return box_bezier3_intersect(box, bezier);
   }
 
   Bezier3 bezier_left;
@@ -405,12 +438,22 @@ static bool box_bezier3_intersect(const Box &box, const Bezier3 &bezier, int dep
 
   split_bezier3(bezier, &bezier_left, &bezier_right);
 
-  const bool hit_left  = box_bezier3_intersect(box, bezier_left,  depth - 1); 
+  const Vector middle_velocity = Lerp(bezier.velocity[1], bezier.velocity[2], .5);
+  bezier_left.velocity[0]  = bezier.velocity[0];
+  bezier_left.velocity[1]  = Lerp(bezier.velocity[0], bezier.velocity[1], .5);
+  bezier_left.velocity[2]  = Lerp(bezier.velocity[1], middle_velocity,    .5);
+  bezier_left.velocity[3]  = middle_velocity;
+  bezier_right.velocity[0] = middle_velocity;
+  bezier_right.velocity[1] = Lerp(middle_velocity,    bezier.velocity[2], .5);
+  bezier_right.velocity[2] = Lerp(bezier.velocity[2], bezier.velocity[2], .5);
+  bezier_right.velocity[3] = bezier.velocity[3];
+
+  const bool hit_left  = box_bezier3_intersect_recursive(box, bezier_left,  depth - 1); 
   if (hit_left) {
     return true;
   }
 
-  const bool hit_right = box_bezier3_intersect(box, bezier_right, depth - 1); 
+  const bool hit_right = box_bezier3_intersect_recursive(box, bezier_right, depth - 1); 
   if (hit_right) {
     return true;
   }
@@ -514,8 +557,8 @@ static void get_bezier3(const Curve *curve, int prim_id, Bezier3 *bezier)
   bezier->cp[2].P = curve->GetVertexPosition(i2);
   bezier->cp[3].P = curve->GetVertexPosition(i3);
 
-  bezier->width[0] = curve->GetVertexWidth(4*prim_id + 0);
-  bezier->width[1] = curve->GetVertexWidth(4*prim_id + 3);
+  bezier->width[0] = curve->GetVertexWidth(i0);
+  bezier->width[1] = curve->GetVertexWidth(i3);
 
   bezier->velocity[0] = curve->GetVertexVelocity(i0);
   bezier->velocity[1] = curve->GetVertexVelocity(i1);
