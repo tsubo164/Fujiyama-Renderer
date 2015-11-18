@@ -31,7 +31,7 @@ void Box::ReverseInfinite()
   max = Vector(-REAL_MAX, -REAL_MAX, -REAL_MAX);
 }
 
-bool Box::ContainsPoint(const Vector &point)
+bool Box::ContainsPoint(const Vector &point) const
 {
   if ((point[0] < min[0]) || (max[0] < point[0])) { return false; }
   if ((point[1] < min[1]) || (max[1] < point[1])) { return false; }

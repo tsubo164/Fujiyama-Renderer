@@ -19,7 +19,7 @@ public:
   void Expand(Real delta);
   void ReverseInfinite();
 
-  bool ContainsPoint(const Vector &point);
+  bool ContainsPoint(const Vector &point) const;
   void AddPoint(const Vector &point);
   void AddBox(const Box &other);
 
