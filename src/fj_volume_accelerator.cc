@@ -223,8 +223,8 @@ VolumeAccelerator *VolumeAccNew(int accelerator_type)
   acc->VolumeIntersect_ = NULL;
   acc->VolumeBounds_ = NULL;
 
-  BoxReverseInfinite(&acc->bounds_);
-  BoxReverseInfinite(&acc->volume_set_bounds_);
+  acc->bounds_.ReverseInfinite();
+  acc->volume_set_bounds_.ReverseInfinite();
 
   return acc;
 }
@@ -290,7 +290,7 @@ void VolumeAccSetTargetGeometry(VolumeAccelerator *acc,
 
   /* accelerator's bounds */
   acc->bounds_ = *volume_set_bounds;
-  BoxExpand(&acc->bounds_, EXPAND);
+  acc->bounds_.Expand(EXPAND);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -360,7 +360,7 @@ static int build_bvh_accel(VolumeAccelerator *acc)
 
   for (int i = 0; i < NPRIMS; i++) {
     acc->VolumeBounds_(acc->volume_set_, i, &volumes[i].bounds);
-    volumes[i].centroid = BoxCentroid(volumes[i].bounds);
+    volumes[i].centroid = volumes[i].bounds.Centroid();
     volumes[i].index = i;
 
     volume_ptr[i] = &volumes[i];
@@ -543,7 +543,7 @@ static VolumeBVHNode *build_bvh(VolumePrimitive **volume_ptr, int begin, int end
     return NULL;
 
   node->bounds = node->left->bounds;
-  BoxAddBox(&node->bounds, node->right->bounds);
+  node->bounds.AddBox(node->right->bounds);
 
   return node;
 }

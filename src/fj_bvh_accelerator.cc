@@ -91,7 +91,7 @@ int BVHAccelerator::build()
 
   for (int i = 0; i < NPRIMS; i++) {
     primset->GetPrimitiveBounds(i, &prims[i].bounds);
-    prims[i].centroid = BoxCentroid(prims[i].bounds);
+    prims[i].centroid = prims[i].bounds.Centroid();
     prims[i].index = i;
 
     primptrs[i] = &prims[i];
@@ -290,7 +290,7 @@ static BVHNode *build_bvh(Primitive **primptrs, int begin, int end, int axis)
     return NULL;
 
   node->bounds = node->left->bounds;
-  BoxAddBox(&node->bounds, node->right->bounds);
+  node->bounds.AddBox(node->right->bounds);
 
   return node;
 }

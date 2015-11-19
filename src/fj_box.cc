@@ -69,48 +69,6 @@ Vector Box::Diagonal() const
 {
   return max - min;
 }
-//------------------------------------------------------------------------------
-
-void BoxExpand(Box *box, Real delta)
-{
-  box->min -= Vector(delta, delta, delta);
-  box->max += Vector(delta, delta, delta);
-}
-
-void BoxReverseInfinite(Box *box)
-{
-  box->min = Vector( REAL_MAX,  REAL_MAX,  REAL_MAX);
-  box->max = Vector(-REAL_MAX, -REAL_MAX, -REAL_MAX);
-}
-
-bool BoxContainsPoint(const Box &box, const Vector &point)
-{
-  if ((point[0] < box.min[0]) || (point[0] > box.max[0])) { return false; }
-  if ((point[1] < box.min[1]) || (point[1] > box.max[1])) { return false; }
-  if ((point[2] < box.min[2]) || (point[2] > box.max[2])) { return false; }
-
-  return true;
-}
-
-void BoxAddPoint(Box *box, const Vector &point)
-{
-  box->min[0] = Min(box->min[0], point[0]);
-  box->min[1] = Min(box->min[1], point[1]);
-  box->min[2] = Min(box->min[2], point[2]);
-  box->max[0] = Max(box->max[0], point[0]);
-  box->max[1] = Max(box->max[1], point[1]);
-  box->max[2] = Max(box->max[2], point[2]);
-}
-
-void BoxAddBox(Box *box, const Box &otherbox)
-{
-  box->min[0] = Min(box->min[0], otherbox.min[0]);
-  box->min[1] = Min(box->min[1], otherbox.min[1]);
-  box->min[2] = Min(box->min[2], otherbox.min[2]);
-  box->max[0] = Max(box->max[0], otherbox.max[0]);
-  box->max[1] = Max(box->max[1], otherbox.max[1]);
-  box->max[2] = Max(box->max[2], otherbox.max[2]);
-}
 
 bool BoxRayIntersect(const Box &box,
     const Vector &rayorig, const Vector &raydir,
@@ -191,16 +149,6 @@ bool BoxBoxIntersect(const Box &a, const Box &b)
   } else {
     return true;
   }
-}
-
-Vector BoxCentroid(const Box &box)
-{
-  return .5 * (box.min + box.max);
-}
-
-Vector BoxDiagonal(const Box &box)
-{
-  return box.max - box.min;
 }
 
 std::ostream &operator<<(std::ostream &os, const Box &box)

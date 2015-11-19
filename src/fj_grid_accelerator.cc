@@ -74,13 +74,13 @@ int GridAccelerator::build()
 
   Box bounds_tmp;
   primset->GetBounds(&bounds_tmp);
-  BoxExpand(&bounds_tmp, PADDING);
+  bounds_tmp.Expand(PADDING);
 
   int XNCELLS = 0;
   int YNCELLS = 0;
   int ZNCELLS = 0;
   const int NPRIMS = primset->GetPrimitiveCount();
-  compute_grid_cellsizes(NPRIMS, BoxDiagonal(bounds_tmp), &XNCELLS, &YNCELLS, &ZNCELLS);
+  compute_grid_cellsizes(NPRIMS, bounds_tmp.Diagonal(), &XNCELLS, &YNCELLS, &ZNCELLS);
 
   std::vector<Cell*> cells_tmp(XNCELLS * YNCELLS * ZNCELLS, NULL);
   const Vector cellsize_tmp =
@@ -95,7 +95,7 @@ int GridAccelerator::build()
     Box primbbox;
 
     primset->GetPrimitiveBounds(prim_id, &primbbox);
-    BoxExpand(&primbbox, HALF_PADDING);
+    primbbox.Expand(HALF_PADDING);
 
     // compute the ranges of cell indices. e.g. [X0 .. X1)
     int X0 = static_cast<int>(Floor((primbbox.min.x - bounds_tmp.min.x) / cellsize_tmp.x));
@@ -181,7 +181,7 @@ bool GridAccelerator::intersect(const Ray &ray, Real time, Intersection *isect) 
   Real t_start = REAL_MAX;
   Real t_end = REAL_MAX;
 
-  if (BoxContainsPoint(bounds_, ray.orig)) {
+  if (bounds_.ContainsPoint(ray.orig)) {
     start = ray.orig;
     t_start = 0;
   }
@@ -253,7 +253,7 @@ bool GridAccelerator::intersect(const Ray &ray, Real time, Intersection *isect) 
       const Box cellbox = get_grid_cell(bounds_, cellsize_,
           cell_id[0], cell_id[1], cell_id[2]);
       const Vector P_hit = RayPointAt(ray, isect_tmp->t_hit);
-      const bool inside_cell = BoxContainsPoint(cellbox, P_hit);
+      const bool inside_cell = cellbox.ContainsPoint(P_hit);
 
       if (!inside_cell) {
         continue;

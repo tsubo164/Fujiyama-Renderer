@@ -10,7 +10,7 @@ namespace fj {
 
 ObjectSet::ObjectSet() : objects_(), bounds_()
 {
-  BoxReverseInfinite(&bounds_);
+  bounds_.ReverseInfinite();
 }
 
 ObjectSet::~ObjectSet()
@@ -35,7 +35,7 @@ void ObjectSet::AddObject(const ObjectInstance *obj)
 
   objects_.push_back(obj);
 
-  BoxAddBox(&bounds_, other_bounds);
+  bounds_.AddBox(other_bounds);
 }
 
 const Box &ObjectSet::GetBounds() const
@@ -50,7 +50,7 @@ void ObjectSet::ComputeBounds()
     Box obj_bounds;
 
     obj_bounds = obj->GetBounds();
-    BoxAddBox(&bounds_, obj_bounds);
+    bounds_.AddBox(obj_bounds);
   }
 }
 

@@ -226,14 +226,14 @@ void MatTransformBounds(const Matrix &m, Box *bounds)
   Vector pt;
   Box box;
 
-  BoxReverseInfinite(&box);
+  box.ReverseInfinite();
 
 #define TRANSFORM_BOX_VERTEX(minmax0, minmax1, minmax2) do { \
   pt.x = bounds->minmax0.x; \
   pt.y = bounds->minmax1.y; \
   pt.z = bounds->minmax2.z; \
   MatTransformPoint(m, &pt); \
-  BoxAddPoint(&box, pt); \
+  box.AddPoint(pt); \
 } while (0)
   TRANSFORM_BOX_VERTEX  (min, min, min);
   TRANSFORM_BOX_VERTEX  (max, min, min);

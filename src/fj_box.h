@@ -31,19 +31,6 @@ public:
   Vector max;
 };
 
-//------------------------------------------------------------------------------
-// TODO remove non-member functions
-FJ_API void BoxExpand(Box *box, Real delta);
-FJ_API void BoxReverseInfinite(Box *box);
-
-FJ_API bool BoxContainsPoint(const Box &box, const Vector &point);
-FJ_API void BoxAddPoint(Box *box, const Vector &point);
-FJ_API void BoxAddBox(Box *box, const Box &otherbox);
-
-FJ_API Vector BoxCentroid(const Box &box);
-FJ_API Vector BoxDiagonal(const Box &box);
-//------------------------------------------------------------------------------
-
 FJ_API bool BoxRayIntersect(const Box &box,
     const Vector &rayorig, const Vector &raydir,
     Real ray_tmin, Real ray_tmax,

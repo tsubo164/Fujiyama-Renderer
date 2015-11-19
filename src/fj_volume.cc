@@ -84,7 +84,7 @@ void Volume::Resize(int xres, int yres, int zres)
 void Volume::SetBounds(const Box &bounds)
 {
   bounds_ = bounds;
-  size_ = BoxDiagonal(bounds_);
+  size_ = bounds_.Diagonal();
 
   compute_filter_size();
 }
@@ -150,7 +150,7 @@ bool Volume::GetSample(const Vector &point, VolumeSample *sample) const
     return false;
   }
 
-  const bool hit = BoxContainsPoint(bounds_, point);
+  const bool hit = bounds_.ContainsPoint(point);
   if (!hit) {
     return false;
   }
