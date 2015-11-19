@@ -213,7 +213,7 @@ bool Curve::ray_intersect(Index prim_id, const Ray &ray,
     const int i1 = GetCurveIndices(prim_id) + 3;
     const Color Cd_curve0 = GetVertexColor(i0);
     const Color Cd_curve1 = GetVertexColor(i1);
-    isect->Cd = ColLerp(Cd_curve0, Cd_curve1, v_hit);
+    isect->Cd = Lerp(Cd_curve0, Cd_curve1, v_hit);
   }
 
   return hit;

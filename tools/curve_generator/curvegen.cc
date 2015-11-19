@@ -238,7 +238,7 @@ int main(int argc, const char **argv)
 
         C_noise = amp * PerlinNoise(src_Q, 2, .5, 2);
         C_noise = SmoothStep(.55, .75, C_noise);
-        *dst_Cd = ColLerp(C_dark, C_light, C_noise);
+        *dst_Cd = Lerp(C_dark, C_light, C_noise);
       }
 
       cp_id++;

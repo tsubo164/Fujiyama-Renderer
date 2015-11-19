@@ -7,6 +7,7 @@
 #include "fj_compatibility.h"
 #include "fj_numeric.h"
 #include <iostream>
+#include <cassert>
 
 namespace fj {
 
@@ -22,7 +23,7 @@ public:
     case 0: return r;
     case 1: return g;
     case 2: return b;
-    default: return r; // TODO ERROR HANDLING
+    default: assert(!"bounds error at Color::get");
     }
   }
   float &operator[](int i)
@@ -31,29 +32,29 @@ public:
     case 0: return r;
     case 1: return g;
     case 2: return b;
-    default: return r; // TODO ERROR HANDLING
+    default: assert(!"bounds error at Color::get");
     }
   }
 
   const Color &operator+=(const Color &A)
   {
-    r += A.r;
-    g += A.g;
-    b += A.b;
+    (*this)[0] += A[0];
+    (*this)[1] += A[1];
+    (*this)[2] += A[2];
     return *this;
   }
   const Color &operator-=(const Color &A)
   {
-    r -= A.r;
-    g -= A.g;
-    b -= A.b;
+    (*this)[0] -= A[0];
+    (*this)[1] -= A[1];
+    (*this)[2] -= A[2];
     return *this;
   }
   const Color &operator*=(float scalar)
   {
-    r *= scalar;
-    g *= scalar;
-    b *= scalar;
+    (*this)[0] *= scalar;
+    (*this)[1] *= scalar;
+    (*this)[2] *= scalar;
     return *this;
   }
   const Color &operator/=(float scalar)
@@ -69,25 +70,25 @@ public:
 inline Color operator+(const Color &A, const Color &B)
 {
   return Color(
-    A.r + B.r,
-    A.g + B.g,
-    A.b + B.b);
+    A[0] + B[0],
+    A[1] + B[1],
+    A[2] + B[2]);
 }
 
 inline Color operator-(const Color &A, const Color &B)
 {
   return Color(
-    A.r - B.r,
-    A.g - B.g,
-    A.b - B.b);
+    A[0] - B[0],
+    A[1] - B[1],
+    A[2] - B[2]);
 }
 
 inline Color operator*(const Color &A, float scalar)
 {
   return Color(
-    A.r * scalar,
-    A.g * scalar,
-    A.b * scalar);
+    A[0] * scalar,
+    A[1] * scalar,
+    A[2] * scalar);
 }
 
 inline Color operator*(float scalar, const Color &A)
@@ -99,18 +100,12 @@ inline Color operator/(const Color &A, float scalar)
 {
   // no checking zero division
   const float inv = 1.f/scalar;
-  return Color(
-    A.r * inv,
-    A.g * inv,
-    A.b * inv);
+  return A * inv;
 }
 
 inline Color operator-(const Color &A)
 {
-  return Color(
-    -A.r,
-    -A.g,
-    -A.b);
+  return -1 * A;
 }
 
 class Color4 {
@@ -126,7 +121,7 @@ public:
     case 1: return g;
     case 2: return b;
     case 3: return a;
-    default: return r; // TODO ERROR HANDLING
+    default: assert(!"bounds error at Color4::get");
     }
   }
   float &operator[](int i)
@@ -136,32 +131,32 @@ public:
     case 1: return g;
     case 2: return b;
     case 3: return a;
-    default: return r; // TODO ERROR HANDLING
+    default: assert(!"bounds error at Color4::get");
     }
   }
 
   const Color4 &operator+=(const Color4 &A)
   {
-    r += A.r;
-    g += A.g;
-    b += A.b;
-    a += A.a;
+    (*this)[0] += A[0];
+    (*this)[1] += A[1];
+    (*this)[2] += A[2];
+    (*this)[3] += A[3];
     return *this;
   }
   const Color4 &operator-=(const Color4 &A)
   {
-    r -= A.r;
-    g -= A.g;
-    b -= A.b;
-    a -= A.a;
+    (*this)[0] -= A[0];
+    (*this)[1] -= A[1];
+    (*this)[2] -= A[2];
+    (*this)[3] -= A[3];
     return *this;
   }
   const Color4 &operator*=(float scalar)
   {
-    r *= scalar;
-    g *= scalar;
-    b *= scalar;
-    a *= scalar;
+    (*this)[0] *= scalar;
+    (*this)[1] *= scalar;
+    (*this)[2] *= scalar;
+    (*this)[3] *= scalar;
     return *this;
   }
   const Color4 &operator/=(float scalar)
@@ -177,28 +172,28 @@ public:
 inline Color4 operator+(const Color4 &A, const Color4 &B)
 {
   return Color4(
-    A.r + B.r,
-    A.g + B.g,
-    A.b + B.b,
-    A.a + B.a);
+    A[0] + B[0],
+    A[1] + B[1],
+    A[2] + B[2],
+    A[3] + B[3]);
 }
 
 inline Color4 operator-(const Color4 &A, const Color4 &B)
 {
   return Color4(
-    A.r - B.r,
-    A.g - B.g,
-    A.b - B.b,
-    A.a - B.a);
+    A[0] - B[0],
+    A[1] - B[1],
+    A[2] - B[2],
+    A[3] - B[3]);
 }
 
 inline Color4 operator*(const Color4 &A, float scalar)
 {
   return Color4(
-    A.r * scalar,
-    A.g * scalar,
-    A.b * scalar,
-    A.a * scalar);
+    A[0] * scalar,
+    A[1] * scalar,
+    A[2] * scalar,
+    A[3] * scalar);
 }
 
 inline Color4 operator*(float scalar, const Color4 &A)
@@ -210,52 +205,44 @@ inline Color4 operator/(const Color4 &A, float scalar)
 {
   // no checking zero division
   const float inv = 1.f/scalar;
-  return Color4(
-    A.r * inv,
-    A.g * inv,
-    A.b * inv,
-    A.a * inv);
+  return A * inv;
 }
 
 inline Color4 operator-(const Color4 &A)
 {
-  return Color4(
-    -A.r,
-    -A.g,
-    -A.b,
-    -A.a);
+  return -1 * A;
 }
 
 inline float Luminance(const Color &A)
 {
-  return .298912 * A.r + .586611 * A.g + .114478 * A.b;
+  return .298912 * A[0] + .586611 * A[1] + .114478 * A[2];
 }
 
 inline float Luminance4(const Color4 &A)
 {
-  return .298912 * A.r + .586611 * A.g + .114478 * A.b;
+  return .298912 * A[0] + .586611 * A[1] + .114478 * A[2];
 }
 
-inline Color ColLerp(const Color &A, const Color &B, float t)
+inline Color Lerp(const Color &A, const Color &B, float t)
 {
   return (1 - t) * A + t * B;
 }
 
-inline Color ColGamma(const Color &A, float gamma)
+inline Color Gamma(const Color &A, float gamma)
 {
   return Color(
-      Gamma(A.r, gamma),
-      Gamma(A.g, gamma),
-      Gamma(A.b, gamma));
+      Gamma(A[0], gamma),
+      Gamma(A[1], gamma),
+      Gamma(A[2], gamma));
 }
 
-inline std::ostream &operator<<(std::ostream &os, const Color4 &color)
+inline std::ostream &operator<<(std::ostream &os, const Color4 &A)
 {
   os << "(" <<
-    color.r << ", " <<
-    color.g << ", " <<
-    color.b << ", " <<
-    color.a << ")";
+    A[0] << ", " <<
+    A[1] << ", " <<
+    A[2] << ", " <<
+    A[3] << ")";
   return os;
 }
 
