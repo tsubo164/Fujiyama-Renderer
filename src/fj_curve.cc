@@ -62,13 +62,16 @@ public:
 
 class Bezier3 {
 public:
-  Bezier3() : cp(), width(), velocity() {}
+  Bezier3() : cp(), velocity(), width() {}
   ~Bezier3() {}
 
 public:
+  // For anchor and control points
   ControlPoint cp[4];
-  Real width[2];
   Vector velocity[4];
+
+  // For anchor points only
+  Real width[2];
 };
 
 /* bezier curve interfaces */
@@ -426,28 +429,29 @@ static bool box_bezier3_intersect_recursive(const Box &box, const Bezier3 &bezie
     return box_bezier3_intersect(box, bezier);
   }
 
-  Bezier3 bezier_left;
-  Bezier3 bezier_right;
+  Bezier3 bezier_l;
+  Bezier3 bezier_r;
+  split_bezier3(bezier, &bezier_l, &bezier_r);
 
-  split_bezier3(bezier, &bezier_left, &bezier_right);
+  // compute velocity for split bezeirs
+  {
+    Bezier3 bezier_time_end = bezier;
+    time_sample_bezier3(&bezier_time_end, 1);
 
-  const Vector middle_velocity = Lerp(bezier.velocity[1], bezier.velocity[2], .5);
-  bezier_left.velocity[0]  = bezier.velocity[0];
-  bezier_left.velocity[1]  = Lerp(bezier.velocity[0], bezier.velocity[1], .5);
-  bezier_left.velocity[2]  = Lerp(bezier.velocity[1], middle_velocity,    .5);
-  bezier_left.velocity[3]  = middle_velocity;
-  bezier_right.velocity[0] = middle_velocity;
-  bezier_right.velocity[1] = Lerp(middle_velocity,    bezier.velocity[2], .5);
-  bezier_right.velocity[2] = Lerp(bezier.velocity[2], bezier.velocity[2], .5);
-  bezier_right.velocity[3] = bezier.velocity[3];
+    Bezier3 bezier_time_end_l;
+    Bezier3 bezier_time_end_r;
+    split_bezier3(bezier_time_end, &bezier_time_end_l, &bezier_time_end_r);
 
-  const bool hit_left  = box_bezier3_intersect_recursive(box, bezier_left,  depth - 1); 
-  if (hit_left) {
-    return true;
+    for (int i = 0; i < 4; i++) {
+      bezier_l.velocity[i] = bezier_time_end_l.cp[i].P - bezier_l.cp[i].P;
+      bezier_r.velocity[i] = bezier_time_end_r.cp[i].P - bezier_r.cp[i].P;
+    }
   }
 
-  const bool hit_right = box_bezier3_intersect_recursive(box, bezier_right, depth - 1); 
-  if (hit_right) {
+  if (box_bezier3_intersect_recursive(box, bezier_l, depth - 1)) {
+    return true;
+  }
+  if (box_bezier3_intersect_recursive(box, bezier_r, depth - 1)) {
     return true;
   }
 
