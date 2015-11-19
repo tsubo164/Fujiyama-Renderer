@@ -10,11 +10,6 @@
 #include "fj_vector.h"
 #include "fj_ray.h"
 #include "fj_box.h"
-#include <string.h>
-#include <assert.h>
-#include <float.h>
-#include <stdio.h>
-#include <math.h>
 
 #define ATTRIBUTE_LIST(ATTR) \
   ATTR(Vertex, Vector,   P_,        Position) \
@@ -57,15 +52,15 @@ public:
   ~Bezier3() {}
 
 public:
-  // For anchor and control points
+  // for anchor and control points
   Vector cp[4];
   Vector velocity[4];
 
-  // For anchor points only
+  // for anchor points only
   Real width[2];
 };
 
-/* bezier curve interfaces */
+// bezier curve interfaces
 static Real get_bezier3_max_radius(const Bezier3 &bezier);
 static Real get_bezier3_width(const Bezier3 &bezier, Real t);
 static void get_bezier3_bounds(const Bezier3 &bezier, Box *bounds);
@@ -74,14 +69,14 @@ static Vector eval_bezier3(const Vector *cp, Real t);
 static Vector derivative_bezier3(const Vector *cp, Real t);
 static void split_bezier3(const Bezier3 &bezier,
     Bezier3 *left, Bezier3 *right);
-static int converge_bezier3(const Bezier3 &bezier,
+static bool converge_bezier3(const Bezier3 &bezier,
     Real v0, Real vn, int depth,
     Real *v_hit, Real *P_hit);
 static void time_sample_bezier3(Bezier3 *bezier, Real time);
 
 static bool box_bezier3_intersect_recursive(const Box &box, const Bezier3 &bezier, int depth);
 
-/* helper functions */
+// helper functions
 static inline Vector mid_point(const Vector &a, const Vector &b)
 {
   return (a + b) * .5;
@@ -149,7 +144,7 @@ void Curve::ComputeBounds()
 
   bounds_.Expand(max_radius);
 
-  /* TODO find a better place to put this */
+  // TODO find a better place to put this
   cache_split_depth();
 }
 
@@ -193,8 +188,8 @@ bool Curve::ray_intersect(Index prim_id, const Ray &ray,
     MatTransformPoint(world_to_ray, &bezier.cp[i]);
   }
 
-  Real ttmp = FLT_MAX;
-  Real v_hit = FLT_MAX;
+  Real ttmp = REAL_MAX;
+  Real v_hit = REAL_MAX;
 
   const bool hit = converge_bezier3(bezier, 0, 1, depth, &v_hit, &ttmp);
   if (hit) {
@@ -235,7 +230,7 @@ void Curve::get_primitive_bounds(Index prim_id, Box *bounds) const
   get_bezier3(this, prim_id, &bezier);
   get_bezier3_bounds(bezier, bounds);
 
-  /* TODO need to pass max time sample instead of 1. */
+  // TODO need to pass max time sample instead of 1.
   time_sample_bezier3(&bezier, 1);
 
   Box bounds_shutter_close;
@@ -264,7 +259,7 @@ static void compute_world_to_ray_matrix(const Ray &ray, Matrix *dst)
 
   const Real d = sqrt(lx*lx + lz*lz);
   if (d == 0) {
-    /* TODO handle d == 0 */
+    // TODO handle d == 0
   }
   const Real d_inv = 1. / d;
 
@@ -285,7 +280,7 @@ static void compute_world_to_ray_matrix(const Ray &ray, Matrix *dst)
 /* Based on this algorithm:
    Koji Nakamaru and Yoshio Ono, RAY TRACING FOR CURVES PRIMITIVE, WSCG 2002.
    */
-static int converge_bezier3(const Bezier3 &bezier,
+static bool converge_bezier3(const Bezier3 &bezier,
     Real v0, Real vn, int depth,
     Real *v_hit, Real *P_hit)
 {
@@ -298,7 +293,7 @@ static int converge_bezier3(const Bezier3 &bezier,
   if (bounds.min.x >= radius || bounds.max.x <= -radius ||
     bounds.min.y >= radius || bounds.max.y <= -radius ||
     bounds.min.z >= *P_hit || bounds.max.z <= 1e-6) {
-    return 0;
+    return false;
   }
 
   if (depth == 0) {
@@ -309,7 +304,7 @@ static int converge_bezier3(const Bezier3 &bezier,
       dP0 *= -1;
     }
     if (-1 * dot_xy(dP0, cp[0]) < 0) {
-      return 0;
+      return false;
     }
 
     Vector dPn = cp[3] - cp[2];
@@ -318,13 +313,13 @@ static int converge_bezier3(const Bezier3 &bezier,
       dPn *= -1;
     }
     if (dot_xy(dPn, cp[3]) < 0) {
-      return 0;
+      return false;
     }
 
     // compute w on the line segment
     Real w = dir.x * dir.x + dir.y * dir.y;
     if (Abs(w) < 1e-6) {
-      return 0;
+      return false;
     }
     w = -(cp[0].x * dir.x + cp[0].y * dir.y) / w;
     w = Clamp(w, 0, 1);
@@ -336,19 +331,19 @@ static int converge_bezier3(const Bezier3 &bezier,
     // compare x-y distance
     const Vector vP = eval_bezier3(cp, w);
     if (vP.x * vP.x + vP.y * vP.y >= radius_w * radius_w) {
-      return 0;
+      return false;
     }
 
     // compare z distance
     if (vP.z <= 1e-6 || *P_hit < vP.z) {
-      return 0;
+      return false;
     }
 
     // we found a new intersection
     *P_hit = vP.z;
     *v_hit = v;
 
-    return 1;
+    return true;
   }
 
   const Real vm = (v0 + vn) * .5;
@@ -357,10 +352,10 @@ static int converge_bezier3(const Bezier3 &bezier,
 
   split_bezier3(bezier, &bezier_left, &bezier_right);
 
-  Real v_left  = FLT_MAX;
-  Real v_right = FLT_MAX;
-  Real t_left  = FLT_MAX;
-  Real t_right = FLT_MAX;
+  Real v_left  = REAL_MAX;
+  Real v_right = REAL_MAX;
+  Real t_left  = REAL_MAX;
+  Real t_right = REAL_MAX;
   const bool hit_left  = converge_bezier3(bezier_left,  v0, vm, depth-1, &v_left,  &t_left);
   const bool hit_right = converge_bezier3(bezier_right, vm, vn, depth-1, &v_right, &t_right);
 
