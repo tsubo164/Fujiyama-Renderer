@@ -23,7 +23,9 @@ public:
     case 0: return r;
     case 1: return g;
     case 2: return b;
-    default: assert(!"bounds error at Color::get");
+    default:
+      assert(!"bounds error at Color::get");
+      return r;
     }
   }
   float &operator[](int i)
@@ -32,7 +34,9 @@ public:
     case 0: return r;
     case 1: return g;
     case 2: return b;
-    default: assert(!"bounds error at Color::get");
+    default:
+      assert(!"bounds error at Color::get");
+      return r;
     }
   }
 
@@ -121,7 +125,9 @@ public:
     case 1: return g;
     case 2: return b;
     case 3: return a;
-    default: assert(!"bounds error at Color4::get");
+    default:
+      assert(!"bounds error at Color4::get");
+      return r;
     }
   }
   float &operator[](int i)
@@ -131,7 +137,9 @@ public:
     case 1: return g;
     case 2: return b;
     case 3: return a;
-    default: assert(!"bounds error at Color4::get");
+    default:
+      assert(!"bounds error at Color4::get");
+      return r;
     }
   }
 

@@ -105,6 +105,7 @@ libscene_dll_obj = \
   ..\..\src\fj_plugin.obj \
   ..\..\src\fj_point_cloud.obj \
   ..\..\src\fj_point_cloud_io.obj \
+  ..\..\src\fj_primitive_set.obj \
   ..\..\src\fj_procedure.obj \
   ..\..\src\fj_progress.obj \
   ..\..\src\fj_property.obj \
@@ -217,6 +218,9 @@ libscene_dll_obj = \
 
 ..\..\src\fj_point_cloud_io.obj : ..\..\src\fj_point_cloud_io.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_point_cloud_io.cc
+
+..\..\src\fj_primitive_set.obj : ..\..\src\fj_primitive_set.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_primitive_set.cc
 
 ..\..\src\fj_procedure.obj : ..\..\src\fj_procedure.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_procedure.cc

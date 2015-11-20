@@ -1,0 +1,21 @@
+Fujiyama Renderer v0.3.1(Alpha) Release Notes
+=============================================
+
+New features since v0.3.0
+-------------------------
+ * Velocity motion blur has been optimized and render time is now 60-80 %
+   compared to the previous versions.
+
+ * Fixed a lots of minor bugs and updated documentation.
+
+Features under development
+--------------------------
+ * Adaptive pixel sampling
+ * Deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Global illumination
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support

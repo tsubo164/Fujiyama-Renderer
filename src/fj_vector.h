@@ -26,7 +26,9 @@ public:
     switch(i) {
     case 0: return x;
     case 1: return y;
-    default: assert(!"bounds error at Vector2::get");
+    default:
+      assert(!"bounds error at Vector2::get");
+      return x;
     }
   }
   Real &operator[](int i)
@@ -34,7 +36,9 @@ public:
     switch(i) {
     case 0: return x;
     case 1: return y;
-    default: assert(!"bounds error at Vector2::set");
+    default:
+      assert(!"bounds error at Vector2::set");
+      return x;
     }
   }
 
@@ -190,7 +194,9 @@ public:
     case 0: return x;
     case 1: return y;
     case 2: return z;
-    default: assert(!"bounds error at Vector::get");
+    default:
+      assert(!"bounds error at Vector::get");
+      return x;
     }
   }
   Real &operator[](int i)
@@ -199,7 +205,9 @@ public:
     case 0: return x;
     case 1: return y;
     case 2: return z;
-    default: assert(!"bounds error at Vector::set");
+    default:
+      assert(!"bounds error at Vector::set");
+      return x;
     }
   }
 
@@ -377,7 +385,9 @@ public:
     case 1: return y;
     case 2: return z;
     case 3: return w;
-    default: assert(!"bounds error at Vector4::get");
+    default:
+      assert(!"bounds error at Vector4::get");
+      return x;
     }
   }
   Real &operator[](int i)
@@ -387,7 +397,9 @@ public:
     case 1: return y;
     case 2: return z;
     case 3: return w;
-    default: assert(!"bounds error at Vector4::set");
+    default:
+      assert(!"bounds error at Vector4::set");
+      return x;
     }
   }
 
