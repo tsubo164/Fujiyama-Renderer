@@ -3,6 +3,7 @@
 
 #include "fj_renderer.h"
 #include "fj_multi_thread.h"
+#include "fj_pixel_sample.h"
 #include "fj_framebuffer.h"
 #include "fj_rectangle.h"
 #include "fj_property.h"

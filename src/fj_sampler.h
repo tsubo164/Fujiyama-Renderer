@@ -4,6 +4,7 @@
 #ifndef FJ_SAMPLER_H
 #define FJ_SAMPLER_H
 
+#include "fj_pixel_sample.h"
 #include "fj_vector.h"
 #include "fj_types.h"
 #include <vector>
@@ -11,17 +12,6 @@
 namespace fj {
 
 class Rectangle;
-
-class Sample {
-public:
-  Sample() : uv(), time(0), data() {}
-  ~Sample() {}
-
-public:
-  Vector2 uv;
-  Real time;
-  Vector4 data;
-};
 
 class Sampler {
 public:
