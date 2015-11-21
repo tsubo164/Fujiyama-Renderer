@@ -19,6 +19,7 @@
 #include "fj_ray.h"
 #include "fj_box.h"
 
+#include <vector>
 #include <cassert>
 #include <cstring>
 #include <cstdio>
@@ -829,7 +830,7 @@ public:
   FrameBuffer *framebuffer;
   Sampler sampler;
   Filter filter;
-  Sample *pixel_samples;
+  std::vector<Sample> pixel_samples;
 
   TraceContext context;
   Rectangle tile_region;
@@ -866,7 +867,6 @@ static void init_worker(Worker *worker, int id,
   worker->sampler.SetJitter(renderer->jitter_);
   worker->sampler.SetSampleTimeRange(
       renderer->sample_time_start_, renderer->sample_time_end_);
-  worker->pixel_samples = worker->sampler.AllocatePixelSamples();
 
   // Filter
   worker->filter.SetFilterType(FLT_GAUSSIAN, xfwidth, yfwidth);
@@ -924,11 +924,6 @@ static void set_working_region(Worker *worker, int region_id)
   }
 }
 
-static void finish_worker(Worker *worker)
-{
-  worker->sampler.FreePixelSamples(worker->pixel_samples);
-}
-
 static void free_worker_list(Worker *worker_list, int worker_count)
 {
   int i;
@@ -938,7 +933,7 @@ static void free_worker_list(Worker *worker_list, int worker_count)
   }
 
   for (i = 0; i < worker_count; i++) {
-    finish_worker(&worker_list[i]);
+    //finish_worker(&worker_list[i]);
   }
 
   delete [] worker_list;
@@ -949,7 +944,6 @@ static Color4 apply_pixel_filter(Worker *worker, int x, int y)
   const int nsamples = worker->sampler.GetSampleCountForPixel();
   const int xres = worker->xres;
   const int yres = worker->yres;
-  Sample *pixel_samples = worker->pixel_samples;
   const Filter &filter = worker->filter;
 
   Color4 pixel;
@@ -958,18 +952,18 @@ static Color4 apply_pixel_filter(Worker *worker, int x, int y)
   int i;
 
   for (i = 0; i < nsamples; i++) {
-    Sample *sample = &pixel_samples[i];
+    const Sample &sample = worker->pixel_samples[i];
     double filtx = 0, filty = 0;
     double wgt = 0;
 
-    filtx = xres * sample->uv.x - (x + .5);
-    filty = yres * (1-sample->uv.y) - (y + .5);
+    filtx = xres * sample.uv.x - (x + .5);
+    filty = yres * (1-sample.uv.y) - (y + .5);
     wgt = filter.Evaluate(filtx, filty);
 
-    pixel.r += wgt * sample->data[0];
-    pixel.g += wgt * sample->data[1];
-    pixel.b += wgt * sample->data[2];
-    pixel.a += wgt * sample->data[3];
+    pixel.r += wgt * sample.data[0];
+    pixel.g += wgt * sample.data[1];
+    pixel.b += wgt * sample.data[2];
+    pixel.a += wgt * sample.data[3];
     wgt_sum += wgt;
   }
 
@@ -995,7 +989,7 @@ static void reconstruct_image(Worker *worker)
     for (x = xmin; x < xmax; x++) {
       Color4 pixel;
 
-      worker->sampler.GetPixelSamples(worker->pixel_samples, x, y);
+      worker->sampler.GetSampleSetForPixel(worker->pixel_samples, x, y);
       pixel = apply_pixel_filter(worker, x, y);
 
       fb->SetColor(x, y, pixel);

@@ -159,7 +159,8 @@ Sample *Sampler::GetNextSample()
   return sample;
 }
 
-void Sampler::GetPixelSamples(Sample *pixelsamples, int pixel_x, int pixel_y) const
+void Sampler::GetSampleSetForPixel(std::vector<Sample> &pixelsamples,
+    int pixel_x, int pixel_y) const
 {
   const int XPIXEL_OFFSET = pixel_x - xpixel_start_;
   const int YPIXEL_OFFSET = pixel_y - ypixel_start_;
@@ -170,7 +171,12 @@ void Sampler::GetPixelSamples(Sample *pixelsamples, int pixel_x, int pixel_y) co
     XPIXEL_OFFSET * xrate_;
   const Sample *src = &samples_[OFFSET];
 
-  Sample *dst = pixelsamples;
+  const std::size_t SAMPLE_COUNT = static_cast<std::size_t>(GetSampleCountForPixel());
+  if (pixelsamples.size() < SAMPLE_COUNT) {
+    pixelsamples.resize(SAMPLE_COUNT);
+  }
+
+  std::vector<Sample> &dst = pixelsamples;
 
   for (int y = 0; y < ynpxlsmps_; y++) {
     for (int x = 0; x < xnpxlsmps_; x++) {
@@ -179,22 +185,9 @@ void Sampler::GetPixelSamples(Sample *pixelsamples, int pixel_x, int pixel_y) co
   }
 }
 
-// TODO REMOVE THIS OR MAKE FREE FUNCTION
-Sample *Sampler::AllocatePixelSamples()
-{
-  const int sample_count = GetSampleCountForPixel();
-  return new Sample[sample_count];
-}
-
 int Sampler::GetSampleCountForPixel() const
 {
   return xnpxlsmps_ * ynpxlsmps_;
-}
-
-// TODO REMOVE THIS OR MAKE FREE FUNCTION
-void Sampler::FreePixelSamples(Sample *samples) const
-{
-  delete [] samples;
 }
 
 // TODO REMOVE THIS OR MAKE FREE FUNCTION

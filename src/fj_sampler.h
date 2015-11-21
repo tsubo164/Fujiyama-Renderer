@@ -38,15 +38,13 @@ public:
   int GenerateSamples(const Rectangle &pixel_bounds);
   int GetSampleCount() const;
   Sample *GetNextSample();
-  void GetPixelSamples(Sample *pixelsamples, int pixel_x, int pixel_y) const;
-
-  // interfaces for a pixel
-  Sample *AllocatePixelSamples();
-  int GetSampleCountForPixel() const;
-  void FreePixelSamples(Sample *samples) const;
-
   static int GetSampleCountForRegion(const Rectangle &region,
       int xrate, int yrate, float xfwidth, float yfwidth);
+
+  // interfaces for a pixel
+  int GetSampleCountForPixel() const;
+  void GetSampleSetForPixel(std::vector<Sample> &pixelsamples,
+      int pixel_x, int pixel_y) const;
 
 private:
   void count_samples_in_pixels();
