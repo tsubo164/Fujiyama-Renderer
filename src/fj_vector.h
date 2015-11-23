@@ -563,8 +563,105 @@ public:
     }
   }
 
+  const Int2 &operator=(const Int2 &a)
+  {
+    (*this)[0] = a[0];
+    (*this)[1] = a[1];
+    return *this;
+  }
+  const Int2 &operator+=(const Int2 &a)
+  {
+    (*this)[0] += a[0];
+    (*this)[1] += a[1];
+    return *this;
+  }
+  const Int2 &operator-=(const Int2 &a)
+  {
+    (*this)[0] -= a[0];
+    (*this)[1] -= a[1];
+    return *this;
+  }
+  const Int2 &operator*=(const Int2 &a)
+  {
+    (*this)[0] *= a[0];
+    (*this)[1] *= a[1];
+    return *this;
+  }
+  const Int2 &operator/=(const Int2 &a)
+  {
+    (*this)[0] /= a[0];
+    (*this)[1] /= a[1];
+    return *this;
+  }
+  const Int2 &operator*=(int scalar)
+  {
+    (*this)[0] *= scalar;
+    (*this)[1] *= scalar;
+    return *this;
+  }
+  const Int2 &operator/=(int scalar)
+  {
+    // no checking zero division
+    (*this)[0] /= scalar;
+    (*this)[1] /= scalar;
+    return *this;
+  }
+
   int x, y;
 };
+
+inline Int2 operator+(const Int2 &a, const Int2 &b)
+{
+  return Int2(
+    a[0] + b[0],
+    a[1] + b[1]);
+}
+
+inline Int2 operator-(const Int2 &a, const Int2 &b)
+{
+  return Int2(
+    a[0] - b[0],
+    a[1] - b[1]);
+}
+
+inline Int2 operator*(const Int2 &a, const Int2 &b)
+{
+  return Int2(
+    a[0] * b[0],
+    a[1] * b[1]);
+}
+
+inline Int2 operator/(const Int2 &a, const Int2 &b)
+{
+  return Int2(
+    a[0] / b[0],
+    a[1] / b[1]);
+}
+
+inline Int2 operator*(const Int2 &a, int scalar)
+{
+  return Int2(
+    a[0] * scalar,
+    a[1] * scalar);
+}
+
+inline Int2 operator*(int scalar, const Int2 &a)
+{
+  return a * scalar;
+}
+
+inline Int2 operator/(const Int2 &a, int scalar)
+{
+  // no checking zero division
+  return Int2(
+    a[0] / scalar,
+    a[1] / scalar);
+}
+
+inline Int2 operator-(const Int2 &a)
+{
+  return -1 * a;
+}
 
 inline std::ostream &operator<<(std::ostream &os, const Int2 &a)
 {

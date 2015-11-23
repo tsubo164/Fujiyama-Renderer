@@ -5,40 +5,40 @@
 #define FJ_RECTANGLE_H
 
 #include "fj_compatibility.h"
+#include "fj_vector.h"
+#include <iostream>
 
 namespace fj {
 
 class FJ_API Rectangle {
 public:
-  Rectangle() : xmin(0), ymin(0), xmax(0), ymax(0) {}
+  Rectangle() : min(), max() {}
   ~Rectangle() {}
 
-  int GetSizeX() const;
-  int GetSizeY() const;
+  Int2 Size() const;
+  int SizeX() const;
+  int SizeY() const;
 
 public:
-  int xmin, ymin, xmax, ymax;
+  Int2 min, max;
 };
 
-inline int Rectangle::GetSizeX() const
+inline Int2 Rectangle::Size() const
 {
-  return xmax - xmin;
+  return max - min;
 }
 
-inline int Rectangle::GetSizeY() const
+inline int Rectangle::SizeX() const
 {
-  return ymax - ymin;
+  return max[0] - min[0];
 }
 
-inline int SizeX(const Rectangle &rect)
+inline int Rectangle::SizeY() const
 {
-  return rect.xmax - rect.xmin;
+  return max[1] - min[1];
 }
 
-inline int SizeY(const Rectangle &rect)
-{
-  return rect.ymax - rect.ymin;
-}
+std::ostream &operator<<(std::ostream &os, const Rectangle &rect);
 
 } // namespace xxx
 

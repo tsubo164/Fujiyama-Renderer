@@ -202,7 +202,7 @@ int Sampler::allocate_samples_for_region(const Rectangle &region)
   nsamples_ = get_sample_count_for_region(region, rate_, margin_);
   samples_.resize(nsamples_[0] * nsamples_[1]);
 
-  pixel_start_ = Int2(region.xmin, region.ymin);
+  pixel_start_ = Int2(region.min[0], region.min[1]);
 
   current_index_ = 0;
 
@@ -213,8 +213,8 @@ static Int2 get_sample_count_for_region(const Rectangle &region,
     const Int2 &rate, const Int2 &margin)
 {
   return Int2(
-      rate[0] * SizeX(region) + 2 * margin[0],
-      rate[1] * SizeY(region) + 2 * margin[1]);
+      rate[0] * region.SizeX() + 2 * margin[0],
+      rate[1] * region.SizeY() + 2 * margin[1]);
 }
 
 } // namespace xxx

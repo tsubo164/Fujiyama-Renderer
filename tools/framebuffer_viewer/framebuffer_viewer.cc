@@ -115,10 +115,10 @@ void FrameBufferViewer::Draw() const
       for (size_t i = 0; i < tile_status_.size(); i++)
       {
         if (tile_status_[i].state == STATE_RENDERING) {
-          GLfloat xmin = tile_status_[i].region.xmin + 5 * 0;
-          GLfloat ymin = tile_status_[i].region.ymin + 5 * 0;
-          GLfloat xmax = tile_status_[i].region.xmax - 5 * 0;
-          GLfloat ymax = tile_status_[i].region.ymax - 5 * 0;
+          GLfloat xmin = tile_status_[i].region.min[0] + 5 * 0;
+          GLfloat ymin = tile_status_[i].region.min[1] + 5 * 0;
+          GLfloat xmax = tile_status_[i].region.max[0] - 5 * 0;
+          GLfloat ymax = tile_status_[i].region.max[1] - 5 * 0;
           ymin = yviewsize - ymin;
           ymax = yviewsize - ymax;
           glBegin(GL_LINE_LOOP);
@@ -439,10 +439,10 @@ void FrameBufferViewer::Listen()
       if (frame_id_ != message.frame_id) {
         return;
       }
-      tile_status_[message.tile_id].region.xmin = message.xmin;
-      tile_status_[message.tile_id].region.ymin = message.ymin;
-      tile_status_[message.tile_id].region.xmax = message.xmax;
-      tile_status_[message.tile_id].region.ymax = message.ymax;
+      tile_status_[message.tile_id].region.min[0] = message.xmin;
+      tile_status_[message.tile_id].region.min[1] = message.ymin;
+      tile_status_[message.tile_id].region.max[0] = message.xmax;
+      tile_status_[message.tile_id].region.max[1] = message.ymax;
       tile_status_[message.tile_id].state = STATE_RENDERING;
       break;
 
@@ -450,10 +450,10 @@ void FrameBufferViewer::Listen()
       if (frame_id_ != message.frame_id) {
         return;
       }
-      tile_status_[message.tile_id].region.xmin = message.xmin;
-      tile_status_[message.tile_id].region.ymin = message.ymin;
-      tile_status_[message.tile_id].region.xmax = message.xmax;
-      tile_status_[message.tile_id].region.ymax = message.ymax;
+      tile_status_[message.tile_id].region.min[0] = message.xmin;
+      tile_status_[message.tile_id].region.min[1] = message.ymin;
+      tile_status_[message.tile_id].region.max[0] = message.xmax;
+      tile_status_[message.tile_id].region.max[1] = message.ymax;
       tile_status_[message.tile_id].state = STATE_DONE;
 
       {
@@ -470,8 +470,8 @@ void FrameBufferViewer::Listen()
       }
 
       Copy(fb_, tile_data,
-          tile_status_[message.tile_id].region.xmin,
-          tile_status_[message.tile_id].region.ymin);
+          tile_status_[message.tile_id].region.min[0],
+          tile_status_[message.tile_id].region.min[1]);
 
       setup_image_card();
       break;

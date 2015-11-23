@@ -60,10 +60,10 @@ void Tiler::GenerateTiles(const Rectangle &region)
   const int xtile_size = xtile_size_;
   const int ytile_size = ytile_size_;
 
-  const int xmin = region.xmin;
-  const int ymin = region.ymin;
-  const int xmax = region.xmax;
-  const int ymax = region.ymax;
+  const int xmin = region.min[0];
+  const int ymin = region.min[1];
+  const int xmax = region.max[0];
+  const int ymax = region.max[1];
 
   const int XMIN = (int) floor(Max(0, xmin) / (double) xtile_size);
   const int YMIN = (int) floor(Max(0, ymin) / (double) ytile_size);

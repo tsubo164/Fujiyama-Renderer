@@ -51,10 +51,10 @@ static Iteration compute_total_sample_count(const Sampler &sampler, const Tiler 
     const Tile *tile = tiler.GetTile(i);
 
     Rectangle region;
-    region.xmin = tile->xmin;
-    region.ymin = tile->ymin;
-    region.xmax = tile->xmax;
-    region.ymax = tile->ymax;
+    region.min[0] = tile->xmin;
+    region.min[1] = tile->ymin;
+    region.max[0] = tile->xmax;
+    region.max[1] = tile->ymax;
 
     total_sample_count += sampler.ComputeSampleCountForRegion(region);
   }
@@ -266,10 +266,10 @@ static Interrupt default_tile_start2(void *data, const TileInfo *info)
     err = SendRenderTileStart(socket,
         info->frame_id,
         info->region_id,
-        info->tile_region.xmin,
-        info->tile_region.ymin,
-        info->tile_region.xmax,
-        info->tile_region.ymax);
+        info->tile_region.min[0],
+        info->tile_region.min[1],
+        info->tile_region.max[0],
+        info->tile_region.max[1]);
     if (err == -1) {
       // TODO ERROR HANDLING
       continue;
@@ -311,14 +311,14 @@ static Interrupt default_tile_done2(void *data, const TileInfo *info)
     return CALLBACK_CONTINUE;
   }
 
-  const int tile_w = info->tile_region.GetSizeX();
-  const int tile_h = info->tile_region.GetSizeY();
+  const int tile_w = info->tile_region.SizeX();
+  const int tile_h = info->tile_region.SizeY();
   FrameBuffer tile_fb;
   tile_fb.Resize(tile_w, tile_h, info->framebuffer->GetChannelCount());
 
   {
-    const int xoffset = info->tile_region.xmin;
-    const int yoffset = info->tile_region.ymin;
+    const int xoffset = info->tile_region.min[0];
+    const int yoffset = info->tile_region.min[1];
     for (int y = 0; y < tile_h; y++) {
       for (int x = 0; x < tile_w; x++) {
         const int xx = x + xoffset;
@@ -348,10 +348,10 @@ static Interrupt default_tile_done2(void *data, const TileInfo *info)
     err = SendRenderTileDone(socket,
         info->frame_id,
         info->region_id,
-        info->tile_region.xmin,
-        info->tile_region.ymin,
-        info->tile_region.xmax,
-        info->tile_region.ymax,
+        info->tile_region.min[0],
+        info->tile_region.min[1],
+        info->tile_region.max[0],
+        info->tile_region.max[1],
         tile_fb);
     if (err == -1) {
       // TODO ERROR HANDLING
@@ -470,10 +470,10 @@ void Renderer::SetRenderRegion(int xmin, int ymin, int xmax, int ymax)
   assert(xmin < xmax);
   assert(ymin < ymax);
 
-  frame_region_.xmin = xmin;
-  frame_region_.ymin = ymin;
-  frame_region_.xmax = xmax;
-  frame_region_.ymax = ymax;
+  frame_region_.min[0] = xmin;
+  frame_region_.min[1] = ymin;
+  frame_region_.max[0] = xmax;
+  frame_region_.max[1] = ymax;
 }
 
 void Renderer::SetPixelSamples(int xrate, int yrate)
@@ -848,10 +848,10 @@ static void init_worker(Worker *worker, int id,
   worker->context.raymarch_refract_step = renderer->raymarch_refract_step_;
 
   /* region */
-  worker->tile_region.xmin = 0;
-  worker->tile_region.xmax = 0;
-  worker->tile_region.ymin = 0;
-  worker->tile_region.ymax = 0;
+  worker->tile_region.min[0] = 0;
+  worker->tile_region.max[0] = 0;
+  worker->tile_region.min[1] = 0;
+  worker->tile_region.max[1] = 0;
 
   /* interruption */
   worker->tile_report = renderer->tile_report_;
@@ -863,10 +863,10 @@ static void set_working_region(Worker *worker, int region_id)
 
   worker->region_id = region_id;
   worker->region_count = worker->tiler->GetTileCount();
-  worker->tile_region.xmin = tile->xmin;
-  worker->tile_region.ymin = tile->ymin;
-  worker->tile_region.xmax = tile->xmax;
-  worker->tile_region.ymax = tile->ymax;
+  worker->tile_region.min[0] = tile->xmin;
+  worker->tile_region.min[1] = tile->ymin;
+  worker->tile_region.max[0] = tile->xmax;
+  worker->tile_region.max[1] = tile->ymax;
 
   if (worker->sampler.GenerateSamples(worker->tile_region)) {
     /* TODO error handling */
@@ -913,10 +913,10 @@ static Color4 apply_pixel_filter(Worker *worker, int x, int y)
 static void reconstruct_image(Worker *worker)
 {
   FrameBuffer *fb = worker->framebuffer;
-  const int xmin = worker->tile_region.xmin;
-  const int ymin = worker->tile_region.ymin;
-  const int xmax = worker->tile_region.xmax;
-  const int ymax = worker->tile_region.ymax;
+  const int xmin = worker->tile_region.min[0];
+  const int ymin = worker->tile_region.min[1];
+  const int xmax = worker->tile_region.max[0];
+  const int ymax = worker->tile_region.max[1];
   int x, y;
 
   for (y = ymin; y < ymax; y++) {
