@@ -311,8 +311,8 @@ static Interrupt default_tile_done2(void *data, const TileInfo *info)
     return CALLBACK_CONTINUE;
   }
 
-  const int tile_w = info->tile_region.SizeX();
-  const int tile_h = info->tile_region.SizeY();
+  const int tile_w = info->tile_region.Size()[0];
+  const int tile_h = info->tile_region.Size()[1];
   FrameBuffer tile_fb;
   tile_fb.Resize(tile_w, tile_h, info->framebuffer->GetChannelCount());
 

@@ -13,7 +13,7 @@
 
 namespace fj {
 
-static int get_pixel_margin(int rate, float fwidth);
+static Int2 get_pixel_margin(const Int2 &rate, const Vector2 &fwidth);
 static Int2 get_sample_count_for_region(const Rectangle &region,
     const Int2 &rate, const Int2 &margin);
 
@@ -184,25 +184,24 @@ int Sampler::ComputeSampleCountForRegion(const Rectangle &region) const
   return nsamples[0] * nsamples[1];
 }
 
-static int get_pixel_margin(int rate, float fwidth)
+static Int2 get_pixel_margin(const Int2 &rate, const Vector2 &fwidth)
 {
-  return static_cast<int>(Ceil(((fwidth - 1) * rate) * .5));
+  return Int2(
+      static_cast<int>(Ceil(((fwidth[0] - 1) * rate[0]) * .5)),
+      static_cast<int>(Ceil(((fwidth[1] - 1) * rate[1]) * .5)));
 }
 
 void Sampler::count_samples_in_pixels()
 {
-  margin_[0] = get_pixel_margin(rate_[0], fwidth_[0]);
-  margin_[1] = get_pixel_margin(rate_[1], fwidth_[1]);;
-  npxlsmps_[0] = rate_[0] + 2 * margin_[0];
-  npxlsmps_[1] = rate_[1] + 2 * margin_[1];
+  margin_   = get_pixel_margin(rate_, fwidth_);
+  npxlsmps_ = rate_ + 2 * margin_;
 }
 
 int Sampler::allocate_samples_for_region(const Rectangle &region)
 {
   nsamples_ = get_sample_count_for_region(region, rate_, margin_);
   samples_.resize(nsamples_[0] * nsamples_[1]);
-
-  pixel_start_ = Int2(region.min[0], region.min[1]);
+  pixel_start_ = region.min;
 
   current_index_ = 0;
 
@@ -212,9 +211,7 @@ int Sampler::allocate_samples_for_region(const Rectangle &region)
 static Int2 get_sample_count_for_region(const Rectangle &region,
     const Int2 &rate, const Int2 &margin)
 {
-  return Int2(
-      rate[0] * region.SizeX() + 2 * margin[0],
-      rate[1] * region.SizeY() + 2 * margin[1]);
+  return rate * region.Size() + 2 * margin;
 }
 
 } // namespace xxx
