@@ -13,40 +13,6 @@ namespace fj {
 
 class Rectangle;
 
-class Int2 {
-public:
-  Int2()
-    : x(0), y(0) {}
-  Int2(int xx, int yy)
-    : x(xx), y(yy) {}
-  Int2(const Int2 &a)
-    : x(a[0]), y(a[1]) {}
-  ~Int2() {}
-
-  int operator[](int i) const
-  {
-    switch(i) {
-    case 0: return x;
-    case 1: return y;
-    default:
-      assert(!"bounds error at Int2::get");
-      return x;
-    }
-  }
-  int &operator[](int i)
-  {
-    switch(i) {
-    case 0: return x;
-    case 1: return y;
-    default:
-      assert(!"bounds error at Int2::set");
-      return x;
-    }
-  }
-
-  int x, y;
-};
-
 class Sampler {
 public:
   Sampler();
@@ -55,7 +21,7 @@ public:
   void Initialize(int xres, int yres,
       int xsamples, int ysamples, float xfwidth, float yfwidth);
 
-  void SetJitter(float jitter);
+  void SetJitter(Real jitter);
   void SetSampleTimeRange(Real start_time, Real end_time);
 
   // interfaces for a region
@@ -73,16 +39,16 @@ private:
   void count_samples_in_pixels();
   int allocate_samples_for_region(const Rectangle &region);
 
-  int xres_, yres_;
-  int xrate_, yrate_;
-  float xfwidth_, yfwidth_;
-  float jitter_;
+  Int2 res_;
+  Int2 rate_;
+  Vector2 fwidth_;
+  Real jitter_;
   std::vector<Sample> samples_;
 
-  int xnsamples_, ynsamples_;
-  int xpixel_start_, ypixel_start_;
-  int xmargin_, ymargin_;
-  int xnpxlsmps_, ynpxlsmps_;
+  Int2 nsamples_;
+  Int2 pixel_start_;
+  Int2 margin_;
+  Int2 npxlsmps_;
 
   int current_index_;
 

@@ -18,24 +18,17 @@ static Int2 get_sample_count_for_region(const Rectangle &region,
     const Int2 &rate, const Int2 &margin);
 
 Sampler::Sampler() :
-  xres_(1),
-  yres_(1),
-  xrate_(1),
-  yrate_(1),
-  xfwidth_(1),
-  yfwidth_(1),
-  jitter_(1),
+  res_(1, 1),
+  rate_(1, 1),
+  fwidth_(1., 1.),
+  jitter_(1.),
 
   samples_(),
 
-  xnsamples_(1),
-  ynsamples_(1),
-  xpixel_start_(0),
-  ypixel_start_(0),
-  xmargin_(0),
-  ymargin_(0),
-  xnpxlsmps_(1),
-  ynpxlsmps_(1),
+  nsamples_(1, 1),
+  pixel_start_(0, 0),
+  margin_(0, 0),
+  npxlsmps_(1, 1),
 
   current_index_(0),
 
@@ -61,13 +54,10 @@ void Sampler::Initialize(int xres, int yres,
   assert(xfwidth > 0);
   assert(yfwidth > 0);
 
-  xres_ = xres;
-  yres_ = yres;
-  xrate_ = xsamples;
-  yrate_ = ysamples;
-  xfwidth_ = xfwidth;
-  yfwidth_ = yfwidth;
-  SetJitter(1);
+  res_  = Int2(xres, yres);
+  rate_ = Int2(xsamples, ysamples);
+  fwidth_ = Vector2(xfwidth, yfwidth);
+  SetJitter(1.);
   SetSampleTimeRange(0, 1);
   samples_.clear();
 
@@ -76,7 +66,7 @@ void Sampler::Initialize(int xres, int yres,
   count_samples_in_pixels();
 }
 
-void Sampler::SetJitter(float jitter)
+void Sampler::SetJitter(Real jitter)
 {
   assert(jitter >= 0 && jitter <= 1);
 
@@ -97,10 +87,7 @@ void Sampler::SetSampleTimeRange(Real start_time, Real end_time)
 
 int Sampler::GenerateSamples(const Rectangle &pixel_bounds)
 {
-  const int err = allocate_samples_for_region(pixel_bounds);
-  if (err) {
-    return -1;
-  }
+  allocate_samples_for_region(pixel_bounds);
 
   XorShift xr; // random number generator
   XorShift rng_time; // for time sampling jitter
@@ -108,17 +95,17 @@ int Sampler::GenerateSamples(const Rectangle &pixel_bounds)
   XorInit(&xr);
 
   // uv delta
-  const Real udelta = 1./(xrate_ * xres_ + 2 * xmargin_);
-  const Real vdelta = 1./(yrate_ * yres_ + 2 * ymargin_);
+  const Real udelta = 1./(rate_[0] * res_[0] + 2 * margin_[0]);
+  const Real vdelta = 1./(rate_[1] * res_[1] + 2 * margin_[1]);
 
   // xy offset
-  const int xoffset = xpixel_start_ * xrate_ - xmargin_;
-  const int yoffset = ypixel_start_ * yrate_ - ymargin_;
+  const int xoffset = pixel_start_[0] * rate_[0] - margin_[0];
+  const int yoffset = pixel_start_[1] * rate_[1] - margin_[1];
 
   Sample *sample = &samples_[0];
 
-  for (int y = 0; y < ynsamples_; y++) {
-    for (int x = 0; x < xnsamples_; x++) {
+  for (int y = 0; y < nsamples_[1]; y++) {
+    for (int x = 0; x < nsamples_[0]; x++) {
       sample->uv.x =     (.5 + x + xoffset) * udelta;
       sample->uv.y = 1 - (.5 + y + yoffset) * vdelta;
 
@@ -163,13 +150,13 @@ Sample *Sampler::GetNextSample()
 void Sampler::GetSampleSetForPixel(std::vector<Sample> &pixelsamples,
     int pixel_x, int pixel_y) const
 {
-  const int XPIXEL_OFFSET = pixel_x - xpixel_start_;
-  const int YPIXEL_OFFSET = pixel_y - ypixel_start_;
+  const int XPIXEL_OFFSET = pixel_x - pixel_start_[0];
+  const int YPIXEL_OFFSET = pixel_y - pixel_start_[1];
 
-  const int XNSAMPLES = xnsamples_;
+  const int XNSAMPLES = nsamples_[0];
   const int OFFSET =
-    YPIXEL_OFFSET * yrate_ * XNSAMPLES +
-    XPIXEL_OFFSET * xrate_;
+    YPIXEL_OFFSET * rate_[1] * XNSAMPLES +
+    XPIXEL_OFFSET * rate_[0];
   const Sample *src = &samples_[OFFSET];
 
   const std::size_t SAMPLE_COUNT = static_cast<std::size_t>(GetSampleCountForPixel());
@@ -179,56 +166,43 @@ void Sampler::GetSampleSetForPixel(std::vector<Sample> &pixelsamples,
 
   std::vector<Sample> &dst = pixelsamples;
 
-  for (int y = 0; y < ynpxlsmps_; y++) {
-    for (int x = 0; x < xnpxlsmps_; x++) {
-      dst[y * xnpxlsmps_ + x] = src[y * XNSAMPLES + x];
+  for (int y = 0; y < npxlsmps_[1]; y++) {
+    for (int x = 0; x < npxlsmps_[0]; x++) {
+      dst[y * npxlsmps_[0] + x] = src[y * XNSAMPLES + x];
     }
   }
 }
 
 int Sampler::GetSampleCountForPixel() const
 {
-  return xnpxlsmps_ * ynpxlsmps_;
+  return npxlsmps_[0] * npxlsmps_[1];
 }
 
 int Sampler::ComputeSampleCountForRegion(const Rectangle &region) const
 {
-  const Int2 rate(xrate_, yrate_);
-  const Int2 margin(xmargin_, ymargin_);
-  const Int2 nsamples = get_sample_count_for_region(region, rate, margin);
-
+  const Int2 nsamples = get_sample_count_for_region(region, rate_, margin_);
   return nsamples[0] * nsamples[1];
 }
 
 static int get_pixel_margin(int rate, float fwidth)
 {
-  return (int) ceil(((fwidth - 1) * rate) * .5);
+  return static_cast<int>(Ceil(((fwidth - 1) * rate) * .5));
 }
 
 void Sampler::count_samples_in_pixels()
 {
-  xmargin_ = get_pixel_margin(xrate_, xfwidth_);
-  ymargin_ = get_pixel_margin(yrate_, yfwidth_);;
-  xnpxlsmps_ = xrate_ + 2 * xmargin_;
-  ynpxlsmps_ = yrate_ + 2 * ymargin_;
+  margin_[0] = get_pixel_margin(rate_[0], fwidth_[0]);
+  margin_[1] = get_pixel_margin(rate_[1], fwidth_[1]);;
+  npxlsmps_[0] = rate_[0] + 2 * margin_[0];
+  npxlsmps_[1] = rate_[1] + 2 * margin_[1];
 }
 
 int Sampler::allocate_samples_for_region(const Rectangle &region)
 {
-  const Int2 rate(xrate_, yrate_);
-  const Int2 margin(xmargin_, ymargin_);
-  const Int2 NSAMPLES = get_sample_count_for_region(region, rate, margin);
-  const int NEW_NSAMPLES = NSAMPLES[0] * NSAMPLES[1];
+  nsamples_ = get_sample_count_for_region(region, rate_, margin_);
+  samples_.resize(nsamples_[0] * nsamples_[1]);
 
-  const int XPIXEL_START = region.xmin;
-  const int YPIXEL_START = region.ymin;
-
-  samples_.resize(NEW_NSAMPLES);
-
-  xnsamples_ = NSAMPLES[0];
-  ynsamples_ = NSAMPLES[1];
-  xpixel_start_ = XPIXEL_START;
-  ypixel_start_ = YPIXEL_START;
+  pixel_start_ = Int2(region.xmin, region.ymin);
 
   current_index_ = 0;
 
