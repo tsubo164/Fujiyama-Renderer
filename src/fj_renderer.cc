@@ -681,12 +681,11 @@ public:
   const Tiler *tiler;
 };
 //class Worker;
-static Worker *new_worker_list(int worker_count,
+static void init_worker(Worker *worker, int id,
     const Renderer *renderer, const Tiler *tiler);
 static int render_frame_start(Renderer *renderer, const Tiler *tiler);
 static ThreadStatus render_tile(void *data, const ThreadContext *context);
 static void render_frame_done(Renderer *renderer, const Tiler *tiler);
-static void free_worker_list(Worker *worker_list, int worker_count);
 
 int Renderer::prepare_rendering()
 {
@@ -716,17 +715,11 @@ int Renderer::prepare_rendering()
 int Renderer::execute_rendering()
 {
   const int thread_count = GetThreadCount();
-  int render_state = 0;
-  int tile_count = 0;
 
   const int xres = resolution_[0];
   const int yres = resolution_[1];
   const int xtilesize = tilesize_[0];
   const int ytilesize = tilesize_[1];
-
-  int err = 0;
-
-  Iteration total_sample_count = 0;
 
   // Frame ID
   frame_id_ = generate_frame_id();
@@ -735,37 +728,31 @@ int Renderer::execute_rendering()
   Tiler tiler;
   tiler.Divide(xres, yres, xtilesize, ytilesize);
   tiler.GenerateTiles(frame_region_);
-  tile_count = tiler.GetTileCount();
+  const int tile_count = tiler.GetTileCount();
 
   // Worker
-  Worker *worker_list = new_worker_list(thread_count, this, &tiler);
-  if (worker_list == NULL) {
-    render_state = -1;
-    goto cleanup_and_exit;
+  std::vector<Worker> worker_list(thread_count);
+  for (std::size_t i = 0; i < worker_list.size(); i++) {
+    init_worker(&worker_list[i], i, this, &tiler);
   }
 
-  total_sample_count = compute_total_sample_count(
+  // FrameProgress
+  const Iteration total_sample_count = compute_total_sample_count(
       worker_list[0].sampler, // picking up the first sampler
       tiler);
-
-  // FrameProgress
   init_frame_progress(&frame_progress_, total_sample_count);
 
   // Run sampling
-  err = render_frame_start(this, &tiler);
+  const int err = render_frame_start(this, &tiler);
   if (err) {
-    render_state = -1;
-    goto cleanup_and_exit;
+    return -1;
   }
 
-  MtRunThreadLoop(worker_list, render_tile, thread_count, 0, tile_count);
+  MtRunThreadLoop(&worker_list[0], render_tile, thread_count, 0, tile_count);
 
   render_frame_done(this, &tiler);
 
-cleanup_and_exit:
-  free_worker_list(worker_list, thread_count);
-
-  return render_state;
+  return 0;
 }
 
 int Renderer::preprocess_camera() const
@@ -819,34 +806,6 @@ int Renderer::preprocess_lights()
   return 0;
 }
 
-#if 0
-class Worker {
-public:
-  Worker() {}
-  ~Worker() {}
-
-public:
-  int id;
-  int region_id;
-  int region_count;
-  int xres, yres;
-  int32_t frame_id;
-
-  const Camera *camera;
-  FrameBuffer *framebuffer;
-  Sampler sampler;
-  Filter filter;
-  std::vector<Sample> pixel_samples;
-
-  TraceContext context;
-  Rectangle tile_region;
-
-  TileReport tile_report;
-
-  const Tiler *tiler;
-};
-#endif
-
 static void init_worker(Worker *worker, int id,
     const Renderer *renderer, const Tiler *tiler)
 {
@@ -898,23 +857,6 @@ static void init_worker(Worker *worker, int id,
   worker->tile_report = renderer->tile_report_;
 }
 
-static Worker *new_worker_list(int worker_count,
-    const Renderer *renderer, const Tiler *tiler)
-{
-  Worker *worker_list = new Worker[worker_count];
-  int i;
-
-  if (worker_list == NULL) {
-    return NULL;
-  }
-
-  for (i = 0; i < worker_count; i++) {
-    init_worker(&worker_list[i], i, renderer, tiler);
-  }
-
-  return worker_list;
-}
-
 static void set_working_region(Worker *worker, int region_id)
 {
   const Tile *tile = worker->tiler->GetTile(region_id);
@@ -929,21 +871,6 @@ static void set_working_region(Worker *worker, int region_id)
   if (worker->sampler.GenerateSamples(worker->tile_region)) {
     /* TODO error handling */
   }
-}
-
-static void free_worker_list(Worker *worker_list, int worker_count)
-{
-  int i;
-
-  if (worker_list == NULL) {
-    return;
-  }
-
-  for (i = 0; i < worker_count; i++) {
-    //finish_worker(&worker_list[i]);
-  }
-
-  delete [] worker_list;
 }
 
 static Color4 apply_pixel_filter(Worker *worker, int x, int y)
