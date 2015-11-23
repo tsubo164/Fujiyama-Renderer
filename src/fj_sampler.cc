@@ -14,7 +14,8 @@
 namespace fj {
 
 static int get_pixel_margin(int rate, float fwidth);
-static int get_sample_count_for_region(int rate, int regionsize, int margin);
+static Int2 get_sample_count_for_region(const Rectangle &region,
+    const Int2 &rate, const Int2 &margin);
 
 Sampler::Sampler() :
   xres_(1),
@@ -190,16 +191,13 @@ int Sampler::GetSampleCountForPixel() const
   return xnpxlsmps_ * ynpxlsmps_;
 }
 
-// TODO REMOVE THIS OR MAKE FREE FUNCTION
-int Sampler::GetSampleCountForRegion(const Rectangle &region,
-    int xrate, int yrate, float xfwidth, float yfwidth)
+int Sampler::ComputeSampleCountForRegion(const Rectangle &region) const
 {
-  const int xmargin = get_pixel_margin(xrate, xfwidth);
-  const int ymargin = get_pixel_margin(yrate, yfwidth);
-  const int xnsamples = get_sample_count_for_region(xrate, SizeX(region), xmargin);
-  const int ynsamples = get_sample_count_for_region(yrate, SizeY(region), ymargin);
+  const Int2 rate(xrate_, yrate_);
+  const Int2 margin(xmargin_, ymargin_);
+  const Int2 nsamples = get_sample_count_for_region(region, rate, margin);
 
-  return xnsamples * ynsamples;
+  return nsamples[0] * nsamples[1];
 }
 
 static int get_pixel_margin(int rate, float fwidth)
@@ -215,29 +213,34 @@ void Sampler::count_samples_in_pixels()
   ynpxlsmps_ = yrate_ + 2 * ymargin_;
 }
 
-static int get_sample_count_for_region(int rate, int regionsize, int margin)
-{
-  return rate * regionsize + 2 * margin;
-}
-
 int Sampler::allocate_samples_for_region(const Rectangle &region)
 {
-  const int XNSAMPLES = get_sample_count_for_region(xrate_, SizeX(region), xmargin_);
-  const int YNSAMPLES = get_sample_count_for_region(yrate_, SizeY(region), ymargin_);
-  const int NEW_NSAMPLES = XNSAMPLES * YNSAMPLES;
+  const Int2 rate(xrate_, yrate_);
+  const Int2 margin(xmargin_, ymargin_);
+  const Int2 NSAMPLES = get_sample_count_for_region(region, rate, margin);
+  const int NEW_NSAMPLES = NSAMPLES[0] * NSAMPLES[1];
+
   const int XPIXEL_START = region.xmin;
   const int YPIXEL_START = region.ymin;
 
   samples_.resize(NEW_NSAMPLES);
 
-  xnsamples_ = XNSAMPLES;
-  ynsamples_ = YNSAMPLES;
+  xnsamples_ = NSAMPLES[0];
+  ynsamples_ = NSAMPLES[1];
   xpixel_start_ = XPIXEL_START;
   ypixel_start_ = YPIXEL_START;
 
   current_index_ = 0;
 
   return 0;
+}
+
+static Int2 get_sample_count_for_region(const Rectangle &region,
+    const Int2 &rate, const Int2 &margin)
+{
+  return Int2(
+      rate[0] * SizeX(region) + 2 * margin[0],
+      rate[1] * SizeY(region) + 2 * margin[1]);
 }
 
 } // namespace xxx

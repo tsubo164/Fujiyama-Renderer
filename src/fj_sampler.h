@@ -13,6 +13,40 @@ namespace fj {
 
 class Rectangle;
 
+class Int2 {
+public:
+  Int2()
+    : x(0), y(0) {}
+  Int2(int xx, int yy)
+    : x(xx), y(yy) {}
+  Int2(const Int2 &a)
+    : x(a[0]), y(a[1]) {}
+  ~Int2() {}
+
+  int operator[](int i) const
+  {
+    switch(i) {
+    case 0: return x;
+    case 1: return y;
+    default:
+      assert(!"bounds error at Int2::get");
+      return x;
+    }
+  }
+  int &operator[](int i)
+  {
+    switch(i) {
+    case 0: return x;
+    case 1: return y;
+    default:
+      assert(!"bounds error at Int2::set");
+      return x;
+    }
+  }
+
+  int x, y;
+};
+
 class Sampler {
 public:
   Sampler();
@@ -28,8 +62,7 @@ public:
   int GenerateSamples(const Rectangle &pixel_bounds);
   int GetSampleCount() const;
   Sample *GetNextSample();
-  static int GetSampleCountForRegion(const Rectangle &region,
-      int xrate, int yrate, float xfwidth, float yfwidth);
+  int ComputeSampleCountForRegion(const Rectangle &region) const;
 
   // interfaces for a pixel
   int GetSampleCountForPixel() const;

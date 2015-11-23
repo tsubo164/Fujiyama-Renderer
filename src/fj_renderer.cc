@@ -43,33 +43,22 @@ static int32_t generate_frame_id()
   return id < 0 ? -id : id;
 }
 
-static Iteration count_total_samples(const Tiler *tiler,
-    int x_pixel_samples, int y_pixel_samples,
-    float x_filter_width, float y_filter_width)
+static Iteration compute_total_sample_count(const Sampler &sampler, const Tiler &tiler)
 {
-  const int tile_count = tiler->GetTileCount();
-  int total_sample_count = 0;
-  int i;
+  Iteration total_sample_count = 0;
 
-  for (i = 0; i < tile_count; i++) {
-    const Tile *tile = tiler->GetTile(i);
+  for (int i = 0; i < tiler.GetTileCount(); i++) {
+    const Tile *tile = tiler.GetTile(i);
+
     Rectangle region;
-    int samples_in_tile = 0;
-
     region.xmin = tile->xmin;
     region.ymin = tile->ymin;
     region.xmax = tile->xmax;
     region.ymax = tile->ymax;
 
-    samples_in_tile = Sampler::GetSampleCountForRegion(
-        region,
-        x_pixel_samples,
-        y_pixel_samples,
-        x_filter_width,
-        y_filter_width);
-
-    total_sample_count += samples_in_tile;
+    total_sample_count += sampler.ComputeSampleCountForRegion(region);
   }
+
   return total_sample_count;
 }
 
@@ -91,18 +80,9 @@ static void distribute_progress_iterations(FrameProgress *progress, Iteration to
   progress->current_segment = 0;
 }
 
-static void init_frame_progress(FrameProgress *progress, const Tiler *tiler,
-    int x_pixel_samples, int y_pixel_samples,
-    float x_filter_width, float y_filter_width)
+static void init_frame_progress(FrameProgress *progress, Iteration total_sample_count)
 {
-  const Iteration total_iteration_count = count_total_samples(
-      tiler,
-      x_pixel_samples,
-      y_pixel_samples,
-      x_filter_width,
-      y_filter_width);
-
-  distribute_progress_iterations(progress, total_iteration_count);
+  distribute_progress_iterations(progress, total_sample_count);
 
   if (!is_socket_ready) {
     progress->report_to_viewer = false;
@@ -675,7 +655,32 @@ int Renderer::RenderScene()
 }
 
 // TODO TMP REMOVE LATER
-class Worker;
+class Worker {
+public:
+  Worker() {}
+  ~Worker() {}
+
+public:
+  int id;
+  int region_id;
+  int region_count;
+  int xres, yres;
+  int32_t frame_id;
+
+  const Camera *camera;
+  FrameBuffer *framebuffer;
+  Sampler sampler;
+  Filter filter;
+  std::vector<Sample> pixel_samples;
+
+  TraceContext context;
+  Rectangle tile_region;
+
+  TileReport tile_report;
+
+  const Tiler *tiler;
+};
+//class Worker;
 static Worker *new_worker_list(int worker_count,
     const Renderer *renderer, const Tiler *tiler);
 static int render_frame_start(Renderer *renderer, const Tiler *tiler);
@@ -719,12 +724,9 @@ int Renderer::execute_rendering()
   const int xtilesize = tilesize_[0];
   const int ytilesize = tilesize_[1];
 
-  const int xpixelsamples = pixelsamples_[0];
-  const int ypixelsamples = pixelsamples_[1];
-  const float xfilterwidth = filterwidth_[0];
-  const float yfilterwidth = filterwidth_[1];
-
   int err = 0;
+
+  Iteration total_sample_count = 0;
 
   // Frame ID
   frame_id_ = generate_frame_id();
@@ -742,10 +744,12 @@ int Renderer::execute_rendering()
     goto cleanup_and_exit;
   }
 
+  total_sample_count = compute_total_sample_count(
+      worker_list[0].sampler, // picking up the first sampler
+      tiler);
+
   // FrameProgress
-  init_frame_progress(&frame_progress_, &tiler,
-      xpixelsamples, ypixelsamples,
-      xfilterwidth, yfilterwidth);
+  init_frame_progress(&frame_progress_, total_sample_count);
 
   // Run sampling
   err = render_frame_start(this, &tiler);
@@ -815,6 +819,7 @@ int Renderer::preprocess_lights()
   return 0;
 }
 
+#if 0
 class Worker {
 public:
   Worker() {}
@@ -840,6 +845,7 @@ public:
 
   const Tiler *tiler;
 };
+#endif
 
 static void init_worker(Worker *worker, int id,
     const Renderer *renderer, const Tiler *tiler)
