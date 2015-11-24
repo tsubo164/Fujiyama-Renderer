@@ -25,10 +25,14 @@ public:
   void SetJitter(Real jitter);
   void SetSampleTimeRange(Real start_time, Real end_time);
 
-  const Int2    &SetResolution() const;
+  const Int2    &GetResolution() const;
   const Int2    &GetPixelSamples() const;
   const Vector2 &GetFilterWidth() const;
-  const Int2    &GetMargin() const;
+
+  Vector2 GetSampleTimeRange() const;
+  bool IsSamplingTime() const;
+  bool IsJittered() const;
+  Real GetJitter() const;
 
   // interfaces for a region
   int GenerateSamples(const Rectangle &region);
@@ -42,28 +46,22 @@ public:
       int pixel_x, int pixel_y) const;
 
 private:
-  virtual int generate_samples(const Rectangle &region);
-  virtual Sample *get_next_sample();
-  virtual Int2 count_samples_in_margin() const = 0;
+  virtual int generate_samples(const Rectangle &region) = 0;
+  virtual Sample *get_next_sample() = 0;
+  virtual void get_sampleset_in_pixel(std::vector<Sample> &pixelsamples,
+      const Int2 &pixel_pos) const = 0;
+  virtual int get_sample_count() const = 0;
   virtual Int2 count_samples_in_pixel() const = 0;
   virtual Int2 count_samples_in_region(const Rectangle &region) const = 0;
-  void update_sample_counts();
+  virtual void update_sample_counts() = 0;
 
   Int2 res_;
   Int2 rate_;
   Vector2 fwidth_;
   Real jitter_;
-  std::vector<Sample> samples_;
 
-  Int2 nsamples_;
-  Int2 pixel_start_;
-  Int2 margin_;
-  Int2 npxlsmps_;
-
-  int current_index_;
-
-  int need_jitter_;
-  int need_time_sampling_;
+  bool need_jitter_;
+  bool need_time_sampling_;
 
   Real sample_time_start_;
   Real sample_time_end_;

@@ -4,10 +4,18 @@
 #include "fj_fixed_grid_sampler.h"
 #include "fj_rectangle.h"
 #include "fj_numeric.h"
+#include "fj_random.h"
 
 namespace fj {
 
 FixedGridSampler::FixedGridSampler() :
+  samples_(),
+
+  nsamples_(1, 1),
+  pixel_start_(0, 0),
+  margin_(0, 0),
+  npxlsmps_(1, 1),
+
   current_index_(0)
 {
 }
@@ -16,7 +24,6 @@ FixedGridSampler::~FixedGridSampler()
 {
 }
 
-#if 0
 int FixedGridSampler::generate_samples(const Rectangle &region)
 {
   // allocate samples in region
@@ -28,13 +35,18 @@ int FixedGridSampler::generate_samples(const Rectangle &region)
   XorShift rng; // random number generator
   XorShift rng_time; // for time sampling jitter
 
+  const Int2 rate = GetPixelSamples();
+  const Int2 res  = GetResolution();
+  const Real jitter = GetJitter();
+  const Vector2 sample_time_range = GetSampleTimeRange();
+
   // uv delta
-  const Real udelta = 1./(rate_[0] * res_[0] + 2 * margin_[0]);
-  const Real vdelta = 1./(rate_[1] * res_[1] + 2 * margin_[1]);
+  const Real udelta = 1./(rate[0] * res[0] + 2 * margin_[0]);
+  const Real vdelta = 1./(rate[1] * res[1] + 2 * margin_[1]);
 
   // xy offset
-  const int xoffset = pixel_start_[0] * rate_[0] - margin_[0];
-  const int yoffset = pixel_start_[1] * rate_[1] - margin_[1];
+  const int xoffset = pixel_start_[0] * rate[0] - margin_[0];
+  const int yoffset = pixel_start_[1] * rate[1] - margin_[1];
 
   Sample *sample = &samples_[0];
 
@@ -43,17 +55,17 @@ int FixedGridSampler::generate_samples(const Rectangle &region)
       sample->uv.x =     (.5 + x + xoffset) * udelta;
       sample->uv.y = 1 - (.5 + y + yoffset) * vdelta;
 
-      if (need_jitter_) {
-        const Real u_jitter = XorNextFloat01(&rng) * jitter_;
-        const Real v_jitter = XorNextFloat01(&rng) * jitter_;
+      if (IsJittered()) {
+        const Real u_jitter = XorNextFloat01(&rng) * jitter;
+        const Real v_jitter = XorNextFloat01(&rng) * jitter;
 
         sample->uv.x += udelta * (u_jitter - .5);
         sample->uv.y += vdelta * (v_jitter - .5);
       }
 
-      if (need_time_sampling_) {
+      if (IsSamplingTime()) {
         const Real rnd = XorNextFloat01(&rng_time);
-        sample->time = Fit(rnd, 0, 1, sample_time_start_, sample_time_end_);
+        sample->time = Fit(rnd, 0, 1, sample_time_range[0], sample_time_range[1]);
       } else {
         sample->time = 0;
       }
@@ -75,7 +87,40 @@ Sample *FixedGridSampler::get_next_sample()
 
   return sample;
 }
-#endif
+
+void FixedGridSampler::get_sampleset_in_pixel(std::vector<Sample> &pixelsamples,
+    const Int2 &pixel_pos) const
+{
+  const Int2 rate = GetPixelSamples();
+  //const Int2 res  = GetResolution();
+
+  const int XPIXEL_OFFSET = pixel_pos[0] - pixel_start_[0];
+  const int YPIXEL_OFFSET = pixel_pos[1] - pixel_start_[1];
+
+  const int XNSAMPLES = nsamples_[0];
+  const int OFFSET =
+    YPIXEL_OFFSET * rate[1] * XNSAMPLES +
+    XPIXEL_OFFSET * rate[0];
+  const Sample *src = &samples_[OFFSET];
+
+  const std::size_t SAMPLE_COUNT = static_cast<std::size_t>(GetSampleCountInPixel());
+  if (pixelsamples.size() < SAMPLE_COUNT) {
+    pixelsamples.resize(SAMPLE_COUNT);
+  }
+
+  std::vector<Sample> &dst = pixelsamples;
+
+  for (int y = 0; y < npxlsmps_[1]; y++) {
+    for (int x = 0; x < npxlsmps_[0]; x++) {
+      dst[y * npxlsmps_[0] + x] = src[y * XNSAMPLES + x];
+    }
+  }
+}
+
+int FixedGridSampler::get_sample_count() const
+{
+  return samples_.size();
+}
 
 Int2 FixedGridSampler::count_samples_in_margin() const
 {
@@ -86,12 +131,18 @@ Int2 FixedGridSampler::count_samples_in_margin() const
 
 Int2 FixedGridSampler::count_samples_in_pixel() const
 {
-  return  GetPixelSamples() + 2 * GetMargin();
+  return  GetPixelSamples() + 2 * margin_;
 }
 
 Int2 FixedGridSampler::count_samples_in_region(const Rectangle &region) const
 {
-  return GetPixelSamples() * region.Size() + 2 * GetMargin();
+  return GetPixelSamples() * region.Size() + 2 * margin_;
+}
+
+void FixedGridSampler::update_sample_counts()
+{
+  margin_ = count_samples_in_margin();
+  npxlsmps_ = count_samples_in_pixel();
 }
 
 } // namespace xxx

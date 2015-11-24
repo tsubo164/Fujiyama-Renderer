@@ -14,13 +14,23 @@ public:
   virtual ~FixedGridSampler();
 
 private:
-/*
   virtual int generate_samples(const Rectangle &region);
   virtual Sample *get_next_sample();
-*/
-  virtual Int2 count_samples_in_margin() const;
+  virtual void get_sampleset_in_pixel(std::vector<Sample> &pixelsamples,
+      const Int2 &pixel_pos) const;
+  virtual int get_sample_count() const;
   virtual Int2 count_samples_in_pixel() const;
   virtual Int2 count_samples_in_region(const Rectangle &region) const;
+  virtual void update_sample_counts();
+
+  Int2 count_samples_in_margin() const;
+
+  std::vector<Sample> samples_;
+
+  Int2 nsamples_;
+  Int2 pixel_start_;
+  Int2 margin_;
+  Int2 npxlsmps_;
 
   int current_index_;
 };
