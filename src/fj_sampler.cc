@@ -34,7 +34,6 @@ Sampler::Sampler() :
   sample_time_start_(0),
   sample_time_end_(0)
 {
-  count_samples_in_pixel();
 }
 
 Sampler::~Sampler()
@@ -45,21 +44,21 @@ void Sampler::SetResolution(const Int2 &resolution)
 {
   assert(resolution[0] > 0 && resolution[1] > 0);
   res_ = resolution;
-  count_samples_in_pixel();
+  update_sample_counts();
 }
 
 void Sampler::SetPixelSamples(const Int2 &pixel_samples)
 {
   assert(pixel_samples[0] > 0 && pixel_samples[1] > 0);
   rate_ = pixel_samples;
-  count_samples_in_pixel();
+  update_sample_counts();
 }
 
 void Sampler::SetFilterWidth(const Vector2 &filter_width)
 {
   assert(filter_width[0] > 0 && filter_width[1] > 0);
   fwidth_ = filter_width;
-  count_samples_in_pixel();
+  update_sample_counts();
 }
 
 void Sampler::SetJitter(Real jitter)
@@ -81,9 +80,91 @@ void Sampler::SetSampleTimeRange(Real start_time, Real end_time)
   need_time_sampling_ = true;
 }
 
-int Sampler::GenerateSamples(const Rectangle &pixel_bounds)
+const Int2 &Sampler::SetResolution() const
 {
-  allocate_samples_in_region(pixel_bounds);
+  return res_;
+}
+
+const Int2 &Sampler::GetPixelSamples() const
+{
+  return rate_;
+}
+
+const Vector2 &Sampler::GetFilterWidth() const
+{
+  return fwidth_;
+}
+
+const Int2 &Sampler::GetMargin() const
+{
+  return margin_;
+}
+
+int Sampler::GenerateSamples(const Rectangle &region)
+{
+  return generate_samples(region);
+}
+
+int Sampler::GetSampleCount() const
+{
+  return samples_.size();
+}
+
+Sample *Sampler::GetNextSample()
+{
+  return get_next_sample();
+}
+
+void Sampler::GetSampleSetInPixel(std::vector<Sample> &pixelsamples,
+    int pixel_x, int pixel_y) const
+{
+  const int XPIXEL_OFFSET = pixel_x - pixel_start_[0];
+  const int YPIXEL_OFFSET = pixel_y - pixel_start_[1];
+
+  const int XNSAMPLES = nsamples_[0];
+  const int OFFSET =
+    YPIXEL_OFFSET * rate_[1] * XNSAMPLES +
+    XPIXEL_OFFSET * rate_[0];
+  const Sample *src = &samples_[OFFSET];
+
+  const std::size_t SAMPLE_COUNT = static_cast<std::size_t>(GetSampleCountInPixel());
+  if (pixelsamples.size() < SAMPLE_COUNT) {
+    pixelsamples.resize(SAMPLE_COUNT);
+  }
+
+  std::vector<Sample> &dst = pixelsamples;
+
+  for (int y = 0; y < npxlsmps_[1]; y++) {
+    for (int x = 0; x < npxlsmps_[0]; x++) {
+      dst[y * npxlsmps_[0] + x] = src[y * XNSAMPLES + x];
+    }
+  }
+}
+
+int Sampler::GetSampleCountInPixel() const
+{
+  return npxlsmps_[0] * npxlsmps_[1];
+}
+
+int Sampler::ComputeSampleCountInRegion(const Rectangle &region) const
+{
+  const Int2 nsamples = count_samples_in_region(region);
+  return nsamples[0] * nsamples[1];
+}
+
+void Sampler::update_sample_counts()
+{
+  margin_ = count_samples_in_margin();
+  npxlsmps_ = count_samples_in_pixel();
+}
+
+int Sampler::generate_samples(const Rectangle &region)
+{
+  // allocate samples in region
+  nsamples_ = count_samples_in_region(region);
+  samples_.resize(nsamples_[0] * nsamples_[1]);
+  pixel_start_ = region.min;
+  current_index_ = 0;
 
   XorShift rng; // random number generator
   XorShift rng_time; // for time sampling jitter
@@ -125,12 +206,7 @@ int Sampler::GenerateSamples(const Rectangle &pixel_bounds)
   return 0;
 }
 
-int Sampler::GetSampleCount() const
-{
-  return samples_.size();
-}
-
-Sample *Sampler::GetNextSample()
+Sample *Sampler::get_next_sample()
 {
   if (current_index_ >= GetSampleCount())
     return NULL;
@@ -140,66 +216,7 @@ Sample *Sampler::GetNextSample()
 
   return sample;
 }
-
-void Sampler::GetSampleSetInPixel(std::vector<Sample> &pixelsamples,
-    int pixel_x, int pixel_y) const
-{
-  const int XPIXEL_OFFSET = pixel_x - pixel_start_[0];
-  const int YPIXEL_OFFSET = pixel_y - pixel_start_[1];
-
-  const int XNSAMPLES = nsamples_[0];
-  const int OFFSET =
-    YPIXEL_OFFSET * rate_[1] * XNSAMPLES +
-    XPIXEL_OFFSET * rate_[0];
-  const Sample *src = &samples_[OFFSET];
-
-  const std::size_t SAMPLE_COUNT = static_cast<std::size_t>(GetSampleCountInPixel());
-  if (pixelsamples.size() < SAMPLE_COUNT) {
-    pixelsamples.resize(SAMPLE_COUNT);
-  }
-
-  std::vector<Sample> &dst = pixelsamples;
-
-  for (int y = 0; y < npxlsmps_[1]; y++) {
-    for (int x = 0; x < npxlsmps_[0]; x++) {
-      dst[y * npxlsmps_[0] + x] = src[y * XNSAMPLES + x];
-    }
-  }
-}
-
-int Sampler::GetSampleCountInPixel() const
-{
-  return npxlsmps_[0] * npxlsmps_[1];
-}
-
-int Sampler::ComputeSampleCountInRegion(const Rectangle &region) const
-{
-  const Int2 nsamples = count_samples_in_region(region);
-  return nsamples[0] * nsamples[1];
-}
-
-void Sampler::count_samples_in_pixel()
-{
-  margin_ = Int2(
-      static_cast<int>(Ceil(((fwidth_[0] - 1) * rate_[0]) * .5)),
-      static_cast<int>(Ceil(((fwidth_[1] - 1) * rate_[1]) * .5)));
-  npxlsmps_ = rate_ + 2 * margin_;
-}
-
-Int2 Sampler::count_samples_in_region(const Rectangle &region) const
-{
-  return rate_ * region.Size() + 2 * margin_;
-}
-
-int Sampler::allocate_samples_in_region(const Rectangle &region)
-{
-  nsamples_ = count_samples_in_region(region);
-  samples_.resize(nsamples_[0] * nsamples_[1]);
-  pixel_start_ = region.min;
-
-  current_index_ = 0;
-
-  return 0;
-}
+/*
+*/
 
 } // namespace xxx

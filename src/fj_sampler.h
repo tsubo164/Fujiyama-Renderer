@@ -25,8 +25,13 @@ public:
   void SetJitter(Real jitter);
   void SetSampleTimeRange(Real start_time, Real end_time);
 
+  const Int2    &SetResolution() const;
+  const Int2    &GetPixelSamples() const;
+  const Vector2 &GetFilterWidth() const;
+  const Int2    &GetMargin() const;
+
   // interfaces for a region
-  int GenerateSamples(const Rectangle &pixel_bounds);
+  int GenerateSamples(const Rectangle &region);
   int GetSampleCount() const;
   Sample *GetNextSample();
   int ComputeSampleCountInRegion(const Rectangle &region) const;
@@ -37,10 +42,12 @@ public:
       int pixel_x, int pixel_y) const;
 
 private:
-  virtual void count_samples_in_pixel();
-  virtual Int2 count_samples_in_region(const Rectangle &region) const;
-
-  int allocate_samples_in_region(const Rectangle &region);
+  virtual int generate_samples(const Rectangle &region);
+  virtual Sample *get_next_sample();
+  virtual Int2 count_samples_in_margin() const = 0;
+  virtual Int2 count_samples_in_pixel() const = 0;
+  virtual Int2 count_samples_in_region(const Rectangle &region) const = 0;
+  void update_sample_counts();
 
   Int2 res_;
   Int2 rate_;

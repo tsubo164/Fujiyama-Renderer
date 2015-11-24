@@ -2,6 +2,7 @@
 // See LICENSE and README
 
 #include "fj_renderer.h"
+#include "fj_fixed_grid_sampler.h"
 #include "fj_multi_thread.h"
 #include "fj_pixel_sample.h"
 #include "fj_framebuffer.h"
@@ -43,7 +44,7 @@ static int32_t generate_frame_id()
   return id < 0 ? -id : id;
 }
 
-static Iteration compute_total_sample_count(const Sampler &sampler, const Tiler &tiler)
+static Iteration compute_total_sample_count(const Sampler *sampler, const Tiler &tiler)
 {
   Iteration total_sample_count = 0;
 
@@ -56,7 +57,7 @@ static Iteration compute_total_sample_count(const Sampler &sampler, const Tiler 
     region.max[0] = tile->xmax;
     region.max[1] = tile->ymax;
 
-    total_sample_count += sampler.ComputeSampleCountInRegion(region);
+    total_sample_count += sampler->ComputeSampleCountInRegion(region);
   }
 
   return total_sample_count;
@@ -657,8 +658,11 @@ int Renderer::RenderScene()
 // TODO TMP REMOVE LATER
 class Worker {
 public:
-  Worker() {}
-  ~Worker() {}
+  Worker() : camera(NULL), framebuffer(NULL), sampler(NULL) {}
+  ~Worker()
+  {
+    delete sampler;
+  }
 
 public:
   int id;
@@ -669,7 +673,7 @@ public:
 
   const Camera *camera;
   FrameBuffer *framebuffer;
-  Sampler sampler;
+  Sampler *sampler;
   Filter filter;
   std::vector<Sample> pixel_samples;
 
@@ -829,12 +833,13 @@ static void init_worker(Worker *worker, int id,
   worker->frame_id = renderer->frame_id_;
 
   // Sampler
-  worker->sampler.SetResolution(Int2(xres, yres));
-  worker->sampler.SetPixelSamples(Int2(xrate, yrate));
-  worker->sampler.SetFilterWidth(Vector2(xfwidth, yfwidth));
+  worker->sampler = new FixedGridSampler();
+  worker->sampler->SetResolution(Int2(xres, yres));
+  worker->sampler->SetPixelSamples(Int2(xrate, yrate));
+  worker->sampler->SetFilterWidth(Vector2(xfwidth, yfwidth));
 
-  worker->sampler.SetJitter(renderer->jitter_);
-  worker->sampler.SetSampleTimeRange(
+  worker->sampler->SetJitter(renderer->jitter_);
+  worker->sampler->SetSampleTimeRange(
       renderer->sample_time_start_, renderer->sample_time_end_);
 
   // Filter
@@ -871,14 +876,14 @@ static void set_working_region(Worker *worker, int region_id)
   worker->tile_region.max[0] = tile->xmax;
   worker->tile_region.max[1] = tile->ymax;
 
-  if (worker->sampler.GenerateSamples(worker->tile_region)) {
+  if (worker->sampler->GenerateSamples(worker->tile_region)) {
     /* TODO error handling */
   }
 }
 
 static Color4 apply_pixel_filter(Worker *worker, int x, int y)
 {
-  const int nsamples = worker->sampler.GetSampleCountInPixel();
+  const int nsamples = worker->sampler->GetSampleCountInPixel();
   const int xres = worker->xres;
   const int yres = worker->yres;
   const Filter &filter = worker->filter;
@@ -926,7 +931,7 @@ static void reconstruct_image(Worker *worker)
     for (x = xmin; x < xmax; x++) {
       Color4 pixel;
 
-      worker->sampler.GetSampleSetInPixel(worker->pixel_samples, x, y);
+      worker->sampler->GetSampleSetInPixel(worker->pixel_samples, x, y);
       pixel = apply_pixel_filter(worker, x, y);
 
       fb->SetColor(x, y, pixel);
@@ -974,7 +979,7 @@ static int render_tile_start(Worker *worker)
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
-  info.total_sample_count = worker->sampler.GetSampleCount();
+  info.total_sample_count = worker->sampler->GetSampleCount();
   info.tile_region = worker->tile_region;
   info.framebuffer = worker->framebuffer;
 
@@ -993,7 +998,7 @@ static void render_tile_done(Worker *worker)
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
-  info.total_sample_count = worker->sampler.GetSampleCount();
+  info.total_sample_count = worker->sampler->GetSampleCount();
   info.tile_region = worker->tile_region;
   info.framebuffer = worker->framebuffer;
 
@@ -1006,7 +1011,7 @@ static int integrate_samples(Worker *worker)
   TraceContext cxt = worker->context;
   Ray ray;
 
-  while ((smp = worker->sampler.GetNextSample()) != NULL) {
+  while ((smp = worker->sampler->GetNextSample()) != NULL) {
     Color4 C_trace;
     double t_hit = FLT_MAX;
     int hit = 0;
