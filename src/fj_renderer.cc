@@ -56,7 +56,7 @@ static Iteration compute_total_sample_count(const Sampler &sampler, const Tiler 
     region.max[0] = tile->xmax;
     region.max[1] = tile->ymax;
 
-    total_sample_count += sampler.ComputeSampleCountForRegion(region);
+    total_sample_count += sampler.ComputeSampleCountInRegion(region);
   }
 
   return total_sample_count;
@@ -829,7 +829,10 @@ static void init_worker(Worker *worker, int id,
   worker->frame_id = renderer->frame_id_;
 
   // Sampler
-  worker->sampler.Initialize(xres, yres, xrate, yrate, xfwidth, yfwidth);
+  worker->sampler.SetResolution(Int2(xres, yres));
+  worker->sampler.SetPixelSamples(Int2(xrate, yrate));
+  worker->sampler.SetFilterWidth(Vector2(xfwidth, yfwidth));
+
   worker->sampler.SetJitter(renderer->jitter_);
   worker->sampler.SetSampleTimeRange(
       renderer->sample_time_start_, renderer->sample_time_end_);
@@ -875,7 +878,7 @@ static void set_working_region(Worker *worker, int region_id)
 
 static Color4 apply_pixel_filter(Worker *worker, int x, int y)
 {
-  const int nsamples = worker->sampler.GetSampleCountForPixel();
+  const int nsamples = worker->sampler.GetSampleCountInPixel();
   const int xres = worker->xres;
   const int yres = worker->yres;
   const Filter &filter = worker->filter;
@@ -923,7 +926,7 @@ static void reconstruct_image(Worker *worker)
     for (x = xmin; x < xmax; x++) {
       Color4 pixel;
 
-      worker->sampler.GetSampleSetForPixel(worker->pixel_samples, x, y);
+      worker->sampler.GetSampleSetInPixel(worker->pixel_samples, x, y);
       pixel = apply_pixel_filter(worker, x, y);
 
       fb->SetColor(x, y, pixel);

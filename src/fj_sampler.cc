@@ -13,10 +13,6 @@
 
 namespace fj {
 
-static Int2 get_pixel_margin(const Int2 &rate, const Vector2 &fwidth);
-static Int2 get_sample_count_for_region(const Rectangle &region,
-    const Int2 &rate, const Int2 &margin);
-
 Sampler::Sampler() :
   res_(1, 1),
   rate_(1, 1),
@@ -38,32 +34,32 @@ Sampler::Sampler() :
   sample_time_start_(0),
   sample_time_end_(0)
 {
+  count_samples_in_pixel();
 }
 
 Sampler::~Sampler()
 {
 }
 
-void Sampler::Initialize(int xres, int yres,
-    int xsamples, int ysamples, float xfwidth, float yfwidth)
+void Sampler::SetResolution(const Int2 &resolution)
 {
-  assert(xres > 0);
-  assert(yres > 0);
-  assert(xsamples > 0);
-  assert(ysamples > 0);
-  assert(xfwidth > 0);
-  assert(yfwidth > 0);
+  assert(resolution[0] > 0 && resolution[1] > 0);
+  res_ = resolution;
+  count_samples_in_pixel();
+}
 
-  res_  = Int2(xres, yres);
-  rate_ = Int2(xsamples, ysamples);
-  fwidth_ = Vector2(xfwidth, yfwidth);
-  SetJitter(1.);
-  SetSampleTimeRange(0, 1);
-  samples_.clear();
+void Sampler::SetPixelSamples(const Int2 &pixel_samples)
+{
+  assert(pixel_samples[0] > 0 && pixel_samples[1] > 0);
+  rate_ = pixel_samples;
+  count_samples_in_pixel();
+}
 
-  current_index_ = 0;
-
-  count_samples_in_pixels();
+void Sampler::SetFilterWidth(const Vector2 &filter_width)
+{
+  assert(filter_width[0] > 0 && filter_width[1] > 0);
+  fwidth_ = filter_width;
+  count_samples_in_pixel();
 }
 
 void Sampler::SetJitter(Real jitter)
@@ -87,7 +83,7 @@ void Sampler::SetSampleTimeRange(Real start_time, Real end_time)
 
 int Sampler::GenerateSamples(const Rectangle &pixel_bounds)
 {
-  allocate_samples_for_region(pixel_bounds);
+  allocate_samples_in_region(pixel_bounds);
 
   XorShift rng; // random number generator
   XorShift rng_time; // for time sampling jitter
@@ -145,7 +141,7 @@ Sample *Sampler::GetNextSample()
   return sample;
 }
 
-void Sampler::GetSampleSetForPixel(std::vector<Sample> &pixelsamples,
+void Sampler::GetSampleSetInPixel(std::vector<Sample> &pixelsamples,
     int pixel_x, int pixel_y) const
 {
   const int XPIXEL_OFFSET = pixel_x - pixel_start_[0];
@@ -157,7 +153,7 @@ void Sampler::GetSampleSetForPixel(std::vector<Sample> &pixelsamples,
     XPIXEL_OFFSET * rate_[0];
   const Sample *src = &samples_[OFFSET];
 
-  const std::size_t SAMPLE_COUNT = static_cast<std::size_t>(GetSampleCountForPixel());
+  const std::size_t SAMPLE_COUNT = static_cast<std::size_t>(GetSampleCountInPixel());
   if (pixelsamples.size() < SAMPLE_COUNT) {
     pixelsamples.resize(SAMPLE_COUNT);
   }
@@ -171,45 +167,39 @@ void Sampler::GetSampleSetForPixel(std::vector<Sample> &pixelsamples,
   }
 }
 
-int Sampler::GetSampleCountForPixel() const
+int Sampler::GetSampleCountInPixel() const
 {
   return npxlsmps_[0] * npxlsmps_[1];
 }
 
-int Sampler::ComputeSampleCountForRegion(const Rectangle &region) const
+int Sampler::ComputeSampleCountInRegion(const Rectangle &region) const
 {
-  const Int2 nsamples = get_sample_count_for_region(region, rate_, margin_);
+  const Int2 nsamples = count_samples_in_region(region);
   return nsamples[0] * nsamples[1];
 }
 
-static Int2 get_pixel_margin(const Int2 &rate, const Vector2 &fwidth)
+void Sampler::count_samples_in_pixel()
 {
-  return Int2(
-      static_cast<int>(Ceil(((fwidth[0] - 1) * rate[0]) * .5)),
-      static_cast<int>(Ceil(((fwidth[1] - 1) * rate[1]) * .5)));
-}
-
-void Sampler::count_samples_in_pixels()
-{
-  margin_   = get_pixel_margin(rate_, fwidth_);
+  margin_ = Int2(
+      static_cast<int>(Ceil(((fwidth_[0] - 1) * rate_[0]) * .5)),
+      static_cast<int>(Ceil(((fwidth_[1] - 1) * rate_[1]) * .5)));
   npxlsmps_ = rate_ + 2 * margin_;
 }
 
-int Sampler::allocate_samples_for_region(const Rectangle &region)
+Int2 Sampler::count_samples_in_region(const Rectangle &region) const
 {
-  nsamples_ = get_sample_count_for_region(region, rate_, margin_);
+  return rate_ * region.Size() + 2 * margin_;
+}
+
+int Sampler::allocate_samples_in_region(const Rectangle &region)
+{
+  nsamples_ = count_samples_in_region(region);
   samples_.resize(nsamples_[0] * nsamples_[1]);
   pixel_start_ = region.min;
 
   current_index_ = 0;
 
   return 0;
-}
-
-static Int2 get_sample_count_for_region(const Rectangle &region,
-    const Int2 &rate, const Int2 &margin)
-{
-  return rate * region.Size() + 2 * margin;
 }
 
 } // namespace xxx

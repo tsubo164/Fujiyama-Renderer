@@ -16,10 +16,11 @@ class Rectangle;
 class Sampler {
 public:
   Sampler();
-  ~Sampler();
+  virtual ~Sampler();
 
-  void Initialize(int xres, int yres,
-      int xsamples, int ysamples, float xfwidth, float yfwidth);
+  void SetResolution(const Int2 &resolution);
+  void SetPixelSamples(const Int2 &pixel_samples);
+  void SetFilterWidth(const Vector2 &filter_width);
 
   void SetJitter(Real jitter);
   void SetSampleTimeRange(Real start_time, Real end_time);
@@ -28,16 +29,18 @@ public:
   int GenerateSamples(const Rectangle &pixel_bounds);
   int GetSampleCount() const;
   Sample *GetNextSample();
-  int ComputeSampleCountForRegion(const Rectangle &region) const;
+  int ComputeSampleCountInRegion(const Rectangle &region) const;
 
   // interfaces for a pixel
-  int GetSampleCountForPixel() const;
-  void GetSampleSetForPixel(std::vector<Sample> &pixelsamples,
+  int GetSampleCountInPixel() const;
+  void GetSampleSetInPixel(std::vector<Sample> &pixelsamples,
       int pixel_x, int pixel_y) const;
 
 private:
-  void count_samples_in_pixels();
-  int allocate_samples_for_region(const Rectangle &region);
+  virtual void count_samples_in_pixel();
+  virtual Int2 count_samples_in_region(const Rectangle &region) const;
+
+  int allocate_samples_in_region(const Rectangle &region);
 
   Int2 res_;
   Int2 rate_;
