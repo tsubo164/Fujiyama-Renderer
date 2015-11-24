@@ -55,7 +55,7 @@ int main(int argc, const char **argv)
   }
 
   {
-    XorShift xr;
+    XorShift rng;
     PtcOutputFile *out = PtcOpenOutputFile(out_filename);
     int total_point_count = 0;
     int face_count = 0;
@@ -110,7 +110,6 @@ int main(int argc, const char **argv)
     std::vector<Vector> velocity(total_point_count);
     std::vector<double> radius(total_point_count);
 
-    XorInit(&xr);
     point_id = 0;
     for (i = 0; i < face_count; i++) {
       Vector P0;
@@ -131,8 +130,8 @@ int main(int argc, const char **argv)
         double u = 0, v = 0, t = 0;
         double offset = 0;
 
-        u = XorNextFloat01(&xr);
-        v = (1 - u) * XorNextFloat01(&xr);
+        u = XorNextFloat01(&rng);
+        v = (1 - u) * XorNextFloat01(&rng);
 
         normal = TriComputeNormal(N0, N1, N2, u, v);
 
@@ -141,7 +140,7 @@ int main(int argc, const char **argv)
         P_out->y = t * P0.y + u * P1.y + v * P2.y;
         P_out->z = t * P0.z + u * P1.z + v * P2.z;
 
-        offset = XorNextFloat01(&xr);
+        offset = XorNextFloat01(&rng);
         offset *= -.05;
         P_out->x += offset * normal.x;
         P_out->y += offset * normal.y;

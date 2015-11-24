@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2015 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2015 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_random.h"
 #include "fj_vector.h"
@@ -9,20 +7,20 @@ See LICENSE and README
 
 namespace fj {
 
+XorShift::XorShift()
+{
+  state[0] = 123456789;
+  state[1] = 362436069;
+  state[2] = 521288629;
+  state[3] = 88675123;
+}
+
 XorShift::XorShift(unsigned int seed)
     : state()
 {
   for (unsigned int i = 0; i < 4; i++) {
     state[i] = seed = 1812433253U * (seed^(seed>>30)) + i;
   }
-}
-
-void XorInit(XorShift *xr)
-{
-  xr->state[0] = 123456789;
-  xr->state[1] = 362436069;
-  xr->state[2] = 521288629;
-  xr->state[3] = 88675123;
 }
 
 uint32_t XorNextInteger(XorShift *xr)

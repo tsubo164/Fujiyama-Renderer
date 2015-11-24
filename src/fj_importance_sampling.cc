@@ -61,7 +61,7 @@ int ImportanceSampling(Texture *texture, int seed,
   std::vector<double> histgram(NPIXELS);
   std::vector<char> picked(NPIXELS);
 
-  XorShift xr;
+  XorShift rng;
   double sum = 0;
   int i;
 
@@ -72,10 +72,9 @@ int ImportanceSampling(Texture *texture, int seed,
   make_histgram(texture, sample_xres, sample_yres, &histgram[0]);
   sum = histgram[NPIXELS-1];
 
-  XorInit(&xr);
   for (i = 0; i < sample_count; i++) {
     for (;;) {
-      const double rand = sum * XorNextFloat01(&xr);
+      const double rand = sum * XorNextFloat01(&rng);
       const int index = lookup_histgram(&histgram[0], NPIXELS, rand);
       DomeSample sample;
       Color4 tex_rgba;
@@ -108,7 +107,7 @@ int StratifiedImportanceSampling(Texture *texture, int seed,
   std::vector<double> histgram(NPIXELS);
   std::vector<char> picked(NPIXELS);
 
-  XorShift xr;
+  XorShift rng;
   double sum = 0;
   int i;
 
@@ -119,14 +118,13 @@ int StratifiedImportanceSampling(Texture *texture, int seed,
   make_histgram(texture, sample_xres, sample_yres, &histgram[0]);
   sum = histgram[NPIXELS-1];
 
-  XorInit(&xr);
   for (i = 0; i < seed; i++) {
-    XorNextFloat01(&xr);
+    XorNextFloat01(&rng);
   }
 
   for (i = 0; i < sample_count; i++) {
     for (;;) {
-      const double rand = sum * ((i + XorNextFloat01(&xr)) / sample_count);
+      const double rand = sum * ((i + XorNextFloat01(&rng)) / sample_count);
       const int index = lookup_histgram(&histgram[0], NPIXELS, rand);
       DomeSample sample;
       Color4 tex_rgba;
@@ -500,14 +498,13 @@ static void generate_dome_samples(int sample_xres, int sample_yres,
 
   {
     std::vector<SamplePoint> X(sample_count);
-    XorShift xr;
-    XorInit(&xr);
+    XorShift rng;
 
     for (i = 0; i < label_count; i++) {
       const int ngen = connected_sample_count[i];
       const SamplePoint *Y = &samples[0] + offsets[i];
       const int nY = nsamples[i];
-      const int x0 = (int) (nY * XorNextFloat01(&xr));
+      const int x0 = (int) (nY * XorNextFloat01(&rng));
       int nX = 0;
       int j;
 

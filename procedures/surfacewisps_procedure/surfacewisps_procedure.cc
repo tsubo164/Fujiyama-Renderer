@@ -159,14 +159,13 @@ static int FillWithSpecksOnSurface(Volume *volume,
     const Turbulence *turbulence)
 
 {
-  XorShift xr;
+  XorShift rng;
   int NSPECKS = 1000;
   int i = 0;
 
   // TODO come up with the best place to put progress
   Progress progress;
 
-  XorInit(&xr);
   // TODO should not be a point attribute?
   NSPECKS = cp00->speck_count;
 
@@ -181,7 +180,7 @@ static int FillWithSpecksOnSurface(Volume *volume,
     double s = 0;
     double t = 0;
 
-    XorSolidCubeRand(&xr, &cube);
+    XorSolidCubeRand(&rng, &cube);
 
     s = cube.x;
     t = cube.y;

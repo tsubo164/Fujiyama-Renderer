@@ -161,14 +161,13 @@ static int FillWithSpecksAlongLine(Volume *volume,
     const WispsControlPoint *cp0, const WispsControlPoint *cp1,
     const Turbulence *turbulence)
 {
-  XorShift xr;
+  XorShift rng;
   int NSPECKS = 1000;
   int i = 0;
 
   // TODO come up with the best place to put progress
   Progress progress;
 
-  XorInit(&xr);
   // TODO should not be a point attribute?
   NSPECKS = cp0->speck_count;
 
@@ -183,11 +182,11 @@ static int FillWithSpecksAlongLine(Volume *volume,
     double line_t = 0;
 
 #if 0
-    XorHollowDiskRand(&xr, disk);
-    XorGaussianDiskRand(&xr, disk);
+    XorHollowDiskRand(&rng, disk);
+    XorGaussianDiskRand(&rng, disk);
 #endif
-    XorSolidDiskRand(&xr, &disk);
-    line_t = XorNextFloat01(&xr);
+    XorSolidDiskRand(&rng, &disk);
+    line_t = XorNextFloat01(&rng);
 
     LerpWispConstrolPoint(&cp_t, cp0, cp1, line_t);
 

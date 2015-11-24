@@ -72,7 +72,7 @@ void Light::SetLightType(int light_type)
   type_ = light_type;
 
   XfmInitTransformSampleList(&transform_samples_);
-  XorInit(&xr_);
+  xr_ = XorShift();
 
   switch (type_) {
   case LGT_POINT:

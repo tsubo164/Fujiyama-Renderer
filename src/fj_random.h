@@ -13,17 +13,13 @@ class Vector;
 
 class FJ_API XorShift {
 public:
+  XorShift();
   XorShift(unsigned int seed);
-
-  XorShift() :state() {}
   ~XorShift() {}
 
 public:
   uint32_t state[4];
 };
-
-// TODO MOVE TO CONSTRUCTOR
-FJ_API void XorInit(XorShift *xr);
 
 FJ_API uint32_t XorNextInteger(XorShift *xr);
 FJ_API double XorNextFloat01(XorShift *xr);

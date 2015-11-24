@@ -42,7 +42,7 @@ public:
   int enable_single_scattering;
   int enable_multiple_scattering;
 
-  XorShift xr;
+  XorShift rng;
 
   float scattering_coeff[3];
   float absorption_coeff[3];
@@ -144,8 +144,6 @@ FJ_PLUGIN_API int Initialize(PluginInfo *info)
 static void *MyNew(void)
 {
   SSSShader *sss = new SSSShader();
-
-  XorInit(&sss->xr);
 
   PropSetAllDefaultValues(sss, MyProperties);
 
@@ -314,8 +312,8 @@ static void single_scattering(const SSSShader *sss,
   Normalize(&To);
 
   for (i = 0; i < nsamples; i++) {
-    XorShift *mutable_xr = (XorShift *) &sss->xr;
-    const float sp_dist = -log(XorNextFloat01(mutable_xr));
+    XorShift *mutable_rng = (XorShift *) &sss->rng;
+    const float sp_dist = -log(XorNextFloat01(mutable_rng));
 
     for (j = 0; j < 3; j++) {
       Vector P_sample;
@@ -452,8 +450,8 @@ static void diffusion_scattering(const SSSShader *sss,
   base2 = Cross(*N, base1);
 
   for (i = 0; i < nsamples; i++) {
-    XorShift *mutable_xr = (XorShift *) &sss->xr;
-    const double dist_rand = -log(XorNextFloat01(mutable_xr));
+    XorShift *mutable_rng = (XorShift *) &sss->rng;
+    const double dist_rand = -log(XorNextFloat01(mutable_rng));
 
     for (j = 0; j < 3; j++) {
       const TraceContext self_cxt = SlSelfHitContext(cxt, in->shaded_object);
@@ -481,7 +479,7 @@ static void diffusion_scattering(const SSSShader *sss,
 
       const double dist = dist_rand / sigma_tr[j];
 
-      XorHollowDiskRand(mutable_xr, &disk);
+      XorHollowDiskRand(mutable_rng, &disk);
       disk.x *= dist;
       disk.y *= dist;
       P_sample.x = P->x + 1/sigma_tr[j] * (disk.x * base1.x + disk.y * base2.x);

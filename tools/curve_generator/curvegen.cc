@@ -286,7 +286,7 @@ static int gen_hair(int argc, const char **argv)
 
   int nfaces = 0;
 
-  XorShift xr;
+  XorShift rng;
   double ymin, ymax;
   double zmin, zmax;
 
@@ -395,7 +395,6 @@ static int gen_hair(int argc, const char **argv)
   strand_id = 0;
   curve_id = 0;
   cp_id = 0;
-  XorInit(&xr);
   for (i = 0; i < nfaces; i++) {
     int j;
     Vector P0;
@@ -414,8 +413,8 @@ static int gen_hair(int argc, const char **argv)
       Vector src_N;
       int k;
 
-      u = XorNextFloat01(&xr);
-      v = (1-u) * XorNextFloat01(&xr);
+      u = XorNextFloat01(&rng);
+      v = (1-u) * XorNextFloat01(&rng);
 
       t = 1-u-v;
       src_P.x = t * P0.x + u * P1.x + v * P2.x;

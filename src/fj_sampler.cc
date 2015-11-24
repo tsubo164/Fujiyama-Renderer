@@ -89,10 +89,8 @@ int Sampler::GenerateSamples(const Rectangle &pixel_bounds)
 {
   allocate_samples_for_region(pixel_bounds);
 
-  XorShift xr; // random number generator
+  XorShift rng; // random number generator
   XorShift rng_time; // for time sampling jitter
-  XorInit(&rng_time);
-  XorInit(&xr);
 
   // uv delta
   const Real udelta = 1./(rate_[0] * res_[0] + 2 * margin_[0]);
@@ -110,8 +108,8 @@ int Sampler::GenerateSamples(const Rectangle &pixel_bounds)
       sample->uv.y = 1 - (.5 + y + yoffset) * vdelta;
 
       if (need_jitter_) {
-        const Real u_jitter = XorNextFloat01(&xr) * jitter_;
-        const Real v_jitter = XorNextFloat01(&xr) * jitter_;
+        const Real u_jitter = XorNextFloat01(&rng) * jitter_;
+        const Real v_jitter = XorNextFloat01(&rng) * jitter_;
 
         sample->uv.x += udelta * (u_jitter - .5);
         sample->uv.y += vdelta * (v_jitter - .5);
