@@ -24,6 +24,12 @@ FixedGridSampler::~FixedGridSampler()
 {
 }
 
+void FixedGridSampler::update_sample_counts()
+{
+  margin_ = count_samples_in_margin();
+  npxlsmps_ = count_samples_in_pixel();
+}
+
 int FixedGridSampler::generate_samples(const Rectangle &region)
 {
   // allocate samples in region
@@ -79,7 +85,7 @@ int FixedGridSampler::generate_samples(const Rectangle &region)
 
 Sample *FixedGridSampler::get_next_sample()
 {
-  if (current_index_ >= GetSampleCount())
+  if (current_index_ >= get_sample_count())
     return NULL;
 
   Sample *sample = &samples_[current_index_];
@@ -92,7 +98,6 @@ void FixedGridSampler::get_sampleset_in_pixel(std::vector<Sample> &pixelsamples,
     const Int2 &pixel_pos) const
 {
   const Int2 rate = GetPixelSamples();
-  //const Int2 res  = GetResolution();
 
   const int XPIXEL_OFFSET = pixel_pos[0] - pixel_start_[0];
   const int YPIXEL_OFFSET = pixel_pos[1] - pixel_start_[1];
@@ -103,7 +108,8 @@ void FixedGridSampler::get_sampleset_in_pixel(std::vector<Sample> &pixelsamples,
     XPIXEL_OFFSET * rate[0];
   const Sample *src = &samples_[OFFSET];
 
-  const std::size_t SAMPLE_COUNT = static_cast<std::size_t>(GetSampleCountInPixel());
+  const Int2 NPXLSMPS = count_samples_in_pixel();
+  const std::size_t SAMPLE_COUNT = static_cast<std::size_t>(NPXLSMPS[0] * NPXLSMPS[1]);
   if (pixelsamples.size() < SAMPLE_COUNT) {
     pixelsamples.resize(SAMPLE_COUNT);
   }
@@ -137,12 +143,6 @@ Int2 FixedGridSampler::count_samples_in_pixel() const
 Int2 FixedGridSampler::count_samples_in_region(const Rectangle &region) const
 {
   return GetPixelSamples() * region.Size() + 2 * margin_;
-}
-
-void FixedGridSampler::update_sample_counts()
-{
-  margin_ = count_samples_in_margin();
-  npxlsmps_ = count_samples_in_pixel();
 }
 
 } // namespace xxx

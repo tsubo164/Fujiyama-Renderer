@@ -110,11 +110,6 @@ int Sampler::GenerateSamples(const Rectangle &region)
   return generate_samples(region);
 }
 
-int Sampler::GetSampleCount() const
-{
-  return get_sample_count();
-}
-
 Sample *Sampler::GetNextSample()
 {
   return get_next_sample();
@@ -124,18 +119,6 @@ void Sampler::GetSampleSetInPixel(std::vector<Sample> &pixelsamples,
     int pixel_x, int pixel_y) const
 {
   get_sampleset_in_pixel(pixelsamples, Int2(pixel_x, pixel_y));
-}
-
-int Sampler::GetSampleCountInPixel() const
-{
-  Int2 npxlsmps = count_samples_in_pixel();
-  return npxlsmps[0] * npxlsmps[1];
-}
-
-int Sampler::ComputeSampleCountInRegion(const Rectangle &region) const
-{
-  const Int2 nsamples = count_samples_in_region(region);
-  return nsamples[0] * nsamples[1];
 }
 
 } // namespace xxx

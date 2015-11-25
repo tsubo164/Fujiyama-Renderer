@@ -34,26 +34,17 @@ public:
   bool IsJittered() const;
   Real GetJitter() const;
 
-  // interfaces for a region
   int GenerateSamples(const Rectangle &region);
-  int GetSampleCount() const;
   Sample *GetNextSample();
-  int ComputeSampleCountInRegion(const Rectangle &region) const;
-
-  // interfaces for a pixel
-  int GetSampleCountInPixel() const;
   void GetSampleSetInPixel(std::vector<Sample> &pixelsamples,
       int pixel_x, int pixel_y) const;
 
 private:
+  virtual void update_sample_counts() = 0;
   virtual int generate_samples(const Rectangle &region) = 0;
   virtual Sample *get_next_sample() = 0;
   virtual void get_sampleset_in_pixel(std::vector<Sample> &pixelsamples,
       const Int2 &pixel_pos) const = 0;
-  virtual int get_sample_count() const = 0;
-  virtual Int2 count_samples_in_pixel() const = 0;
-  virtual Int2 count_samples_in_region(const Rectangle &region) const = 0;
-  virtual void update_sample_counts() = 0;
 
   Int2 res_;
   Int2 rate_;

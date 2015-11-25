@@ -862,7 +862,7 @@ static void set_working_region(Worker *worker, int region_id)
 
 static Color4 apply_pixel_filter(Worker *worker, int x, int y)
 {
-  const int nsamples = worker->sampler->GetSampleCountInPixel();
+  const int nsamples = worker->pixel_samples.size();
   const int xres = worker->xres;
   const int yres = worker->yres;
   const Filter &filter = worker->filter;
@@ -958,7 +958,6 @@ static int render_tile_start(Worker *worker)
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
-  info.total_sample_count = worker->sampler->GetSampleCount();
   info.tile_region = worker->tile_region;
   info.framebuffer = worker->framebuffer;
 
@@ -977,7 +976,6 @@ static void render_tile_done(Worker *worker)
   info.worker_id = worker->id;
   info.region_id = worker->region_id;
   info.total_region_count = worker->region_count;
-  info.total_sample_count = worker->sampler->GetSampleCount();
   info.tile_region = worker->tile_region;
   info.framebuffer = worker->framebuffer;
 

@@ -43,7 +43,6 @@ public:
       worker_id(0),
       region_id(0),
       total_region_count(0),
-      total_sample_count(0),
       tile_region(),
       framebuffer(NULL)
   {}
@@ -54,7 +53,6 @@ public:
   int worker_id;
   int region_id;
   int total_region_count;
-  int total_sample_count;
   Rectangle tile_region;
 
   const FrameBuffer *framebuffer;
