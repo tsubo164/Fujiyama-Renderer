@@ -44,25 +44,6 @@ static int32_t generate_frame_id()
   return id < 0 ? -id : id;
 }
 
-static Iteration compute_total_sample_count(const Sampler *sampler, const Tiler &tiler)
-{
-  Iteration total_sample_count = 0;
-
-  for (int i = 0; i < tiler.GetTileCount(); i++) {
-    const Tile *tile = tiler.GetTile(i);
-
-    Rectangle region;
-    region.min[0] = tile->xmin;
-    region.min[1] = tile->ymin;
-    region.max[0] = tile->xmax;
-    region.max[1] = tile->ymax;
-
-    total_sample_count += sampler->ComputeSampleCountInRegion(region);
-  }
-
-  return total_sample_count;
-}
-
 static void distribute_progress_iterations(FrameProgress *progress, Iteration total_iteration_count)
 {
   const Iteration partial_itr = (Iteration) floor(total_iteration_count / 10.);
@@ -81,9 +62,9 @@ static void distribute_progress_iterations(FrameProgress *progress, Iteration to
   progress->current_segment = 0;
 }
 
-static void init_frame_progress(FrameProgress *progress, Iteration total_sample_count)
+static void init_frame_progress(FrameProgress *progress, Iteration total_iteration_count)
 {
-  distribute_progress_iterations(progress, total_sample_count);
+  distribute_progress_iterations(progress, total_iteration_count);
 
   if (!is_socket_ready) {
     progress->report_to_viewer = false;
@@ -130,7 +111,7 @@ static Interrupt default_tile_start(void *data, const TileInfo *info)
 }
 static void increment_progress(void *data)
 {
-  FrameProgress *fp = (FrameProgress *) data;
+  FrameProgress *fp = reinterpret_cast<FrameProgress *>(data);
   const ProgressStatus status = fp->progress.Increment();
 
   if (status == PROGRESS_DONE) {
@@ -152,8 +133,6 @@ static void increment_progress(void *data)
 }
 static Interrupt default_sample_done(void *data)
 {
-  MtCriticalSection(data, increment_progress);
-
   return CALLBACK_CONTINUE;
 }
 static Interrupt default_tile_done(void *data, const TileInfo *info)
@@ -370,6 +349,9 @@ static Interrupt default_tile_done2(void *data, const TileInfo *info)
   if (i == MAX_RETRY) {
     // TODO ERROR HANDLING
   }
+
+  // increment progress
+  MtCriticalSection(data, increment_progress);
 
   return CALLBACK_CONTINUE;
 }
@@ -741,10 +723,7 @@ int Renderer::execute_rendering()
   }
 
   // FrameProgress
-  const Iteration total_sample_count = compute_total_sample_count(
-      worker_list[0].sampler, // picking up the first sampler
-      tiler);
-  init_frame_progress(&frame_progress_, total_sample_count);
+  init_frame_progress(&frame_progress_, tile_count);
 
   // Run sampling
   const int err = render_frame_start(this, &tiler);
