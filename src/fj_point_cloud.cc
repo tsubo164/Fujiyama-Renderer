@@ -7,9 +7,12 @@
 #include "fj_ray.h"
 
 #define ATTRIBUTE_LIST(ATTR) \
-  ATTR(Point, Vector,   P_,        Position) \
-  ATTR(Point, Vector,   velocity_, Velocity) \
+
+/*
   ATTR(Point, Real,     radius_,   Radius)
+  ATTR(Point, Vector,   velocity_, Velocity) \
+  ATTR(Point, Vector,   P_,        Position) \
+*/
 
 namespace fj {
 
@@ -38,7 +41,60 @@ bool PointCloud::Has##Class##Label() const \
   ATTRIBUTE_LIST(ATTR)
 #undef ATTR
 
-PointCloud::PointCloud() : point_count_(0)
+//------------------------------------------------------------------------------
+void PointCloud::AddPointPosition()
+{
+  PointPosition().Resize(GetPointCount());
+}
+Vector PointCloud::GetPointPosition(int idx) const
+{
+  return PointPosition().Get(idx);
+}
+void PointCloud::SetPointPosition(int idx, const Vector &value)
+{
+  PointPosition().Set(idx, value);
+}
+bool PointCloud::HasPointPosition() const
+{
+  return !PointPosition().IsEmpty();
+}
+//------------------------------------------------------------------------------
+void PointCloud::AddPointVelocity()
+{
+  PointVelocity().Resize(GetPointCount());
+}
+Vector PointCloud::GetPointVelocity(int idx) const
+{
+  return PointVelocity().Get(idx);
+}
+void PointCloud::SetPointVelocity(int idx, const Vector &value)
+{
+  PointVelocity().Set(idx, value);
+}
+bool PointCloud::HasPointVelocity() const
+{
+  return !PointVelocity().IsEmpty();
+}
+//------------------------------------------------------------------------------
+void PointCloud::AddPointRadius()
+{
+  PointRadius().Resize(GetPointCount());
+}
+Real PointCloud::GetPointRadius(int idx) const
+{
+  return PointRadius().Get(idx);
+}
+void PointCloud::SetPointRadius(int idx, const Real &value)
+{
+  PointRadius().Set(idx, value);
+}
+bool PointCloud::HasPointRadius() const
+{
+  return !PointRadius().IsEmpty();
+}
+//------------------------------------------------------------------------------
+
+PointCloud::PointCloud()// : point_count_(0)
 {
 }
 
@@ -46,6 +102,7 @@ PointCloud::~PointCloud()
 {
 }
 
+/*
 int PointCloud::GetPointCount() const
 {
   return point_count_;
@@ -60,9 +117,11 @@ const Box &PointCloud::GetBounds() const
 {
   return bounds_;
 }
+*/
 
 void PointCloud::ComputeBounds()
 {
+  /*
   bounds_.ReverseInfinite(); 
 
   for (int i = 0; i < GetPointCount(); i++) {
@@ -70,6 +129,15 @@ void PointCloud::ComputeBounds()
     GetPrimitiveBounds(i, &ptbox);
     bounds_.AddBox(ptbox);
   }
+  */
+  Box bounds;
+  bounds.ReverseInfinite(); 
+  for (int i = 0; i < GetPointCount(); i++) {
+    Box ptbox;
+    GetPrimitiveBounds(i, &ptbox);
+    bounds.AddBox(ptbox);
+  }
+  SetBounds(bounds);
 }
 
 bool PointCloud::ray_intersect(Index prim_id, const Ray &ray,
@@ -153,7 +221,7 @@ void PointCloud::get_primitive_bounds(Index prim_id, Box *bounds) const
 }
 void PointCloud::get_bounds(Box *bounds) const
 {
-  *bounds = GetBounds();
+  *bounds = GetBounds__();
 }
 
 Index PointCloud::get_primitive_count() const

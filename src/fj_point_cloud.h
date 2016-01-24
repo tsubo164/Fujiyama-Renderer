@@ -6,6 +6,7 @@
 
 #include "fj_compatibility.h"
 #include "fj_primitive_set.h"
+#include "fj_geometry.h"
 #include "fj_vector.h"
 #include "fj_types.h"
 #include "fj_box.h"
@@ -13,14 +14,16 @@
 
 namespace fj {
 
-class FJ_API PointCloud : public PrimitiveSet {
+class FJ_API PointCloud : public PrimitiveSet, public Geometry {
 public:
   PointCloud();
   virtual ~PointCloud();
 
+  /*
   int GetPointCount() const;
   void SetPointCount(int point_count);
   const Box &GetBounds() const;
+  */
 
   void AddPointPosition();
   void AddPointVelocity();
@@ -48,11 +51,13 @@ private:
   virtual void get_bounds(Box *bounds) const;
   virtual Index get_primitive_count() const;
 
+  /*
   int point_count_;
   std::vector<Vector> P_;
   std::vector<Vector> velocity_;
   std::vector<Real> radius_;
   Box bounds_;
+  */
 };
 
 } // namespace xxx
