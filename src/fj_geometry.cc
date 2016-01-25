@@ -23,7 +23,7 @@ void Geometry::SetPointCount(Index point_count)
   point_count_ = point_count;
 }
 
-const Box &Geometry::GetBounds__() const
+const Box &Geometry::GetBounds() const
 {
   return bounds_;
 }

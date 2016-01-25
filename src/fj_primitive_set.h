@@ -23,7 +23,7 @@ public:
   bool BoxIntersect(Index prim_id, const Box &box) const;
 
   void GetPrimitiveBounds(Index prim_id, Box *bounds) const;
-  void GetBounds(Box *bounds) const;
+  void GetEntireBounds(Box *bounds) const;
   Index GetPrimitiveCount() const;
 
 private:
@@ -35,6 +35,7 @@ private:
     return true;
   }
   virtual void get_primitive_bounds(Index prim_id, Box *bounds) const = 0;
+  // TODO rename this
   virtual void get_bounds(Box *bounds) const = 0;
   virtual Index get_primitive_count() const = 0;
 };

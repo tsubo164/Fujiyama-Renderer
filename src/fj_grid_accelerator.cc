@@ -73,7 +73,7 @@ int GridAccelerator::build()
   const Real HALF_PADDING = .5 * PADDING;
 
   Box bounds_tmp;
-  primset->GetBounds(&bounds_tmp);
+  primset->GetEntireBounds(&bounds_tmp);
   bounds_tmp.Expand(PADDING);
 
   int XNCELLS = 0;

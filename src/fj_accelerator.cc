@@ -61,7 +61,7 @@ bool Accelerator::HasBuilt() const
 
 void Accelerator::ComputeBounds()
 {
-  primset_->GetBounds(&bounds_);
+  primset_->GetEntireBounds(&bounds_);
   bounds_.Expand(GetBoundsPadding());
 }
 

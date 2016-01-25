@@ -74,8 +74,7 @@ public:
 
   Index GetPointCount() const;
   void SetPointCount(Index point_count);
-  // TODO rename after rename PrimitiveSet::GetBounds
-  const Box &GetBounds__() const;
+  const Box &GetBounds() const;
   void SetBounds(const Box &bounds);
 
   const AttributeVector &PointPosition() const { return pt_position_; };

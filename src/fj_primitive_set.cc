@@ -35,7 +35,7 @@ void PrimitiveSet::GetPrimitiveBounds(Index prim_id, Box *bounds) const
   get_primitive_bounds(prim_id, bounds);
 }
 
-void PrimitiveSet::GetBounds(Box *bounds) const
+void PrimitiveSet::GetEntireBounds(Box *bounds) const
 {
   get_bounds(bounds);
 }

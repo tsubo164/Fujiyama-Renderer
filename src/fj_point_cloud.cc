@@ -221,7 +221,7 @@ void PointCloud::get_primitive_bounds(Index prim_id, Box *bounds) const
 }
 void PointCloud::get_bounds(Box *bounds) const
 {
-  *bounds = GetBounds__();
+  *bounds = GetBounds();
 }
 
 Index PointCloud::get_primitive_count() const
