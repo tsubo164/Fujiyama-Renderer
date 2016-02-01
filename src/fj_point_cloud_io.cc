@@ -12,6 +12,9 @@
 #define PTC_FILE_VERSION 1
 #define PTC_FILE_MAGIC "PTCD"
 
+//TODO TEST
+#include "fj_geometry_io.h"
+
 namespace fj {
 
 class PtcInputFile {
@@ -160,6 +163,15 @@ void PtcWriteFile(PtcOutputFile *out)
 
 int PtcLoadFile(PointCloud *ptc, const char *filename)
 {
+  //TODO TEST
+  {
+    GeoInputFile geofile(filename);
+    geofile.Read(*ptc);
+    ptc->ComputeBounds();
+  }
+  return 0;
+#if 0
+
   PtcInputFile *in = PtcOpenInputFile(filename);
 
   if (in == NULL) {
@@ -196,7 +208,18 @@ int PtcLoadFile(PointCloud *ptc, const char *filename)
 
   ptc->ComputeBounds();
 
+  {
+    GeoOutputFile f("../ptc.fjgeo");
+    f.Write(*ptc);
+  }
+  {
+    GeoInputFile f("../ptc.fjgeo");
+    Geometry geo;
+    f.Read(geo);
+  }
+
   return 0;
+#endif
 }
 
 } // namespace xxx

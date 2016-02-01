@@ -2,6 +2,7 @@
 // See LICENSE and README
 
 #include "fj_point_cloud_io.h"
+#include "fj_geometry_io.h"
 #include "fj_point_cloud.h"
 #include "fj_triangle.h"
 #include "fj_numeric.h"
@@ -56,7 +57,6 @@ int main(int argc, const char **argv)
 
   {
     XorShift rng;
-    PtcOutputFile *out = PtcOpenOutputFile(out_filename);
     int total_point_count = 0;
     int face_count = 0;
     int point_id = 0;
@@ -163,12 +163,33 @@ int main(int argc, const char **argv)
       }
     }
 
+#if 0
+    PtcOutputFile *out = PtcOpenOutputFile(out_filename);
     PtcSetOutputPosition(out, &P[0], total_point_count);
     PtcSetOutputAttributeDouble(out, "radius", &radius[0]);
     PtcSetOutputAttributeVector3(out, "velocity", &velocity[0]);
 
     PtcWriteFile(out);
     PtcCloseOutputFile(out);
+#endif
+    //TODO TEST
+    PointCloud ptc;
+    ptc.SetPointCount(total_point_count);
+    ptc.PointPosition().Resize(ptc.GetPointCount());
+    ptc.PointRadius().Resize(ptc.GetPointCount());
+    if (add_velocity) {
+      ptc.PointVelocity().Resize(ptc.GetPointCount());
+    }
+
+    for (Index i = 0; i < ptc.GetPointCount(); i++) {
+      ptc.PointPosition().Set(i, P[i]);
+      ptc.PointRadius().Set(i, radius[i]);
+      if (add_velocity) {
+        ptc.PointVelocity().Set(i, velocity[i]);
+      }
+    }
+    GeoOutputFile geofile(out_filename);
+    geofile.Write(ptc);
   }
 
   return 0;
