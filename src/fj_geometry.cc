@@ -28,35 +28,14 @@ const Box &Geometry::GetBounds() const
   return bounds_;
 }
 
-void Geometry::SetBounds(const Box &bounds)
+void Geometry::ComputeBounds()
+{
+  compute_bounds();
+}
+
+void Geometry::set_bounds(const Box &bounds)
 {
   bounds_ = bounds;
 }
-
-  /*
-Vector Geometry::GetPointPosition(Index idx) const
-{
-  const Attribute<Vector> &P = GetPointPosition();
-  return P.Get(idx);
-}
-void Geometry::SetPointPosition(int idx, const Vector &value)
-{
-  Attribute<Vector> &P = GetPointPosition();
-  P.SetValue(idx, value);
-}
-  */
-
-/*
-void Geometry::ComputeBounds()
-{
-  bounds_.ReverseInfinite(); 
-
-  for (int i = 0; i < GetPointCount(); i++) {
-    Box ptbox;
-    GetPrimitiveBounds(i, &ptbox);
-    bounds_.AddBox(ptbox);
-  }
-}
-*/
 
 } // namespace xxx

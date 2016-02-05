@@ -74,8 +74,9 @@ public:
 
   Index GetPointCount() const;
   void SetPointCount(Index point_count);
+
   const Box &GetBounds() const;
-  void SetBounds(const Box &bounds);
+  void ComputeBounds();
 
   const AttributeVector &PointPosition() const { return pt_position_; };
   AttributeVector &PointPosition()             { return pt_position_; };
@@ -88,7 +89,12 @@ public:
   const AttributeReal &PointRadius() const { return pt_radius_; };
   AttributeReal &PointRadius()             { return pt_radius_; };
 
+protected:
+  void set_bounds(const Box &bounds);
+
 private:
+  virtual void compute_bounds() = 0;
+
   Index point_count_;
   Box bounds_;
 

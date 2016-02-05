@@ -137,6 +137,7 @@ int GeoInputFile::Read(Geometry &geo)
       break;
     }
   }
+  geo.ComputeBounds();
 
   return 0;
 }

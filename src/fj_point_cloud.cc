@@ -119,6 +119,7 @@ const Box &PointCloud::GetBounds() const
 }
 */
 
+#if 0
 void PointCloud::ComputeBounds()
 {
   /*
@@ -137,8 +138,9 @@ void PointCloud::ComputeBounds()
     GetPrimitiveBounds(i, &ptbox);
     bounds.AddBox(ptbox);
   }
-  SetBounds(bounds);
+  set_bounds(bounds);
 }
+#endif
 
 bool PointCloud::ray_intersect(Index prim_id, const Ray &ray,
     Real time, Intersection *isect) const
@@ -227,6 +229,18 @@ void PointCloud::get_bounds(Box *bounds) const
 Index PointCloud::get_primitive_count() const
 {
   return GetPointCount();
+}
+
+void PointCloud::compute_bounds()
+{
+  Box box;
+  box.ReverseInfinite(); 
+  for (int i = 0; i < GetPointCount(); i++) {
+    Box ptbox;
+    GetPrimitiveBounds(i, &ptbox);
+    box.AddBox(ptbox);
+  }
+  set_bounds(box);
 }
 
 } // namespace xxx

@@ -163,15 +163,12 @@ void PtcWriteFile(PtcOutputFile *out)
 
 int PtcLoadFile(PointCloud *ptc, const char *filename)
 {
-  //TODO TEST
-  {
-    GeoInputFile geofile(filename);
-    geofile.Read(*ptc);
-    ptc->ComputeBounds();
-  }
-  return 0;
-#if 0
+  GeoInputFile geofile(filename);
+  geofile.Read(*ptc);
 
+  return 0;
+
+#if 0
   PtcInputFile *in = PtcOpenInputFile(filename);
 
   if (in == NULL) {
