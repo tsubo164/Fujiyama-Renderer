@@ -19,30 +19,6 @@ public:
   PointCloud();
   virtual ~PointCloud();
 
-  /*
-  int GetPointCount() const;
-  void SetPointCount(int point_count);
-  const Box &GetBounds() const;
-  */
-
-  void AddPointPosition();
-  void AddPointVelocity();
-  void AddPointRadius();
-
-  Vector   GetPointPosition(int idx) const;
-  Vector   GetPointVelocity(int idx) const;
-  Real     GetPointRadius(int idx) const;
-
-  void SetPointPosition(int idx, const Vector &value);
-  void SetPointVelocity(int idx, const Vector &value);
-  void SetPointRadius(int idx, const Real &value);
-
-  bool HasPointPosition() const;
-  bool HasPointVelocity() const;
-  bool HasPointRadius() const;
-
-  //void ComputeBounds();
-
 private:
   virtual bool ray_intersect(Index prim_id, const Ray &ray,
       Real time, Intersection *isect) const;
@@ -52,13 +28,6 @@ private:
   virtual Index get_primitive_count() const;
 
   virtual void compute_bounds();
-  /*
-  int point_count_;
-  std::vector<Vector> P_;
-  std::vector<Vector> velocity_;
-  std::vector<Real> radius_;
-  Box bounds_;
-  */
 };
 
 } // namespace xxx

@@ -163,29 +163,19 @@ int main(int argc, const char **argv)
       }
     }
 
-#if 0
-    PtcOutputFile *out = PtcOpenOutputFile(out_filename);
-    PtcSetOutputPosition(out, &P[0], total_point_count);
-    PtcSetOutputAttributeDouble(out, "radius", &radius[0]);
-    PtcSetOutputAttributeVector3(out, "velocity", &velocity[0]);
-
-    PtcWriteFile(out);
-    PtcCloseOutputFile(out);
-#endif
-    //TODO TEST
     PointCloud ptc;
     ptc.SetPointCount(total_point_count);
-    ptc.PointPosition().Resize(ptc.GetPointCount());
-    ptc.PointRadius().Resize(ptc.GetPointCount());
+    ptc.AddPointPosition();
+    ptc.AddPointRadius();
     if (add_velocity) {
-      ptc.PointVelocity().Resize(ptc.GetPointCount());
+      ptc.AddPointVelocity();
     }
 
     for (Index i = 0; i < ptc.GetPointCount(); i++) {
-      ptc.PointPosition().Set(i, P[i]);
-      ptc.PointRadius().Set(i, radius[i]);
+      ptc.SetPointPosition(i, P[i]);
+      ptc.SetPointRadius(i, radius[i]);
       if (add_velocity) {
-        ptc.PointVelocity().Set(i, velocity[i]);
+        ptc.SetPointVelocity(i, velocity[i]);
       }
     }
     GeoOutputFile geofile(out_filename);
