@@ -26,13 +26,15 @@ static const char USAGE[] =
 "  -v             Add velocity attribute\n"
 "\n";
 
-static void noise_position(Vector *P, const Vector *N, Vector *velocity);
+static void noise_position(Vector &P, const Vector &N, Vector &velocity);
+static int save_point_cloud(
+    const char *in_filename, const char *out_filename, bool add_velocity);
 
 int main(int argc, const char **argv)
 {
   const char *in_filename = NULL;
   const char *out_filename = NULL;
-  int add_velocity = 0;
+  bool add_velocity = false;
 
   if (argc == 2 && strcmp(argv[1], "--help") == 0) {
     printf("%s", USAGE);
@@ -42,12 +44,12 @@ int main(int argc, const char **argv)
   if (argc == 4 && strcmp(argv[1], "-v") == 0) {
     in_filename = argv[2];
     out_filename = argv[3];
-    add_velocity = 1;
+    add_velocity = true;
   }
   else if (argc == 3) {
     in_filename = argv[1];
     out_filename = argv[2];
-    add_velocity = 0;
+    add_velocity = false;
   }
   else {
     fprintf(stderr, "error: invalid number of arguments.\n");
@@ -55,160 +57,117 @@ int main(int argc, const char **argv)
     return -1;
   }
 
-  {
-    XorShift rng;
-    int total_point_count = 0;
-    int face_count = 0;
-    int point_id = 0;
-    int i;
+  save_point_cloud(in_filename, out_filename, add_velocity);
+  return 0;
+}
 
-    Mesh mesh;
-    const int err = MshLoadFile(&mesh, in_filename);
-    if (err) {
-      fprintf(stderr, "error: couldn't open input file: %s\n", in_filename);
-      return -1;
-    }
+static int save_point_cloud(
+    const char *in_filename, const char *out_filename, bool add_velocity)
+{
+  XorShift rng;
+  int total_point_count = 0;
+  int face_count = 0;
 
-    face_count = mesh.GetFaceCount();
-    std::vector<int> point_count_list(face_count);
-
-    for (i = 0; i < face_count; i++) {
-      Vector P0;
-      Vector P1;
-      Vector P2;
-      Vector center;
-      double noise_val = 0;
-      double area = 0;
-      int npt_on_face = 0;
-
-      MshGetFacePointPosition(&mesh, i, &P0, &P1, &P2);
-
-      center.x = (P0.x + P1.x + P2.x) / 3;
-      center.y = (P0.y + P1.y + P2.y) / 3;
-      center.z = (P0.z + P1.z + P2.z) / 3;
-      center.x *= 2.5;
-      center.y *= 2.5;
-      center.z *= 2.5;
-      noise_val = PerlinNoise(center, 2, .5, 8);
-      noise_val = Fit(noise_val, -.2, 1, 0, 1);
-
-      area = TriComputeArea(P0, P1, P2);
-
-      if (add_velocity) {
-        npt_on_face = (int) 2000000 * area * .02;
-      } else {
-        area *= noise_val;
-        npt_on_face = (int) 2000000 * area;
-      }
-
-      total_point_count += npt_on_face;
-      point_count_list[i] = npt_on_face;
-    }
-    printf("total_point_count %d\n", total_point_count);
-
-    std::vector<Vector> P(total_point_count);
-    std::vector<Vector> velocity(total_point_count);
-    std::vector<double> radius(total_point_count);
-
-    point_id = 0;
-    for (i = 0; i < face_count; i++) {
-      Vector P0;
-      Vector P1;
-      Vector P2;
-      Vector N0;
-      Vector N1;
-      Vector N2;
-      const int npt_on_face = point_count_list[i];
-      int j;
-
-      MshGetFacePointPosition(&mesh, i, &P0, &P1, &P2);
-      MshGetFacePointNormal(&mesh, i, &N0, &N1, &N2);
-
-      for (j = 0; j < npt_on_face; j++) {
-        Vector normal;
-        Vector *P_out = &P[point_id];
-        double u = 0, v = 0, t = 0;
-        double offset = 0;
-
-        u = XorNextFloat01(&rng);
-        v = (1 - u) * XorNextFloat01(&rng);
-
-        normal = TriComputeNormal(N0, N1, N2, u, v);
-
-        t = 1 - u - v;
-        P_out->x = t * P0.x + u * P1.x + v * P2.x;
-        P_out->y = t * P0.y + u * P1.y + v * P2.y;
-        P_out->z = t * P0.z + u * P1.z + v * P2.z;
-
-        offset = XorNextFloat01(&rng);
-        offset *= -.05;
-        P_out->x += offset * normal.x;
-        P_out->y += offset * normal.y;
-        P_out->z += offset * normal.z;
-
-        if (add_velocity) {
-          Vector vel(0, .05 * 0, 0);
-          noise_position(P_out, &normal, &vel);
-          velocity[point_id] = vel;
-
-          radius[point_id] = .01 * .2 * 3;
-        } else {
-          Vector vel;
-          velocity[point_id] = vel;
-
-          radius[point_id] = .01 * .2;
-        }
-
-        point_id++;
-      }
-    }
-
-    PointCloud ptc;
-    ptc.SetPointCount(total_point_count);
-    ptc.AddPointPosition();
-    ptc.AddPointRadius();
-    if (add_velocity) {
-      ptc.AddPointVelocity();
-    }
-
-    for (Index i = 0; i < ptc.GetPointCount(); i++) {
-      ptc.SetPointPosition(i, P[i]);
-      ptc.SetPointRadius(i, radius[i]);
-      if (add_velocity) {
-        ptc.SetPointVelocity(i, velocity[i]);
-      }
-    }
-    GeoOutputFile geofile(out_filename);
-    geofile.Write(ptc);
+  Mesh mesh;
+  const int err = MshLoadFile(&mesh, in_filename);
+  if (err) {
+    fprintf(stderr, "error: couldn't open input file: %s\n", in_filename);
+    return -1;
   }
+
+  face_count = mesh.GetFaceCount();
+  std::vector<int> point_count_list(face_count);
+
+  for (int i = 0; i < face_count; i++) {
+    Vector P0, P1, P2;
+    Real noise_val = 0;
+    int npt_on_face = 0;
+
+    MshGetFacePointPosition(&mesh, i, &P0, &P1, &P2);
+
+    const Vector center = (P0 + P1 + P2) / 3;
+    noise_val = PerlinNoise(2.5 * center, 2, .5, 8);
+    noise_val = Fit(noise_val, -.2, 1, 0, 1);
+
+    const Real area = TriComputeArea(P0, P1, P2);
+
+    if (add_velocity) {
+      npt_on_face = (int) 2000000 * area * .02;
+    } else {
+      npt_on_face = (int) 2000000 * area * noise_val;
+    }
+
+    total_point_count += npt_on_face;
+    point_count_list[i] = npt_on_face;
+  }
+  printf("total_point_count %d\n", total_point_count);
+
+  // Output point cloud
+  PointCloud ptc;
+  ptc.SetPointCount(total_point_count);
+  ptc.AddPointPosition();
+  ptc.AddPointRadius();
+  if (add_velocity) {
+    ptc.AddPointVelocity();
+  }
+
+  int point_id = 0;
+  for (int i = 0; i < face_count; i++) {
+    Vector P0, P1, P2;
+    Vector N0, N1, N2;
+    const int npt_on_face = point_count_list[i];
+
+    MshGetFacePointPosition(&mesh, i, &P0, &P1, &P2);
+    MshGetFacePointNormal(&mesh, i, &N0, &N1, &N2);
+
+    for (int j = 0; j < npt_on_face; j++) {
+      Vector P_out;
+      Real radius = 0;
+
+      const Real u = XorNextFloat01(&rng);
+      const Real v = (1 - u) * XorNextFloat01(&rng);
+
+      const Vector normal = TriComputeNormal(N0, N1, N2, u, v);
+
+      const Real t = 1 - u - v;
+      P_out = t * P0 + u * P1 + v * P2;
+
+      const Real offset = -.05 * XorNextFloat01(&rng);
+      P_out += offset * normal;
+
+      if (add_velocity) {
+        radius = .01 * .2 * 3;
+
+        Vector vel;
+        noise_position(P_out, normal, vel);
+        ptc.SetPointVelocity(point_id, vel);
+      } else {
+        radius = .01 * .2;
+      }
+
+      ptc.SetPointPosition(point_id, P_out);
+      ptc.SetPointRadius(point_id, radius);
+
+      point_id++;
+    }
+  }
+
+  GeoOutputFile geofile(out_filename);
+  geofile.Write(ptc);
 
   return 0;
 }
 
-static void noise_position(Vector *P, const Vector *N, Vector *velocity)
+static void noise_position(Vector &P, const Vector &N, Vector &velocity)
 {
-  Vector noise_vec;
-  Vector P_offset;
-  double noise_amp = 0;
+  Vector noise_vec = PerlinNoise3d(P, 2, .5, 8);
+  noise_vec += N;
 
-  noise_vec = PerlinNoise3d(*P, 2, .5, 8);
+  const Vector P_offset = P + Vector(1.234, -24.31 + .2, 123.4);
 
-  noise_vec.x += N->x;
-  noise_vec.y += N->y;
-  noise_vec.z += N->z;
-
-  P_offset.x = P->x + 1.234;
-  P_offset.y = P->y - 24.31 + .2;
-  P_offset.z = P->z + 123.4;
-
-  noise_amp = PerlinNoise(P_offset, 2, .5, 8);
+  Real noise_amp = PerlinNoise(P_offset, 2, .5, 8);
   noise_amp = Fit(noise_amp, .2, 1, 0, 1);
 
-  P->x += noise_amp * noise_vec.x;
-  P->y += noise_amp * noise_vec.y;
-  P->z += noise_amp * noise_vec.z;
-
-  velocity->x = .2 * noise_amp * noise_vec.x;
-  velocity->y = .2 * noise_amp * noise_vec.y;
-  velocity->z = .2 * noise_amp * noise_vec.z;
+  P += noise_amp * noise_vec;
+  velocity = .2 * noise_amp * noise_vec;
 }
