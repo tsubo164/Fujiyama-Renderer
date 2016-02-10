@@ -2,7 +2,6 @@
 // See LICENSE and README
 
 #include "fj_point_cloud_io.h"
-#include "fj_geometry_io.h"
 #include "fj_point_cloud.h"
 #include "fj_triangle.h"
 #include "fj_numeric.h"
@@ -152,8 +151,7 @@ static int save_point_cloud(
     }
   }
 
-  GeoOutputFile geofile(out_filename);
-  geofile.Write(ptc);
+  PtcSaveFile(ptc, out_filename);
 
   return 0;
 }

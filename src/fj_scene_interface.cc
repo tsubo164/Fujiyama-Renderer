@@ -412,7 +412,7 @@ ID SiNewPointCloud(const char *filename)
     MshClear(ptc);
   } else {
   */
-    if (PtcLoadFile(ptc, filename)) {
+    if (PtcLoadFile(*ptc, filename)) {
       set_errno(SI_ERR_FAILLOAD);
       return SI_BADID;
     }
