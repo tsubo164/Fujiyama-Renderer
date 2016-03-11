@@ -11,7 +11,7 @@
 namespace fj {
 
 const Real PI = 3.14159265358979323846;
-const Real REAL_MAX = std::numeric_limits<Real>::max();
+const Real REAL_MAX = FJ_REAL_MAX;
 
 inline Real Abs(Real x)
 {

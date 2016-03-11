@@ -41,7 +41,7 @@ void Geometry::set_bounds(const Box &bounds)
 template<typename T> inline
 bool out_of_range(const std::vector<T> &v, Index i)
 {
-  return i < 0 || i >= v.size();
+  return i < 0 || i >= static_cast<Index>(v.size());
 }
 template<typename T> inline
 void add_attribute(std::vector<T> &v, Index size)

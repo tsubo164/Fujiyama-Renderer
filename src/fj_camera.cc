@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2015 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2015 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_camera.h"
 #include "fj_property.h"
