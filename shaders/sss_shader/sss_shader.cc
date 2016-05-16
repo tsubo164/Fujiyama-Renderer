@@ -312,8 +312,8 @@ static void single_scattering(const SSSShader *sss,
   Normalize(&To);
 
   for (i = 0; i < nsamples; i++) {
-    XorShift *mutable_rng = (XorShift *) &sss->rng;
-    const float sp_dist = -log(XorNextFloat01(mutable_rng));
+    XorShift &mutable_rng = const_cast<XorShift &>(sss->rng);
+    const float sp_dist = -log(mutable_rng.NextFloat01());
 
     for (j = 0; j < 3; j++) {
       Vector P_sample;
@@ -450,8 +450,8 @@ static void diffusion_scattering(const SSSShader *sss,
   base2 = Cross(*N, base1);
 
   for (i = 0; i < nsamples; i++) {
-    XorShift *mutable_rng = (XorShift *) &sss->rng;
-    const double dist_rand = -log(XorNextFloat01(mutable_rng));
+    XorShift &mutable_rng = const_cast<XorShift &>(sss->rng);
+    const double dist_rand = -log(mutable_rng.NextFloat01());
 
     for (j = 0; j < 3; j++) {
       const TraceContext self_cxt = SlSelfHitContext(cxt, in->shaded_object);
@@ -479,7 +479,7 @@ static void diffusion_scattering(const SSSShader *sss,
 
       const double dist = dist_rand / sigma_tr[j];
 
-      XorHollowDiskRand(mutable_rng, &disk);
+      disk = mutable_rng.HollowDiskRand();
       disk.x *= dist;
       disk.y *= dist;
       P_sample.x = P->x + 1/sigma_tr[j] * (disk.x * base1.x + disk.y * base2.x);

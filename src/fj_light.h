@@ -70,8 +70,8 @@ public: // TODO ONCE FINISHING INHERITANCE MAKE IT PRAIVATE
   // transformation properties
   TransformSampleList transform_samples_;
 
-  // rng
-  XorShift xr_;
+  // for area light sampling
+  XorShift rng_;
 
   int type_;
   bool double_sided_;

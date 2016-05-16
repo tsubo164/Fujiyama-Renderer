@@ -413,8 +413,8 @@ static int gen_hair(int argc, const char **argv)
       Vector src_N;
       int k;
 
-      u = XorNextFloat01(&rng);
-      v = (1-u) * XorNextFloat01(&rng);
+      u = rng.NextFloat01();
+      v = (1-u) * rng.NextFloat01();
 
       t = 1-u-v;
       src_P.x = t * P0.x + u * P1.x + v * P2.x;

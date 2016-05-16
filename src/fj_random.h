@@ -17,6 +17,19 @@ public:
   XorShift(unsigned int seed);
   ~XorShift() {}
 
+  uint32_t NextInteger();
+  double   NextFloat01();
+  Vector   NextVector01();
+
+  Vector SolidSphereRand();
+  Vector HollowSphereRand();
+  Vector SolidCubeRand();
+
+  Vector2 SolidDiskRand();
+  Vector2 HollowDiskRand();
+  Vector2 GaussianDiskRand();
+
+  double GaussianRand();
 public:
   uint32_t state[4];
 };

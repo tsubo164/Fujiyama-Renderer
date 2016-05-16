@@ -39,8 +39,8 @@ static int32_t generate_frame_id()
 {
   const unsigned int seed = static_cast<unsigned int>(clock());
 
-  XorShift xr(seed);
-  const int32_t id = static_cast<int32_t>(XorNextInteger(&xr));
+  XorShift rng(seed);
+  const int32_t id = static_cast<int32_t>(rng.NextInteger());
   return id < 0 ? -id : id;
 }
 

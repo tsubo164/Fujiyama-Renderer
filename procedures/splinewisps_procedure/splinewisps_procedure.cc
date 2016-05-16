@@ -175,18 +175,12 @@ static int FillWithSpecksAlongLine(Volume *volume,
 
   for (i = 0; i < NSPECKS; i++) {
     WispsControlPoint cp_t;
-    Vector2 disk(0, 0);
     Vector P_speck;
     Vector P_noise_space;
     Vector noise;
-    double line_t = 0;
 
-#if 0
-    XorHollowDiskRand(&rng, disk);
-    XorGaussianDiskRand(&rng, disk);
-#endif
-    XorSolidDiskRand(&rng, &disk);
-    line_t = XorNextFloat01(&rng);
+    const Vector2 disk = rng.SolidDiskRand();
+    const double line_t = rng.NextFloat01();
 
     LerpWispConstrolPoint(&cp_t, cp0, cp1, line_t);
 

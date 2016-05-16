@@ -62,15 +62,15 @@ int FixedGridSampler::generate_samples(const Rectangle &region)
       sample->uv.y = 1 - (.5 + y + yoffset) * vdelta;
 
       if (IsJittered()) {
-        const Real u_jitter = XorNextFloat01(&rng) * jitter;
-        const Real v_jitter = XorNextFloat01(&rng) * jitter;
+        const Real u_jitter = rng.NextFloat01() * jitter;
+        const Real v_jitter = rng.NextFloat01() * jitter;
 
         sample->uv.x += udelta * (u_jitter - .5);
         sample->uv.y += vdelta * (v_jitter - .5);
       }
 
       if (IsSamplingTime()) {
-        const Real rnd = XorNextFloat01(&rng_time);
+        const Real rnd = rng_time.NextFloat01();
         sample->time = Fit(rnd, 0, 1, sample_time_range[0], sample_time_range[1]);
       } else {
         sample->time = 0;

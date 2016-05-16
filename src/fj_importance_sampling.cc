@@ -74,7 +74,7 @@ int ImportanceSampling(Texture *texture, int seed,
 
   for (i = 0; i < sample_count; i++) {
     for (;;) {
-      const double rand = sum * XorNextFloat01(&rng);
+      const double rand = sum * rng.NextFloat01();
       const int index = lookup_histgram(&histgram[0], NPIXELS, rand);
       DomeSample sample;
       Color4 tex_rgba;
@@ -119,12 +119,12 @@ int StratifiedImportanceSampling(Texture *texture, int seed,
   sum = histgram[NPIXELS-1];
 
   for (i = 0; i < seed; i++) {
-    XorNextFloat01(&rng);
+    rng.NextFloat01();
   }
 
   for (i = 0; i < sample_count; i++) {
     for (;;) {
-      const double rand = sum * ((i + XorNextFloat01(&rng)) / sample_count);
+      const double rand = sum * ((i + rng.NextFloat01()) / sample_count);
       const int index = lookup_histgram(&histgram[0], NPIXELS, rand);
       DomeSample sample;
       Color4 tex_rgba;
@@ -504,7 +504,7 @@ static void generate_dome_samples(int sample_xres, int sample_yres,
       const int ngen = connected_sample_count[i];
       const SamplePoint *Y = &samples[0] + offsets[i];
       const int nY = nsamples[i];
-      const int x0 = (int) (nY * XorNextFloat01(&rng));
+      const int x0 = (int) (nY * rng.NextFloat01());
       int nX = 0;
       int j;
 

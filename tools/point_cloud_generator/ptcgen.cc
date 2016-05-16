@@ -123,15 +123,15 @@ static int save_point_cloud(
       Vector P_out;
       Real radius = 0;
 
-      const Real u = XorNextFloat01(&rng);
-      const Real v = (1 - u) * XorNextFloat01(&rng);
+      const Real u = rng.NextFloat01();
+      const Real v = (1 - u) * rng.NextFloat01();
 
       const Vector normal = TriComputeNormal(N0, N1, N2, u, v);
 
       const Real t = 1 - u - v;
       P_out = t * P0 + u * P1 + v * P2;
 
-      const Real offset = -.05 * XorNextFloat01(&rng);
+      const Real offset = -.05 * rng.NextFloat01();
       P_out += offset * normal;
 
       if (add_velocity) {

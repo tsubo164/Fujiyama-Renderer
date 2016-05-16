@@ -45,7 +45,7 @@ Light::Light() :
   color_(1, 1, 1),
   intensity_(1),
   transform_samples_(),
-  xr_(),
+  rng_(),
 
   type_(LGT_POINT),
   double_sided_(false),
@@ -72,7 +72,7 @@ void Light::SetLightType(int light_type)
   type_ = light_type;
 
   XfmInitTransformSampleList(&transform_samples_);
-  xr_ = XorShift();
+  rng_ = XorShift();
 
   switch (type_) {
   case LGT_POINT:
@@ -235,9 +235,9 @@ static void grid_light_get_samples(const Light *light,
   nsamples = Min(nsamples, max_samples);
 
   for (int i = 0; i < nsamples; i++) {
-    XorShift *mutable_xr = (XorShift *) &light->xr_;
-    const Real x = (XorNextFloat01(mutable_xr) - .5);
-    const Real z = (XorNextFloat01(mutable_xr) - .5);
+    XorShift &mutable_rng = const_cast<XorShift &>(light->rng_);
+    const Real x = mutable_rng.NextFloat01() - .5;
+    const Real z = mutable_rng.NextFloat01() - .5;
     Vector P_sample;
     P_sample.x = x;
     P_sample.z = z;
@@ -285,11 +285,11 @@ static void sphere_light_get_samples(const Light *light,
   nsamples = Min(nsamples, max_samples);
 
   for (int i = 0; i < nsamples; i++) {
-    XorShift *mutable_xr = (XorShift *) &light->xr_;
+    XorShift &mutable_rng = const_cast<XorShift &>(light->rng_);
     Vector P_sample;
     Vector N_sample;
 
-    XorHollowSphereRand(mutable_xr, &P_sample);
+    P_sample = mutable_rng.HollowSphereRand();
     N_sample = P_sample;
 
     XfmTransformPoint(&transform_interp, &P_sample);

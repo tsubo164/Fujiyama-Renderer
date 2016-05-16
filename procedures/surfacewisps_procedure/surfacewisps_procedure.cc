@@ -173,14 +173,13 @@ static int FillWithSpecksOnSurface(Volume *volume,
 
   for (i = 0; i < NSPECKS; i++) {
     WispsControlPoint cp_t;
-    Vector cube;
     Vector P_speck;
     Vector P_noise_space;
     Vector noise;
     double s = 0;
     double t = 0;
 
-    XorSolidCubeRand(&rng, &cube);
+    const Vector cube = rng.SolidCubeRand();
 
     s = cube.x;
     t = cube.y;
