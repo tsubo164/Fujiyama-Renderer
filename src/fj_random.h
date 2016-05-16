@@ -34,19 +34,6 @@ public:
   uint32_t state[4];
 };
 
-FJ_API uint32_t XorNextInteger(XorShift *xr);
-FJ_API double XorNextFloat01(XorShift *xr);
-
-FJ_API void XorSolidSphereRand(XorShift *xr, Vector *out_position);
-FJ_API void XorHollowSphereRand(XorShift *xr, Vector *out_position);
-FJ_API void XorSolidCubeRand(XorShift *xr, Vector *out_position);
-
-FJ_API void XorSolidDiskRand(XorShift *xr, Vector2 *out_position);
-FJ_API void XorHollowDiskRand(XorShift *xr, Vector2 *out_position);
-FJ_API void XorGaussianDiskRand(XorShift *xr, Vector2 *out_position);
-
-FJ_API double XorGaussianRand(XorShift *xr);
-
 } // namespace xxx
 
 #endif // FJ_XXX_H
