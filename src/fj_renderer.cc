@@ -2,6 +2,7 @@
 // See LICENSE and README
 
 #include "fj_renderer.h"
+#include "fj_adaptive_grid_sampler.h"
 #include "fj_fixed_grid_sampler.h"
 #include "fj_multi_thread.h"
 #include "fj_pixel_sample.h"
@@ -812,7 +813,11 @@ static void init_worker(Worker *worker, int id,
   worker->frame_id = renderer->frame_id_;
 
   // Sampler
-  worker->sampler = new FixedGridSampler();
+  if (1) {
+    worker->sampler = new FixedGridSampler();
+  } else {
+    worker->sampler = new AdaptiveGridSampler();
+  }
   worker->sampler->SetResolution(Int2(xres, yres));
   worker->sampler->SetPixelSamples(Int2(xrate, yrate));
   worker->sampler->SetFilterWidth(Vector2(xfwidth, yfwidth));
