@@ -33,6 +33,11 @@ inline Real Sqrt(Real x)
   return std::sqrt(x);
 }
 
+inline Real Pow(Real x, Real exp)
+{
+  return std::pow(x, exp);
+}
+
 inline Real Min(Real x, Real y)
 {
   return x < y ? x : y;

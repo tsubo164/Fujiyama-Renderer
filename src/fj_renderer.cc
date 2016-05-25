@@ -813,7 +813,7 @@ static void init_worker(Worker *worker, int id,
   worker->frame_id = renderer->frame_id_;
 
   // Sampler
-  if (1) {
+  if (0) {
     worker->sampler = new FixedGridSampler();
   } else {
     worker->sampler = new AdaptiveGridSampler();

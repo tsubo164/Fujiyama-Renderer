@@ -17,6 +17,7 @@ Sampler::Sampler() :
   rate_(1, 1),
   fwidth_(1., 1.),
   jitter_(1.),
+  max_subd_(1),
 
   need_jitter_(true),
   need_time_sampling_(false),
@@ -48,6 +49,13 @@ void Sampler::SetFilterWidth(const Vector2 &filter_width)
 {
   assert(filter_width[0] > 0 && filter_width[1] > 0);
   fwidth_ = filter_width;
+  update_sample_counts();
+}
+
+void Sampler::SetMaxSubdivision(int max_subd)
+{
+  assert(max_subd >= 0);
+  max_subd_ = max_subd;
   update_sample_counts();
 }
 
@@ -83,6 +91,11 @@ const Int2 &Sampler::GetPixelSamples() const
 const Vector2 &Sampler::GetFilterWidth() const
 {
   return fwidth_;
+}
+
+int Sampler::GetMaxSubdivision() const
+{
+  return max_subd_;
 }
 
 Vector2 Sampler::GetSampleTimeRange() const

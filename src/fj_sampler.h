@@ -21,6 +21,8 @@ public:
   void SetResolution(const Int2 &resolution);
   void SetPixelSamples(const Int2 &pixel_samples);
   void SetFilterWidth(const Vector2 &filter_width);
+  // TODO ADAPTIVE_TEST
+  void SetMaxSubdivision(int max_subd);
 
   void SetJitter(Real jitter);
   void SetSampleTimeRange(Real start_time, Real end_time);
@@ -28,6 +30,8 @@ public:
   const Int2    &GetResolution() const;
   const Int2    &GetPixelSamples() const;
   const Vector2 &GetFilterWidth() const;
+  // TODO ADAPTIVE_TEST
+  int            GetMaxSubdivision() const;
 
   Vector2 GetSampleTimeRange() const;
   bool IsSamplingTime() const;
@@ -50,6 +54,7 @@ private:
   Int2 rate_;
   Vector2 fwidth_;
   Real jitter_;
+  int  max_subd_;
 
   bool need_jitter_;
   bool need_time_sampling_;

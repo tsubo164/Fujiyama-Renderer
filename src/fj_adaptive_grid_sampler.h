@@ -5,6 +5,8 @@
 #define FJ_ADAPTIVE_GRID_SAMPLER_H
 
 #include "fj_sampler.h"
+#include <vector>
+#include <stack>
 
 namespace fj {
 
@@ -25,14 +27,27 @@ private:
   Int2 count_samples_in_pixel() const;
   Int2 count_samples_in_margin() const;
 
+  // TODO ADAPTIVE_TEST
+  Int2 compute_num_pixel_division() const;
+  bool need_subd_rect(const Rectangle rect);
+
   std::vector<Sample> samples_;
 
   Int2 nsamples_;
   Int2 pixel_start_;
   Int2 margin_;
   Int2 npxlsmps_;
+  Int2 ndivision_;
 
   int current_index_;
+
+  // TODO ADAPTIVE_TEST
+  typedef std::stack<Rectangle,std::vector<Rectangle> > Stack;
+  Stack rect_stack_;
+  Int2 curr_pixel_;
+  int  curr_corner_;
+
+  std::vector<int> subd_flag_;
 };
 
 } // namespace xxx

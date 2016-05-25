@@ -523,6 +523,11 @@ inline Vector4 operator-(const Vector4 &a)
   return -1 * a;
 }
 
+inline Vector4 Lerp(const Vector4 &a, const Vector4 &b, Real t)
+{
+  return (1 - t) * a + t * b;
+}
+
 inline std::ostream &operator<<(std::ostream &os, const Vector4 &a)
 {
   return os << "(" <<
