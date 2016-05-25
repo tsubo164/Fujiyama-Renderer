@@ -46,6 +46,7 @@ public:
   void SetPixelSamples(int xrate, int yrate);
   void SetTileSize(int xtilesize, int ytilesize);
   void SetFilterWidth(float xfwidth, float yfwidth);
+  void SetMaxSubdivision(int max_subd);
   void SetSampleJitter(float jitter);
   void SetSampleTimeRange(double start_time, double end_time);
 
@@ -99,6 +100,7 @@ public:
   int pixelsamples_[2];
   int tilesize_[2];
   float filterwidth_[2];
+  int max_subd_;
   float jitter_;
   double sample_time_start_;
   double sample_time_end_;

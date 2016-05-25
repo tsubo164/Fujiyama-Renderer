@@ -6,6 +6,9 @@
 #include "fj_numeric.h"
 #include "fj_random.h"
 
+// TODO ADAPTIVE_TEST
+#define TEST 1
+
 namespace fj {
 
 AdaptiveGridSampler::AdaptiveGridSampler() :
@@ -28,6 +31,7 @@ AdaptiveGridSampler::~AdaptiveGridSampler()
 void AdaptiveGridSampler::update_sample_counts()
 {
   margin_ = count_samples_in_margin();
+  //std::cout << "margin_: " << margin_ << "\n";
   npxlsmps_ = count_samples_in_pixel();
   // TODO ADAPTIVE_TEST
   ndivision_ = compute_num_pixel_division();
@@ -36,6 +40,7 @@ void AdaptiveGridSampler::update_sample_counts()
 int AdaptiveGridSampler::generate_samples(const Rectangle &region)
 {
   // TODO ADAPTIVE_TEST
+  update_sample_counts();
   curr_pixel_ = region.min;
 
   // allocate samples in region
@@ -43,6 +48,7 @@ int AdaptiveGridSampler::generate_samples(const Rectangle &region)
   samples_.resize(nsamples_[0] * nsamples_[1]);
   pixel_start_ = region.min;
   current_index_ = 0;
+  //std::cout << "pixel_start_: " << pixel_start_ << "\n";
 
   XorShift rng; // random number generator
   XorShift rng_time; // for time sampling jitter
@@ -56,10 +62,22 @@ int AdaptiveGridSampler::generate_samples(const Rectangle &region)
   // uv delta (screen space uv. excludes margins)
   const Real udelta = 1./(rate[0] * res[0]);
   const Real vdelta = 1./(rate[1] * res[1]);
+  /*
+  const Real uoffset = pixel_start_[0] * rate[0] * udelta;
+  const Real voffset = pixel_start_[1] * rate[1] * vdelta;
+  const Real uoffset = pixel_start_[0] * res[0];
+  const Real voffset = pixel_start_[1] * res[1];
+  */
 
+#if TEST
+  // xy offset
+  const int xoffset = (pixel_start_[0] - margin_[0]) * rate[0];
+  const int yoffset = (pixel_start_[1] - margin_[1]) * rate[1];
+#else
   // xy offset
   const int xoffset = pixel_start_[0] * rate[0] - 0 * margin_[0];
   const int yoffset = pixel_start_[1] * rate[1] - 0 * margin_[1];
+#endif
 
   Sample *sample = &samples_[0];
   //std::cout << "sample count: " << samples_.size() << "\n";
@@ -95,7 +113,7 @@ int AdaptiveGridSampler::generate_samples(const Rectangle &region)
   }
   // TODO ADAPTIVE_TEST
   rect_stack_ = Stack();
-  Int2 tile_size = region.Size();
+  const Int2 tile_size = region.Size() + 2 * margin_;
         //std::cout << "tile_size: " << tile_size << "\n";
   for (int y = 0; y < tile_size[1]; y++) {
     for (int x = 0; x < tile_size[0]; x++) {
@@ -204,7 +222,7 @@ Sample *AdaptiveGridSampler::get_next_sample()
     if (samples_[i].data[3] == -1) {
       j++;
     }
-    samples_[i].data[3] = subd_flag_[i];
+    //samples_[i].data[3] = subd_flag_[i];
   }
 
   return NULL;
@@ -283,6 +301,20 @@ int AdaptiveGridSampler::get_sample_count() const
 
 Int2 AdaptiveGridSampler::count_samples_in_margin() const
 {
+#if TEST
+  // TODO ADAPTIVE_TEST
+  const Vector2 beyond_one = GetFilterWidth() - Vector2(1, 1);
+  return Int2(
+      static_cast<int>(Ceil(beyond_one[0])),
+      static_cast<int>(Ceil(beyond_one[1])));
+#else
+  // TODO ADAPTIVE_TEST
+  const Vector2 beyond_one = GetFilterWidth() - Vector2(1, 1);
+  return Int2(
+      static_cast<int>(Ceil(beyond_one[0])) * ndivision_[0],
+      static_cast<int>(Ceil(beyond_one[1])) * ndivision_[1]);
+#endif
+
   return Int2(
       static_cast<int>(Ceil(((GetFilterWidth()[0] - 1) * GetPixelSamples()[0]) * .5)),
       static_cast<int>(Ceil(((GetFilterWidth()[1] - 1) * GetPixelSamples()[1]) * .5)));
@@ -291,22 +323,33 @@ Int2 AdaptiveGridSampler::count_samples_in_margin() const
 Int2 AdaptiveGridSampler::count_samples_in_pixel() const
 {
   //return  GetPixelSamples() + 2 * margin_;
+#if TEST
+  // TODO ADAPTIVE_TEST
+  return ndivision_ * (Int2(1, 1) + 2 * margin_) + Int2(1, 1);
+#else
   // TODO ADAPTIVE_TEST
   return ndivision_  + 0 * 2 * margin_ + Int2(1, 1);
   //return Int2(2, 2)  + 0 * 2 * margin_ + Int2(1, 1);
+#endif
 }
 
 Int2 AdaptiveGridSampler::count_samples_in_region(const Rectangle &region) const
 {
   //return GetPixelSamples() * region.Size() + 2 * margin_;
+#if TEST
+  // TODO ADAPTIVE_TEST
+  return ndivision_ * (region.Size() + 2 * margin_) + Int2(1, 1);
+#else
   // TODO ADAPTIVE_TEST
   return ndivision_ * region.Size() + 0 * 2 * margin_ + Int2(1, 1);
   //return Int2(2, 2) * region.Size() + 0 * 2 * margin_ + Int2(1, 1);
+#endif
 }
 
 Int2 AdaptiveGridSampler::compute_num_pixel_division() const
 {
-  const int nsubd = std::pow(GetMaxSubdivision(), 2) + 1;
+  const int nsubd = std::pow(2, GetMaxSubdivision());
+  //std::cout << "nsubd: " << Int2(nsubd, nsubd) << "\n";
   return Int2(nsubd, nsubd);
 }
 
@@ -410,7 +453,6 @@ bool AdaptiveGridSampler::need_subd_rect(const Rectangle rect)
         for (int x = XMIN; x <= XMAX; x++) {
           const int OFFSET = y * nsamples_[0] + x;
           Sample &smp = samples_[OFFSET];
-
           smp.data = Lerp(data02, data13, 1.*(x - XMIN) / (XMAX-XMIN));
         }
       }
