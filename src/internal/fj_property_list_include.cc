@@ -201,10 +201,17 @@ static int set_Renderer_filterwidth(void *self, const PropertyValue *value)
   return 0;
 }
 
-static int set_Renderer_max_adaptive_subdivision(void *self, const PropertyValue *value)
+static int set_Renderer_adaptive_max_subdivision(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetMaxSubdivision(static_cast<int>(value->vector[0]));
+  return 0;
+}
+
+static int set_Renderer_adaptive_subdivision_threshold(void *self, const PropertyValue *value)
+{
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetSubdivisionThreshold(value->vector[0]);
   return 0;
 }
 
@@ -434,7 +441,8 @@ static const Property Renderer_properties[] = {
   {PROP_VECTOR2, "pixelsamples",          {3, 3, 0, 0},      set_Renderer_pixelsamples},
   {PROP_VECTOR2, "tilesize",              {32, 32, 0, 0},    set_Renderer_tilesize},
   {PROP_VECTOR2, "filterwidth",           {2, 2, 0, 0},      set_Renderer_filterwidth},
-  {PROP_SCALAR,  "max_adaptive_subdivision", {1, 0, 0, 0},   set_Renderer_max_adaptive_subdivision},
+  {PROP_SCALAR,  "adaptive_max_subdivision", {1, 0, 0, 0},   set_Renderer_adaptive_max_subdivision},
+  {PROP_SCALAR,  "adaptive_subdivision_threshold", {.05, 0, 0, 0},   set_Renderer_adaptive_subdivision_threshold},
   {PROP_VECTOR4, "render_region",         {0, 0, 320, 2400}, set_Renderer_render_region},
   {PROP_SCALAR,  "use_max_thread",        {1, 0, 0, 0},      set_Renderer_use_max_thread},
   {PROP_SCALAR,  "thread_count",          {8, 0, 0, 0},      set_Renderer_thread_count},

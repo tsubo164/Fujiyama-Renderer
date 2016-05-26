@@ -195,7 +195,6 @@ Sample *AdaptiveGridSampler::get_next_sample()
       default: break;
     }
 
-    curr_corner_++;
     if (curr_corner_ == 4) {
       curr_corner_ = 0;
       rect_stack_.pop();
@@ -204,7 +203,12 @@ Sample *AdaptiveGridSampler::get_next_sample()
         //std::cout << "SUBD!!\n";
       } else {
         //std::cout << "NO SUBD!!\n";
+        continue;
       }
+    }
+    else {
+      // four corners are not done yet
+      curr_corner_++;
     }
 
     //const Int2 rate = Int2(2, 2); //GetPixelSamples();
@@ -364,7 +368,7 @@ bool AdaptiveGridSampler::need_subd_rect(const Rectangle rect)
   Vector4 min(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
   Vector4 max(FLT_MIN, FLT_MIN, FLT_MIN, FLT_MIN);
 
-  for (int i = 1; i < 4; i++) {
+  for (int i = 0; i < 4; i++) {
     const int OFFSET = corner[i][1] * nsamples_[0] + corner[i][0];
     const Sample &smp = samples_[OFFSET];
 
@@ -380,10 +384,11 @@ bool AdaptiveGridSampler::need_subd_rect(const Rectangle rect)
   }
 
   const Int2 size = rect.Size();
-  if (size[0] > 1 || size[1] < 1) {
+  if (size[0] > 1 || size[1] > 1) {
+    const Real subd_threshold = GetSubdivisionThreshold();
 
     for (int i = 0; i < 4; i++) {
-      if (max[i] - min[i] > .05) {
+      if (max[i] - min[i] > subd_threshold) {
         //----
         for (int i = 0; i < 4; i++) {
           const int OFFSET = corner[i][1] * nsamples_[0] + corner[i][0];

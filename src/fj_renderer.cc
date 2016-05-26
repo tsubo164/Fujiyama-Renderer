@@ -370,6 +370,7 @@ Renderer::Renderer()
   SetTileSize(64, 64);
   SetFilterWidth(2, 2);
   SetMaxSubdivision(1);
+  SetSubdivisionThreshold(.05);
   SetSampleJitter(1);
   SetSampleTimeRange(0, 1);
 
@@ -489,6 +490,12 @@ void Renderer::SetMaxSubdivision(int max_subd)
 {
   assert(max_subd >= 0);
   max_subd_ = max_subd;
+}
+
+void Renderer::SetSubdivisionThreshold(float subd_threshold)
+{
+  assert(subd_threshold >= 0);
+  subd_threshold_ = subd_threshold;
 }
 
 void Renderer::SetSampleJitter(float jitter)
@@ -807,6 +814,7 @@ static void init_worker(Worker *worker, int id,
   const double xfwidth = renderer->filterwidth_[0];
   const double yfwidth = renderer->filterwidth_[1];
   const int max_subd = renderer->max_subd_;
+  const float subd_threshold = renderer->subd_threshold_;
 
   worker->camera = renderer->camera_;
   worker->framebuffer = renderer->framebuffer_;
@@ -830,6 +838,7 @@ static void init_worker(Worker *worker, int id,
   worker->sampler->SetPixelSamples(Int2(xrate, yrate));
   worker->sampler->SetFilterWidth(Vector2(xfwidth, yfwidth));
   worker->sampler->SetMaxSubdivision(max_subd);
+  worker->sampler->SetSubdivisionThreshold(subd_threshold);
 
   worker->sampler->SetJitter(renderer->jitter_);
   worker->sampler->SetSampleTimeRange(

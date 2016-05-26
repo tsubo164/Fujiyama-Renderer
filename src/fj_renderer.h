@@ -47,6 +47,7 @@ public:
   void SetTileSize(int xtilesize, int ytilesize);
   void SetFilterWidth(float xfwidth, float yfwidth);
   void SetMaxSubdivision(int max_subd);
+  void SetSubdivisionThreshold(float subd_threshold);
   void SetSampleJitter(float jitter);
   void SetSampleTimeRange(double start_time, double end_time);
 
@@ -101,6 +102,7 @@ public:
   int tilesize_[2];
   float filterwidth_[2];
   int max_subd_;
+  float subd_threshold_;
   float jitter_;
   double sample_time_start_;
   double sample_time_end_;

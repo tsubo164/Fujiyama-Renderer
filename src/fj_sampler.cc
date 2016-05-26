@@ -18,6 +18,7 @@ Sampler::Sampler() :
   fwidth_(1., 1.),
   jitter_(1.),
   max_subd_(1),
+  subd_threshold_(.05),
 
   need_jitter_(true),
   need_time_sampling_(false),
@@ -59,6 +60,12 @@ void Sampler::SetMaxSubdivision(int max_subd)
   update_sample_counts();
 }
 
+void Sampler::SetSubdivisionThreshold(Real subd_threshold)
+{
+  assert(subd_threshold >= 0);
+  subd_threshold_ = subd_threshold;
+}
+
 void Sampler::SetJitter(Real jitter)
 {
   assert(jitter >= 0 && jitter <= 1);
@@ -96,6 +103,11 @@ const Vector2 &Sampler::GetFilterWidth() const
 int Sampler::GetMaxSubdivision() const
 {
   return max_subd_;
+}
+
+Real Sampler::GetSubdivisionThreshold() const
+{
+  return subd_threshold_;
 }
 
 Vector2 Sampler::GetSampleTimeRange() const

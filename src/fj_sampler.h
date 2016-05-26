@@ -23,6 +23,7 @@ public:
   void SetFilterWidth(const Vector2 &filter_width);
   // TODO ADAPTIVE_TEST
   void SetMaxSubdivision(int max_subd);
+  void SetSubdivisionThreshold(Real subd_threshold);
 
   void SetJitter(Real jitter);
   void SetSampleTimeRange(Real start_time, Real end_time);
@@ -32,6 +33,7 @@ public:
   const Vector2 &GetFilterWidth() const;
   // TODO ADAPTIVE_TEST
   int            GetMaxSubdivision() const;
+  Real           GetSubdivisionThreshold() const;
 
   Vector2 GetSampleTimeRange() const;
   bool IsSamplingTime() const;
@@ -55,6 +57,7 @@ private:
   Vector2 fwidth_;
   Real jitter_;
   int  max_subd_;
+  Real subd_threshold_;
 
   bool need_jitter_;
   bool need_time_sampling_;
