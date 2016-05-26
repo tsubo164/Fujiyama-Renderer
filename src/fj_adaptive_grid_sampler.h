@@ -29,7 +29,10 @@ private:
 
   // TODO ADAPTIVE_TEST
   Int2 compute_num_pixel_division() const;
-  bool need_subd_rect(const Rectangle rect);
+  bool compare_corners(const Rectangle rect);
+  void subdivide_rect(const Rectangle rect);
+  void interpolate_rect(const Rectangle rect);
+  bool need_subdivision(const Rectangle rect);
 
   std::vector<Sample> samples_;
 

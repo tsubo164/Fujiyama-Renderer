@@ -5,6 +5,7 @@
 #define FJ_VECTOR_H
 
 #include "fj_types.h"
+#include "fj_numeric.h"
 #include <iostream>
 #include <cassert>
 #include <cmath>
@@ -526,6 +527,24 @@ inline Vector4 operator-(const Vector4 &a)
 inline Vector4 Lerp(const Vector4 &a, const Vector4 &b, Real t)
 {
   return (1 - t) * a + t * b;
+}
+
+inline Vector4 Min(const Vector4 &a, const Vector4 &b)
+{
+  return Vector4(
+      Min(a[0], b[0]),
+      Min(a[1], b[1]),
+      Min(a[2], b[2]),
+      Min(a[3], b[3]));
+}
+
+inline Vector4 Max(const Vector4 &a, const Vector4 &b)
+{
+  return Vector4(
+      Max(a[0], b[0]),
+      Max(a[1], b[1]),
+      Max(a[2], b[2]),
+      Max(a[3], b[3]));
 }
 
 inline std::ostream &operator<<(std::ostream &os, const Vector4 &a)
