@@ -27,12 +27,11 @@ private:
   Int2 count_samples_in_pixel() const;
   Int2 count_samples_in_margin() const;
 
-  // TODO ADAPTIVE_TEST
   Int2 compute_num_pixel_division() const;
   bool compare_corners(const Rectangle rect);
   void subdivide_rect(const Rectangle rect);
   void interpolate_rect(const Rectangle rect);
-  bool need_subdivision(const Rectangle rect);
+  bool subdivide_or_interpolate(const Rectangle rect);
 
   std::vector<Sample> samples_;
 
@@ -42,15 +41,11 @@ private:
   Int2 npxlsmps_;
   Int2 ndivision_;
 
-  int current_index_;
-
-  // TODO ADAPTIVE_TEST
   typedef std::stack<Rectangle,std::vector<Rectangle> > Stack;
-  Stack rect_stack_;
-  Int2 curr_pixel_;
+  Stack subd_stack_;
   int  curr_corner_;
 
-  std::vector<int> subd_flag_;
+  std::vector<float> subd_flag_;
 };
 
 } // namespace xxx
