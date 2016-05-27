@@ -180,13 +180,6 @@ static int set_Renderer_resolution(void *self, const PropertyValue *value)
   return 0;
 }
 
-static int set_Renderer_pixelsamples(void *self, const PropertyValue *value)
-{
-  Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetPixelSamples((int) value->vector[0], (int) value->vector[1]);
-  return 0;
-}
-
 static int set_Renderer_tilesize(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
@@ -198,6 +191,20 @@ static int set_Renderer_filterwidth(void *self, const PropertyValue *value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetFilterWidth(value->vector[0], value->vector[1]);
+  return 0;
+}
+
+static int set_Renderer_sampler_type(void *self, const PropertyValue *value)
+{
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetSamplerType(static_cast<int>(value->vector[0]));
+  return 0;
+}
+
+static int set_Renderer_pixelsamples(void *self, const PropertyValue *value)
+{
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetPixelSamples((int) value->vector[0], (int) value->vector[1]);
   return 0;
 }
 
@@ -438,9 +445,10 @@ static const Property Renderer_properties[] = {
   {PROP_SCALAR,  "raymarch_refract_step", {.1, 0, 0, 0},     set_Renderer_raymarch_refract_step},
   {PROP_VECTOR2, "sample_time_range",     {0, 1, 0, 0},      set_Renderer_sample_time_range},
   {PROP_VECTOR2, "resolution",            {320, 240, 0, 0},  set_Renderer_resolution},
-  {PROP_VECTOR2, "pixelsamples",          {3, 3, 0, 0},      set_Renderer_pixelsamples},
   {PROP_VECTOR2, "tilesize",              {32, 32, 0, 0},    set_Renderer_tilesize},
   {PROP_VECTOR2, "filterwidth",           {2, 2, 0, 0},      set_Renderer_filterwidth},
+  {PROP_SCALAR,  "sampler_type",          {0, 0, 0, 0},      set_Renderer_sampler_type},
+  {PROP_VECTOR2, "pixelsamples",          {3, 3, 0, 0},      set_Renderer_pixelsamples},
   {PROP_SCALAR,  "adaptive_max_subdivision", {1, 0, 0, 0},   set_Renderer_adaptive_max_subdivision},
   {PROP_SCALAR,  "adaptive_subdivision_threshold", {.05, 0, 0, 0},   set_Renderer_adaptive_subdivision_threshold},
   {PROP_VECTOR4, "render_region",         {0, 0, 320, 2400}, set_Renderer_render_region},

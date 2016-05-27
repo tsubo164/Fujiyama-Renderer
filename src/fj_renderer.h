@@ -36,6 +36,11 @@ public:
   bool report_to_viewer;
 };
 
+enum RendererSamplerType {
+  RENDERER_FIXED_GRID_SAMPLER = 0,
+  RENDERER_ADAPTIVE_GRID_SAMPLER
+};
+
 class Renderer {
 public:
   Renderer();
@@ -43,9 +48,11 @@ public:
 
   void SetResolution(int xres, int yres);
   void SetRenderRegion(int xmin, int ymin, int xmax, int ymax);
-  void SetPixelSamples(int xrate, int yrate);
   void SetTileSize(int xtilesize, int ytilesize);
   void SetFilterWidth(float xfwidth, float yfwidth);
+
+  void SetSamplerType(int sampler_type);
+  void SetPixelSamples(int xrate, int yrate);
   void SetMaxSubdivision(int max_subd);
   void SetSubdivisionThreshold(float subd_threshold);
   void SetSampleJitter(float jitter);
@@ -98,9 +105,11 @@ public:
 
   int resolution_[2];
   Rectangle frame_region_;
-  int pixelsamples_[2];
   int tilesize_[2];
   float filterwidth_[2];
+
+  int sampler_type_;
+  int pixelsamples_[2];
   int max_subd_;
   float subd_threshold_;
   float jitter_;

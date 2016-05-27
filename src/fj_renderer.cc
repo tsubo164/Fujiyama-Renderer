@@ -366,9 +366,11 @@ Renderer::Renderer()
   nlights_ = 0;
 
   SetResolution(320, 240);
-  SetPixelSamples(3, 3);
   SetTileSize(64, 64);
   SetFilterWidth(2, 2);
+
+  SetSamplerType(RENDERER_FIXED_GRID_SAMPLER);
+  SetPixelSamples(3, 3);
   SetMaxSubdivision(1);
   SetSubdivisionThreshold(.05);
   SetSampleJitter(1);
@@ -462,14 +464,6 @@ void Renderer::SetRenderRegion(int xmin, int ymin, int xmax, int ymax)
   frame_region_.max[1] = ymax;
 }
 
-void Renderer::SetPixelSamples(int xrate, int yrate)
-{
-  assert(xrate > 0);
-  assert(yrate > 0);
-  pixelsamples_[0] = xrate;
-  pixelsamples_[1] = yrate;
-}
-
 void Renderer::SetTileSize(int xtilesize, int ytilesize)
 {
   assert(xtilesize > 0);
@@ -484,6 +478,27 @@ void Renderer::SetFilterWidth(float xfwidth, float yfwidth)
   assert(yfwidth > 0);
   filterwidth_[0] = xfwidth;
   filterwidth_[1] = yfwidth;
+}
+
+void Renderer::SetSamplerType(int sampler_type)
+{
+  switch (sampler_type) {
+  case RENDERER_FIXED_GRID_SAMPLER:
+  case RENDERER_ADAPTIVE_GRID_SAMPLER:
+    sampler_type_ = sampler_type;
+    break;
+  default:
+    sampler_type_ = RENDERER_FIXED_GRID_SAMPLER;
+    break;
+  }
+}
+
+void Renderer::SetPixelSamples(int xrate, int yrate)
+{
+  assert(xrate > 0);
+  assert(yrate > 0);
+  pixelsamples_[0] = xrate;
+  pixelsamples_[1] = yrate;
 }
 
 void Renderer::SetMaxSubdivision(int max_subd)
@@ -815,6 +830,7 @@ static void init_worker(Worker *worker, int id,
   const double yfwidth = renderer->filterwidth_[1];
   const int max_subd = renderer->max_subd_;
   const float subd_threshold = renderer->subd_threshold_;
+  const int sampler_type = renderer->sampler_type_;
 
   worker->camera = renderer->camera_;
   worker->framebuffer = renderer->framebuffer_;
@@ -829,11 +845,24 @@ static void init_worker(Worker *worker, int id,
   worker->frame_id = renderer->frame_id_;
 
   // Sampler
+  switch (sampler_type) {
+  case RENDERER_FIXED_GRID_SAMPLER:
+    worker->sampler = new FixedGridSampler();
+    break;
+  case RENDERER_ADAPTIVE_GRID_SAMPLER:
+    worker->sampler = new AdaptiveGridSampler();
+    break;
+  default:
+    worker->sampler = new FixedGridSampler();
+    break;
+  }
+  /*
   if (0) {
     worker->sampler = new FixedGridSampler();
   } else {
     worker->sampler = new AdaptiveGridSampler();
   }
+  */
   worker->sampler->SetResolution(Int2(xres, yres));
   worker->sampler->SetPixelSamples(Int2(xrate, yrate));
   worker->sampler->SetFilterWidth(Vector2(xfwidth, yfwidth));
