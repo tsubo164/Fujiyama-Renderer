@@ -13,7 +13,7 @@
 #include <cctype>
 
 static void print_command(const CommandArgument *args, int nargs);
-static int enum_to_num(CommandArgument *arg);
+static int symbol_to_number(CommandArgument *arg);
 static int scan_number(CommandArgument *arg);
 static int build_arguments(Parser *parser,
     const Command *command, CommandArgument *arguments);
@@ -266,10 +266,10 @@ static int parse_line(Parser *parser, const char *line)
 static int scan_number(CommandArgument *arg)
 {
   char *end = NULL;
-  const int is_enum = enum_to_num(arg);
+  const int is_symbol = symbol_to_number(arg);
 
-  if (is_enum) {
-    // arg->num is already set from enum string
+  if (is_symbol) {
+    // arg->num is already set from symbol string
     return 0;
   }
 
@@ -281,7 +281,7 @@ static int scan_number(CommandArgument *arg)
   return 0;
 }
 
-static int enum_to_num(CommandArgument *arg)
+static int symbol_to_number(CommandArgument *arg)
 {
   const char *str = arg->str;
 
@@ -299,6 +299,10 @@ static int enum_to_num(CommandArgument *arg)
   if (strcmp(str, "ORDER_YZX") == 0) {arg->num = SI_ORDER_YZX; return 1;}
   if (strcmp(str, "ORDER_ZXY") == 0) {arg->num = SI_ORDER_ZXY; return 1;}
   if (strcmp(str, "ORDER_ZYX") == 0) {arg->num = SI_ORDER_ZYX; return 1;}
+
+  // sampler type
+  if (strcmp(str, "FIXED_GRID_SAMPER") == 0)     {arg->num = SI_FIXED_GRID_SAMPLER; return 1;}
+  if (strcmp(str, "ADAPTIVE_GRID_SAMPLER") == 0) {arg->num = SI_ADAPTIVE_GRID_SAMPLER; return 1;}
 
   return 0;
 }

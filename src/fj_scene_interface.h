@@ -6,6 +6,7 @@
 
 #include "fj_compatibility.h"
 #include "fj_callback.h"
+#include "fj_renderer.h"
 
 namespace fj {
 
@@ -52,6 +53,11 @@ enum SiLightType {
   SI_GRID_LIGHT,
   SI_SPHERE_LIGHT,
   SI_DOME_LIGHT
+};
+
+enum SiSamplerType {
+  SI_FIXED_GRID_SAMPLER = RENDERER_FIXED_GRID_SAMPLER,
+  SI_ADAPTIVE_GRID_SAMPLER = RENDERER_ADAPTIVE_GRID_SAMPLER
 };
 
 /* Error interfaces */
