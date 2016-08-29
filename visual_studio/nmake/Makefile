@@ -76,6 +76,7 @@ all: \
 #===============================================================================
 libscene_dll_obj = \
   ..\..\src\fj_accelerator.obj \
+  ..\..\src\fj_adaptive_grid_sampler.obj \
   ..\..\src\fj_box.obj \
   ..\..\src\fj_bvh_accelerator.obj \
   ..\..\src\fj_callback.obj \
@@ -84,13 +85,15 @@ libscene_dll_obj = \
   ..\..\src\fj_curve_io.obj \
   ..\..\src\fj_file_io.obj \
   ..\..\src\fj_filter.obj \
+  ..\..\src\fj_fixed_grid_sampler.obj \
   ..\..\src\fj_framebuffer.obj \
   ..\..\src\fj_framebuffer_io.obj \
   ..\..\src\fj_geo_io.obj \
+  ..\..\src\fj_geometry.obj \
+  ..\..\src\fj_geometry_io.obj \
   ..\..\src\fj_grid_accelerator.obj \
   ..\..\src\fj_importance_sampling.obj \
   ..\..\src\fj_interval.obj \
-  ..\..\src\fj_io.obj \
   ..\..\src\fj_light.obj \
   ..\..\src\fj_matrix.obj \
   ..\..\src\fj_mesh.obj \
@@ -132,6 +135,9 @@ libscene_dll_obj = \
 ..\..\src\fj_accelerator.obj : ..\..\src\fj_accelerator.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_accelerator.cc
 
+..\..\src\fj_adaptive_grid_sampler.obj : ..\..\src\fj_adaptive_grid_sampler.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_adaptive_grid_sampler.cc
+
 ..\..\src\fj_box.obj : ..\..\src\fj_box.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_box.cc
 
@@ -156,6 +162,9 @@ libscene_dll_obj = \
 ..\..\src\fj_filter.obj : ..\..\src\fj_filter.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_filter.cc
 
+..\..\src\fj_fixed_grid_sampler.obj : ..\..\src\fj_fixed_grid_sampler.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_fixed_grid_sampler.cc
+
 ..\..\src\fj_framebuffer.obj : ..\..\src\fj_framebuffer.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_framebuffer.cc
 
@@ -165,6 +174,12 @@ libscene_dll_obj = \
 ..\..\src\fj_geo_io.obj : ..\..\src\fj_geo_io.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_geo_io.cc
 
+..\..\src\fj_geometry.obj : ..\..\src\fj_geometry.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_geometry.cc
+
+..\..\src\fj_geometry_io.obj : ..\..\src\fj_geometry_io.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_geometry_io.cc
+
 ..\..\src\fj_grid_accelerator.obj : ..\..\src\fj_grid_accelerator.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_grid_accelerator.cc
 
@@ -173,9 +188,6 @@ libscene_dll_obj = \
 
 ..\..\src\fj_interval.obj : ..\..\src\fj_interval.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_interval.cc
-
-..\..\src\fj_io.obj : ..\..\src\fj_io.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_io.cc
 
 ..\..\src\fj_light.obj : ..\..\src\fj_light.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_light.cc
