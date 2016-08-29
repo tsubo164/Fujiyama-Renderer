@@ -1,0 +1,22 @@
+Fujiyama Renderer v0.3.2(Alpha) Release Notes
+=============================================
+
+New features since v0.3.1
+-------------------------
+ * Adaptive grid pixel sampling has been implemented. Up to 66% faster than
+   fixed grid pixel sampling.
+
+ * Now FJ_LIBRARY_PATH is requried to set up the paths to the fujiyama library,
+   bin tools, shaders and plug-ins. This simplifies the setup pipelines
+   for multi-platform environments.
+
+Features under development
+--------------------------
+ * Deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Global illumination
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support
