@@ -4,7 +4,7 @@
 # NOTE curvegen generates different curve color
 # since noise functions have been changed since v0.0.5.
 # The sample image was rendered by v0.0.2.
-# Copyright (c) 2011-2015 Hiroshi Tsubokawa
+# Copyright (c) 2011-2016 Hiroshi Tsubokawa
 
 # NOTE How to make bunny.crv
 # $ ply2mesh bunny.ply  bunny.mesh

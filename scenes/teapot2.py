@@ -4,7 +4,7 @@
 # This script is the python version of teapot.scn with minor changes.
 # It also demonstrates how to load *.ply and *.hdr files
 # directly without pre-conversion.
-# Copyright (c) 2011-2015 Hiroshi Tsubokawa
+# Copyright (c) 2011-2016 Hiroshi Tsubokawa
 
 import fujiyama
 

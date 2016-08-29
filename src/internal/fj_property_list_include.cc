@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2015 Hiroshi Tsubokawa
+// Copyright (c) 2011-2016 Hiroshi Tsubokawa
 // See LICENSE and README
 
 // this file is inteded to be included in fj_scene_interface.c 

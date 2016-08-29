@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # run all example scenes
-# Copyright (c) 2011-2015 Hiroshi Tsubokawa
+# Copyright (c) 2011-2016 Hiroshi Tsubokawa
 
 import subprocess
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # 2 teapots and 2 bunnies with 1 sphere light
-# Copyright (c) 2011-2015 Hiroshi Tsubokawa
+# Copyright (c) 2011-2016 Hiroshi Tsubokawa
 
 import fujiyama
 

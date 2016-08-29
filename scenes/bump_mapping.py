@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # 4 textured spheres with 1 dome light with an HDRI
-# Copyright (c) 2011-2015 Hiroshi Tsubokawa
+# Copyright (c) 2011-2016 Hiroshi Tsubokawa
 
 import fujiyama
 

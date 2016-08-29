@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2015 Hiroshi Tsubokawa
+// Copyright (c) 2011-2016 Hiroshi Tsubokawa
 // See LICENSE and README
 
 #ifndef FJ_ADAPTIVE_GRID_SAMPLER_H
