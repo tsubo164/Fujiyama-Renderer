@@ -75,6 +75,7 @@ designed to handle production image rendering.
 
 * Sampling and Filtering
   + Gaussian and Box pixel filters - supports filter width bigger than 1 pixel
+  + Adaptive grid pixel sampling - subdivides pixels based on color threshold
   + Uniform grid pixel sampling
   + Jittered pixel sampling 
 
@@ -82,4 +83,4 @@ designed to handle production image rendering.
   + Rendering callbacks - 5 points to hook rendering process
 
 http://fujiyama-renderer.com/
-Copyright (c) 2011-2015 Hiroshi Tsubokawa
+Copyright (c) 2011-2016 Hiroshi Tsubokawa
