@@ -4,6 +4,7 @@
 #See LICENSE and README
 
 import subprocess
+import platform
 import tempfile
 import shutil
 import uuid
@@ -340,6 +341,37 @@ class SceneInterface:
 		temp_filename = os.path.join(self.tempdir, temp_filename)
 		self.post_conversions.append([converter, temp_filename, orig_filename])
 		return temp_filename
+
+def setup_environment():
+	fj_lib_path = 'FJ_LIBRARY_PATH'
+	platform_name = platform.system()
+	lib_path = ''
+
+	if platform_name == 'Darwin':
+		lib_path = 'DYLD_LIBRARY_PATH'
+	elif platform_name == 'Linux':
+		lib_path = 'DYLD_LIBRARY_PATH'
+	elif platform_name == 'Windows':
+		lib_path = 'PATH'
+	else:
+		print
+		print '# ERROR! unknown platform'
+		print
+		sys.exit()
+
+	if os.environ[fj_lib_path] == '':
+		print
+		print '# ERROR!', fj_lib_path, 'environment variable is not set up properly'
+		print
+		sys.exit()
+	else:
+		print
+		print '# Setting up environment variable'
+		os.environ[lib_path] = os.environ[fj_lib_path]
+		print '#', fj_lib_path, ' =', os.environ[lib_path]
+		print
+
+setup_environment()
 
 if __name__ == '__main__':
 	si = SceneInterface()
