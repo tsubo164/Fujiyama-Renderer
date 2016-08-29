@@ -151,9 +151,13 @@ Sample *AdaptiveGridSampler::get_next_sample()
     }
   }
 
-  for (std::size_t i = 0; i < samples_.size(); i++) {
-    samples_[i].data[3] = subd_flag_[i];
+#define STORE_SUBD_TO_ALPHA 0
+  if (STORE_SUBD_TO_ALPHA) {
+    for (std::size_t i = 0; i < samples_.size(); i++) {
+      samples_[i].data[3] = subd_flag_[i];
+    }
   }
+#undef STORE_SUBD_TO_ALPHA
 
   return NULL;
 }
