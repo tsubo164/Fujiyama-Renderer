@@ -15,7 +15,9 @@ AdaptiveGridSampler::AdaptiveGridSampler() :
   pixel_start_(0, 0),
   margin_(0, 0),
   npxlsmps_(1, 1),
-  ndivision_(2, 2)
+  ndivision_(2, 2),
+
+  curr_corner_(0)
 {
 }
 
@@ -57,6 +59,7 @@ int AdaptiveGridSampler::generate_samples(const Rectangle &region)
 
   subd_flag_.clear();
   subd_flag_.resize(samples_.size(), -1);
+  curr_corner_ = 0;
   int sample_id = 0;
 
   for (int y = 0; y < nsamples_[1]; y++) {
