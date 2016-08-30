@@ -39,7 +39,6 @@ ptcgen_exe = $(out_dir)\ptcgen.exe
 scene_exe = $(out_dir)\scene.exe
 velgen_exe = $(out_dir)\velgen.exe
 box_test_exe = $(out_dir)\box_test.exe
-io_test_exe = $(out_dir)\io_test.exe
 numeric_test_exe = $(out_dir)\numeric_test.exe
 vector_test_exe = $(out_dir)\vector_test.exe
 
@@ -67,7 +66,6 @@ all: \
   $(scene_exe) \
   $(velgen_exe) \
   $(box_test_exe) \
-  $(io_test_exe) \
   $(numeric_test_exe) \
   $(vector_test_exe)
 
@@ -610,17 +608,6 @@ $(box_test_exe) : $(box_test_exe_obj)
 	@$(LD) $(LDFLAGS) /out:$@  libscene.lib $(box_test_exe_obj)
 
 #===============================================================================
-io_test_exe_obj = \
-  ..\..\tests\io_test.obj
-
-..\..\tests\io_test.obj : ..\..\tests\io_test.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tests\io_test.cc
-
-$(io_test_exe) : $(io_test_exe_obj)
-	@echo io_test.exe
-	@$(LD) $(LDFLAGS) /out:$@  libscene.lib ../../tests/unit_test.obj $(io_test_exe_obj)
-
-#===============================================================================
 numeric_test_exe_obj = \
   ..\..\tests\numeric_test.obj
 
@@ -645,7 +632,6 @@ $(vector_test_exe) : $(vector_test_exe_obj)
 #===============================================================================
 check:
 	@$(box_test_exe)
-	@$(io_test_exe)
 	@$(numeric_test_exe)
 	@$(vector_test_exe)
 
@@ -715,8 +701,6 @@ clean:
 	$(RM) $(velgen_exe_obj)
 	$(RM) $(box_test_exe)
 	$(RM) $(box_test_exe_obj)
-	$(RM) $(io_test_exe)
-	$(RM) $(io_test_exe_obj)
 	$(RM) $(numeric_test_exe)
 	$(RM) $(numeric_test_exe_obj)
 	$(RM) $(vector_test_exe)

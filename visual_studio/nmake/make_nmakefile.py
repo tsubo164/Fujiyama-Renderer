@@ -214,13 +214,6 @@ target_list = [
 	'additional_libs':    'libscene.lib',
 },
 {
-	'name':               'io_test.exe',
-	'source_list':        [top_dir + '/tests/io_test.cc'],
-	'additional_cflags':  '',
-	'additional_ldflags': '',
-	'additional_libs':    'libscene.lib ' + top_dir + '/tests/unit_test.obj',
-},
-{
 	'name':               'numeric_test.exe',
 	'source_list':        [top_dir + '/tests/numeric_test.cc'],
 	'additional_cflags':  '',
