@@ -346,6 +346,7 @@ def setup_environment():
 	fj_lib_path = 'FJ_LIBRARY_PATH'
 	platform_name = platform.system()
 	lib_path = ''
+	is_win = False
 
 	if platform_name == 'Darwin':
 		lib_path = 'DYLD_LIBRARY_PATH'
@@ -353,23 +354,27 @@ def setup_environment():
 		lib_path = 'DYLD_LIBRARY_PATH'
 	elif platform_name == 'Windows':
 		lib_path = 'PATH'
+		is_win = True
 	else:
 		print
 		print '# ERROR! unknown platform'
 		print
 		sys.exit()
 
-	if os.environ[fj_lib_path] == '':
+	if fj_lib_path in os.environ:
+		print
+		print '# Setting up environment variable'
+		if is_win:
+			os.environ[lib_path] = os.environ[lib_path] + ';' + os.environ[fj_lib_path]
+		else:
+			os.environ[lib_path] = os.environ[fj_lib_path]
+		print '#', fj_lib_path, ' =', os.environ[lib_path]
+		print
+	else:
 		print
 		print '# ERROR!', fj_lib_path, 'environment variable is not set up properly'
 		print
 		sys.exit()
-	else:
-		print
-		print '# Setting up environment variable'
-		os.environ[lib_path] = os.environ[fj_lib_path]
-		print '#', fj_lib_path, ' =', os.environ[lib_path]
-		print
 
 setup_environment()
 
