@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2016 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2016 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_progress.h"
 #include <iostream>

@@ -128,7 +128,11 @@ static void increment_progress(void *data)
     fp->progress.Done();
 
     if (idx != 10) {
+      // FIXME deal with the case where total iteration < 10
+      // This is temp fix
+      if (fp->iteration_list[idx] != 0) {
       fp->progress.Start(fp->iteration_list[idx]);
+      }
     }
   }
 }

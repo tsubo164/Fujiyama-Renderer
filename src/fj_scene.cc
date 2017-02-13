@@ -145,6 +145,11 @@ Shader *Scene::NewShader(const Plugin *plugin)
   Shader *shader = new Shader();
   shader->Initialize(plugin);
   return push_entry_(ShaderList, shader);
+#if n
+  Shader *shader = plugin->NewInstance();
+  //shader->Initialize();
+  return push_entry_(ShaderList, shader);
+#endif
 }
 
 // Volume
