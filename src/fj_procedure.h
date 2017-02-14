@@ -29,18 +29,14 @@ enum PrcErrorNo {
 class FJ_API Procedure {
 public:
   Procedure();
-  ~Procedure();
+  virtual ~Procedure();
 
-  int Initialize(Plugin *plugin);
-  int Run();
-
-  const Property *GetPropertyList() const;
+  int Run() const;
   int SetProperty(const std::string &prop_name, const PropertyValue &src_data);
 
-public:
-  void *self_;
-  const ProcedureFunctionTable *vptr_;
-  const Plugin *plugin_;
+private:
+  virtual int run() const = 0;
+  virtual const Property *get_property_list() const = 0;
 };
 
 } // namespace xxx

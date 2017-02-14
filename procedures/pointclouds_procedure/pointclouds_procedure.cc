@@ -14,14 +14,18 @@
 
 using namespace fj;
 
-class CloudVolumeProcedure {
+class PointCloudsProcedure : Procedure {
 public:
-  CloudVolumeProcedure() : volume(NULL), turbulence(NULL) {}
-  ~CloudVolumeProcedure() {}
+  PointCloudsProcedure() : volume(NULL), turbulence(NULL) {}
+  virtual ~PointCloudsProcedure() {}
 
 public:
   Volume *volume;
   Turbulence *turbulence;
+
+private:
+  virtual int run() const;
+  const Property *get_property_list() const;
 };
 
 static void *MyNew(void);
@@ -38,6 +42,7 @@ static int set_turbulence(void *self, const PropertyValue *value);
 
 static int FillWithPointClouds(Volume *volume,
     const CloudControlPoint *cp, const Turbulence *turbulence);
+static int FillWithConstant(Volume *volume, float density);
 
 static const Property MyProperties[] = {
   {PROP_VOLUME,     "volume",     {0, 0, 0, 0}, set_volume},
@@ -68,22 +73,51 @@ FJ_PLUGIN_API int Initialize(PluginInfo *info)
 
 static void *MyNew(void)
 {
-  CloudVolumeProcedure *cloud = new CloudVolumeProcedure();
+  PointCloudsProcedure *cloud = new PointCloudsProcedure();
 
   return cloud;
 }
 
 static void MyFree(void *self)
 {
-  CloudVolumeProcedure *cloud = (CloudVolumeProcedure *) self;
+  PointCloudsProcedure *cloud = (PointCloudsProcedure *) self;
   if (cloud == NULL)
     return;
   delete cloud;
 }
 
+int PointCloudsProcedure::run() const
+{
+  if (volume == NULL) {
+    return -1;
+  }
+
+  CloudControlPoint cp;
+  cp.orig = Vector(0, 0, 0);
+  cp.udir = Vector(1, 0, 0);
+  cp.vdir = Vector(0, 1, 0);
+  cp.wdir = Vector(0, 0, 1);
+  cp.noise_space = Vector(0, 0, 0);
+  cp.density = 5;
+  cp.radius = .75;
+  cp.noise_amplitude = 1;
+
+  const int err = FillWithPointClouds(volume, &cp, turbulence);
+  if (0) {
+    FillWithConstant(volume, 1.0);
+  }
+
+  return err;
+}
+
+const Property *PointCloudsProcedure::get_property_list() const
+{
+  return MyProperties;
+}
+
 static int MyRun(void *self)
 {
-  CloudVolumeProcedure *cloud = (CloudVolumeProcedure *) self;
+  PointCloudsProcedure *cloud = (PointCloudsProcedure *) self;
   CloudControlPoint cp;
   int err = 0;
 
@@ -107,7 +141,7 @@ static int MyRun(void *self)
 
 static int set_volume(void *self, const PropertyValue *value)
 {
-  CloudVolumeProcedure *cloud = (CloudVolumeProcedure *) self;
+  PointCloudsProcedure *cloud = (PointCloudsProcedure *) self;
 
   if (value->volume == NULL)
     return -1;
@@ -119,7 +153,7 @@ static int set_volume(void *self, const PropertyValue *value)
 
 static int set_turbulence(void *self, const PropertyValue *value)
 {
-  CloudVolumeProcedure *cloud = (CloudVolumeProcedure *) self;
+  PointCloudsProcedure *cloud = (PointCloudsProcedure *) self;
 
   if (value->turbulence == NULL)
     return -1;
@@ -202,6 +236,28 @@ static int FillWithPointClouds(Volume *volume,
         value = volume->GetValue(i, j, k);
         volume->SetValue(i, j, k, Max(value, pyro_value));
 
+        progress.Increment();
+      }
+    }
+  }
+  progress.Done();
+
+  return 0;
+}
+
+static int FillWithConstant(Volume *volume, float density)
+{
+  int xres, yres, zres;
+  volume->GetResolution(&xres, &yres, &zres);
+
+  // TODO come up with the best place to put progress
+  Progress progress;
+  progress.Start(xres * yres * zres);
+
+  for (int k = 0; k < zres; k++) {
+    for (int j = 0; j < yres; j++) {
+      for (int i = 0; i < xres; i++) {
+        volume->SetValue(i, j, k, density);
         progress.Increment();
       }
     }

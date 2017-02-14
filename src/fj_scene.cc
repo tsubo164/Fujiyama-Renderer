@@ -105,14 +105,14 @@ Turbulence *Scene::NewTurbulence()
 // Procedure
 Procedure *Scene::NewProcedure(Plugin *plugin)
 {
-  /*
   void *instance = plugin->CreateInstance();
   Procedure *procedure = reinterpret_cast<Procedure *>(instance);
   return push_entry_(ProcedureList, procedure);
-  */
+  /*
   Procedure *procedure = new Procedure();
   procedure->Initialize(plugin);
   return push_entry_(ProcedureList, procedure);
+  */
 }
 
 // Renderer

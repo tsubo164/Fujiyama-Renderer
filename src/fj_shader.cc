@@ -8,8 +8,8 @@
 namespace fj {
 
 static const Color NO_SHADER_COLOR(.5, 1., 0.);
-static int error_no = SHD_ERR_NOERR;
-static void set_error(int err);
+//static int error_no = SHD_ERR_NOERR;
+//static void set_error(int err);
 
 Shader::Shader()
 {
@@ -39,9 +39,11 @@ int Shader::SetProperty(const std::string &prop_name, const PropertyValue &src_d
   return dst_prop->SetProperty(this, &src_data);
 }
 
+/*
 static void set_error(int err)
 {
   error_no = err;
 }
+*/
 
 } // namespace xxx
