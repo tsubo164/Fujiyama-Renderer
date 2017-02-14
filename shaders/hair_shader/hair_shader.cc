@@ -13,10 +13,10 @@
 
 using namespace fj;
 
-class HairShader {
+class HairShader : public Shader {
 public:
   HairShader() {}
-  ~HairShader() {}
+  virtual ~HairShader() {}
 
 public:
   Color diffuse;
@@ -25,6 +25,11 @@ public:
   float roughness;
 
   Color reflect;
+
+private:
+  virtual void evaluate(const TraceContext &cxt,
+      const SurfaceInput &in, SurfaceOutput *out) const;
+  const Property *get_property_list() const;
 };
 
 static void *MyNew(void);
@@ -44,9 +49,8 @@ static int set_roughness(void *self, const PropertyValue *value);
 static int set_reflect(void *self, const PropertyValue *value);
 
 // hair shading implementations
-static float kajiya_diffuse(const Vector *tangent, const Vector *Ln);
-static float kajiya_specular(const Vector *tangent,
-    const Vector *Ln, const Vector *I);
+static float kajiya_diffuse(const Vector &tangent, const Vector &Ln);
+static float kajiya_specular(const Vector &tangent, const Vector &Ln, const Vector &I);
 
 static const Property MyProperties[] = {
   {PROP_VECTOR3, "diffuse",   {1, 1, 1, 0}, set_diffuse},
@@ -95,6 +99,43 @@ static void MyFree(void *self)
   delete hair;
 }
 
+void HairShader::evaluate(const TraceContext &cxt,
+    const SurfaceInput &in, SurfaceOutput *out) const
+{
+  // allocate samples
+  LightSample *samples = SlNewLightSamples(&in);
+  out->Cs = Color();
+  const int nsamples = SlGetLightSampleCount(&in);
+
+  for (int i = 0; i < nsamples; i++) {
+    LightOutput Lout = {};
+    Vector tangent;
+    float diff = 0;
+    float spec = 0;
+
+    SlIlluminance(&cxt, &samples[i], &in.P, &in.N, PI, &in, &Lout);
+
+    tangent = in.dPdv;
+    Normalize(&tangent);
+
+    diff = kajiya_diffuse(tangent, Lout.Ln);
+    spec = kajiya_specular(tangent, Lout.Ln, in.I);
+
+    out->Cs.r += (in.Cd.r * diffuse.r * diff + spec) * Lout.Cl.r;
+    out->Cs.g += (in.Cd.g * diffuse.g * diff + spec) * Lout.Cl.g;
+    out->Cs.b += (in.Cd.b * diffuse.b * diff + spec) * Lout.Cl.b;
+  }
+
+  SlFreeLightSamples(samples);
+
+  out->Os = 1;
+}
+
+const Property *HairShader::get_property_list() const
+{
+  return MyProperties;
+}
+
 static void MyEvaluate(const void *self, const TraceContext *cxt,
     const SurfaceInput *in, SurfaceOutput *out)
 {
@@ -120,8 +161,8 @@ static void MyEvaluate(const void *self, const TraceContext *cxt,
     tangent = in->dPdv;
     Normalize(&tangent);
 
-    diff = kajiya_diffuse(&tangent, &Lout.Ln);
-    spec = kajiya_specular(&tangent, &Lout.Ln, &in->I);
+    diff = kajiya_diffuse(tangent, Lout.Ln);
+    spec = kajiya_specular(tangent, Lout.Ln, in->I);
 
     out->Cs.r += (in->Cd.r * hair->diffuse.r * diff + spec) * Lout.Cl.r;
     out->Cs.g += (in->Cd.g * hair->diffuse.g * diff + spec) * Lout.Cl.g;
@@ -196,21 +237,20 @@ static int set_reflect(void *self, const PropertyValue *value)
   return 0;
 }
 
-static float kajiya_diffuse(const Vector *tangent, const Vector *Ln)
+static float kajiya_diffuse(const Vector &tangent, const Vector &Ln)
 {
-  const float TL = Dot(*tangent, *Ln);
+  const float TL = Dot(tangent, Ln);
   const float diff = sqrt(1-TL*TL);
 
   return diff;
 }
 
-static float kajiya_specular(const Vector *tangent,
-    const Vector *Ln, const Vector *I)
+static float kajiya_specular(const Vector &tangent, const Vector &Ln, const Vector &I)
 {
-  float spec = 0;
   const float roughness = .05;
-  const float TL = Dot(*tangent, *Ln);
-  const float TI = Dot(*tangent, *I);
+  const float TL = Dot(tangent, Ln);
+  const float TI = Dot(tangent, I);
+  float spec = 0;
 
   assert(-1 <= TL && TL <= 1);
   assert(-1 <= TI && TI <= 1);

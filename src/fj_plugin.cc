@@ -71,7 +71,6 @@ int Plugin::Open(const std::string &filename)
 void Plugin::Close()
 {
   for (std::size_t i = 0; i < instance_list_.size(); i++) {
-    std::cout << "deleting shader: " << i << "\n";
     DeleteInstance(instance_list_[i]);
   }
   OsDlclose(dso_);
