@@ -12,10 +12,10 @@
 
 using namespace fj;
 
-class GlassShader {
+class GlassShader : public Shader {
 public:
   GlassShader() {}
-  ~GlassShader() {}
+  virtual ~GlassShader() {}
 
 public:
   Color diffuse;
@@ -28,6 +28,11 @@ public:
   float ior;
 
   int do_color_filter;
+
+private:
+  virtual void evaluate(const TraceContext &cxt,
+      const SurfaceInput &in, SurfaceOutput *out) const;
+  const Property *get_property_list() const;
 };
 
 static void *MyNew(void);
@@ -94,6 +99,58 @@ static void MyFree(void *self)
   if (glass == NULL)
     return;
   delete glass;
+}
+
+void GlassShader::evaluate(const TraceContext &cxt,
+    const SurfaceInput &in, SurfaceOutput *out) const
+{
+  TraceContext refl_cxt;
+  TraceContext refr_cxt;
+  Vector T;
+  Vector R;
+  Color4 C_refl;
+  Color4 C_refr;
+  double Kt = 0, Kr = 0;
+  double t_hit = FLT_MAX;
+
+  // Cs
+  out->Cs = Color();
+
+  Kr = SlFresnel(&in.I, &in.N, 1/ior);
+  Kt = 1 - Kr;
+
+  // reflect
+  refl_cxt = SlReflectContext(&cxt, in.shaded_object);
+  SlReflect(&in.I, &in.N, &R);
+  Normalize(&R);
+  // TODO fix hard-coded trace distance
+  SlTrace(&refl_cxt, &in.P, &R, .0001, 1000, &C_refl, &t_hit);
+  out->Cs.r += Kr * C_refl.r;
+  out->Cs.g += Kr * C_refl.g;
+  out->Cs.b += Kr * C_refl.b;
+
+  // refract
+  refr_cxt = SlRefractContext(&cxt, in.shaded_object);
+  SlRefract(&in.I, &in.N, 1/ior, &T);
+  Normalize(&T);
+  SlTrace(&refr_cxt, &in.P, &T, .0001, 1000, &C_refr, &t_hit);
+
+  if (do_color_filter && Dot(in.I, in.N) < 0) {
+    C_refr.r *= pow(filter_color.r, t_hit);
+    C_refr.g *= pow(filter_color.g, t_hit);
+    C_refr.b *= pow(filter_color.b, t_hit);
+  }
+
+  out->Cs.r += Kt * C_refr.r;
+  out->Cs.g += Kt * C_refr.g;
+  out->Cs.b += Kt * C_refr.b;
+
+  out->Os = 1;
+}
+
+const Property *GlassShader::get_property_list() const
+{
+  return MyProperties;
 }
 
 static void MyEvaluate(const void *self, const TraceContext *cxt,
