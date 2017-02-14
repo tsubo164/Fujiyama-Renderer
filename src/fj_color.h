@@ -261,6 +261,23 @@ inline Color Gamma(const Color &A, float gamma)
       Gamma(A[2], gamma));
 }
 
+inline Color ToColor3(const Color4 &A)
+{
+  return Color(
+      A[0],
+      A[1],
+      A[2]);
+}
+
+inline Color4 ToColor4(const Color &A, float alpha = 1.0)
+{
+  return Color4(
+      A[0],
+      A[1],
+      A[2],
+      alpha);
+}
+
 inline std::ostream &operator<<(std::ostream &os, const Color4 &A)
 {
   os << "(" <<

@@ -102,8 +102,10 @@ static void MyFree(void *self)
 void HairShader::evaluate(const TraceContext &cxt,
     const SurfaceInput &in, SurfaceOutput *out) const
 {
+  LightSample *samples = NULL;
   // allocate samples
-  LightSample *samples = SlNewLightSamples(&in);
+  samples = SlNewLightSamples(&in);
+
   out->Cs = Color();
   const int nsamples = SlGetLightSampleCount(&in);
 
