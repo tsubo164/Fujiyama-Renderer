@@ -72,7 +72,7 @@ public:
   size_t GetTurbulenceCount() const;
 
   // Procedure
-  Procedure *NewProcedure(const Plugin *plugin);
+  Procedure *NewProcedure(Plugin *plugin);
   Procedure **GetProcedureList() const;
   Procedure *GetProcedure(int index) const;
   size_t GetProcedureCount() const;
@@ -102,7 +102,7 @@ public:
   size_t GetPluginCount() const;
 
   // Shader
-  Shader *NewShader(const Plugin *plugin);
+  Shader *NewShader(Plugin *plugin);
   Shader **GetShaderList() const;
   Shader *GetShader(int index) const;
   size_t GetShaderCount() const;

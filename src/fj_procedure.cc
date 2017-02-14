@@ -27,7 +27,7 @@ Procedure::~Procedure()
   }
 }
 
-int Procedure::Initialize(const Plugin *plugin)
+int Procedure::Initialize(Plugin *plugin)
 {
   if (!plugin->TypeMatch(PROCEDURE_PLUGIN_TYPE)) {
     set_error(PRC_ERR_TYPE_NOT_MATCH);

@@ -33,18 +33,14 @@ enum ShdErrorNo {
 class FJ_API Shader {
 public:
   Shader();
-  ~Shader();
+  virtual ~Shader();
 
-  int Initialize(const Plugin *plugin);
   void Evaluate(const TraceContext &cxt, const SurfaceInput &in, SurfaceOutput *out) const;
-
-  const Property *GetPropertyList() const;
-  int SetProperty(const std::string &prop_name, const PropertyValue &src_data) const;
-
+  int SetProperty(const std::string &prop_name, const PropertyValue &src_data);
 public:
-  void *self_;
-  const ShaderFunctionTable *vptr_;
-  const Plugin *plugin_;
+  virtual void evaluate(const TraceContext &cxt,
+      const SurfaceInput &in, SurfaceOutput *out) const;
+  virtual const Property *get_property_list() const;
 };
 
 } // namespace xxx

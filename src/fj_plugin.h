@@ -6,6 +6,7 @@
 
 #include "fj_compatibility.h"
 #include <string>
+#include <vector>
 #include <cstddef>
 
 #define PLUGIN_API_VERSION 1
@@ -76,7 +77,7 @@ public:
   int Open(const std::string &filename);
   void Close();
 
-  void *CreateInstance() const;
+  void *CreateInstance();
   void DeleteInstance(void *instance) const;
 
   const Property *GetPropertyList() const;
@@ -89,6 +90,8 @@ public:
 private:
   void *dso_;
   PluginInfo info_;
+
+  std::vector<void *> instance_list_;
 };
 
 FJ_API Plugin *PlgOpen(const char *filename);

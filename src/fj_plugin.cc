@@ -5,6 +5,8 @@
 #include "fj_compatibility.h"
 #include "fj_os.h"
 
+#include <iostream>
+
 #include <cstdio>
 #include <cstring>
 
@@ -14,7 +16,7 @@ static int error_no = PLG_ERR_NONE;
 static int is_valid_pluginfo(const PluginInfo *info);
 static void set_errno(int err_no);
 
-Plugin::Plugin() : dso_(NULL), info_()
+Plugin::Plugin() : dso_(NULL), info_(), instance_list_()
 {
 }
 
@@ -68,12 +70,18 @@ int Plugin::Open(const std::string &filename)
 
 void Plugin::Close()
 {
+  for (std::size_t i = 0; i < instance_list_.size(); i++) {
+    std::cout << "deleting shader: " << i << "\n";
+    DeleteInstance(instance_list_[i]);
+  }
   OsDlclose(dso_);
 }
 
-void *Plugin::CreateInstance() const
+void *Plugin::CreateInstance()
 {
-  return info_.create_instance();
+  void *instance = info_.create_instance();
+  instance_list_.push_back(instance);
+  return instance;
 }
 
 void Plugin::DeleteInstance(void *instance) const

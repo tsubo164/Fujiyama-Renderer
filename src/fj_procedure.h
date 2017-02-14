@@ -31,7 +31,7 @@ public:
   Procedure();
   ~Procedure();
 
-  int Initialize(const Plugin *plugin);
+  int Initialize(Plugin *plugin);
   int Run();
 
   const Property *GetPropertyList() const;

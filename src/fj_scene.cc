@@ -103,7 +103,7 @@ Turbulence *Scene::NewTurbulence()
 }
 
 // Procedure
-Procedure *Scene::NewProcedure(const Plugin *plugin)
+Procedure *Scene::NewProcedure(Plugin *plugin)
 {
   Procedure *procedure = new Procedure();
   procedure->Initialize(plugin);
@@ -140,16 +140,11 @@ Plugin *Scene::OpenPlugin(const char *filename)
 }
 
 // Shader
-Shader *Scene::NewShader(const Plugin *plugin)
+Shader *Scene::NewShader(Plugin *plugin)
 {
-  Shader *shader = new Shader();
-  shader->Initialize(plugin);
+  void *instance = plugin->CreateInstance();
+  Shader *shader = reinterpret_cast<Shader *>(instance);
   return push_entry_(ShaderList, shader);
-#if n
-  Shader *shader = plugin->NewInstance();
-  //shader->Initialize();
-  return push_entry_(ShaderList, shader);
-#endif
 }
 
 // Volume
@@ -210,7 +205,7 @@ void Scene::free_all_node_list()
   delete_entries(RendererList);
   delete_entries(TextureList);
   delete_entries(CameraList);
-  delete_entries(ShaderList);
+  //delete_entries(ShaderList);
   delete_entries(VolumeList);
   delete_entries(CurveList);
   delete_entries(LightList);
