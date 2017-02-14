@@ -12,13 +12,18 @@
 
 using namespace fj;
 
-class VolumeShader {
+class VolumeShader : public Shader {
 public:
   VolumeShader() {}
-  ~VolumeShader() {}
+  virtual ~VolumeShader() {}
 
 public:
   Color diffuse;
+
+private:
+  virtual void evaluate(const TraceContext &cxt,
+      const SurfaceInput &in, SurfaceOutput *out) const;
+  const Property *get_property_list() const;
 };
 
 static void *MyNew(void);
@@ -74,6 +79,40 @@ static void MyFree(void *self)
   if (volume == NULL)
     return;
   delete volume;
+}
+
+void VolumeShader::evaluate(const TraceContext &cxt,
+    const SurfaceInput &in, SurfaceOutput *out) const
+{
+  Color diff;
+
+  LightSample *samples = NULL;
+  const int nsamples = SlGetLightSampleCount(&in);
+
+  // allocate samples
+  samples = SlNewLightSamples(&in);
+
+  for (int i = 0; i < nsamples; i++) {
+    LightOutput Lout;
+
+    SlIlluminance(&cxt, &samples[i], &in.P, &in.N, PI, &in, &Lout);
+
+    // diff
+    diff += Lout.Cl;
+  }
+
+  SlFreeLightSamples(samples);
+
+  // Cs
+  out->Cs = diff * diffuse;
+
+  // Os
+  out->Os = 1.0;
+}
+
+const Property *VolumeShader::get_property_list() const
+{
+  return MyProperties;
 }
 
 static void MyEvaluate(const void *self, const TraceContext *cxt,

@@ -105,6 +105,11 @@ Turbulence *Scene::NewTurbulence()
 // Procedure
 Procedure *Scene::NewProcedure(Plugin *plugin)
 {
+  /*
+  void *instance = plugin->CreateInstance();
+  Procedure *procedure = reinterpret_cast<Procedure *>(instance);
+  return push_entry_(ProcedureList, procedure);
+  */
   Procedure *procedure = new Procedure();
   procedure->Initialize(plugin);
   return push_entry_(ProcedureList, procedure);
@@ -201,7 +206,7 @@ void Scene::free_all_node_list()
   delete_entries(ObjectGroupList);
   delete_entries(PointCloudList);
   delete_entries(TurbulenceList);
-  delete_entries(ProcedureList);
+  //delete_entries(ProcedureList);
   delete_entries(RendererList);
   delete_entries(TextureList);
   delete_entries(CameraList);
