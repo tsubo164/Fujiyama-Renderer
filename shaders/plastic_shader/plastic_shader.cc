@@ -15,7 +15,6 @@ using namespace fj;
 class PlasticShader : public Shader {
 public:
   PlasticShader() {}
-  // TODO TEST
   virtual ~PlasticShader() {}
 
 public:

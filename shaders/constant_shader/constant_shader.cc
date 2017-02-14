@@ -11,20 +11,25 @@
 
 using namespace fj;
 
-static void *MyNew(void);
-static void MyFree(void *self);
-static void MyEvaluate(const void *self, const TraceContext *cxt,
-    const SurfaceInput *in, SurfaceOutput *out);
-
-class ConstantShader {
+class ConstantShader : public Shader {
 public:
   ConstantShader() {}
-  ~ConstantShader() {}
+  virtual ~ConstantShader() {}
 
 public:
   Color diffuse;
   Texture *texture;
+
+private:
+  virtual void evaluate(const TraceContext &cxt,
+      const SurfaceInput &in, SurfaceOutput *out) const;
+  const Property *get_property_list() const;
 };
+
+static void *MyNew(void);
+static void MyFree(void *self);
+static void MyEvaluate(const void *self, const TraceContext *cxt,
+    const SurfaceInput *in, SurfaceOutput *out);
 
 static const char MyPluginName[] = "ConstantShader";
 
@@ -77,6 +82,35 @@ static void MyFree(void *self)
   if (constant == NULL)
     return;
   delete constant;
+}
+
+void ConstantShader::evaluate(const TraceContext &cxt,
+    const SurfaceInput &in, SurfaceOutput *out) const
+{
+  Color4 C_tex;
+
+  // C_tex
+  if (texture != NULL) {
+    C_tex = texture->Lookup(in.uv.u, in.uv.v);
+    C_tex.r *= diffuse.r;
+    C_tex.g *= diffuse.g;
+    C_tex.b *= diffuse.b;
+  } else {
+    C_tex.r = diffuse.r;
+    C_tex.g = diffuse.g;
+    C_tex.b = diffuse.b;
+  }
+
+  // Cs
+  out->Cs.r = C_tex.r;
+  out->Cs.g = C_tex.g;
+  out->Cs.b = C_tex.b;
+  out->Os = 1;
+}
+
+const Property *ConstantShader::get_property_list() const
+{
+  return MyProperties;
 }
 
 static void MyEvaluate(const void *self, const TraceContext *cxt,

@@ -30,25 +30,13 @@ int Shader::SetProperty(const std::string &prop_name, const PropertyValue &src_d
   const Property *shd_props = get_property_list();
   const Property *dst_prop = PropFind(shd_props, src_data.type, prop_name.c_str());
 
-  if (dst_prop == NULL)
+  if (dst_prop == NULL) {
     return -1;
+  }
 
   assert(dst_prop->SetProperty != NULL);
   // TODO is there better way to avoid this pointer?
   return dst_prop->SetProperty(this, &src_data);
-}
-
-// TODO TEST need to be pure virtual eventually
-void Shader::evaluate(const TraceContext &cxt,
-    const SurfaceInput &in, SurfaceOutput *out) const
-{
-  out->Cs = NO_SHADER_COLOR;
-  out->Os = 1;
-}
-
-const Property *Shader::get_property_list() const
-{
-  return NULL;
 }
 
 static void set_error(int err)

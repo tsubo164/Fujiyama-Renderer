@@ -39,8 +39,8 @@ public:
   int SetProperty(const std::string &prop_name, const PropertyValue &src_data);
 public:
   virtual void evaluate(const TraceContext &cxt,
-      const SurfaceInput &in, SurfaceOutput *out) const;
-  virtual const Property *get_property_list() const;
+      const SurfaceInput &in, SurfaceOutput *out) const = 0;
+  virtual const Property *get_property_list() const = 0;
 };
 
 } // namespace xxx

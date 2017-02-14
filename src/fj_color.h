@@ -87,6 +87,14 @@ inline Color operator-(const Color &A, const Color &B)
     A[2] - B[2]);
 }
 
+inline Color operator*(const Color &A, const Color &B)
+{
+  return Color(
+    A[0] * B[0],
+    A[1] * B[1],
+    A[2] * B[2]);
+}
+
 inline Color operator*(const Color &A, float scalar)
 {
   return Color(
@@ -193,6 +201,15 @@ inline Color4 operator-(const Color4 &A, const Color4 &B)
     A[1] - B[1],
     A[2] - B[2],
     A[3] - B[3]);
+}
+
+inline Color4 operator*(const Color4 &A, const Color4 &B)
+{
+  return Color4(
+    A[0] * B[0],
+    A[1] * B[1],
+    A[2] * B[2],
+    A[3] * B[3]);
 }
 
 inline Color4 operator*(const Color4 &A, float scalar)
