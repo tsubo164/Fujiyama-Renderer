@@ -15,14 +15,18 @@
 
 using namespace fj;
 
-class SurfaceWispsProcedure {
+class SurfaceWispsProcedure : public Procedure {
 public:
   SurfaceWispsProcedure() : volume(NULL), turbulence(NULL) {}
-  ~SurfaceWispsProcedure() {}
+  virtual ~SurfaceWispsProcedure() {}
 
 public:
   Volume *volume;
   const Turbulence *turbulence;
+
+private:
+  virtual int run() const;
+  const Property *get_property_list() const;
 };
 
 static void *MyNew(void);
@@ -82,6 +86,53 @@ static void MyFree(void *self)
   if (surface == NULL)
     return;
   delete surface;
+}
+
+int SurfaceWispsProcedure::run() const
+{
+  if (volume == NULL) {
+    return -1;
+  }
+
+  WispsControlPoint cp00, cp10, cp01, cp11;
+  cp00.orig = Vector(0, 0, 0);
+  cp00.udir = Vector(1, 0, 0);
+  cp00.vdir = Vector(0, 1, 0);
+  cp00.wdir = Vector(0, 0, 1);
+  cp00.noise_space = Vector(0, 0, 0);
+  cp00.density = 1;
+  cp00.radius = .5;
+  cp00.noise_amplitude = 1;
+  cp00.speck_count = 100000 * 100;
+  cp00.speck_radius = .01;
+
+  cp10 = cp00;
+  cp01 = cp00;
+  cp11 = cp00;
+
+  cp00.orig = Vector(-.75, -.75, 0);
+  cp10.orig = Vector( .75, -.75, 0);
+  cp01.orig = Vector(-.75,  .75, 0);
+  cp11.orig = Vector( .75,  .75, 0);
+
+  cp00.noise_space = Vector(0, 0, 0);
+  cp10.noise_space = Vector(1, 0, 0);
+  cp01.noise_space = Vector(0, 1, 0);
+  cp11.noise_space = Vector(1, 1, 0);
+
+  cp11.radius = 1;
+
+  const int err = FillWithSpecksOnSurface(volume,
+      &cp00, &cp10,
+      &cp01, &cp11,
+      turbulence);
+
+  return err;
+}
+
+const Property *SurfaceWispsProcedure::get_property_list() const
+{
+  return MyProperties;
 }
 
 static int MyRun(void *self)

@@ -21,7 +21,7 @@ public:
 
 public:
   Volume *volume;
-  Turbulence *turbulence;
+  const Turbulence *turbulence;
 
 private:
   virtual int run() const;
