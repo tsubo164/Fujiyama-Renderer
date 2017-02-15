@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
 # 1 cube fog volume and bunny with 1 point light
-# NOTE this scene renders volumes on ONLY v.0.0.3
-# On v.0.0.4 or higher, it renders floor and bunny
-# though there is still a empty volume primitive.
 # Copyright (c) 2011-2016 Hiroshi Tsubokawa
 
 import fujiyama
@@ -13,6 +10,7 @@ si = fujiyama.SceneInterface()
 #plugins
 si.OpenPlugin('PlasticShader')
 si.OpenPlugin('VolumeShader')
+si.OpenPlugin('ConstantVolumeProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -35,6 +33,15 @@ si.NewShader('volume_shader1', 'VolumeShader')
 
 #Volume
 si.NewVolume('volume_data')
+si.SetProperty3('volume_data', 'bounds_min', -1, -1, -1)
+si.SetProperty3('volume_data', 'bounds_max', 1, 1, 1)
+si.SetProperty3('volume_data', 'resolution', 100, 100, 100)
+
+#Procedure
+si.NewProcedure('proc1', 'ConstantVolumeProcedure')
+si.AssignVolume('proc1', 'volume', 'volume_data')
+si.SetProperty1('proc1', 'density', 1.)
+si.RunProcedure('proc1')
 
 #Mesh
 si.NewMesh('bunny_mesh', '../../ply/bunny.ply')
@@ -58,12 +65,12 @@ si.NewFrameBuffer('fb1', 'rgba')
 si.NewRenderer('ren1')
 si.AssignCamera('ren1', 'cam1')
 si.AssignFrameBuffer('ren1', 'fb1')
-#si.SetProperty2('ren1', 'resolution', 160, 120)
 si.SetProperty2('ren1', 'resolution', 640, 480)
+#si.SetProperty2('ren1', 'resolution', 160, 120)
 
 #SetProperty1 ren1 cast_shadow 0
-si.SetProperty1('ren1', 'raymarch_step', .01)
-si.SetProperty1('ren1', 'raymarch_shadow_step', .01)
+si.SetProperty1('ren1', 'raymarch_step', .02)
+si.SetProperty1('ren1', 'raymarch_shadow_step', .05)
 si.SetProperty1('ren1', 'raymarch_reflect_step', .05)
 
 #Rendering

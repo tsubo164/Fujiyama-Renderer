@@ -35,6 +35,9 @@ build_dirs   += shaders/volume_shader
 install_libs += lib/VolumeShader.so
 
 #procedures
+build_dirs   += procedures/constantvolume_procedure
+install_libs += lib/ConstantVolumeProcedure.so
+
 build_dirs   += procedures/pointclouds_procedure
 install_libs += lib/PointCloudsProcedure.so
 
