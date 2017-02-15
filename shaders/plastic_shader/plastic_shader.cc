@@ -6,10 +6,6 @@
 #include "fj_vector.h"
 #include "fj_color.h"
 
-#include <cstring>
-#include <cstdio>
-#include <cfloat>
-
 using namespace fj;
 
 class PlasticShader : public Shader {
@@ -40,15 +36,9 @@ private:
   const Property *get_property_list() const;
 };
 
-static void *MyNew(void);
-static void MyFree(void *self);
-static void MyEvaluate(const void *self, const TraceContext *cxt,
-    const SurfaceInput *in, SurfaceOutput *out);
-
+static void *MyCreateFunction(void);
+static void MyDeleteFunction(void *self);
 static const char MyPluginName[] = "PlasticShader";
-static const ShaderFunctionTable MyFunctionTable = {
-  MyEvaluate
-};
 
 static int set_diffuse(void *self, const PropertyValue *value);
 static int set_specular(void *self, const PropertyValue *value);
@@ -61,7 +51,7 @@ static int set_diffuse_map(void *self, const PropertyValue *value);
 static int set_bump_map(void *self, const PropertyValue *value);
 static int set_bump_amplitude(void *self, const PropertyValue *value);
 
-static const Property MyProperties[] = {
+static const Property MyPropertyList[] = {
   {PROP_VECTOR3, "diffuse",        {.8, .8, .8, 0}, set_diffuse},
   {PROP_VECTOR3, "specular",       {1, 1, 1, 0},    set_specular},
   {PROP_VECTOR3, "ambient",        {1, 1, 1, 0},    set_ambient},
@@ -88,23 +78,22 @@ FJ_PLUGIN_API int Initialize(PluginInfo *info)
       PLUGIN_API_VERSION,
       SHADER_PLUGIN_TYPE,
       MyPluginName,
-      MyNew,
-      MyFree,
-      &MyFunctionTable,
-      MyProperties,
+      MyCreateFunction,
+      MyDeleteFunction,
+      MyPropertyList,
       MyMetainfo);
 }
 } // extern "C"
 
-static void *MyNew(void)
+static void *MyCreateFunction(void)
 {
   PlasticShader *plastic = new PlasticShader();
-  PropSetAllDefaultValues(plastic, MyProperties);
+  PropSetAllDefaultValues(plastic, MyPropertyList);
 
   return plastic;
 }
 
-static void MyFree(void *self)
+static void MyDeleteFunction(void *self)
 {
   PlasticShader *plastic = (PlasticShader *) self;
   if (plastic == NULL) {
@@ -174,7 +163,7 @@ void PlasticShader::evaluate(const TraceContext &cxt,
   if (do_reflect) {
     Color4 C_refl;
     Vector R;
-    double t_hit = FLT_MAX;
+    double t_hit = REAL_MAX;
     double Kr = 0;
 
     const TraceContext refl_cxt = SlReflectContext(&cxt, in.shaded_object);
@@ -195,88 +184,7 @@ void PlasticShader::evaluate(const TraceContext &cxt,
 
 const Property *PlasticShader::get_property_list() const
 {
-  return MyProperties;
-}
-
-static void MyEvaluate(const void *self, const TraceContext *cxt,
-    const SurfaceInput *in, SurfaceOutput *out)
-{
-  const PlasticShader *plastic = (PlasticShader *) self;
-  Color diff;
-  Color spec;
-  Color4 diff_map(1, 1, 1, 1);
-  Vector Nf;
-  int i = 0;
-
-  LightSample *samples = NULL;
-  const int nsamples = SlGetLightSampleCount(in);
-
-  SlFaceforward(&in->I, &in->N, &Nf);
-
-  // bump map
-  if (plastic->bump_map != NULL) {
-    Vector N_bump;
-    SlBumpMapping(plastic->bump_map,
-        &in->dPdu, &in->dPdv,
-        &in->uv, plastic->bump_amplitude,
-        &Nf, &N_bump);
-    Nf = N_bump;
-  }
-
-  // allocate samples
-  samples = SlNewLightSamples(in);
-
-  for (i = 0; i < nsamples; i++) {
-    LightOutput Lout;
-    float Kd = 0;
-    SlIlluminance(cxt, &samples[i], &in->P, &Nf, PI / 2., in, &Lout);
-    // spec
-#if 0
-    Ks = SlPhong(in->I, Nf, Ln, .05);
-#endif
-
-    // diff
-    Kd = Dot(Nf, Lout.Ln);
-    Kd = Max(0, Kd);
-    diff.r += Kd * Lout.Cl.r;
-    diff.g += Kd * Lout.Cl.g;
-    diff.b += Kd * Lout.Cl.b;
-  }
-
-  // free samples
-  SlFreeLightSamples(samples);
-
-  // diffuse map
-  if (plastic->diffuse_map != NULL) {
-    diff_map = plastic->diffuse_map->Lookup(in->uv.u, in->uv.v);
-  }
-
-  // Cs
-  out->Cs.r = diff.r * plastic->diffuse.r * diff_map.r + spec.r;
-  out->Cs.g = diff.g * plastic->diffuse.g * diff_map.g + spec.g;
-  out->Cs.b = diff.b * plastic->diffuse.b * diff_map.b + spec.b;
-
-  // reflect
-  if (plastic->do_reflect) {
-    Color4 C_refl;
-    Vector R;
-    double t_hit = FLT_MAX;
-    double Kr = 0;
-
-    const TraceContext refl_cxt = SlReflectContext(cxt, in->shaded_object);
-
-    SlReflect(&in->I, &Nf, &R);
-    Normalize(&R);
-    SlTrace(&refl_cxt, &in->P, &R, .001, 1000, &C_refl, &t_hit);
-
-    Kr = SlFresnel(&in->I, &Nf, 1/plastic->ior);
-    out->Cs.r += Kr * C_refl.r * plastic->reflect.r;
-    out->Cs.g += Kr * C_refl.g * plastic->reflect.g;
-    out->Cs.b += Kr * C_refl.b * plastic->reflect.b;
-  }
-
-  out->Os = 1;
-  out->Os = plastic->opacity;
+  return MyPropertyList;
 }
 
 static int set_diffuse(void *self, const PropertyValue *value)

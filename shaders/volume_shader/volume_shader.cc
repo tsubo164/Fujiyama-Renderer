@@ -6,10 +6,6 @@
 #include "fj_vector.h"
 #include "fj_color.h"
 
-#include <cstring>
-#include <cstdio>
-#include <cfloat>
-
 using namespace fj;
 
 class VolumeShader : public Shader {
@@ -26,19 +22,13 @@ private:
   const Property *get_property_list() const;
 };
 
-static void *MyNew(void);
-static void MyFree(void *self);
-static void MyEvaluate(const void *self, const TraceContext *cxt,
-    const SurfaceInput *in, SurfaceOutput *out);
-
+static void *MyCreateFunction(void);
+static void MyDeleteFunction(void *self);
 static const char MyPluginName[] = "VolumeShader";
-static const ShaderFunctionTable MyFunctionTable = {
-  MyEvaluate
-};
 
 static int set_diffuse(void *self, const PropertyValue *value);
 
-static const Property MyProperties[] = {
+static const Property MyPropertyList[] = {
   {PROP_VECTOR3, "diffuse", {1, 1, 1, 0}, set_diffuse},
   {PROP_NONE,    NULL,      {0, 0, 0, 0}, NULL}
 };
@@ -56,24 +46,23 @@ FJ_PLUGIN_API int Initialize(PluginInfo *info)
       PLUGIN_API_VERSION,
       SHADER_PLUGIN_TYPE,
       MyPluginName,
-      MyNew,
-      MyFree,
-      &MyFunctionTable,
-      MyProperties,
+      MyCreateFunction,
+      MyDeleteFunction,
+      MyPropertyList,
       MyMetainfo);
 }
 } // extern "C"
 
-static void *MyNew(void)
+static void *MyCreateFunction(void)
 {
   VolumeShader *volume = new VolumeShader();
 
-  PropSetAllDefaultValues(volume, MyProperties);
+  PropSetAllDefaultValues(volume, MyPropertyList);
 
   return volume;
 }
 
-static void MyFree(void *self)
+static void MyDeleteFunction(void *self)
 {
   VolumeShader *volume = (VolumeShader *) self;
   if (volume == NULL)
@@ -112,43 +101,7 @@ void VolumeShader::evaluate(const TraceContext &cxt,
 
 const Property *VolumeShader::get_property_list() const
 {
-  return MyProperties;
-}
-
-static void MyEvaluate(const void *self, const TraceContext *cxt,
-    const SurfaceInput *in, SurfaceOutput *out)
-{
-  const VolumeShader *volume = (VolumeShader *) self;
-  Color diff;
-
-  LightSample *samples = NULL;
-  const int nsamples = SlGetLightSampleCount(in);
-
-  int i = 0;
-
-  // allocate samples
-  samples = SlNewLightSamples(in);
-
-  for (i = 0; i < nsamples; i++) {
-    LightOutput Lout;
-
-    SlIlluminance(cxt, &samples[i], &in->P, &in->N, PI, in, &Lout);
-
-    // diff
-    diff.r += Lout.Cl.r;
-    diff.g += Lout.Cl.g;
-    diff.b += Lout.Cl.b;
-  }
-
-  SlFreeLightSamples(samples);
-
-  // Cs
-  out->Cs.r = diff.r * volume->diffuse.r;
-  out->Cs.g = diff.g * volume->diffuse.g;
-  out->Cs.b = diff.b * volume->diffuse.b;
-
-  // Os
-  out->Os = 1;
+  return MyPropertyList;
 }
 
 static int set_diffuse(void *self, const PropertyValue *value)

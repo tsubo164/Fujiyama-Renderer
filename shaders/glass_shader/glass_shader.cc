@@ -6,10 +6,6 @@
 #include "fj_vector.h"
 #include "fj_color.h"
 
-#include <cstring>
-#include <cstdio>
-#include <cfloat>
-
 using namespace fj;
 
 class GlassShader : public Shader {
@@ -35,16 +31,9 @@ private:
   const Property *get_property_list() const;
 };
 
-static void *MyNew(void);
-static void MyFree(void *self);
-static void MyEvaluate(const void *self, const TraceContext *cxt,
-    const SurfaceInput *in, SurfaceOutput *out);
-
+static void *MyCreateFunction(void);
+static void MyDeleteFunction(void *self);
 static const char MyPluginName[] = "GlassShader";
-
-static const ShaderFunctionTable MyFunctionTable = {
-  MyEvaluate
-};
 
 static int set_diffuse(void *self, const PropertyValue *value);
 static int set_specular(void *self, const PropertyValue *value);
@@ -53,7 +42,7 @@ static int set_filter_color(void *self, const PropertyValue *value);
 static int set_roughness(void *self, const PropertyValue *value);
 static int set_ior(void *self, const PropertyValue *value);
 
-static const Property MyProperties[] = {
+static const Property MyPropertyList[] = {
   {PROP_VECTOR3, "diffuse",      {0, 0, 0, 0},   set_diffuse},
   {PROP_VECTOR3, "specular",     {1, 1, 1, 0},   set_specular},
   {PROP_VECTOR3, "ambient",      {1, 1, 1, 0},   set_ambient},
@@ -76,24 +65,23 @@ FJ_PLUGIN_API int Initialize(PluginInfo *info)
       PLUGIN_API_VERSION,
       SHADER_PLUGIN_TYPE,
       MyPluginName,
-      MyNew,
-      MyFree,
-      &MyFunctionTable,
-      MyProperties,
+      MyCreateFunction,
+      MyDeleteFunction,
+      MyPropertyList,
       MyMetainfo);
 }
 } // extern "C"
 
-static void *MyNew(void)
+static void *MyCreateFunction(void)
 {
   GlassShader *glass = new GlassShader();
 
-  PropSetAllDefaultValues(glass, MyProperties);
+  PropSetAllDefaultValues(glass, MyPropertyList);
 
   return glass;
 }
 
-static void MyFree(void *self)
+static void MyDeleteFunction(void *self)
 {
   GlassShader *glass = (GlassShader *) self;
   if (glass == NULL)
@@ -111,7 +99,7 @@ void GlassShader::evaluate(const TraceContext &cxt,
   Color4 C_refl;
   Color4 C_refr;
   double Kt = 0, Kr = 0;
-  double t_hit = FLT_MAX;
+  double t_hit = REAL_MAX;
 
   // Cs
   out->Cs = Color();
@@ -150,55 +138,7 @@ void GlassShader::evaluate(const TraceContext &cxt,
 
 const Property *GlassShader::get_property_list() const
 {
-  return MyProperties;
-}
-
-static void MyEvaluate(const void *self, const TraceContext *cxt,
-    const SurfaceInput *in, SurfaceOutput *out)
-{
-  const GlassShader *glass = (GlassShader *) self;
-  TraceContext refl_cxt;
-  TraceContext refr_cxt;
-  Vector T;
-  Vector R;
-  Color4 C_refl;
-  Color4 C_refr;
-  double Kt = 0, Kr = 0;
-  double t_hit = FLT_MAX;
-
-  // Cs
-  out->Cs = Color();
-
-  Kr = SlFresnel(&in->I, &in->N, 1/glass->ior);
-  Kt = 1 - Kr;
-
-  // reflect
-  refl_cxt = SlReflectContext(cxt, in->shaded_object);
-  SlReflect(&in->I, &in->N, &R);
-  Normalize(&R);
-  // TODO fix hard-coded trace distance
-  SlTrace(&refl_cxt, &in->P, &R, .0001, 1000, &C_refl, &t_hit);
-  out->Cs.r += Kr * C_refl.r;
-  out->Cs.g += Kr * C_refl.g;
-  out->Cs.b += Kr * C_refl.b;
-
-  // refract
-  refr_cxt = SlRefractContext(cxt, in->shaded_object);
-  SlRefract(&in->I, &in->N, 1/glass->ior, &T);
-  Normalize(&T);
-  SlTrace(&refr_cxt, &in->P, &T, .0001, 1000, &C_refr, &t_hit);
-
-  if (glass->do_color_filter && Dot(in->I, in->N) < 0) {
-    C_refr.r *= pow(glass->filter_color.r, t_hit);
-    C_refr.g *= pow(glass->filter_color.g, t_hit);
-    C_refr.b *= pow(glass->filter_color.b, t_hit);
-  }
-
-  out->Cs.r += Kt * C_refr.r;
-  out->Cs.g += Kt * C_refr.g;
-  out->Cs.b += Kt * C_refr.b;
-
-  out->Os = 1;
+  return MyPropertyList;
 }
 
 static int set_diffuse(void *self, const PropertyValue *value)

@@ -7,10 +7,6 @@
 #include "fj_vector.h"
 #include "fj_color.h"
 
-#include <cstring>
-#include <cstdio>
-#include <cfloat>
-
 #define COPY3(dst,src) do { \
   (dst)[0] = (src)[0]; \
   (dst)[1] = (src)[1]; \
@@ -61,6 +57,7 @@ public:
 
   float diffuse_fresnel_reflectance;
 
+  void UpdateProperties();
 private:
   virtual void evaluate(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
@@ -70,26 +67,11 @@ private:
       const LightSample &light_sample) const;
   Color diffusion_scattering(const TraceContext &cxt, const SurfaceInput &in,
       const LightSample &light_sample) const;
-  void update_sss_properties();
 };
 
-static void *MyNew(void);
-static void MyFree(void *self);
-static void MyEvaluate(const void *self, const TraceContext *cxt,
-    const SurfaceInput *in, SurfaceOutput *out);
-
+static void *MyCreateFunction(void);
+static void MyDeleteFunction(void *self);
 static const char MyPluginName[] = "SSSShader";
-static const ShaderFunctionTable MyFunctionTable = {
-  MyEvaluate
-};
-
-static void update_sss_properties(SSSShader *sss);
-static void single_scattering(const SSSShader *sss,
-    const TraceContext *cxt, const SurfaceInput *in,
-    const LightSample *light_sample, Color *C_scatter);
-static void diffusion_scattering(const SSSShader *sss,
-    const TraceContext *cxt, const SurfaceInput *in,
-    const LightSample *light_sample, Color *C_scatter);
 
 static int set_diffuse(void *self, const PropertyValue *value);
 static int set_specular(void *self, const PropertyValue *value);
@@ -110,7 +92,7 @@ static int set_scattering_phase(void *self, const PropertyValue *value);
 static int set_single_scattering_intensity(void *self, const PropertyValue *value);
 static int set_multiple_scattering_intensity(void *self, const PropertyValue *value);
 
-static const Property MyProperties[] = {
+static const Property MyPropertyList[] = {
   {PROP_VECTOR3, "diffuse",     {.8, .8, .8, 0}, set_diffuse},
   {PROP_VECTOR3, "specular",    {1, 1, 1, 0}, set_specular},
   {PROP_VECTOR3, "ambient",     {1, 1, 1, 0}, set_ambient},
@@ -144,24 +126,23 @@ FJ_PLUGIN_API int Initialize(PluginInfo *info)
       PLUGIN_API_VERSION,
       SHADER_PLUGIN_TYPE,
       MyPluginName,
-      MyNew,
-      MyFree,
-      &MyFunctionTable,
-      MyProperties,
+      MyCreateFunction,
+      MyDeleteFunction,
+      MyPropertyList,
       MyMetainfo);
 }
 } // extern "C"
 
-static void *MyNew(void)
+static void *MyCreateFunction(void)
 {
   SSSShader *sss = new SSSShader();
 
-  PropSetAllDefaultValues(sss, MyProperties);
+  PropSetAllDefaultValues(sss, MyPropertyList);
 
   return sss;
 }
 
-static void MyFree(void *self)
+static void MyDeleteFunction(void *self)
 {
   SSSShader *sss = (SSSShader *) self;
   if (sss == NULL)
@@ -220,7 +201,7 @@ void SSSShader::evaluate(const TraceContext &cxt,
   if (do_reflect) {
     Color4 C_refl;
     Vector R;
-    double t_hit = FLT_MAX;
+    double t_hit = REAL_MAX;
 
     const TraceContext refl_cxt = SlReflectContext(&cxt, in.shaded_object);
 
@@ -239,7 +220,7 @@ void SSSShader::evaluate(const TraceContext &cxt,
 
 const Property *SSSShader::get_property_list() const
 {
-  return MyProperties;
+  return MyPropertyList;
 }
 
 Color SSSShader::single_scattering(const TraceContext &cxt, const SurfaceInput &in,
@@ -287,7 +268,7 @@ Color SSSShader::single_scattering(const TraceContext &cxt, const SurfaceInput &
       Vector P_sample;
       Vector Pi;
       Vector Ni;
-      double si = FLT_MAX;
+      double si = REAL_MAX;
       double Ln_dot_Ni = 0;
 
       Vector Ti;
@@ -304,7 +285,7 @@ Color SSSShader::single_scattering(const TraceContext &cxt, const SurfaceInput &
       double Ni_dot_Ti = 0;
       double Ti_dot_To = 0;
 
-      double t_hit = FLT_MAX;
+      double t_hit = REAL_MAX;
       int hit = 0;
 
       sp_o = sp_dist / sigma_t[j];
@@ -313,7 +294,7 @@ Color SSSShader::single_scattering(const TraceContext &cxt, const SurfaceInput &
       P_sample.y = P.y + sp_o * To.y;
       P_sample.z = P.z + sp_o * To.z;
 
-      hit = SlSurfaceRayIntersect(&self_cxt, &P_sample, &Ln, 0., FLT_MAX,
+      hit = SlSurfaceRayIntersect(&self_cxt, &P_sample, &Ln, 0., REAL_MAX,
           &Pi, &Ni, &t_hit);
       if (!hit) {
         continue;
@@ -429,7 +410,7 @@ Color SSSShader::diffusion_scattering(const TraceContext &cxt, const SurfaceInpu
       Vector Pi;
       Vector Ni;
       double Ln_dot_Ni = 0;
-      double t_hit = FLT_MAX;
+      double t_hit = REAL_MAX;
       int hit = 0;
 
       double r = 0;
@@ -451,7 +432,7 @@ Color SSSShader::diffusion_scattering(const TraceContext &cxt, const SurfaceInpu
       P_sample.y = P.y + 1/sigma_tr[j] * (disk.x * base1.y + disk.y * base2.y);
       P_sample.z = P.z + 1/sigma_tr[j] * (disk.x * base1.z + disk.y * base2.z);
 
-      hit = SlSurfaceRayIntersect(&self_cxt, &P_sample, &N_neg, 0., FLT_MAX,
+      hit = SlSurfaceRayIntersect(&self_cxt, &P_sample, &N_neg, 0., REAL_MAX,
           &Pi, &Ni, &t_hit);
       if (!hit) {
         Pi.x = P.x;
@@ -509,7 +490,7 @@ Color SSSShader::diffusion_scattering(const TraceContext &cxt, const SurfaceInpu
   return scatter;
 }
 
-void SSSShader::update_sss_properties()
+void SSSShader::UpdateProperties()
 {
   const float eta = ior;
 
@@ -537,395 +518,6 @@ void SSSShader::update_sss_properties()
 
   diffuse_fresnel_reflectance =
       -1.440 / (eta * eta) + 0.710 / eta + 0.668 + 0.0636 * eta;
-}
-
-static void MyEvaluate(const void *self, const TraceContext *cxt,
-    const SurfaceInput *in, SurfaceOutput *out)
-{
-  const SSSShader *sss = (SSSShader *) self;
-  Color diff;
-  Color spec;
-  Color4 diff_map(1, 1, 1, 1);
-  int i;
-
-  LightSample *samples = NULL;
-  const int nsamples = SlGetLightSampleCount(in);
-
-  // allocate samples
-  samples = SlNewLightSamples(in);
-
-  for (i = 0; i < nsamples; i++) {
-    LightOutput Lout;
-    float Ks = 0;
-
-    Color single_scatter;
-    Color diffusion_scatter;
-
-    SlIlluminance(cxt, &samples[i], &in->P, &in->N, PI / 2., in, &Lout);
-    // spec
-    Ks = SlPhong(&in->I, &in->N, &Lout.Ln, sss->roughness);
-    spec.r += Ks * sss->specular.r;
-    spec.g += Ks * sss->specular.g;
-    spec.b += Ks * sss->specular.b;
-
-    if (sss->enable_single_scattering) {
-      single_scattering(sss, cxt, in, &samples[i], &single_scatter);
-      single_scatter.r *= sss->single_scattering_intensity;
-      single_scatter.g *= sss->single_scattering_intensity;
-      single_scatter.b *= sss->single_scattering_intensity;
-      diff.r += single_scatter.r;
-      diff.g += single_scatter.g;
-      diff.b += single_scatter.b;
-    }
-    if (sss->enable_multiple_scattering) {
-      diffusion_scattering(sss, cxt, in, &samples[i], &diffusion_scatter);
-      diffusion_scatter.r *= sss->multiple_scattering_intensity;
-      diffusion_scatter.g *= sss->multiple_scattering_intensity;
-      diffusion_scatter.b *= sss->multiple_scattering_intensity;
-      diff.r += diffusion_scatter.r;
-      diff.g += diffusion_scatter.g;
-      diff.b += diffusion_scatter.b;
-    }
-  }
-
-  SlFreeLightSamples(samples);
-
-  // diffuse map
-  if (sss->diffuse_map != NULL) {
-    diff_map = sss->diffuse_map->Lookup(in->uv.u, in->uv.v);
-  }
-
-  // Cs
-  out->Cs.r = diff.r * sss->diffuse.r * diff_map.r + spec.r;
-  out->Cs.g = diff.g * sss->diffuse.g * diff_map.g + spec.g;
-  out->Cs.b = diff.b * sss->diffuse.b * diff_map.b + spec.b;
-
-  // reflect
-  if (sss->do_reflect) {
-    Color4 C_refl;
-    Vector R;
-    double t_hit = FLT_MAX;
-    double Kr = 0;
-
-    const TraceContext refl_cxt = SlReflectContext(cxt, in->shaded_object);
-
-    SlReflect(&in->I, &in->N, &R);
-    Normalize(&R);
-    // TODO fix hard-coded trace distance
-    SlTrace(&refl_cxt, &in->P, &R, .001, 1000, &C_refl, &t_hit);
-
-    Kr = SlFresnel(&in->I, &in->N, 1/sss->ior);
-    out->Cs.r += Kr * C_refl.r * sss->reflect.r;
-    out->Cs.g += Kr * C_refl.g * sss->reflect.g;
-    out->Cs.b += Kr * C_refl.b * sss->reflect.b;
-  }
-
-  out->Os = 1;
-  out->Os = sss->opacity;
-}
-
-static void update_sss_properties(SSSShader *sss)
-{
-  const float eta = sss->ior;
-
-  sss->extinction_coeff[0] = sss->scattering_coeff[0] + sss->absorption_coeff[0];
-  sss->extinction_coeff[1] = sss->scattering_coeff[1] + sss->absorption_coeff[1];
-  sss->extinction_coeff[2] = sss->scattering_coeff[2] + sss->absorption_coeff[2];
-
-  sss->reduced_scattering_coeff[0] = sss->scattering_coeff[0] * (1-sss->scattering_phase);
-  sss->reduced_scattering_coeff[1] = sss->scattering_coeff[1] * (1-sss->scattering_phase);
-  sss->reduced_scattering_coeff[2] = sss->scattering_coeff[2] * (1-sss->scattering_phase);
-
-  sss->reduced_extinction_coeff[0] =
-      sss->reduced_scattering_coeff[0] + sss->absorption_coeff[0];
-  sss->reduced_extinction_coeff[1] =
-      sss->reduced_scattering_coeff[1] + sss->absorption_coeff[1];
-  sss->reduced_extinction_coeff[2] =
-      sss->reduced_scattering_coeff[2] + sss->absorption_coeff[2];
-
-  sss->effective_extinction_coeff[0] =
-      sqrt(sss->absorption_coeff[0] * sss->reduced_extinction_coeff[0] * 3);
-  sss->effective_extinction_coeff[1] =
-      sqrt(sss->absorption_coeff[1] * sss->reduced_extinction_coeff[1] * 3);
-  sss->effective_extinction_coeff[2] =
-      sqrt(sss->absorption_coeff[2] * sss->reduced_extinction_coeff[2] * 3);
-
-  sss->diffuse_fresnel_reflectance =
-      -1.440 / (eta * eta) + 0.710 / eta + 0.668 + 0.0636 * eta;
-}
-
-static void single_scattering(const SSSShader *sss,
-    const TraceContext *cxt, const SurfaceInput *in,
-    const LightSample *light_sample, Color *C_scatter)
-{
-  const Vector *P = &in->P;
-  Vector Ln;
-  Vector To;
-  Vector Li;
-
-  const float *sigma_s = sss->scattering_coeff;
-  const float *sigma_t = sss->extinction_coeff;
-
-  const float eta = sss->ior;
-  const float one_over_eta = 1/eta;
-
-  const float g = sss->scattering_phase;
-  const float g_sq = g * g;
-
-  const int nsamples = sss->single_scattering_samples;
-  int i, j;
-
-  const TraceContext self_cxt = SlSelfHitContext(cxt, in->shaded_object);
-  LightOutput Lout;
-
-  Color scatter;
-
-  Ln.x = light_sample->P.x - P->x;
-  Ln.y = light_sample->P.y - P->y;
-  Ln.z = light_sample->P.z - P->z;
-  Normalize(&Ln);
-
-  Li.x = -Ln.x;
-  Li.y = -Ln.y;
-  Li.z = -Ln.z;
-
-  SlRefract(&in->I, &in->N, one_over_eta, &To);
-  Normalize(&To);
-
-  for (i = 0; i < nsamples; i++) {
-    XorShift &mutable_rng = const_cast<XorShift &>(sss->rng);
-    const float sp_dist = -log(mutable_rng.NextFloat01());
-
-    for (j = 0; j < 3; j++) {
-      Vector P_sample;
-      Vector Pi;
-      Vector Ni;
-      double si = FLT_MAX;
-      double Ln_dot_Ni = 0;
-
-      Vector Ti;
-      float Kri = 0;
-      float Kti = 0;
-
-      double G = 0;
-      float sigma_tc = 0;
-      float sp_i = 0;
-      float sp_o = 0;
-      float phase = 0;
-
-      double Ni_dot_To = 0;
-      double Ni_dot_Ti = 0;
-      double Ti_dot_To = 0;
-
-      double t_hit = FLT_MAX;
-      int hit = 0;
-
-      sp_o = sp_dist / sigma_t[j];
-
-      P_sample.x = P->x + sp_o * To.x;
-      P_sample.y = P->y + sp_o * To.y;
-      P_sample.z = P->z + sp_o * To.z;
-
-      hit = SlSurfaceRayIntersect(&self_cxt, &P_sample, &Ln, 0., FLT_MAX,
-          &Pi, &Ni, &t_hit);
-      if (!hit) {
-        continue;
-      }
-
-      si = t_hit;
-      Ln_dot_Ni = Dot(Ln, Ni);
-
-      sp_i = si * Ln_dot_Ni /
-          sqrt(1 - one_over_eta * one_over_eta * (1 - Ln_dot_Ni * Ln_dot_Ni));
-
-      SlRefract(&Li, &Ni, one_over_eta, &Ti);
-      Normalize(&Ti);
-
-      Kri = SlFresnel(&Li, &Ni, one_over_eta);
-      Kti = 1 - Kri;
-
-      Ti_dot_To = Dot(Ti, To);
-      phase = (1 - g_sq) / pow(1 + 2 * g * Ti_dot_To + g_sq, 1.5);
-
-      Ni_dot_To = Dot(Ni, To);
-      Ni_dot_Ti = Dot(Ni, Ti);
-      G = Abs(Ni_dot_To) / Abs(Ni_dot_Ti);
-
-      SlIlluminance(cxt, light_sample, &Pi, &Ni, PI / 2., in, &Lout);
-
-      sigma_tc = sigma_t[j] + G * sigma_t[j];
-
-      switch (j) {
-      case 0:
-        scatter.r += Lout.Cl.r * exp(-sp_i * sigma_t[0]) / sigma_tc * phase * Kti;
-        break;
-      case 1:
-        scatter.g += Lout.Cl.g * exp(-sp_i * sigma_t[1]) / sigma_tc * phase * Kti;
-        break;
-      case 2:
-        scatter.b += Lout.Cl.b * exp(-sp_i * sigma_t[2]) / sigma_tc * phase * Kti;
-        break;
-      default:
-        break;
-      }
-    }
-  }
-  scatter.r *= PI * sigma_s[0] / nsamples;
-  scatter.g *= PI * sigma_s[1] / nsamples;
-  scatter.b *= PI * sigma_s[2] / nsamples;
-
-  C_scatter->r += scatter.r;
-  C_scatter->g += scatter.g;
-  C_scatter->b += scatter.b;
-}
-
-static void diffusion_scattering(const SSSShader *sss,
-    const TraceContext *cxt, const SurfaceInput *in,
-    const LightSample *light_sample, Color *C_scatter)
-{
-  const Vector *P = &in->P;
-  const Vector *N = &in->N;
-  Vector Ln;
-
-  Vector N_neg;
-  Vector up(0, 1, 0);
-  Vector base1;
-  Vector base2;
-  double local_dot_up = 0;
-
-  const float *sigma_s_prime = sss->reduced_scattering_coeff;
-  const float *sigma_t_prime = sss->reduced_extinction_coeff;
-  const float *sigma_tr = sss->effective_extinction_coeff;
-
-  const float Fdr = sss->diffuse_fresnel_reflectance;
-  const float A = (1 + Fdr) / (1 - Fdr);
-  float alpha_prime[3] = {0, 0, 0};
-
-  const int nsamples = sss->multiple_scattering_samples;
-  int i, j;
-
-  Color scatter;
-
-  alpha_prime[0] = sigma_s_prime[0] / sigma_t_prime[0];
-  alpha_prime[1] = sigma_s_prime[1] / sigma_t_prime[1];
-  alpha_prime[2] = sigma_s_prime[2] / sigma_t_prime[2];
-
-  Ln.x = light_sample->P.x - P->x;
-  Ln.y = light_sample->P.y - P->y;
-  Ln.z = light_sample->P.z - P->z;
-  Normalize(&Ln);
-
-  N_neg.x = -N->x;
-  N_neg.y = -N->y;
-  N_neg.z = -N->z;
-
-  local_dot_up = Dot(*N, up);
-  if (Abs(local_dot_up) > .9) {
-    up.x = 1;
-    up.y = 0;
-    up.z = 0;
-  }
-
-  base1 = Cross(*N, up);
-  Normalize(&base1);
-  base2 = Cross(*N, base1);
-
-  for (i = 0; i < nsamples; i++) {
-    XorShift &mutable_rng = const_cast<XorShift &>(sss->rng);
-    const double dist_rand = -log(mutable_rng.NextFloat01());
-
-    for (j = 0; j < 3; j++) {
-      const TraceContext self_cxt = SlSelfHitContext(cxt, in->shaded_object);
-      LightOutput Lout;
-
-      Vector P_sample;
-      Vector2 disk(0, 0);
-
-      Vector P_Pi;
-      Vector Pi;
-      Vector Ni;
-      double Ln_dot_Ni = 0;
-      double t_hit = FLT_MAX;
-      int hit = 0;
-
-      double r = 0;
-      double zr = 0;
-      double zv = 0;
-      double dr = 0;
-      double dv = 0;
-      double sigma_tr_dr = 0;
-      double sigma_tr_dv = 0;
-      double Rd = 0;
-      double scat = 0;
-
-      const double dist = dist_rand / sigma_tr[j];
-
-      disk = mutable_rng.HollowDiskRand();
-      disk.x *= dist;
-      disk.y *= dist;
-      P_sample.x = P->x + 1/sigma_tr[j] * (disk.x * base1.x + disk.y * base2.x);
-      P_sample.y = P->y + 1/sigma_tr[j] * (disk.x * base1.y + disk.y * base2.y);
-      P_sample.z = P->z + 1/sigma_tr[j] * (disk.x * base1.z + disk.y * base2.z);
-
-      hit = SlSurfaceRayIntersect(&self_cxt, &P_sample, &N_neg, 0., FLT_MAX,
-          &Pi, &Ni, &t_hit);
-      if (!hit) {
-        Pi.x = P->x;
-        Pi.y = P->y;
-        Pi.z = P->z;
-        Ni.x = N->x;
-        Ni.y = N->y;
-        Ni.z = N->z;
-      }
-
-      P_Pi.x = Pi.x - P->x;
-      P_Pi.y = Pi.y - P->y;
-      P_Pi.z = Pi.z - P->z;
-
-      SlIlluminance(cxt, light_sample, &Pi, &Ni, PI / 2., in, &Lout);
-
-      r = Length(P_Pi);
-      zr = sqrt(3 * (1 - alpha_prime[j])) / sigma_tr[j];
-      zv = A * zr;
-      dr = sqrt(r * r + zr * zr); // distance to positive light
-      dv = sqrt(r * r + zv * zv); // distance to negative light
-      sigma_tr_dr = sigma_tr[j] * dr;
-      sigma_tr_dv = sigma_tr[j] * dv;
-      Rd = (sigma_tr_dr + 1) * exp(-sigma_tr_dr) * zr / pow(dr, 3) +
-         (sigma_tr_dv + 1) * exp(-sigma_tr_dv) * zr / pow(dv, 3);
-
-      Ln_dot_Ni = Dot(Ln, Ni);
-      Ln_dot_Ni = Max(0, Ln_dot_Ni);
-
-      scat = sigma_tr[j] * sigma_tr[j] * exp(-sigma_tr[j] * r);
-      if (scat != 0) {
-        switch (j) {
-        case 0:
-          scat = Lout.Cl.r * Ln_dot_Ni * Rd / scat;
-          scatter.r += scat;
-          break;
-        case 1:
-          scat = Lout.Cl.g * Ln_dot_Ni * Rd / scat;
-          scatter.g += scat;
-          break;
-        case 2:
-          scat = Lout.Cl.b * Ln_dot_Ni * Rd / scat;
-          scatter.b += scat;
-          break;
-        default:
-          break;
-        }
-      }
-    }
-  }
-  scatter.r *= (1 - Fdr) * alpha_prime[0] / nsamples;
-  scatter.g *= (1 - Fdr) * alpha_prime[1] / nsamples;
-  scatter.b *= (1 - Fdr) * alpha_prime[2] / nsamples;
-
-
-  C_scatter->r += scatter.r;
-  C_scatter->g += scatter.g;
-  C_scatter->b += scatter.b;
 }
 
 static int set_diffuse(void *self, const PropertyValue *value)
@@ -1088,7 +680,7 @@ static int set_scattering_coeff(void *self, const PropertyValue *value)
   scattering_coeff[2] *= 1000; // 1/mm
   COPY3(sss->scattering_coeff, scattering_coeff);
 
-  update_sss_properties(sss);
+  sss->UpdateProperties();
 
   return 0;
 }
@@ -1106,7 +698,7 @@ static int set_absorption_coeff(void *self, const PropertyValue *value)
   absorption_coeff[2] *= 1000; // 1/mm
   COPY3(sss->absorption_coeff, absorption_coeff);
 
-  update_sss_properties(sss);
+  sss->UpdateProperties();
 
   return 0;
 }

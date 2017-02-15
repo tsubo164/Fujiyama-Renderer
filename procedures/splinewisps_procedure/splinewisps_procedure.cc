@@ -10,9 +10,6 @@
 #include "fj_vector.h"
 #include "fj_volume.h"
 
-#include <cstring>
-#include <cfloat>
-
 using namespace fj;
 
 class SplineWispsProcedure : public Procedure {
@@ -29,14 +26,9 @@ private:
   const Property *get_property_list() const;
 };
 
-static void *MyNew(void);
-static void MyFree(void *self);
-static int MyRun(void *self);
-
+static void *MyCreateFunction(void);
+static void MyDeleteFunction(void *self);
 static const char MyPluginName[] = "SplineWispsProcedure";
-static const ProcedureFunctionTable MyFunctionTable = {
-  MyRun
-};
 
 static int set_volume(void *self, const PropertyValue *value);
 static int set_turbulence(void *self, const PropertyValue *value);
@@ -45,7 +37,7 @@ static int FillWithSpecksAlongLine(Volume *volume,
     const WispsControlPoint *cp0, const WispsControlPoint *cp1,
     const Turbulence *turbulence);
 
-static const Property MyProperties[] = {
+static const Property MyPropertyList[] = {
   {PROP_VOLUME,     "volume",     {0, 0, 0, 0}, set_volume},
   {PROP_TURBULENCE, "turbulence", {0, 0, 0, 0}, set_turbulence},
   {PROP_NONE,       NULL,         {0, 0, 0, 0}, NULL}
@@ -64,22 +56,21 @@ FJ_PLUGIN_API int Initialize(PluginInfo *info)
       PLUGIN_API_VERSION,
       PROCEDURE_PLUGIN_TYPE,
       MyPluginName,
-      MyNew,
-      MyFree,
-      &MyFunctionTable,
-      MyProperties,
+      MyCreateFunction,
+      MyDeleteFunction,
+      MyPropertyList,
       MyMetainfo);
 }
 } // extern "C"
 
-static void *MyNew(void)
+static void *MyCreateFunction(void)
 {
   SplineWispsProcedure *spline = new SplineWispsProcedure();
 
   return spline;
 }
 
-static void MyFree(void *self)
+static void MyDeleteFunction(void *self)
 {
   SplineWispsProcedure *spline = (SplineWispsProcedure *) self;
   if (spline == NULL)
@@ -136,57 +127,7 @@ int SplineWispsProcedure::run() const
 
 const Property *SplineWispsProcedure::get_property_list() const
 {
-  return MyProperties;
-}
-
-static int MyRun(void *self)
-{
-  SplineWispsProcedure *spline = (SplineWispsProcedure *) self;
-  WispsControlPoint cp0, cp1;
-  int err = 0;
-
-  if (spline->volume == NULL) {
-    return -1;
-  }
-
-  cp0.orig = Vector(-.75, -.5, .75);
-  cp0.udir = Vector(1, 0, 0);
-  cp0.vdir = Vector(0, 1, 0);
-  cp0.wdir = Vector(0, 0, 1);
-  cp0.noise_space = Vector(0, 0, 0);
-  cp0.density = 1;
-  cp0.radius = .5;
-  cp0.noise_amplitude = 1;
-  cp0.speck_count = 100000 * 100;
-  cp0.speck_radius = .01 * .5;
-
-  cp1.orig = Vector(.75, .5, -.75);
-  cp1.udir = Vector(1, 0, 0);
-  cp1.vdir = Vector(0, 1, 0);
-  cp1.wdir = Vector(0, 0, 1);
-  cp1.noise_space = Vector(0, 0, 1);
-  cp1.density = 1;
-  cp1.radius = .25;
-  cp1.noise_amplitude = 1;
-  cp1.speck_count = 100000 * 100;
-  cp1.speck_radius = .01 * .5;
-
-  cp0.wdir.x = cp1.orig.x - cp0.orig.x;
-  cp0.wdir.y = cp1.orig.y - cp0.orig.y;
-  cp0.wdir.z = cp1.orig.z - cp0.orig.z;
-  cp0.udir = Cross(cp0.wdir, cp0.vdir);
-  cp0.vdir = Cross(cp0.udir, cp0.wdir);
-  Normalize(&cp0.udir);
-  Normalize(&cp0.vdir);
-  Normalize(&cp0.wdir);
-
-  cp1.udir = cp0.udir;
-  cp1.vdir = cp0.vdir;
-  cp1.wdir = cp0.wdir;
-
-  err = FillWithSpecksAlongLine(spline->volume, &cp0, &cp1, spline->turbulence);
-
-  return err;
+  return MyPropertyList;
 }
 
 static int set_volume(void *self, const PropertyValue *value)

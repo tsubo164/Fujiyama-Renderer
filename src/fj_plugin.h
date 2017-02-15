@@ -39,8 +39,7 @@ public:
       plugin_name(NULL),
       create_instance(NULL),
       delete_instance(NULL),
-      vtbl(NULL),
-      properties(NULL),
+      property_list(NULL),
       meta(NULL)
   {}
   ~PluginInfo() {}
@@ -50,8 +49,7 @@ public:
   const char *plugin_name;
   PlgCreateInstanceFn create_instance;
   PlgDeleteInstanceFn delete_instance;
-  const void *vtbl;
-  const Property *properties;
+  const Property *property_list;
   const MetaInfo *meta;
 };
 
@@ -82,7 +80,6 @@ public:
 
   const Property *GetPropertyList() const;
   const MetaInfo *Metainfo() const;
-  const void *GetVtable() const;
   const char *GetName() const;
   const char *GetType() const;
   int TypeMatch(const char *type) const;
@@ -103,8 +100,7 @@ FJ_API int PlgSetupInfo(PluginInfo *info,
     const char *plugin_name,
     PlgCreateInstanceFn create_instance,
     PlgDeleteInstanceFn delete_instance,
-    const void *vtbl,
-    const Property *properties,
+    const Property *property_list,
     const MetaInfo *meta);
 
 FJ_API int PlgGetErrorNo(void);

@@ -6,10 +6,7 @@
 #include "fj_vector.h"
 #include "fj_color.h"
 
-#include <cstring>
 #include <cassert>
-#include <cstdio>
-#include <cfloat>
 
 using namespace fj;
 
@@ -32,15 +29,9 @@ private:
   const Property *get_property_list() const;
 };
 
-static void *MyNew(void);
-static void MyFree(void *self);
-static void MyEvaluate(const void *self, const TraceContext *cxt,
-    const SurfaceInput *in, SurfaceOutput *out);
-
+static void *MyCreateFunction(void);
+static void MyDeleteFunction(void *self);
 static const char MyPluginName[] = "HairShader";
-static const ShaderFunctionTable MyFunctionTable = {
-  MyEvaluate
-};
 
 static int set_diffuse(void *self, const PropertyValue *value);
 static int set_specular(void *self, const PropertyValue *value);
@@ -52,7 +43,7 @@ static int set_reflect(void *self, const PropertyValue *value);
 static float kajiya_diffuse(const Vector &tangent, const Vector &Ln);
 static float kajiya_specular(const Vector &tangent, const Vector &Ln, const Vector &I);
 
-static const Property MyProperties[] = {
+static const Property MyPropertyList[] = {
   {PROP_VECTOR3, "diffuse",   {1, 1, 1, 0}, set_diffuse},
   {PROP_VECTOR3, "specular",  {1, 1, 1, 0},    set_specular},
   {PROP_VECTOR3, "ambient",   {1, 1, 1, 0},    set_ambient},
@@ -74,24 +65,23 @@ FJ_PLUGIN_API int Initialize(PluginInfo *info)
       PLUGIN_API_VERSION,
       SHADER_PLUGIN_TYPE,
       MyPluginName,
-      MyNew,
-      MyFree,
-      &MyFunctionTable,
-      MyProperties,
+      MyCreateFunction,
+      MyDeleteFunction,
+      MyPropertyList,
       MyMetainfo);
 }
 } // extern "C"
 
-static void *MyNew(void)
+static void *MyCreateFunction(void)
 {
   HairShader *hair = new HairShader();
 
-  PropSetAllDefaultValues(hair, MyProperties);
+  PropSetAllDefaultValues(hair, MyPropertyList);
 
   return hair;
 }
 
-static void MyFree(void *self)
+static void MyDeleteFunction(void *self)
 {
   HairShader *hair = (HairShader *) self;
   if (hair == NULL)
@@ -135,45 +125,7 @@ void HairShader::evaluate(const TraceContext &cxt,
 
 const Property *HairShader::get_property_list() const
 {
-  return MyProperties;
-}
-
-static void MyEvaluate(const void *self, const TraceContext *cxt,
-    const SurfaceInput *in, SurfaceOutput *out)
-{
-  const HairShader *hair = (HairShader *) self;
-  int i = 0;
-
-  LightSample *samples = NULL;
-  const int nsamples = SlGetLightSampleCount(in);
-
-  // allocate samples
-  samples = SlNewLightSamples(in);
-
-  out->Cs = Color();
-
-  for (i = 0; i < nsamples; i++) {
-    LightOutput Lout = {};
-    Vector tangent;
-    float diff = 0;
-    float spec = 0;
-
-    SlIlluminance(cxt, &samples[i], &in->P, &in->N, PI, in, &Lout);
-
-    tangent = in->dPdv;
-    Normalize(&tangent);
-
-    diff = kajiya_diffuse(tangent, Lout.Ln);
-    spec = kajiya_specular(tangent, Lout.Ln, in->I);
-
-    out->Cs.r += (in->Cd.r * hair->diffuse.r * diff + spec) * Lout.Cl.r;
-    out->Cs.g += (in->Cd.g * hair->diffuse.g * diff + spec) * Lout.Cl.g;
-    out->Cs.b += (in->Cd.b * hair->diffuse.b * diff + spec) * Lout.Cl.b;
-  }
-
-  SlFreeLightSamples(samples);
-
-  out->Os = 1;
+  return MyPropertyList;
 }
 
 static int set_diffuse(void *self, const PropertyValue *value)

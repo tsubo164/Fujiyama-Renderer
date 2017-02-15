@@ -16,12 +16,6 @@
 
 namespace fj {
 
-class FJ_API ShaderFunctionTable {
-public:
-  void (*MyEvaluate)(const void *self, const TraceContext *cxt,
-      const SurfaceInput *in, SurfaceOutput *out);
-};
-
 enum ShdErrorNo {
   SHD_ERR_NOERR = 0,
   SHD_ERR_TYPE_NOT_MATCH,

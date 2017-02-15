@@ -13,11 +13,6 @@
 
 namespace fj {
 
-class FJ_API ProcedureFunctionTable {
-public:
-  int (*MyRun)(void *self);
-};
-
 enum PrcErrorNo {
   PRC_ERR_NOERR = 0,
   PRC_ERR_TYPE_NOT_MATCH,

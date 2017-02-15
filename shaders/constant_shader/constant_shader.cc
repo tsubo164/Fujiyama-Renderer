@@ -6,9 +6,6 @@
 #include "fj_vector.h"
 #include "fj_color.h"
 
-#include <cstring>
-#include <cstdio>
-
 using namespace fj;
 
 class ConstantShader : public Shader {
@@ -26,21 +23,14 @@ private:
   const Property *get_property_list() const;
 };
 
-static void *MyNew(void);
-static void MyFree(void *self);
-static void MyEvaluate(const void *self, const TraceContext *cxt,
-    const SurfaceInput *in, SurfaceOutput *out);
-
+static void *MyCreateFunction(void);
+static void MyDeleteFunction(void *self);
 static const char MyPluginName[] = "ConstantShader";
-
-static const ShaderFunctionTable MyFunctionTable = {
-  MyEvaluate
-};
 
 static int set_diffuse(void *self, const PropertyValue *value);
 static int set_texture(void *self, const PropertyValue *value);
 
-static const Property MyProperties[] = {
+static const Property MyPropertyList[] = {
   {PROP_VECTOR3, "diffuse", {1, 1, 1, 0}, set_diffuse},
   {PROP_TEXTURE, "texture", {0, 0, 0, 0}, set_texture},
   {PROP_NONE,    NULL,      {0, 0, 0, 0}, NULL}
@@ -59,24 +49,23 @@ FJ_PLUGIN_API int Initialize(PluginInfo *info)
       PLUGIN_API_VERSION,
       SHADER_PLUGIN_TYPE,
       MyPluginName,
-      MyNew,
-      MyFree,
-      &MyFunctionTable,
-      MyProperties,
+      MyCreateFunction,
+      MyDeleteFunction,
+      MyPropertyList,
       MyMetainfo);
 }
 } // extern "C"
 
-static void *MyNew(void)
+static void *MyCreateFunction(void)
 {
   ConstantShader *constant = new ConstantShader();
 
-  PropSetAllDefaultValues(constant, MyProperties);
+  PropSetAllDefaultValues(constant, MyPropertyList);
 
   return constant;
 }
 
-static void MyFree(void *self)
+static void MyDeleteFunction(void *self)
 {
   ConstantShader *constant = (ConstantShader *) self;
   if (constant == NULL)
@@ -110,33 +99,7 @@ void ConstantShader::evaluate(const TraceContext &cxt,
 
 const Property *ConstantShader::get_property_list() const
 {
-  return MyProperties;
-}
-
-static void MyEvaluate(const void *self, const TraceContext *cxt,
-    const SurfaceInput *in, SurfaceOutput *out)
-{
-  const ConstantShader *constant = (ConstantShader *) self;
-  Color4 C_tex;
-
-  // C_tex
-  if (constant->texture != NULL) {
-    C_tex = constant->texture->Lookup(in->uv.u, in->uv.v);
-    C_tex.r *= constant->diffuse.r;
-    C_tex.g *= constant->diffuse.g;
-    C_tex.b *= constant->diffuse.b;
-  }
-  else {
-    C_tex.r = constant->diffuse.r;
-    C_tex.g = constant->diffuse.g;
-    C_tex.b = constant->diffuse.b;
-  }
-
-  // Cs
-  out->Cs.r = C_tex.r;
-  out->Cs.g = C_tex.g;
-  out->Cs.b = C_tex.b;
-  out->Os = 1;
+  return MyPropertyList;
 }
 
 static int set_diffuse(void *self, const PropertyValue *value)

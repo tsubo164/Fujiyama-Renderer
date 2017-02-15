@@ -90,17 +90,12 @@ void Plugin::DeleteInstance(void *instance) const
 
 const Property *Plugin::GetPropertyList() const
 {
-  return info_.properties;
+  return info_.property_list;
 }
 
 const MetaInfo *Plugin::Metainfo() const
 {
   return info_.meta;
-}
-
-const void *Plugin::GetVtable() const
-{
-  return info_.vtbl;
 }
 
 const char *Plugin::GetName() const
@@ -137,8 +132,7 @@ int PlgSetupInfo(PluginInfo *info,
     const char *plugin_name,
     PlgCreateInstanceFn create_instance,
     PlgDeleteInstanceFn delete_instance,
-    const void *vtbl,
-    const Property *properties,
+    const Property *property_list,
     const MetaInfo *meta)
 {
   info->api_version = api_version;
@@ -146,8 +140,7 @@ int PlgSetupInfo(PluginInfo *info,
   info->plugin_name = plugin_name;
   info->create_instance = create_instance;
   info->delete_instance = delete_instance;
-  info->vtbl = vtbl;
-  info->properties = properties;
+  info->property_list = property_list;
   info->meta = meta;
 
   if (is_valid_pluginfo(info))
@@ -173,8 +166,7 @@ static int is_valid_pluginfo(const PluginInfo *info)
     info->plugin_name == NULL ||
     info->create_instance == NULL ||
     info->delete_instance == NULL ||
-    info->vtbl == NULL ||
-    info->properties == NULL ||
+    info->property_list == NULL ||
     info->meta == NULL)
     return 0;
   else

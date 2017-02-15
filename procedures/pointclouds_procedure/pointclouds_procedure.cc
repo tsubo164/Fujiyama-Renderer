@@ -9,9 +9,6 @@
 #include "fj_vector.h"
 #include "fj_volume.h"
 
-#include <cstring>
-#include <cfloat>
-
 using namespace fj;
 
 class PointCloudsProcedure : Procedure {
@@ -28,14 +25,9 @@ private:
   const Property *get_property_list() const;
 };
 
-static void *MyNew(void);
-static void MyFree(void *self);
-static int MyRun(void *self);
-
+static void *MyCreateFunction(void);
+static void MyDeleteFunction(void *self);
 static const char MyPluginName[] = "PointCloudsProcedure";
-static const ProcedureFunctionTable MyFunctionTable = {
-  MyRun
-};
 
 static int set_volume(void *self, const PropertyValue *value);
 static int set_turbulence(void *self, const PropertyValue *value);
@@ -44,7 +36,7 @@ static int FillWithPointClouds(Volume *volume,
     const CloudControlPoint *cp, const Turbulence *turbulence);
 static int FillWithConstant(Volume *volume, float density);
 
-static const Property MyProperties[] = {
+static const Property MyPropertyList[] = {
   {PROP_VOLUME,     "volume",     {0, 0, 0, 0}, set_volume},
   {PROP_TURBULENCE, "turbulence", {0, 0, 0, 0}, set_turbulence},
   {PROP_NONE,       NULL,         {0, 0, 0, 0}, NULL}
@@ -63,22 +55,21 @@ FJ_PLUGIN_API int Initialize(PluginInfo *info)
       PLUGIN_API_VERSION,
       PROCEDURE_PLUGIN_TYPE,
       MyPluginName,
-      MyNew,
-      MyFree,
-      &MyFunctionTable,
-      MyProperties,
+      MyCreateFunction,
+      MyDeleteFunction,
+      MyPropertyList,
       MyMetainfo);
 }
 } // extern "C"
 
-static void *MyNew(void)
+static void *MyCreateFunction(void)
 {
   PointCloudsProcedure *cloud = new PointCloudsProcedure();
 
   return cloud;
 }
 
-static void MyFree(void *self)
+static void MyDeleteFunction(void *self)
 {
   PointCloudsProcedure *cloud = (PointCloudsProcedure *) self;
   if (cloud == NULL)
@@ -112,31 +103,7 @@ int PointCloudsProcedure::run() const
 
 const Property *PointCloudsProcedure::get_property_list() const
 {
-  return MyProperties;
-}
-
-static int MyRun(void *self)
-{
-  PointCloudsProcedure *cloud = (PointCloudsProcedure *) self;
-  CloudControlPoint cp;
-  int err = 0;
-
-  if (cloud->volume == NULL) {
-    return -1;
-  }
-
-  cp.orig = Vector(0, 0, 0);
-  cp.udir = Vector(1, 0, 0);
-  cp.vdir = Vector(0, 1, 0);
-  cp.wdir = Vector(0, 0, 1);
-  cp.noise_space = Vector(0, 0, 0);
-  cp.density = 5;
-  cp.radius = .75;
-  cp.noise_amplitude = 1;
-
-  err = FillWithPointClouds(cloud->volume, &cp, cloud->turbulence);
-
-  return err;
+  return MyPropertyList;
 }
 
 static int set_volume(void *self, const PropertyValue *value)
