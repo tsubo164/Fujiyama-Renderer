@@ -34,7 +34,6 @@ static int set_turbulence(void *self, const PropertyValue *value);
 
 static int FillWithPointClouds(Volume *volume,
     const CloudControlPoint *cp, const Turbulence *turbulence);
-static int FillWithConstant(Volume *volume, float density);
 
 static const Property MyPropertyList[] = {
   {PROP_VOLUME,     "volume",     {0, 0, 0, 0}, set_volume},
@@ -203,28 +202,6 @@ static int FillWithPointClouds(Volume *volume,
         value = volume->GetValue(i, j, k);
         volume->SetValue(i, j, k, Max(value, pyro_value));
 
-        progress.Increment();
-      }
-    }
-  }
-  progress.Done();
-
-  return 0;
-}
-
-static int FillWithConstant(Volume *volume, float density)
-{
-  int xres, yres, zres;
-  volume->GetResolution(&xres, &yres, &zres);
-
-  // TODO come up with the best place to put progress
-  Progress progress;
-  progress.Start(xres * yres * zres);
-
-  for (int k = 0; k < zres; k++) {
-    for (int j = 0; j < yres; j++) {
-      for (int i = 0; i < xres; i++) {
-        volume->SetValue(i, j, k, density);
         progress.Increment();
       }
     }
