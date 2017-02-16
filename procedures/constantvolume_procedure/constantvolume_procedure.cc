@@ -26,15 +26,15 @@ static void *MyCreateFunction(void);
 static void MyDeleteFunction(void *self);
 static const char MyPluginName[] = "ConstantVolumeProcedure";
 
-static int set_volume(void *self, const PropertyValue *value);
-static int set_density(void *self, const PropertyValue *value);
+static int set_volume(void *self, const PropertyValue &value);
+static int set_density(void *self, const PropertyValue &value);
 
 static int FillWithConstant(Volume *volume, float density);
 
 static const Property MyPropertyList[] = {
-  {PROP_VOLUME, "volume",  {0, 0, 0, 0}, set_volume},
-  {PROP_SCALAR, "density", {1, 0, 0, 0}, set_density},
-  {PROP_NONE,   NULL,      {0, 0, 0, 0}, NULL}
+  Property("volume",  PropVolume(NULL), set_volume),
+  Property("density", PropScalar(1),    set_density),
+  Property()
 };
 
 static const MetaInfo MyMetainfo[] = {
@@ -88,23 +88,23 @@ const Property *ConstantVolumeProcedure::get_property_list() const
   return MyPropertyList;
 }
 
-static int set_volume(void *self, const PropertyValue *value)
+static int set_volume(void *self, const PropertyValue &value)
 {
   ConstantVolumeProcedure *constvol = (ConstantVolumeProcedure *) self;
 
-  if (value->volume == NULL)
+  if (value.volume == NULL)
     return -1;
 
-  constvol->volume = value->volume;
+  constvol->volume = value.volume;
 
   return 0;
 }
 
-static int set_density(void *self, const PropertyValue *value)
+static int set_density(void *self, const PropertyValue &value)
 {
   ConstantVolumeProcedure *constvol = (ConstantVolumeProcedure *) self;
 
-  constvol->density = Max(0, value->vector[0]);
+  constvol->density = Max(0, value.vector[0]);
 
   return 0;
 }

@@ -28,6 +28,11 @@ static int compare_property_sample(const void *ptr0, const void *ptr1);
 static void push_sample(PropertySampleList *list, const PropertySample *sample);
 static void sort_by_sample_time(PropertySampleList *list);
 
+PropertyValue PropNull()
+{
+  return PropertyValue();
+}
+
 PropertyValue PropScalar(double v0)
 {
   PropertyValue value;
@@ -134,6 +139,73 @@ PropertyValue PropMesh(Mesh *mesh)
   return value;
 }
 
+Property::Property()
+  : type_(PROP_NONE), name_(NULL), default_value_(), set_value_fn_(NULL)
+{
+}
+
+Property::Property(const char *name, const PropertyValue &value, SetValueFn set_value_fn)
+{
+  type_ = value.type;
+  name_ = name;
+  default_value_ = value.vector;
+  set_value_fn_ = set_value_fn;
+}
+
+Property::~Property()
+{
+}
+
+bool Property::IsValid() const
+{
+  if (GetType() == PROP_NONE)
+    return false;
+  if (GetName() == NULL)
+    return false;
+
+  return true;
+}
+
+int Property::GetType() const
+{
+  return type_;
+}
+
+const char *Property::GetName() const
+{
+  return name_;
+}
+
+const Vector4 &Property::GetDefaultValue() const
+{
+  return default_value_;
+}
+
+const char *Property::GetTypeString() const
+{
+  switch (GetType()) {
+  case PROP_SCALAR:      return "Scalar";
+  case PROP_VECTOR2:     return "Vector2";
+  case PROP_VECTOR3:     return "Vector3";
+  case PROP_VECTOR4:     return "Vector4";
+  case PROP_STRING:      return "String";
+  case PROP_OBJECTGROUP: return "ObjectGroup";
+  case PROP_TURBULENCE:  return "Turbulence";
+  case PROP_TEXTURE:     return "Texture";
+  case PROP_SHADER:      return "Shader";
+  case PROP_VOLUME:      return "Volume";
+  case PROP_MESH:        return "Mesh";
+  default:               return "(null)";
+  }
+}
+
+int Property::SetValue(void *self, const PropertyValue &value) const
+{
+  if (set_value_fn_ == NULL)
+    return -1;
+  return set_value_fn_(self, value);
+}
+
 int PropIsValid(const Property *prop)
 {
   if (PropType(prop) == PROP_NONE)
@@ -147,12 +219,12 @@ int PropIsValid(const Property *prop)
 
 const char *PropName(const Property *prop)
 {
-  return prop->name;
+  return prop->GetName();
 }
 
 const int PropType(const Property *prop)
 {
-  return prop->type;
+  return prop->GetType();
 }
 
 const double PropDefaultValue(const Property *prop, int index)
@@ -160,7 +232,7 @@ const double PropDefaultValue(const Property *prop, int index)
   if (index < 0 || index > 3)
     return 0;
 
-  return prop->default_value[index];
+  return prop->GetDefaultValue()[index];
 }
 
 const char *PropTypeString(const Property *prop)
@@ -227,7 +299,7 @@ int PropSetAllDefaultValues(void *self, const Property *list)
       default:
         break;
     }
-    err = prop->SetValue(self, &value);
+    err = prop->SetValue(self, value);
     if (err) {
       err_count++;
     }

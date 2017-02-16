@@ -30,8 +30,8 @@ static void *MyCreateFunction(void);
 static void MyDeleteFunction(void *self);
 static const char MyPluginName[] = "SurfaceWispsProcedure";
 
-static int set_volume(void *self, const PropertyValue *value);
-static int set_turbulence(void *self, const PropertyValue *value);
+static int set_volume(void *self, const PropertyValue &value);
+static int set_turbulence(void *self, const PropertyValue &value);
 
 static int FillWithSpecksOnSurface(Volume *volume,
     const WispsControlPoint *cp00, const WispsControlPoint *cp10,
@@ -39,9 +39,9 @@ static int FillWithSpecksOnSurface(Volume *volume,
     const Turbulence *turbulence);
 
 static const Property MyPropertyList[] = {
-  {PROP_VOLUME,     "volume",     {0, 0, 0, 0}, set_volume},
-  {PROP_TURBULENCE, "turbulence", {0, 0, 0, 0}, set_turbulence},
-  {PROP_NONE,       NULL,         {0, 0, 0, 0}, NULL}
+  Property("volume",     PropVolume(NULL),     set_volume),
+  Property("turbulence", PropTurbulence(NULL), set_turbulence),
+  Property()
 };
 
 static const MetaInfo MyMetainfo[] = {
@@ -126,26 +126,26 @@ const Property *SurfaceWispsProcedure::get_property_list() const
   return MyPropertyList;
 }
 
-static int set_volume(void *self, const PropertyValue *value)
+static int set_volume(void *self, const PropertyValue &value)
 {
   SurfaceWispsProcedure *surface = (SurfaceWispsProcedure *) self;
 
-  if (value->volume == NULL)
+  if (value.volume == NULL)
     return -1;
 
-  surface->volume = value->volume;
+  surface->volume = value.volume;
 
   return 0;
 }
 
-static int set_turbulence(void *self, const PropertyValue *value)
+static int set_turbulence(void *self, const PropertyValue &value)
 {
   SurfaceWispsProcedure *surface = (SurfaceWispsProcedure *) self;
 
-  if (value->turbulence == NULL)
+  if (value.turbulence == NULL)
     return -1;
 
-  surface->turbulence = value->turbulence;
+  surface->turbulence = value.turbulence;
 
   return 0;
 }

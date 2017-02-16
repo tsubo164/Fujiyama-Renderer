@@ -24,13 +24,13 @@ static void *MyCreateFunction(void);
 static void MyDeleteFunction(void *self);
 static const char MyPluginName[] = "ConstantShader";
 
-static int set_diffuse(void *self, const PropertyValue *value);
-static int set_texture(void *self, const PropertyValue *value);
+static int set_diffuse(void *self, const PropertyValue &value);
+static int set_texture(void *self, const PropertyValue &value);
 
 static const Property MyPropertyList[] = {
-  {PROP_VECTOR3, "diffuse", {1, 1, 1, 0}, set_diffuse},
-  {PROP_TEXTURE, "texture", {0, 0, 0, 0}, set_texture},
-  {PROP_NONE,    NULL,      {0, 0, 0, 0}, NULL}
+  Property("diffuse", PropVector3(1, 1, 1), set_diffuse),
+  Property("texture", PropTexture(NULL),    set_texture),
+  Property()
 };
 
 static const MetaInfo MyMetainfo[] = {
@@ -99,24 +99,24 @@ const Property *ConstantShader::get_property_list() const
   return MyPropertyList;
 }
 
-static int set_diffuse(void *self, const PropertyValue *value)
+static int set_diffuse(void *self, const PropertyValue &value)
 {
   ConstantShader *constant = (ConstantShader *) self;
   Color diffuse;
 
-  diffuse.r = Max(0, value->vector[0]);
-  diffuse.g = Max(0, value->vector[1]);
-  diffuse.b = Max(0, value->vector[2]);
+  diffuse.r = Max(0, value.vector[0]);
+  diffuse.g = Max(0, value.vector[1]);
+  diffuse.b = Max(0, value.vector[2]);
   constant->diffuse = diffuse;
 
   return 0;
 }
 
-static int set_texture(void *self, const PropertyValue *value)
+static int set_texture(void *self, const PropertyValue &value)
 {
   ConstantShader *constant = (ConstantShader *) self;
 
-  constant->texture = value->texture;
+  constant->texture = value.texture;
 
   return 0;
 }

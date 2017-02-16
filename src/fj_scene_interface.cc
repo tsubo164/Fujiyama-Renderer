@@ -1175,8 +1175,7 @@ static int find_and_set_property(void *self, const Property *src_props,
   if (self == NULL)
     return -1;
 
-  assert(dst_prop->SetValue != NULL);
-  return dst_prop->SetValue(self, src_data);
+  return dst_prop->SetValue(self, *src_data);
 }
 
 static int set_property(const Entry *entry,
@@ -1206,7 +1205,7 @@ static int set_property(const Entry *entry,
   src_props = get_builtin_type_property_list(entry->type);
 
   assert(src_props && "Some types are not implemented yet");
-
+  
   if (dst_entry == NULL)
     return -1;
 

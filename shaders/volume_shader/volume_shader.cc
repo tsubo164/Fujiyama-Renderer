@@ -23,11 +23,11 @@ static void *MyCreateFunction(void);
 static void MyDeleteFunction(void *self);
 static const char MyPluginName[] = "VolumeShader";
 
-static int set_diffuse(void *self, const PropertyValue *value);
+static int set_diffuse(void *self, const PropertyValue &value);
 
 static const Property MyPropertyList[] = {
-  {PROP_VECTOR3, "diffuse", {1, 1, 1, 0}, set_diffuse},
-  {PROP_NONE,    NULL,      {0, 0, 0, 0}, NULL}
+  Property("diffuse", PropVector3(1, 1, 1), set_diffuse),
+  Property()
 };
 
 static const MetaInfo MyMetainfo[] = {
@@ -101,14 +101,14 @@ const Property *VolumeShader::get_property_list() const
   return MyPropertyList;
 }
 
-static int set_diffuse(void *self, const PropertyValue *value)
+static int set_diffuse(void *self, const PropertyValue &value)
 {
   VolumeShader *volume = (VolumeShader *) self;
   Color diffuse;
 
-  diffuse.r = Max(0, value->vector[0]);
-  diffuse.g = Max(0, value->vector[1]);
-  diffuse.b = Max(0, value->vector[2]);
+  diffuse.r = Max(0, value.vector[0]);
+  diffuse.g = Max(0, value.vector[1]);
+  diffuse.b = Max(0, value.vector[2]);
   volume->diffuse = diffuse;
 
   return 0;

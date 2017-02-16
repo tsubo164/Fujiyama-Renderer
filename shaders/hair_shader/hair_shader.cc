@@ -29,23 +29,23 @@ static void *MyCreateFunction(void);
 static void MyDeleteFunction(void *self);
 static const char MyPluginName[] = "HairShader";
 
-static int set_diffuse(void *self, const PropertyValue *value);
-static int set_specular(void *self, const PropertyValue *value);
-static int set_ambient(void *self, const PropertyValue *value);
-static int set_roughness(void *self, const PropertyValue *value);
-static int set_reflect(void *self, const PropertyValue *value);
+static int set_diffuse(void *self, const PropertyValue &value);
+static int set_specular(void *self, const PropertyValue &value);
+static int set_ambient(void *self, const PropertyValue &value);
+static int set_roughness(void *self, const PropertyValue &value);
+static int set_reflect(void *self, const PropertyValue &value);
 
 // hair shading implementations
 static float kajiya_diffuse(const Vector &tangent, const Vector &Ln);
 static float kajiya_specular(const Vector &tangent, const Vector &Ln, const Vector &I);
 
 static const Property MyPropertyList[] = {
-  {PROP_VECTOR3, "diffuse",   {1, 1, 1, 0}, set_diffuse},
-  {PROP_VECTOR3, "specular",  {1, 1, 1, 0},    set_specular},
-  {PROP_VECTOR3, "ambient",   {1, 1, 1, 0},    set_ambient},
-  {PROP_SCALAR,  "roughness", {.1, 0, 0, 0},   set_roughness},
-  {PROP_VECTOR3, "reflect",   {1, 1, 1, 0},    set_reflect},
-  {PROP_NONE,    NULL,        {0, 0, 0, 0},    NULL}
+  Property("diffuse",   PropVector3(1, 1, 1), set_diffuse),
+  Property("specular",  PropVector3(1, 1, 1), set_specular),
+  Property("ambient",   PropVector3(1, 1, 1), set_ambient),
+  Property("roughness", PropScalar(.1),       set_roughness),
+  Property("reflect",   PropVector3(1, 1, 1), set_reflect),
+  Property()
 };
 
 static const MetaInfo MyMetainfo[] = {
@@ -124,49 +124,49 @@ const Property *HairShader::get_property_list() const
   return MyPropertyList;
 }
 
-static int set_diffuse(void *self, const PropertyValue *value)
+static int set_diffuse(void *self, const PropertyValue &value)
 {
   HairShader *hair = (HairShader *) self;
   Color diffuse;
 
-  diffuse.r = Max(0, value->vector[0]);
-  diffuse.g = Max(0, value->vector[1]);
-  diffuse.b = Max(0, value->vector[2]);
+  diffuse.r = Max(0, value.vector[0]);
+  diffuse.g = Max(0, value.vector[1]);
+  diffuse.b = Max(0, value.vector[2]);
   hair->diffuse = diffuse;
 
   return 0;
 }
 
-static int set_specular(void *self, const PropertyValue *value)
+static int set_specular(void *self, const PropertyValue &value)
 {
   HairShader *hair = (HairShader *) self;
   Color specular;
 
-  specular.r = Max(0, value->vector[0]);
-  specular.g = Max(0, value->vector[1]);
-  specular.b = Max(0, value->vector[2]);
+  specular.r = Max(0, value.vector[0]);
+  specular.g = Max(0, value.vector[1]);
+  specular.b = Max(0, value.vector[2]);
   hair->specular = specular;
 
   return 0;
 }
 
-static int set_ambient(void *self, const PropertyValue *value)
+static int set_ambient(void *self, const PropertyValue &value)
 {
   HairShader *hair = (HairShader *) self;
   Color ambient;
 
-  ambient.r = Max(0, value->vector[0]);
-  ambient.g = Max(0, value->vector[1]);
-  ambient.b = Max(0, value->vector[2]);
+  ambient.r = Max(0, value.vector[0]);
+  ambient.g = Max(0, value.vector[1]);
+  ambient.b = Max(0, value.vector[2]);
   hair->ambient = ambient;
 
   return 0;
 }
 
-static int set_roughness(void *self, const PropertyValue *value)
+static int set_roughness(void *self, const PropertyValue &value)
 {
   HairShader *hair = (HairShader *) self;
-  float roughness = value->vector[0];
+  float roughness = value.vector[0];
 
   roughness = Max(0, roughness);
   hair->roughness = roughness;
@@ -174,14 +174,14 @@ static int set_roughness(void *self, const PropertyValue *value)
   return 0;
 }
 
-static int set_reflect(void *self, const PropertyValue *value)
+static int set_reflect(void *self, const PropertyValue &value)
 {
   HairShader *hair = (HairShader *) self;
   Color reflect;
 
-  reflect.r = Max(0, value->vector[0]);
-  reflect.g = Max(0, value->vector[1]);
-  reflect.b = Max(0, value->vector[2]);
+  reflect.r = Max(0, value.vector[0]);
+  reflect.g = Max(0, value.vector[1]);
+  reflect.b = Max(0, value.vector[2]);
   hair->reflect = reflect;
 
   return 0;

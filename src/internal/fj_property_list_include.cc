@@ -4,489 +4,489 @@
 // this file is inteded to be included in fj_scene_interface.c 
 // defines all properties for builtin type and some helper functions
 
-static int set_ObjectInstance_transform_order(void *self, const PropertyValue *value)
+static int set_ObjectInstance_transform_order(void *self, const PropertyValue &value)
 {
   // TODO error handling
-  if (!XfmIsTransformOrder((int) value->vector[0]))
+  if (!XfmIsTransformOrder((int) value.vector[0]))
     return -1;
 
   ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
-  obj->SetTransformOrder((int) value->vector[0]);
+  obj->SetTransformOrder((int) value.vector[0]);
   return 0;
 }
 
-static int set_ObjectInstance_rotate_order(void *self, const PropertyValue *value)
+static int set_ObjectInstance_rotate_order(void *self, const PropertyValue &value)
 {
   // TODO error handling
-  if (!XfmIsRotateOrder((int) value->vector[0]))
+  if (!XfmIsRotateOrder((int) value.vector[0]))
     return -1;
 
   ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
-  obj->SetRotateOrder((int) value->vector[0]);
+  obj->SetRotateOrder((int) value.vector[0]);
   return 0;
 }
 
-static int set_ObjectInstance_translate(void *self, const PropertyValue *value)
+static int set_ObjectInstance_translate(void *self, const PropertyValue &value)
 {
   ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
-  obj->SetTranslate(value->vector[0], value->vector[1], value->vector[2], value->time);
+  obj->SetTranslate(value.vector[0], value.vector[1], value.vector[2], value.time);
   return 0;
 }
 
-static int set_ObjectInstance_rotate(void *self, const PropertyValue *value)
+static int set_ObjectInstance_rotate(void *self, const PropertyValue &value)
 {
   ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
-  obj->SetRotate(value->vector[0], value->vector[1], value->vector[2], value->time);
+  obj->SetRotate(value.vector[0], value.vector[1], value.vector[2], value.time);
   return 0;
 }
 
-static int set_ObjectInstance_scale(void *self, const PropertyValue *value)
+static int set_ObjectInstance_scale(void *self, const PropertyValue &value)
 {
   ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
-  obj->SetScale(value->vector[0], value->vector[1], value->vector[2], value->time);
+  obj->SetScale(value.vector[0], value.vector[1], value.vector[2], value.time);
   return 0;
 }
 
-static int set_ObjectInstance_reflect_target(void *self, const PropertyValue *value)
+static int set_ObjectInstance_reflect_target(void *self, const PropertyValue &value)
 {
   ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
-  obj->SetReflectTarget(value->object_group);
+  obj->SetReflectTarget(value.object_group);
   return 0;
 }
 
-static int set_ObjectInstance_refract_target(void *self, const PropertyValue *value)
+static int set_ObjectInstance_refract_target(void *self, const PropertyValue &value)
 {
   ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
-  obj->SetRefractTarget(value->object_group);
+  obj->SetRefractTarget(value.object_group);
   return 0;
 }
 
-static int set_ObjectInstance_shadow_target(void *self, const PropertyValue *value)
+static int set_ObjectInstance_shadow_target(void *self, const PropertyValue &value)
 {
   ObjectInstance *obj = reinterpret_cast<ObjectInstance *>(self);
-  obj->SetShadowTarget(value->object_group);
+  obj->SetShadowTarget(value.object_group);
   return 0;
 }
 
-static int set_Turbulence_lacunarity(void *self, const PropertyValue *value)
+static int set_Turbulence_lacunarity(void *self, const PropertyValue &value)
 {
   Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
-  turbulence->SetLacunarity(value->vector[0]);
+  turbulence->SetLacunarity(value.vector[0]);
   return 0;
 }
 
-static int set_Turbulence_gain(void *self, const PropertyValue *value)
+static int set_Turbulence_gain(void *self, const PropertyValue &value)
 {
   Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
-  turbulence->SetGain(value->vector[0]);
+  turbulence->SetGain(value.vector[0]);
   return 0;
 }
 
-static int set_Turbulence_octaves(void *self, const PropertyValue *value)
+static int set_Turbulence_octaves(void *self, const PropertyValue &value)
 {
   Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
-  turbulence->SetOctaves((int) value->vector[0]);
+  turbulence->SetOctaves((int) value.vector[0]);
   return 0;
 }
 
-static int set_Turbulence_amplitude(void *self, const PropertyValue *value)
+static int set_Turbulence_amplitude(void *self, const PropertyValue &value)
 {
   Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
-  turbulence->SetAmplitude(value->vector[0], value->vector[1], value->vector[2]);
+  turbulence->SetAmplitude(value.vector[0], value.vector[1], value.vector[2]);
   return 0;
 }
 
-static int set_Turbulence_frequency(void *self, const PropertyValue *value)
+static int set_Turbulence_frequency(void *self, const PropertyValue &value)
 {
   Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
-  turbulence->SetFrequency(value->vector[0], value->vector[1], value->vector[2]);
+  turbulence->SetFrequency(value.vector[0], value.vector[1], value.vector[2]);
   return 0;
 }
 
-static int set_Turbulence_offset(void *self, const PropertyValue *value)
+static int set_Turbulence_offset(void *self, const PropertyValue &value)
 {
   Turbulence *turbulence = reinterpret_cast<Turbulence *>(self);
-  turbulence->SetOffset(value->vector[0], value->vector[1], value->vector[2]);
+  turbulence->SetOffset(value.vector[0], value.vector[1], value.vector[2]);
   return 0;
 }
 
-static int set_Renderer_sample_jitter(void *self, const PropertyValue *value)
+static int set_Renderer_sample_jitter(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetSampleJitter(value->vector[0]);
+  renderer->SetSampleJitter(value.vector[0]);
   return 0;
 }
 
-static int set_Renderer_cast_shadow(void *self, const PropertyValue *value)
+static int set_Renderer_cast_shadow(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetShadowEnable((int) value->vector[0]);
+  renderer->SetShadowEnable((int) value.vector[0]);
   return 0;
 }
 
-static int set_Renderer_max_reflect_depth(void *self, const PropertyValue *value)
+static int set_Renderer_max_reflect_depth(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetMaxReflectDepth((int) value->vector[0]);
+  renderer->SetMaxReflectDepth((int) value.vector[0]);
   return 0;
 }
 
-static int set_Renderer_max_refract_depth(void *self, const PropertyValue *value)
+static int set_Renderer_max_refract_depth(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetMaxRefractDepth((int) value->vector[0]);
+  renderer->SetMaxRefractDepth((int) value.vector[0]);
   return 0;
 }
 
-static int set_Renderer_raymarch_step(void *self, const PropertyValue *value)
+static int set_Renderer_raymarch_step(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetRaymarchStep(value->vector[0]);
+  renderer->SetRaymarchStep(value.vector[0]);
   return 0;
 }
 
-static int set_Renderer_raymarch_shadow_step(void *self, const PropertyValue *value)
+static int set_Renderer_raymarch_shadow_step(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetRaymarchShadowStep(value->vector[0]);
+  renderer->SetRaymarchShadowStep(value.vector[0]);
   return 0;
 }
 
-static int set_Renderer_raymarch_reflect_step(void *self, const PropertyValue *value)
+static int set_Renderer_raymarch_reflect_step(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetRaymarchReflectStep(value->vector[0]);
+  renderer->SetRaymarchReflectStep(value.vector[0]);
   return 0;
 }
 
-static int set_Renderer_raymarch_refract_step(void *self, const PropertyValue *value)
+static int set_Renderer_raymarch_refract_step(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetRaymarchRefractStep(value->vector[0]);
+  renderer->SetRaymarchRefractStep(value.vector[0]);
   return 0;
 }
 
-static int set_Renderer_sample_time_range(void *self, const PropertyValue *value)
+static int set_Renderer_sample_time_range(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetSampleTimeRange(value->vector[0], value->vector[1]);
+  renderer->SetSampleTimeRange(value.vector[0], value.vector[1]);
   return 0;
 }
 
-static int set_Renderer_resolution(void *self, const PropertyValue *value)
+static int set_Renderer_resolution(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetResolution((int) value->vector[0], (int) value->vector[1]);
+  renderer->SetResolution((int) value.vector[0], (int) value.vector[1]);
   return 0;
 }
 
-static int set_Renderer_tilesize(void *self, const PropertyValue *value)
+static int set_Renderer_tilesize(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetTileSize((int) value->vector[0], (int) value->vector[1]);
+  renderer->SetTileSize((int) value.vector[0], (int) value.vector[1]);
   return 0;
 }
 
-static int set_Renderer_filterwidth(void *self, const PropertyValue *value)
+static int set_Renderer_filterwidth(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetFilterWidth(value->vector[0], value->vector[1]);
+  renderer->SetFilterWidth(value.vector[0], value.vector[1]);
   return 0;
 }
 
-static int set_Renderer_sampler_type(void *self, const PropertyValue *value)
+static int set_Renderer_sampler_type(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetSamplerType(static_cast<int>(value->vector[0]));
+  renderer->SetSamplerType(static_cast<int>(value.vector[0]));
   return 0;
 }
 
-static int set_Renderer_pixelsamples(void *self, const PropertyValue *value)
+static int set_Renderer_pixelsamples(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetPixelSamples((int) value->vector[0], (int) value->vector[1]);
+  renderer->SetPixelSamples((int) value.vector[0], (int) value.vector[1]);
   return 0;
 }
 
-static int set_Renderer_adaptive_max_subdivision(void *self, const PropertyValue *value)
+static int set_Renderer_adaptive_max_subdivision(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetMaxSubdivision(static_cast<int>(value->vector[0]));
+  renderer->SetMaxSubdivision(static_cast<int>(value.vector[0]));
   return 0;
 }
 
-static int set_Renderer_adaptive_subdivision_threshold(void *self, const PropertyValue *value)
+static int set_Renderer_adaptive_subdivision_threshold(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetSubdivisionThreshold(value->vector[0]);
+  renderer->SetSubdivisionThreshold(value.vector[0]);
   return 0;
 }
 
-static int set_Renderer_render_region(void *self, const PropertyValue *value)
+static int set_Renderer_render_region(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetRenderRegion(
-      (int) value->vector[0], (int) value->vector[1],
-      (int) value->vector[2], (int) value->vector[3]);
+      (int) value.vector[0], (int) value.vector[1],
+      (int) value.vector[2], (int) value.vector[3]);
   return 0;
 }
 
-static int set_Renderer_use_max_thread(void *self, const PropertyValue *value)
+static int set_Renderer_use_max_thread(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetUseMaxThread((int) value->vector[0]);
+  renderer->SetUseMaxThread((int) value.vector[0]);
   return 0;
 }
 
-static int set_Renderer_thread_count(void *self, const PropertyValue *value)
+static int set_Renderer_thread_count(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
-  renderer->SetThreadCount((int) value->vector[0]);
+  renderer->SetThreadCount((int) value.vector[0]);
   return 0;
 }
 
-static int set_Camera_fov(void *self, const PropertyValue *value)
+static int set_Camera_fov(void *self, const PropertyValue &value)
 {
   Camera *cam = reinterpret_cast<Camera *>(self);
-  cam->SetFov(value->vector[0]);
+  cam->SetFov(value.vector[0]);
   return 0;
 }
 
-static int set_Camera_znear(void *self, const PropertyValue *value)
+static int set_Camera_znear(void *self, const PropertyValue &value)
 {
   Camera *cam = reinterpret_cast<Camera *>(self);
-  cam->SetNearPlane(value->vector[0]);
+  cam->SetNearPlane(value.vector[0]);
   return 0;
 }
 
-static int set_Camera_zfar(void *self, const PropertyValue *value)
+static int set_Camera_zfar(void *self, const PropertyValue &value)
 {
   Camera *cam = reinterpret_cast<Camera *>(self);
-  cam->SetFarPlane(value->vector[0]);
+  cam->SetFarPlane(value.vector[0]);
   return 0;
 }
 
-static int set_Camera_translate(void *self, const PropertyValue *value)
+static int set_Camera_translate(void *self, const PropertyValue &value)
 {
   Camera *cam = reinterpret_cast<Camera *>(self);
-  cam->SetTranslate(value->vector[0], value->vector[1], value->vector[2], value->time);
+  cam->SetTranslate(value.vector[0], value.vector[1], value.vector[2], value.time);
   return 0;
 }
 
-static int set_Camera_rotate(void *self, const PropertyValue *value)
+static int set_Camera_rotate(void *self, const PropertyValue &value)
 {
   Camera *cam = reinterpret_cast<Camera *>(self);
-  cam->SetRotate(value->vector[0], value->vector[1], value->vector[2], value->time);
+  cam->SetRotate(value.vector[0], value.vector[1], value.vector[2], value.time);
   return 0;
 }
 
-static int set_Camera_transform_order(void *self, const PropertyValue *value)
+static int set_Camera_transform_order(void *self, const PropertyValue &value)
 {
   Camera *cam = reinterpret_cast<Camera *>(self);
-  cam->SetTransformOrder((int) value->vector[0]);
+  cam->SetTransformOrder((int) value.vector[0]);
   return 0;
 }
 
-static int set_Camera_rotate_order(void *self, const PropertyValue *value)
+static int set_Camera_rotate_order(void *self, const PropertyValue &value)
 {
   Camera *cam = reinterpret_cast<Camera *>(self);
-  cam->SetRotateOrder((int) value->vector[0]);
+  cam->SetRotateOrder((int) value.vector[0]);
   return 0;
 }
 
-static int set_Volume_resolution(void *self, const PropertyValue *value)
+static int set_Volume_resolution(void *self, const PropertyValue &value)
 {
   Volume *volume = reinterpret_cast<Volume *>(self);
-  volume->Resize(value->vector[0], value->vector[1], value->vector[2]);
+  volume->Resize(value.vector[0], value.vector[1], value.vector[2]);
   return 0;
 }
 
-static int set_Volume_bounds_min(void *self, const PropertyValue *value)
+static int set_Volume_bounds_min(void *self, const PropertyValue &value)
 {
   Volume *volume = (Volume *) self;
   Box bounds;
 
   bounds = volume->GetBounds();
 
-  bounds.min.x = value->vector[0];
-  bounds.min.y = value->vector[1];
-  bounds.min.z = value->vector[2];
+  bounds.min.x = value.vector[0];
+  bounds.min.y = value.vector[1];
+  bounds.min.z = value.vector[2];
 
   volume->SetBounds(bounds);
 
   return 0;
 }
 
-static int set_Volume_bounds_max(void *self, const PropertyValue *value)
+static int set_Volume_bounds_max(void *self, const PropertyValue &value)
 {
   Volume *volume = (Volume *) self;
   Box bounds;
 
   bounds = volume->GetBounds();
 
-  bounds.max.x = value->vector[0];
-  bounds.max.y = value->vector[1];
-  bounds.max.z = value->vector[2];
+  bounds.max.x = value.vector[0];
+  bounds.max.y = value.vector[1];
+  bounds.max.z = value.vector[2];
 
   volume->SetBounds(bounds);
 
   return 0;
 }
 
-static int set_Light_intensity(void *self, const PropertyValue *value)
+static int set_Light_intensity(void *self, const PropertyValue &value)
 {
   Light *light = reinterpret_cast<Light *>(self);
-  light->SetIntensity(value->vector[0]);
+  light->SetIntensity(value.vector[0]);
   return 0;
 }
 
-static int set_Light_color(void *self, const PropertyValue *value)
+static int set_Light_color(void *self, const PropertyValue &value)
 {
   Light *light = reinterpret_cast<Light *>(self);
-  light->SetColor(value->vector[0], value->vector[1], value->vector[2]);
+  light->SetColor(value.vector[0], value.vector[1], value.vector[2]);
   return 0;
 }
 
-static int set_Light_sample_count(void *self, const PropertyValue *value)
+static int set_Light_sample_count(void *self, const PropertyValue &value)
 {
   Light *light = reinterpret_cast<Light *>(self);
-  light->SetSampleCount((int) value->vector[0]);
+  light->SetSampleCount((int) value.vector[0]);
   return 0;
 }
 
-static int set_Light_double_sided(void *self, const PropertyValue *value)
+static int set_Light_double_sided(void *self, const PropertyValue &value)
 {
   Light *light = reinterpret_cast<Light *>(self);
-  light->SetDoubleSided((bool) value->vector[0]);
+  light->SetDoubleSided((bool) value.vector[0]);
   return 0;
 }
 
-static int set_Light_environment_map(void *self, const PropertyValue *value)
+static int set_Light_environment_map(void *self, const PropertyValue &value)
 {
   Light *light = reinterpret_cast<Light *>(self);
-  light->SetEnvironmentMap(value->texture);
+  light->SetEnvironmentMap(value.texture);
   return 0;
 }
 
-static int set_Light_transform_order(void *self, const PropertyValue *value)
+static int set_Light_transform_order(void *self, const PropertyValue &value)
 {
   // TODO error handling
-  if (!XfmIsTransformOrder((int) value->vector[0]))
+  if (!XfmIsTransformOrder((int) value.vector[0]))
     return -1;
 
   Light *light = reinterpret_cast<Light *>(self);
-  light->SetTransformOrder((int) value->vector[0]);
+  light->SetTransformOrder((int) value.vector[0]);
   return 0;
 }
 
-static int set_Light_rotate_order(void *self, const PropertyValue *value)
+static int set_Light_rotate_order(void *self, const PropertyValue &value)
 {
   // TODO error handling
-  if (!XfmIsRotateOrder((int) value->vector[0]))
+  if (!XfmIsRotateOrder((int) value.vector[0]))
     return -1;
 
   Light *light = reinterpret_cast<Light *>(self);
-  light->SetRotateOrder((int) value->vector[0]);
+  light->SetRotateOrder((int) value.vector[0]);
   return 0;
 }
 
-static int set_Light_translate(void *self, const PropertyValue *value)
+static int set_Light_translate(void *self, const PropertyValue &value)
 {
   Light *light = reinterpret_cast<Light *>(self);
-  light->SetTranslate(value->vector[0], value->vector[1], value->vector[2], value->time);
+  light->SetTranslate(value.vector[0], value.vector[1], value.vector[2], value.time);
   return 0;
 }
 
-static int set_Light_rotate(void *self, const PropertyValue *value)
+static int set_Light_rotate(void *self, const PropertyValue &value)
 {
   Light *light = reinterpret_cast<Light *>(self);
-  light->SetRotate(value->vector[0], value->vector[1], value->vector[2], value->time);
+  light->SetRotate(value.vector[0], value.vector[1], value.vector[2], value.time);
   return 0;
 }
 
-static int set_Light_scale(void *self, const PropertyValue *value)
+static int set_Light_scale(void *self, const PropertyValue &value)
 {
   Light *light = reinterpret_cast<Light *>(self);
-  light->SetScale(value->vector[0], value->vector[1], value->vector[2], value->time);
+  light->SetScale(value.vector[0], value.vector[1], value.vector[2], value.time);
   return 0;
 }
 
 #define END_OF_PROPERTY {PROP_NONE, NULL, {0, 0, 0, 0}, NULL}
 static const Property ObjectInstance_properties[] = {
-  {PROP_SCALAR,      "transform_order", {ORDER_SRT},  set_ObjectInstance_transform_order},
-  {PROP_SCALAR,      "rotate_order",    {ORDER_ZXY},  set_ObjectInstance_rotate_order},
-  {PROP_VECTOR3,     "translate",       {0, 0, 0, 0}, set_ObjectInstance_translate},
-  {PROP_VECTOR3,     "rotate",          {0, 0, 0, 0}, set_ObjectInstance_rotate},
-  {PROP_VECTOR3,     "scale",           {1, 1, 1, 0}, set_ObjectInstance_scale},
-  {PROP_OBJECTGROUP, "reflect_target",  {0, 0, 0, 0}, set_ObjectInstance_reflect_target},
-  {PROP_OBJECTGROUP, "refract_target",  {0, 0, 0, 0}, set_ObjectInstance_refract_target},
-  {PROP_OBJECTGROUP, "shadow_target",   {0, 0, 0, 0}, set_ObjectInstance_shadow_target},
-  END_OF_PROPERTY
+  Property("transform_order", PropScalar(ORDER_SRT), set_ObjectInstance_transform_order),
+  Property("rotate_order",    PropScalar(ORDER_ZXY), set_ObjectInstance_rotate_order),
+  Property("translate",       PropVector3(0, 0, 0),  set_ObjectInstance_translate),
+  Property("rotate",          PropVector3(0, 0, 0),  set_ObjectInstance_rotate),
+  Property("scale",           PropVector3(1, 1, 1),  set_ObjectInstance_scale),
+  Property("reflect_target",  PropObjectGroup(NULL), set_ObjectInstance_reflect_target),
+  Property("refract_target",  PropObjectGroup(NULL), set_ObjectInstance_refract_target),
+  Property("shadow_target",   PropObjectGroup(NULL), set_ObjectInstance_shadow_target),
+  Property()
 };
 
 static const Property Turbulence_properties[] = {
-  {PROP_SCALAR,  "lacunarity", {2, 0, 0, 0},  set_Turbulence_lacunarity},
-  {PROP_SCALAR,  "gain",       {.5, 0, 0, 0}, set_Turbulence_gain},
-  {PROP_SCALAR,  "octaves",    {8, 0, 0, 0},  set_Turbulence_octaves},
-  {PROP_VECTOR3, "amplitude",  {1, 1, 1, 0},  set_Turbulence_amplitude},
-  {PROP_VECTOR3, "frequency",  {1, 1, 1, 0},  set_Turbulence_frequency},
-  {PROP_VECTOR3, "offset",     {0, 0, 0, 0},  set_Turbulence_offset},
-  END_OF_PROPERTY
+  Property("lacunarity", PropScalar(2),        set_Turbulence_lacunarity),
+  Property("gain",       PropScalar(.5),       set_Turbulence_gain),
+  Property("octaves",    PropScalar(8),        set_Turbulence_octaves),
+  Property("amplitude",  PropVector3(1, 1, 1), set_Turbulence_amplitude),
+  Property("frequency",  PropVector3(1, 1, 1), set_Turbulence_frequency),
+  Property("offset",     PropVector3(0, 0, 0), set_Turbulence_offset),
+  Property()
 };
 
 static const Property Renderer_properties[] = {
-  {PROP_SCALAR,  "sample_jitter",         {1, 0, 0, 0},      set_Renderer_sample_jitter},
-  {PROP_SCALAR,  "cast_shadow",           {1, 0, 0, 0},      set_Renderer_cast_shadow},
-  {PROP_SCALAR,  "max_reflect_depth",     {3, 0, 0, 0},      set_Renderer_max_reflect_depth},
-  {PROP_SCALAR,  "max_refract_depth",     {3, 0, 0, 0},      set_Renderer_max_refract_depth},
-  {PROP_SCALAR,  "raymarch_step",         {.05, 0, 0, 0},    set_Renderer_raymarch_step},
-  {PROP_SCALAR,  "raymarch_shadow_step",  {.1, 0, 0, 0},     set_Renderer_raymarch_shadow_step},
-  {PROP_SCALAR,  "raymarch_reflect_step", {.1, 0, 0, 0},     set_Renderer_raymarch_reflect_step},
-  {PROP_SCALAR,  "raymarch_refract_step", {.1, 0, 0, 0},     set_Renderer_raymarch_refract_step},
-  {PROP_VECTOR2, "sample_time_range",     {0, 1, 0, 0},      set_Renderer_sample_time_range},
-  {PROP_VECTOR2, "resolution",            {320, 240, 0, 0},  set_Renderer_resolution},
-  {PROP_VECTOR2, "tilesize",              {32, 32, 0, 0},    set_Renderer_tilesize},
-  {PROP_VECTOR2, "filterwidth",           {2, 2, 0, 0},      set_Renderer_filterwidth},
-  {PROP_SCALAR,  "sampler_type",          {0, 0, 0, 0},      set_Renderer_sampler_type},
-  {PROP_VECTOR2, "pixelsamples",          {3, 3, 0, 0},      set_Renderer_pixelsamples},
-  {PROP_SCALAR,  "adaptive_max_subdivision", {1, 0, 0, 0},   set_Renderer_adaptive_max_subdivision},
-  {PROP_SCALAR,  "adaptive_subdivision_threshold", {.05, 0, 0, 0},   set_Renderer_adaptive_subdivision_threshold},
-  {PROP_VECTOR4, "render_region",         {0, 0, 320, 240},  set_Renderer_render_region},
-  {PROP_SCALAR,  "use_max_thread",        {1, 0, 0, 0},      set_Renderer_use_max_thread},
-  {PROP_SCALAR,  "thread_count",          {8, 0, 0, 0},      set_Renderer_thread_count},
-  END_OF_PROPERTY
+  Property("sample_jitter",         PropScalar(1),     set_Renderer_sample_jitter),
+  Property("cast_shadow",           PropScalar(1),     set_Renderer_cast_shadow),
+  Property("max_reflect_depth",     PropScalar(3),     set_Renderer_max_reflect_depth),
+  Property("max_refract_depth",     PropScalar(3),     set_Renderer_max_refract_depth),
+  Property("raymarch_step",         PropScalar(.05),   set_Renderer_raymarch_step),
+  Property("raymarch_shadow_step",  PropScalar(.1),    set_Renderer_raymarch_shadow_step),
+  Property("raymarch_reflect_step", PropScalar(.1),    set_Renderer_raymarch_reflect_step),
+  Property("raymarch_refract_step", PropScalar(.1),    set_Renderer_raymarch_refract_step),
+  Property("sample_time_range",     PropVector2(0, 1), set_Renderer_sample_time_range),
+  Property("resolution",            PropVector2(320, 240), set_Renderer_resolution),
+  Property("tilesize",              PropVector2(32, 32),   set_Renderer_tilesize),
+  Property("filterwidth",           PropVector2(2, 2),     set_Renderer_filterwidth),
+  Property("sampler_type",          PropScalar(0),         set_Renderer_sampler_type),
+  Property("pixelsamples",          PropVector2(3, 3),     set_Renderer_pixelsamples),
+  Property("adaptive_max_subdivision", PropScalar(1), set_Renderer_adaptive_max_subdivision),
+  Property("adaptive_subdivision_threshold", PropScalar(.05), set_Renderer_adaptive_subdivision_threshold),
+  Property("render_region",         PropVector4(0, 0, 320, 240), set_Renderer_render_region),
+  Property("use_max_thread",        PropScalar(1), set_Renderer_use_max_thread),
+  Property("thread_count",          PropScalar(8), set_Renderer_thread_count),
+  Property()
 };
 
 static const Property Camera_properties[] = {
-  {PROP_SCALAR,  "transform_order", {ORDER_SRT},     set_Camera_transform_order},
-  {PROP_SCALAR,  "rotate_order",    {ORDER_ZXY},     set_Camera_rotate_order},
-  {PROP_VECTOR3, "translate",       {0, 0, 0, 0},    set_Camera_translate},
-  {PROP_VECTOR3, "rotate",          {0, 0, 0, 0},    set_Camera_rotate},
-  {PROP_SCALAR,  "fov",             {30, 0, 0, 0},   set_Camera_fov},
-  {PROP_SCALAR,  "znear",           {.01, 0, 0, 0},  set_Camera_znear},
-  {PROP_SCALAR,  "zfar",            {1000, 0, 0, 0}, set_Camera_zfar},
-  END_OF_PROPERTY
+  Property("transform_order", PropScalar(ORDER_SRT), set_Camera_transform_order),
+  Property("rotate_order",    PropScalar(ORDER_ZXY), set_Camera_rotate_order),
+  Property("translate",       PropVector3(0, 0, 0),  set_Camera_translate),
+  Property("rotate",          PropVector3(0, 0, 0),  set_Camera_rotate),
+  Property("fov",             PropScalar(30),        set_Camera_fov),
+  Property("znear",           PropScalar(.01),       set_Camera_znear),
+  Property("zfar",            PropScalar(1000),      set_Camera_zfar),
+  Property()
 };
 
 static const Property Volume_properties[] = {
-  {PROP_VECTOR3, "resolution", {0, 0, 0, 0}, set_Volume_resolution},
-  {PROP_VECTOR3, "bounds_min", {0, 0, 0, 0}, set_Volume_bounds_min},
-  {PROP_VECTOR3, "bounds_max", {0, 0, 0, 0}, set_Volume_bounds_max},
-  END_OF_PROPERTY
+  Property("resolution", PropVector3(0, 0, 0), set_Volume_resolution),
+  Property("bounds_min", PropVector3(0, 0, 0), set_Volume_bounds_min),
+  Property("bounds_max", PropVector3(0, 0, 0), set_Volume_bounds_max),
+  Property()
 };
 
 static const Property Light_properties[] = {
-  {PROP_SCALAR,  "transform_order", {ORDER_SRT},   set_Light_transform_order},
-  {PROP_SCALAR,  "rotate_order",    {ORDER_ZXY},   set_Light_rotate_order},
-  {PROP_VECTOR3, "translate",       {0, 0, 0, 0},  set_Light_translate},
-  {PROP_VECTOR3, "rotate",          {0, 0, 0, 0},  set_Light_rotate},
-  {PROP_VECTOR3, "scale",           {1, 1, 1, 0},  set_Light_scale},
-  {PROP_SCALAR,  "intensity",       {1, 0, 0, 0},  set_Light_intensity},
-  {PROP_VECTOR3, "color",           {1, 1, 1, 0},  set_Light_color},
-  {PROP_SCALAR,  "sample_count",    {16, 0, 0, 0}, set_Light_sample_count},
-  {PROP_SCALAR,  "double_sided",    {0, 0, 0, 0},  set_Light_double_sided},
-  {PROP_TEXTURE, "environment_map", {0, 0, 0, 0},  set_Light_environment_map},
-  END_OF_PROPERTY
+  Property("transform_order", PropScalar(ORDER_SRT), set_Light_transform_order),
+  Property("rotate_order",    PropScalar(ORDER_ZXY), set_Light_rotate_order),
+  Property("translate",       PropVector3(0, 0, 0),  set_Light_translate),
+  Property("rotate",          PropVector3(0, 0, 0),  set_Light_rotate),
+  Property("scale",           PropVector3(1, 1, 1),  set_Light_scale),
+  Property("intensity",       PropScalar(1),         set_Light_intensity),
+  Property("color",           PropVector3(1, 1, 1),  set_Light_color),
+  Property("sample_count",    PropScalar(16),        set_Light_sample_count),
+  Property("double_sided",    PropScalar(0),         set_Light_double_sided),
+  Property("environment_map", PropTexture(NULL),     set_Light_environment_map),
+  Property()
 };
 
 class property_desc {

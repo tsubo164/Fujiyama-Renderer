@@ -4,6 +4,7 @@
 #ifndef FJ_PROPERTY_H
 #define FJ_PROPERTY_H
 
+#include "fj_vector.h"
 #include "fj_types.h"
 #include <cstddef>
 
@@ -49,7 +50,7 @@ public:
 public:
   int type;
 
-  Real vector[4];
+  Vector4 vector;
   const char *string;
 
   ObjectGroup *object_group;
@@ -62,14 +63,7 @@ public:
   Real time;
 };
 
-class FJ_API Property {
-public:
-  int type;
-  const char *name;
-  Real default_value[4];
-  int (*SetValue)(void *self, const PropertyValue *value);
-};
-
+FJ_API PropertyValue PropNull();
 FJ_API PropertyValue PropScalar(Real v0);
 FJ_API PropertyValue PropVector2(Real v0, Real v1);
 FJ_API PropertyValue PropVector3(Real v0, Real v1, Real v2);
@@ -81,6 +75,30 @@ FJ_API PropertyValue PropTurbulence(Turbulence *turbulence);
 FJ_API PropertyValue PropTexture(Texture *texture);
 FJ_API PropertyValue PropVolume(Volume *volume);
 FJ_API PropertyValue PropMesh(Mesh *mesh);
+
+class FJ_API Property {
+public:
+  typedef int (*SetValueFn)(void *self, const PropertyValue &value);
+
+public:
+  Property();
+  Property(const char *name, const PropertyValue &value, SetValueFn set_value_fn);
+  ~Property();
+
+  bool IsValid() const;
+  int GetType() const;
+  const char *GetName() const;
+  const Vector4 &GetDefaultValue() const;
+  const char *GetTypeString() const;
+
+  int SetValue(void *self, const PropertyValue &value) const;
+
+private:
+  int type_;
+  const char *name_;
+  Vector4 default_value_;
+  SetValueFn set_value_fn_;
+};
 
 FJ_API int PropIsValid(const Property *prop);
 

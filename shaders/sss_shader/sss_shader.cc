@@ -69,44 +69,44 @@ static void *MyCreateFunction(void);
 static void MyDeleteFunction(void *self);
 static const char MyPluginName[] = "SSSShader";
 
-static int set_diffuse(void *self, const PropertyValue *value);
-static int set_specular(void *self, const PropertyValue *value);
-static int set_ambient(void *self, const PropertyValue *value);
-static int set_roughness(void *self, const PropertyValue *value);
-static int set_reflect(void *self, const PropertyValue *value);
-static int set_ior(void *self, const PropertyValue *value);
-static int set_opacity(void *self, const PropertyValue *value);
-static int set_diffuse_map(void *self, const PropertyValue *value);
+static int set_diffuse(void *self, const PropertyValue &value);
+static int set_specular(void *self, const PropertyValue &value);
+static int set_ambient(void *self, const PropertyValue &value);
+static int set_roughness(void *self, const PropertyValue &value);
+static int set_reflect(void *self, const PropertyValue &value);
+static int set_ior(void *self, const PropertyValue &value);
+static int set_opacity(void *self, const PropertyValue &value);
+static int set_diffuse_map(void *self, const PropertyValue &value);
 
-static int set_enable_single_scattering(void *self, const PropertyValue *value);
-static int set_enable_multiple_scattering(void *self, const PropertyValue *value);
-static int set_single_scattering_samples(void *self, const PropertyValue *value);
-static int set_multiple_scattering_samples(void *self, const PropertyValue *value);
-static int set_scattering_coeff(void *self, const PropertyValue *value);
-static int set_absorption_coeff(void *self, const PropertyValue *value);
-static int set_scattering_phase(void *self, const PropertyValue *value);
-static int set_single_scattering_intensity(void *self, const PropertyValue *value);
-static int set_multiple_scattering_intensity(void *self, const PropertyValue *value);
+static int set_enable_single_scattering(void *self, const PropertyValue &value);
+static int set_enable_multiple_scattering(void *self, const PropertyValue &value);
+static int set_single_scattering_samples(void *self, const PropertyValue &value);
+static int set_multiple_scattering_samples(void *self, const PropertyValue &value);
+static int set_scattering_coeff(void *self, const PropertyValue &value);
+static int set_absorption_coeff(void *self, const PropertyValue &value);
+static int set_scattering_phase(void *self, const PropertyValue &value);
+static int set_single_scattering_intensity(void *self, const PropertyValue &value);
+static int set_multiple_scattering_intensity(void *self, const PropertyValue &value);
 
 static const Property MyPropertyList[] = {
-  {PROP_VECTOR3, "diffuse",     {.8, .8, .8, 0}, set_diffuse},
-  {PROP_VECTOR3, "specular",    {1, 1, 1, 0}, set_specular},
-  {PROP_VECTOR3, "ambient",     {1, 1, 1, 0}, set_ambient},
-  {PROP_SCALAR,  "roughness",   {.05, 0, 0, 0}, set_roughness},
-  {PROP_VECTOR3, "reflect",     {1, 1, 1, 0}, set_reflect},
-  {PROP_SCALAR,  "ior",         {1.3, 0, 0, 0}, set_ior},
-  {PROP_SCALAR,  "opacity",     {1, 0, 0, 0}, set_opacity},
-  {PROP_TEXTURE, "diffuse_map", {0, 0, 0, 0}, set_diffuse_map},
-  {PROP_SCALAR,  "enable_single_scattering",    {0, 0, 0, 0}, set_enable_single_scattering},
-  {PROP_SCALAR,  "enable_multiple_scattering",  {1, 0, 0, 0}, set_enable_multiple_scattering},
-  {PROP_SCALAR,  "single_scattering_samples",   {1, 0, 0, 0}, set_single_scattering_samples},
-  {PROP_SCALAR,  "multiple_scattering_samples", {1, 0, 0, 0}, set_multiple_scattering_samples},
-  {PROP_VECTOR3, "scattering_coefficient", {.07, .122, .19, 0},          set_scattering_coeff},
-  {PROP_VECTOR3, "absorption_coefficient", {.00014, .00025, .001420, 0}, set_absorption_coeff},
-  {PROP_SCALAR,  "scattering_phase", {0, 0, 0, 0}, set_scattering_phase},
-  {PROP_SCALAR,  "single_scattering_intensity", {1, 0, 0, 0}, set_single_scattering_intensity},
-  {PROP_SCALAR,  "multiple_scattering_intensity", {.02, 0, 0, 0}, set_multiple_scattering_intensity},
-  {PROP_NONE, NULL, {0, 0, 0, 0}, NULL}
+  Property("diffuse",     PropVector3(.8, .8, .8), set_diffuse),
+  Property("specular",    PropVector3(1, 1, 1),    set_specular),
+  Property("ambient",     PropVector3(1, 1, 1),    set_ambient),
+  Property("roughness",   PropScalar(.05),         set_roughness),
+  Property("reflect",     PropVector3(1, 1, 1),    set_reflect),
+  Property("ior",         PropScalar(1.3),         set_ior),
+  Property("opacity",     PropScalar(1),           set_opacity),
+  Property("diffuse_map", PropTexture(NULL),       set_diffuse_map),
+  Property("enable_single_scattering",    PropScalar(0), set_enable_single_scattering),
+  Property("enable_multiple_scattering",  PropScalar(1), set_enable_multiple_scattering),
+  Property("single_scattering_samples",   PropScalar(1), set_single_scattering_samples),
+  Property("multiple_scattering_samples", PropScalar(1), set_multiple_scattering_samples),
+  Property("scattering_coefficient", PropVector3(.07, .122, .19), set_scattering_coeff),
+  Property("absorption_coefficient", PropVector3(.00014,.00025,.001420), set_absorption_coeff),
+  Property("scattering_phase",       PropScalar(0), set_scattering_phase),
+  Property("single_scattering_intensity",   PropScalar(1), set_single_scattering_intensity),
+  Property("multiple_scattering_intensity", PropScalar(.02), set_multiple_scattering_intensity),
+  Property()
 };
 
 static const MetaInfo MyMetainfo[] = {
@@ -516,49 +516,49 @@ void SSSShader::UpdateProperties()
       -1.440 / (eta * eta) + 0.710 / eta + 0.668 + 0.0636 * eta;
 }
 
-static int set_diffuse(void *self, const PropertyValue *value)
+static int set_diffuse(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
   Color diffuse;
 
-  diffuse.r = Max(0, value->vector[0]);
-  diffuse.g = Max(0, value->vector[1]);
-  diffuse.b = Max(0, value->vector[2]);
+  diffuse.r = Max(0, value.vector[0]);
+  diffuse.g = Max(0, value.vector[1]);
+  diffuse.b = Max(0, value.vector[2]);
   sss->diffuse = diffuse;
 
   return 0;
 }
 
-static int set_specular(void *self, const PropertyValue *value)
+static int set_specular(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
   Color specular;
 
-  specular.r = Max(0, value->vector[0]);
-  specular.g = Max(0, value->vector[1]);
-  specular.b = Max(0, value->vector[2]);
+  specular.r = Max(0, value.vector[0]);
+  specular.g = Max(0, value.vector[1]);
+  specular.b = Max(0, value.vector[2]);
   sss->specular = specular;
 
   return 0;
 }
 
-static int set_ambient(void *self, const PropertyValue *value)
+static int set_ambient(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
   Color ambient;
 
-  ambient.r = Max(0, value->vector[0]);
-  ambient.g = Max(0, value->vector[1]);
-  ambient.b = Max(0, value->vector[2]);
+  ambient.r = Max(0, value.vector[0]);
+  ambient.g = Max(0, value.vector[1]);
+  ambient.b = Max(0, value.vector[2]);
   sss->ambient = ambient;
 
   return 0;
 }
 
-static int set_roughness(void *self, const PropertyValue *value)
+static int set_roughness(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
-  float roughness = value->vector[0];
+  float roughness = value.vector[0];
 
   roughness = Max(0, roughness);
   sss->roughness = roughness;
@@ -566,14 +566,14 @@ static int set_roughness(void *self, const PropertyValue *value)
   return 0;
 }
 
-static int set_reflect(void *self, const PropertyValue *value)
+static int set_reflect(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
   Color reflect;
 
-  reflect.r = Max(0, value->vector[0]);
-  reflect.g = Max(0, value->vector[1]);
-  reflect.b = Max(0, value->vector[2]);
+  reflect.r = Max(0, value.vector[0]);
+  reflect.g = Max(0, value.vector[1]);
+  reflect.b = Max(0, value.vector[2]);
   sss->reflect = reflect;
 
   if (sss->reflect.r > 0 ||
@@ -588,10 +588,10 @@ static int set_reflect(void *self, const PropertyValue *value)
   return 0;
 }
 
-static int set_ior(void *self, const PropertyValue *value)
+static int set_ior(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
-  float ior = value->vector[0];
+  float ior = value.vector[0];
 
   ior = Max(.001, ior);
   sss->ior = ior;
@@ -599,10 +599,10 @@ static int set_ior(void *self, const PropertyValue *value)
   return 0;
 }
 
-static int set_opacity(void *self, const PropertyValue *value)
+static int set_opacity(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
-  float opacity = value->vector[0];
+  float opacity = value.vector[0];
 
   opacity = Clamp(opacity, 0, 1);
   sss->opacity = opacity;
@@ -610,39 +610,39 @@ static int set_opacity(void *self, const PropertyValue *value)
   return 0;
 }
 
-static int set_diffuse_map(void *self, const PropertyValue *value)
+static int set_diffuse_map(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
 
-  sss->diffuse_map = value->texture;
+  sss->diffuse_map = value.texture;
 
   return 0;
 }
 
-static int set_enable_single_scattering(void *self, const PropertyValue *value)
+static int set_enable_single_scattering(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
-  const int enable = (int) value->vector[0] == 0 ? 0 : 1;
+  const int enable = (int) value.vector[0] == 0 ? 0 : 1;
 
   sss->enable_single_scattering = enable;
 
   return 0;
 }
 
-static int set_enable_multiple_scattering(void *self, const PropertyValue *value)
+static int set_enable_multiple_scattering(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
-  const int enable = (int) value->vector[0] == 0 ? 0 : 1;
+  const int enable = (int) value.vector[0] == 0 ? 0 : 1;
 
   sss->enable_multiple_scattering = enable;
 
   return 0;
 }
 
-static int set_single_scattering_samples(void *self, const PropertyValue *value)
+static int set_single_scattering_samples(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
-  int nsamples = (int) value->vector[0];
+  int nsamples = (int) value.vector[0];
 
   nsamples = Max(1, nsamples);
 
@@ -651,10 +651,10 @@ static int set_single_scattering_samples(void *self, const PropertyValue *value)
   return 0;
 }
 
-static int set_multiple_scattering_samples(void *self, const PropertyValue *value)
+static int set_multiple_scattering_samples(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
-  int nsamples = (int) value->vector[0];
+  int nsamples = (int) value.vector[0];
 
   nsamples = Max(1, nsamples);
 
@@ -663,14 +663,14 @@ static int set_multiple_scattering_samples(void *self, const PropertyValue *valu
   return 0;
 }
 
-static int set_scattering_coeff(void *self, const PropertyValue *value)
+static int set_scattering_coeff(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
   float scattering_coeff[3] = {0, 0, 0};
 
-  scattering_coeff[0] = Max(0, value->vector[0]);
-  scattering_coeff[1] = Max(0, value->vector[1]);
-  scattering_coeff[2] = Max(0, value->vector[2]);
+  scattering_coeff[0] = Max(0, value.vector[0]);
+  scattering_coeff[1] = Max(0, value.vector[1]);
+  scattering_coeff[2] = Max(0, value.vector[2]);
   scattering_coeff[0] *= 1000; // 1/mm
   scattering_coeff[1] *= 1000; // 1/mm
   scattering_coeff[2] *= 1000; // 1/mm
@@ -681,14 +681,14 @@ static int set_scattering_coeff(void *self, const PropertyValue *value)
   return 0;
 }
 
-static int set_absorption_coeff(void *self, const PropertyValue *value)
+static int set_absorption_coeff(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
   float absorption_coeff[3] = {0, 0, 0};
 
-  absorption_coeff[0] = Max(0, value->vector[0]);
-  absorption_coeff[1] = Max(0, value->vector[1]);
-  absorption_coeff[2] = Max(0, value->vector[2]);
+  absorption_coeff[0] = Max(0, value.vector[0]);
+  absorption_coeff[1] = Max(0, value.vector[1]);
+  absorption_coeff[2] = Max(0, value.vector[2]);
   absorption_coeff[0] *= 1000; // 1/mm
   absorption_coeff[1] *= 1000; // 1/mm
   absorption_coeff[2] *= 1000; // 1/mm
@@ -699,10 +699,10 @@ static int set_absorption_coeff(void *self, const PropertyValue *value)
   return 0;
 }
 
-static int set_scattering_phase(void *self, const PropertyValue *value)
+static int set_scattering_phase(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
-  float scattering_phase = value->vector[0];
+  float scattering_phase = value.vector[0];
 
   scattering_phase = Max(0, scattering_phase);
 
@@ -711,10 +711,10 @@ static int set_scattering_phase(void *self, const PropertyValue *value)
   return 0;
 }
 
-static int set_single_scattering_intensity(void *self, const PropertyValue *value)
+static int set_single_scattering_intensity(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
-  float intensity = value->vector[0];
+  float intensity = value.vector[0];
 
   intensity = Max(0, intensity);
 
@@ -723,10 +723,10 @@ static int set_single_scattering_intensity(void *self, const PropertyValue *valu
   return 0;
 }
 
-static int set_multiple_scattering_intensity(void *self, const PropertyValue *value)
+static int set_multiple_scattering_intensity(void *self, const PropertyValue &value)
 {
   SSSShader *sss = (SSSShader *) self;
-  float intensity = value->vector[0];
+  float intensity = value.vector[0];
 
   intensity = Max(0, intensity);
 
