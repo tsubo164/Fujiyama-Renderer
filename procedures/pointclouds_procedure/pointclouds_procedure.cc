@@ -93,9 +93,6 @@ int PointCloudsProcedure::run() const
   cp.noise_amplitude = 1;
 
   const int err = FillWithPointClouds(volume, &cp, turbulence);
-  if (0) {
-    FillWithConstant(volume, 1.0);
-  }
 
   return err;
 }

@@ -5,37 +5,33 @@
 #define FJ_SHADER_H
 
 #include "fj_compatibility.h"
-#include "fj_property.h"
+#include "fj_scene_node.h"
+#include "fj_numeric.h"
 #include "fj_shading.h"
 #include "fj_texture.h"
 #include "fj_plugin.h"
+#include "fj_random.h"
+#include "fj_vector.h"
+#include "fj_color.h"
 #include "fj_light.h"
+
 #include <string>
 
+// TODO const char *GetPluginType();
 #define SHADER_PLUGIN_TYPE "Shader"
 
 namespace fj {
 
-enum ShdErrorNo {
-  SHD_ERR_NOERR = 0,
-  SHD_ERR_TYPE_NOT_MATCH,
-  SHD_ERR_NOOBJ,
-  SHD_ERR_NOVTBL,
-  SHD_ERR_NOMEM
-};
-
-class FJ_API Shader {
+class FJ_API Shader : public SceneNode {
 public:
   Shader();
   virtual ~Shader();
 
   void Evaluate(const TraceContext &cxt, const SurfaceInput &in, SurfaceOutput *out) const;
-  int SetProperty(const std::string &prop_name, const PropertyValue &src_data);
 
 private:
   virtual void evaluate(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const = 0;
-  virtual const Property *get_property_list() const = 0;
 };
 
 } // namespace xxx

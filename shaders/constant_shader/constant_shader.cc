@@ -2,9 +2,6 @@
 // See LICENSE and README
 
 #include "fj_shader.h"
-#include "fj_numeric.h"
-#include "fj_vector.h"
-#include "fj_color.h"
 
 using namespace fj;
 

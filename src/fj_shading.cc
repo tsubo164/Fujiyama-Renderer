@@ -9,6 +9,7 @@
 #include "fj_accelerator.h"
 #include "fj_interval.h"
 #include "fj_numeric.h"
+#include "fj_texture.h"
 #include "fj_shader.h"
 #include "fj_volume.h"
 #include "fj_light.h"

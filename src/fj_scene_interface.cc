@@ -1198,7 +1198,7 @@ static int set_property(const Entry *entry,
     if (shader == NULL)
       return SI_FAIL;
 
-    return shader->SetProperty(name, *value);
+    return shader->SetPropertyValue(name, *value);
   }
 
   /* builtin type properties */
