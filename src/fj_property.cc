@@ -227,7 +227,7 @@ int PropSetAllDefaultValues(void *self, const Property *list)
       default:
         break;
     }
-    err = prop->SetProperty(self, &value);
+    err = prop->SetValue(self, &value);
     if (err) {
       err_count++;
     }

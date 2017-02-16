@@ -1175,8 +1175,8 @@ static int find_and_set_property(void *self, const Property *src_props,
   if (self == NULL)
     return -1;
 
-  assert(dst_prop->SetProperty != NULL);
-  return dst_prop->SetProperty(self, src_data);
+  assert(dst_prop->SetValue != NULL);
+  return dst_prop->SetValue(self, src_data);
 }
 
 static int set_property(const Entry *entry,

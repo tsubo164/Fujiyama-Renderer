@@ -15,9 +15,9 @@ int SceneNode::SetProperty(const std::string &property_name, const PropertyValue
     return -1;
   }
 
-  assert(found_property->SetProperty != NULL);
+  assert(found_property->SetValue != NULL);
   // TODO is there better way to avoid this pointer?
-  return found_property->SetProperty(this, &value);
+  return found_property->SetValue(this, &value);
 }
 
 } // namespace xxx

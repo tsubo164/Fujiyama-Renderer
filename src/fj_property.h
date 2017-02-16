@@ -67,7 +67,7 @@ public:
   int type;
   const char *name;
   Real default_value[4];
-  int (*SetProperty)(void *self, const PropertyValue *value);
+  int (*SetValue)(void *self, const PropertyValue *value);
 };
 
 FJ_API PropertyValue PropScalar(Real v0);
