@@ -100,13 +100,6 @@ private:
   SetValueFn set_value_fn_;
 };
 
-FJ_API int PropIsValid(const Property *prop);
-
-FJ_API const char *PropName(const Property *prop);
-FJ_API const int PropType(const Property *prop);
-FJ_API const Real PropDefaultValue(const Property *prop, int index);
-FJ_API const char *PropTypeString(const Property *prop);
-
 FJ_API const Property *PropFind(const Property *list, int type, const char *name);
 FJ_API int PropSetAllDefaultValues(void *self, const Property *list);
 

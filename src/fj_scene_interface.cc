@@ -23,6 +23,25 @@
 
 #define GET_LAST_ADDED_ID(Type) (get_scene()->Get##Type##Count() - 1)
 
+// TODO TEST
+#define TYPE_LIST(T_) \
+  T_(ObjectInstance) \
+  T_(Accelerator) \
+  T_(FrameBuffer) \
+  T_(ObjectGroup) \
+  T_(PointCloud) \
+  T_(Turbulence) \
+  T_(Procedure) \
+  T_(Renderer) \
+  T_(Texture) \
+  T_(Camera) \
+  T_(Plugin) \
+  T_(Shader) \
+  T_(Volume) \
+  T_(Curve) \
+  T_(Light) \
+  T_(Mesh)
+
 namespace fj {
 
 static const int TYPE_ID_OFFSET = 10000000;
@@ -47,6 +66,32 @@ enum EntryType {
   Type_Mesh,
   Type_End
 };
+
+//==========================================
+typedef std::map<int, std::string> TypeNameMap;
+static TypeNameMap type_name_map;
+static void push_type_name(TypeNameMap &map, int key, const std::string &value)
+{
+  TypeNameMap::const_iterator it = map.find(key);
+  if (it == map.end()) {
+    map[key] = value;
+  }
+}
+void register_type_name()
+{
+  TypeNameMap &m = type_name_map;
+#define T_(type) push_type_name(m,Type_##type,#type);
+TYPE_LIST(T_)
+#undef T_
+}
+void print_type_name(int type)
+{
+  TypeNameMap::const_iterator it = type_name_map.find(type);
+  if (it != type_name_map.end()) {
+    std::cout << "Type: [" << it->second << "]\n";
+  }
+}
+//==========================================
 
 class Entry {
 public:
@@ -1186,18 +1231,18 @@ static int set_property(const Entry *entry,
 
   /* procedure and shader type properties */
   if (entry->type == Type_Procedure) {
-    SceneNode *node = get_scene()->GetProcedure(entry->index);
-    if (node == NULL)
+    Procedure *procedure = get_scene()->GetProcedure(entry->index);
+    if (procedure == NULL)
       return SI_FAIL;
 
-    return node->SetProperty(name, *value);
+    return procedure->SetProperty(name, *value);
   }
   else if (entry->type == Type_Shader) {
-    SceneNode *node = get_scene()->GetShader(entry->index);
-    if (node == NULL)
+    Shader *shader = get_scene()->GetShader(entry->index);
+    if (shader == NULL)
       return SI_FAIL;
 
-    return node->SetProperty(name, *value);
+    return shader->SetProperty(name, *value);
   }
 
   /* builtin type properties */

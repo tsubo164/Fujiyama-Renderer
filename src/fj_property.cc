@@ -206,60 +206,13 @@ int Property::SetValue(void *self, const PropertyValue &value) const
   return set_value_fn_(self, value);
 }
 
-int PropIsValid(const Property *prop)
-{
-  if (PropType(prop) == PROP_NONE)
-    return 0;
-
-  if (PropName(prop) == NULL)
-    return 0;
-
-  return 1;
-}
-
-const char *PropName(const Property *prop)
-{
-  return prop->GetName();
-}
-
-const int PropType(const Property *prop)
-{
-  return prop->GetType();
-}
-
-const double PropDefaultValue(const Property *prop, int index)
-{
-  if (index < 0 || index > 3)
-    return 0;
-
-  return prop->GetDefaultValue()[index];
-}
-
-const char *PropTypeString(const Property *prop)
-{
-  switch (PropType(prop)) {
-  case PROP_SCALAR:      return "Scalar";
-  case PROP_VECTOR2:     return "Vector2";
-  case PROP_VECTOR3:     return "Vector3";
-  case PROP_VECTOR4:     return "Vector4";
-  case PROP_STRING:      return "String";
-  case PROP_OBJECTGROUP: return "ObjectGroup";
-  case PROP_TURBULENCE:  return "Turbulence";
-  case PROP_TEXTURE:     return "Texture";
-  case PROP_SHADER:      return "Shader";
-  case PROP_VOLUME:      return "Volume";
-  case PROP_MESH:        return "Mesh";
-  default:               return NULL;
-  }
-}
-
 const Property *PropFind(const Property *list, int type, const char *name)
 {
   const Property *prop = list;
   const Property *found = NULL;
 
-  while (PropIsValid(prop)) {
-    if (PropType(prop) == type && strcmp(PropName(prop), name) == 0) {
+  while (prop->IsValid()) {
+    if (prop->GetType() == type && strcmp(prop->GetName(), name) == 0) {
       found = prop;
       break;
     }
@@ -270,41 +223,39 @@ const Property *PropFind(const Property *list, int type, const char *name)
 
 int PropSetAllDefaultValues(void *self, const Property *list)
 {
-  const Property *prop = NULL;
   int err_count = 0;
 
-  for (prop = list; PropIsValid(prop); prop++) {
+  for (const Property *prop = list; prop->IsValid(); prop++) {
     PropertyValue value;
-    int err = 0;
 
-    switch (PropType(prop)) {
+    switch (prop->GetType()) {
       case PROP_SCALAR:
-        value.vector[0] = PropDefaultValue(prop, 0);
+        value.vector[0] = prop->GetDefaultValue()[0];
         break;
       case PROP_VECTOR2:
-        value.vector[0] = PropDefaultValue(prop, 0);
-        value.vector[1] = PropDefaultValue(prop, 1);
+        value.vector[0] = prop->GetDefaultValue()[0];
+        value.vector[1] = prop->GetDefaultValue()[1];
         break;
       case PROP_VECTOR3:
-        value.vector[0] = PropDefaultValue(prop, 0);
-        value.vector[1] = PropDefaultValue(prop, 1);
-        value.vector[2] = PropDefaultValue(prop, 2);
+        value.vector[0] = prop->GetDefaultValue()[0];
+        value.vector[1] = prop->GetDefaultValue()[1];
+        value.vector[2] = prop->GetDefaultValue()[2];
         break;
       case PROP_VECTOR4:
-        value.vector[0] = PropDefaultValue(prop, 0);
-        value.vector[1] = PropDefaultValue(prop, 1);
-        value.vector[2] = PropDefaultValue(prop, 2);
-        value.vector[3] = PropDefaultValue(prop, 3);
+        value.vector[0] = prop->GetDefaultValue()[0];
+        value.vector[1] = prop->GetDefaultValue()[1];
+        value.vector[2] = prop->GetDefaultValue()[2];
+        value.vector[3] = prop->GetDefaultValue()[3];
         break;
       default:
         break;
     }
-    err = prop->SetValue(self, value);
+
+    const int err = prop->SetValue(self, value);
     if (err) {
       err_count++;
     }
   }
-
   return err_count;
 }
 

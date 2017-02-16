@@ -559,20 +559,20 @@ static int print_property_list(const char *type_name)
 
   printf("#   %s Properties\n", type_name);
   printf("#   %-15.15s   %-20.20s   %-20.20s\n", "(Type)", "(Name)", "(Default)");
-  for (prop = list; PropIsValid(prop); prop++) {
+  for (prop = list; prop->IsValid(); prop++) {
     double default_value[4] = {0, 0, 0, 0};
     char default_value_string[512] = {'\0'};
 
-    default_value[0] = PropDefaultValue(prop, 0);
-    default_value[1] = PropDefaultValue(prop, 1);
-    default_value[2] = PropDefaultValue(prop, 2);
-    default_value[3] = PropDefaultValue(prop, 3);
+    default_value[0] = prop->GetDefaultValue()[0];
+    default_value[1] = prop->GetDefaultValue()[1];
+    default_value[2] = prop->GetDefaultValue()[2];
+    default_value[3] = prop->GetDefaultValue()[3];
 
-    switch (PropType(prop)) {
+    switch (prop->GetType()) {
       case PROP_SCALAR:
         scalar_to_transform_order_string(
             default_value_string,
-            PropName(prop),
+            prop->GetName(),
             default_value[0]);
         break;
       case PROP_VECTOR2:
@@ -599,8 +599,8 @@ static int print_property_list(const char *type_name)
     }
 
     printf("#   %-15.15s : %-20.20s : %-20.20s\n",
-        PropTypeString(prop),
-        PropName(prop),
+        prop->GetTypeString(),
+        prop->GetName(),
         default_value_string);
   }
 
