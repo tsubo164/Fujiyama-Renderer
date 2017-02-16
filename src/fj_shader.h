@@ -14,7 +14,6 @@
 #include "fj_vector.h"
 #include "fj_color.h"
 #include "fj_light.h"
-
 #include <string>
 
 // TODO const char *GetPluginType();

@@ -14,7 +14,7 @@ public:
   SceneNode() {}
   virtual ~SceneNode() {}
 
-  int SetPropertyValue(const std::string &property_name, const PropertyValue &value);
+  int SetProperty(const std::string &property_name, const PropertyValue &value);
 
 private:
   virtual const Property *get_property_list() const = 0;

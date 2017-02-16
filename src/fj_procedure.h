@@ -5,33 +5,31 @@
 #define FJ_PROCEDURE_H
 
 #include "fj_compatibility.h"
-#include "fj_property.h"
+#include "fj_scene_node.h"
+#include "fj_numeric.h"
+#include "fj_shading.h"
+#include "fj_texture.h"
 #include "fj_plugin.h"
+#include "fj_random.h"
+#include "fj_vector.h"
+#include "fj_color.h"
+#include "fj_light.h"
 #include <string>
 
+// TODO const char *GetPluginType();
 #define PROCEDURE_PLUGIN_TYPE "Procedure"
 
 namespace fj {
 
-enum PrcErrorNo {
-  PRC_ERR_NOERR = 0,
-  PRC_ERR_TYPE_NOT_MATCH,
-  PRC_ERR_NOOBJ,
-  PRC_ERR_NOVTBL,
-  PRC_ERR_NOMEM
-};
-
-class FJ_API Procedure {
+class FJ_API Procedure : public SceneNode {
 public:
   Procedure();
   virtual ~Procedure();
 
   int Run() const;
-  int SetProperty(const std::string &prop_name, const PropertyValue &src_data);
 
 private:
   virtual int run() const = 0;
-  virtual const Property *get_property_list() const = 0;
 };
 
 } // namespace xxx

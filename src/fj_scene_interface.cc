@@ -1187,18 +1187,18 @@ static int set_property(const Entry *entry,
 
   /* procedure and shader type properties */
   if (entry->type == Type_Procedure) {
-    Procedure *procedure = get_scene()->GetProcedure(entry->index);
-    if (procedure == NULL)
+    SceneNode *node = get_scene()->GetProcedure(entry->index);
+    if (node == NULL)
       return SI_FAIL;
 
-    return procedure->SetProperty(name, *value);
+    return node->SetProperty(name, *value);
   }
   else if (entry->type == Type_Shader) {
-    Shader *shader = get_scene()->GetShader(entry->index);
-    if (shader == NULL)
+    SceneNode *node = get_scene()->GetShader(entry->index);
+    if (node == NULL)
       return SI_FAIL;
 
-    return shader->SetPropertyValue(name, *value);
+    return node->SetProperty(name, *value);
   }
 
   /* builtin type properties */

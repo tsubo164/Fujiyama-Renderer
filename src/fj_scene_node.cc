@@ -6,7 +6,7 @@
 
 namespace fj {
 
-int SceneNode::SetPropertyValue(const std::string &property_name, const PropertyValue &value)
+int SceneNode::SetProperty(const std::string &property_name, const PropertyValue &value)
 {
   const Property *property_list = get_property_list();
   const Property *found_property = PropFind(property_list, value.type, property_name.c_str());
