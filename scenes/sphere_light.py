@@ -8,8 +8,8 @@ import fujiyama
 si = fujiyama.SceneInterface()
 
 #plugins
-si.OpenPlugin('ConstantShader')
-si.OpenPlugin('PlasticShader')
+si.OpenPlugin('constant_shader', 'ConstantShader')
+si.OpenPlugin('plastic_shader', 'PlasticShader')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -25,17 +25,17 @@ si.SetProperty1('light1', 'intensity', 5)
 si.SetProperty1('light1', 'sample_count', 16)
 
 #Shader
-si.NewShader('teapot_shader', 'PlasticShader')
+si.NewShader('teapot_shader', 'plastic_shader')
 si.SetProperty3('teapot_shader', 'reflect', .0, .0, .0)
 
-si.NewShader('bunny_shader', 'PlasticShader')
+si.NewShader('bunny_shader', 'plastic_shader')
 si.SetProperty3('bunny_shader', 'reflect', .0, .0, .0)
 
-si.NewShader('floor_shader', 'PlasticShader')
+si.NewShader('floor_shader', 'plastic_shader')
 si.SetProperty3('floor_shader', 'diffuse', .2, .25, .3)
 
 intensity = 15
-si.NewShader('sphere_shader', 'ConstantShader')
+si.NewShader('sphere_shader', 'constant_shader')
 si.SetProperty3('sphere_shader', 'diffuse', intensity, intensity, intensity)
 
 #Mesh

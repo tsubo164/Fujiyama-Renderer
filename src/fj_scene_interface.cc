@@ -44,7 +44,7 @@
 
 namespace fj {
 
-static const int TYPE_ID_OFFSET = 10000000;
+static const ID TYPE_ID_OFFSET = 10000000;
 
 enum EntryType {
   Type_Begin = 0,

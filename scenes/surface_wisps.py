@@ -8,10 +8,10 @@ import fujiyama
 si = fujiyama.SceneInterface()
 
 #plugins
-si.OpenPlugin('ConstantShader')
-si.OpenPlugin('PlasticShader')
-si.OpenPlugin('VolumeShader')
-si.OpenPlugin('SurfaceWispsProcedure')
+si.OpenPlugin('constant_shader', 'ConstantShader')
+si.OpenPlugin('plastic_shader', 'PlasticShader')
+si.OpenPlugin('volume_shader', 'VolumeShader')
+si.OpenPlugin('SurfaceWispsProcedure', 'SurfaceWispsProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -23,14 +23,14 @@ si.NewLight('light1', 'PointLight')
 si.SetProperty3('light1', 'translate', 10, 12, 10)
 
 #Shader
-si.NewShader('floor_shader', 'PlasticShader')
+si.NewShader('floor_shader', 'plastic_shader')
 si.SetProperty3('floor_shader', 'diffuse', .2, .25, .3)
 si.SetProperty1('floor_shader', 'ior', 2)
 
-si.NewShader('volume_shader', 'VolumeShader')
-si.SetProperty3('volume_shader', 'diffuse', .2, .2, .2)
+si.NewShader('volume_shader1', 'volume_shader')
+si.SetProperty3('volume_shader1', 'diffuse', .2, .2, .2)
 
-si.NewShader('dome_shader', 'ConstantShader')
+si.NewShader('dome_shader', 'constant_shader')
 si.SetProperty3('dome_shader', 'diffuse', .8, .8, .8)
 
 #Turbulence
@@ -58,7 +58,7 @@ si.NewMesh('floor_mesh', '../../ply/floor.ply')
 
 #ObjectInstance
 si.NewObjectInstance('volume1', 'volume_data')
-si.AssignShader('volume1', 'DEFAULT_SHADING_GROUP', 'volume_shader')
+si.AssignShader('volume1', 'DEFAULT_SHADING_GROUP', 'volume_shader1')
 si.SetProperty3('volume1', 'translate', 0, .75, 0)
 
 si.NewObjectInstance('floor1', 'floor_mesh')
@@ -77,10 +77,10 @@ si.AssignObjectGroup('floor1', 'shadow_target', 'group1')
 si.NewFrameBuffer('fb1', 'rgba')
 
 #Properties
-si.ShowPropertyList('SurfaceWispsProcedure')
-si.ShowPropertyList('VolumeShader')
-si.ShowPropertyList('Renderer')
-si.ShowPropertyList('Volume')
+#si.ShowPropertyList('SurfaceWispsProcedure')
+#si.ShowPropertyList('volume_shader')
+#si.ShowPropertyList('Renderer')
+#si.ShowPropertyList('Volume')
 
 #Renderer
 si.NewRenderer('ren1')

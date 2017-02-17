@@ -5,9 +5,9 @@
 # Copyright (c) 2011-2016 Hiroshi Tsubokawa
 
 #plugins
-OpenPlugin PlasticShader
-OpenPlugin ConstantShader
-OpenPlugin HairShader
+OpenPlugin plastic_shader  PlasticShader
+OpenPlugin constant_shader ConstantShader
+OpenPlugin hair_shader     HairShader
 
 #Camera
 NewCamera cam1 PerspectiveCamera
@@ -116,16 +116,16 @@ SetProperty1 light31 intensity 0.03125
 NewTexture tex1 ../../mip/glacier.mip
 
 #Shader
-NewShader    curve_shader HairShader
-NewShader    bunny_shader PlasticShader
+NewShader    curve_shader hair_shader
+NewShader    bunny_shader plastic_shader
 SetProperty3 bunny_shader diffuse .8 .5 .3
 SetProperty3 bunny_shader reflect 0 0 0
 
-NewShader    floor_shader PlasticShader
+NewShader    floor_shader plastic_shader
 SetProperty3 floor_shader diffuse .3 .35 .4
 SetProperty3 floor_shader reflect 0 0 0
 
-NewShader dome_shader ConstantShader
+NewShader dome_shader constant_shader
 
 #Curve
 NewCurve curve_data   ../../crv/bunny.crv

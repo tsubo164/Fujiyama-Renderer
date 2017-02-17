@@ -8,8 +8,8 @@ import fujiyama
 si = fujiyama.SceneInterface()
 
 #plugins
-si.OpenPlugin('ConstantShader')
-si.OpenPlugin('PlasticShader')
+si.OpenPlugin('constant_shader', 'ConstantShader')
+si.OpenPlugin('plastic_shader', 'PlasticShader')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -28,15 +28,15 @@ si.SetProperty1('light1', 'sample_count', 8)
 si.NewTexture('tex1', '../../hdr/grace-new.hdr')
 
 #Shader
-si.NewShader('armadillo_shader', 'PlasticShader')
+si.NewShader('armadillo_shader', 'plastic_shader')
 si.SetProperty3('armadillo_shader', 'diffuse', .0, .0, .0)
 si.SetProperty1('armadillo_shader', 'ior', 10)
 
-si.NewShader('floor_shader', 'PlasticShader')
+si.NewShader('floor_shader', 'plastic_shader')
 si.SetProperty3('floor_shader', 'diffuse', .2, .25, .3)
 si.SetProperty3('floor_shader', 'reflect', 0, 0, 0)
 
-si.NewShader('dome_shader', 'ConstantShader')
+si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh

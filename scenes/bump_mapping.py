@@ -8,8 +8,8 @@ import fujiyama
 si = fujiyama.SceneInterface()
 
 #Plugins
-si.OpenPlugin('ConstantShader')
-si.OpenPlugin('PlasticShader')
+si.OpenPlugin('constant_shader', 'ConstantShader')
+si.OpenPlugin('plastic_shader', 'PlasticShader')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -34,22 +34,22 @@ si.SetProperty1('light1', 'sample_count', 32)
 si.AssignTexture('light1', 'environment_map', 'env_tex1');
 
 #Shader
-si.NewShader('sphere_shader1', 'PlasticShader')
+si.NewShader('sphere_shader1', 'plastic_shader')
 si.AssignTexture('sphere_shader1', 'diffuse_map', 'rock_tex1')
 si.AssignTexture('sphere_shader1', 'bump_map', 'rock_tex1')
 si.SetProperty1('sphere_shader1', 'bump_amplitude', 1)
 
-si.NewShader('sphere_shader2', 'PlasticShader')
+si.NewShader('sphere_shader2', 'plastic_shader')
 si.AssignTexture('sphere_shader2', 'diffuse_map', 'rust_tex1')
 si.AssignTexture('sphere_shader2', 'bump_map', 'rust_tex1')
 si.SetProperty1('sphere_shader2', 'bump_amplitude', 1)
 
-si.NewShader('sphere_shader3', 'PlasticShader')
+si.NewShader('sphere_shader3', 'plastic_shader')
 si.AssignTexture('sphere_shader3', 'diffuse_map', 'concrete_tex1')
 si.AssignTexture('sphere_shader3', 'bump_map', 'concrete_tex1')
 si.SetProperty1('sphere_shader3', 'bump_amplitude', 1)
 
-si.NewShader('sphere_shader4', 'PlasticShader')
+si.NewShader('sphere_shader4', 'plastic_shader')
 si.AssignTexture('sphere_shader4', 'diffuse_map', 'pattern_tex1')
 si.AssignTexture('sphere_shader4', 'bump_map', 'pattern_tex1')
 si.SetProperty1('sphere_shader4', 'bump_amplitude', -1)
@@ -57,7 +57,7 @@ si.SetProperty1('sphere_shader4', 'bump_amplitude', -1)
 si.SetProperty3('sphere_shader4', 'diffuse', .5, .5, .5)
 si.SetProperty1('sphere_shader4', 'ior', 10)
 
-si.NewShader('dome_shader', 'ConstantShader')
+si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'env_tex1')
 
 #Mesh

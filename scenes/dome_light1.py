@@ -8,8 +8,8 @@ import fujiyama
 si = fujiyama.SceneInterface()
 
 #plugins
-si.OpenPlugin('ConstantShader')
-si.OpenPlugin('PlasticShader')
+si.OpenPlugin('constant_shader', 'ConstantShader')
+si.OpenPlugin('plastic_shader', 'PlasticShader')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -27,17 +27,17 @@ si.NewTexture('tex1', '../../hdr/pisa.hdr')
 si.AssignTexture('light1', 'environment_map', 'tex1');
 
 #Shader
-si.NewShader('happy_shader', 'PlasticShader')
+si.NewShader('happy_shader', 'plastic_shader')
 si.SetProperty3('happy_shader', 'diffuse', .8, .8, .8)
 
-si.NewShader('dome_shader', 'ConstantShader')
+si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
-si.NewShader('sphere_shader1', 'PlasticShader')
+si.NewShader('sphere_shader1', 'plastic_shader')
 si.SetProperty3('sphere_shader1', 'diffuse', 0, 0, 0)
 si.SetProperty1('sphere_shader1', 'ior', 40)
 
-si.NewShader('sphere_shader2', 'PlasticShader')
+si.NewShader('sphere_shader2', 'plastic_shader')
 si.SetProperty3('sphere_shader2', 'diffuse', .5, .5, .5)
 si.SetProperty3('sphere_shader2', 'reflect', 0, 0, 0)
 

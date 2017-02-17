@@ -9,8 +9,8 @@ import fujiyama
 si = fujiyama.SceneInterface()
 
 #plugins
-si.OpenPlugin('ConstantShader')
-si.OpenPlugin('PlasticShader')
+si.OpenPlugin('constant_shader', 'ConstantShader')
+si.OpenPlugin('plastic_shader', 'PlasticShader')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -31,14 +31,14 @@ si.NewTexture('tex1', '../../hdr/alps.hdr')
 si.AssignTexture('light1', 'environment_map', 'tex1');
 
 #Shader
-si.NewShader('floor_shader', 'PlasticShader')
+si.NewShader('floor_shader', 'plastic_shader')
 si.SetProperty3('floor_shader', 'diffuse', .2, .25, .3)
 
-si.NewShader('ptc_shader1', 'PlasticShader')
+si.NewShader('ptc_shader1', 'plastic_shader')
 si.SetProperty3('ptc_shader1', 'reflect', .0, .0, .0)
 si.SetProperty3('ptc_shader1', 'diffuse', .9, .5, .3)
 
-si.NewShader('dome_shader', 'ConstantShader')
+si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #PointCloud

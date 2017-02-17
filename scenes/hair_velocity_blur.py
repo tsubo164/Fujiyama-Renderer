@@ -12,9 +12,9 @@ import fujiyama
 si = fujiyama.SceneInterface()
 
 #plugins
-si.OpenPlugin('ConstantShader')
-si.OpenPlugin('PlasticShader')
-si.OpenPlugin('HairShader')
+si.OpenPlugin('constant_shader', 'ConstantShader')
+si.OpenPlugin('plastic_shader', 'PlasticShader')
+si.OpenPlugin('hair_shader', 'HairShader')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -34,12 +34,12 @@ si.NewTexture('tex1', '../../hdr/pisa.hdr')
 si.AssignTexture('light1', 'environment_map', 'tex1');
 
 #Shader
-si.NewShader('head_shader', 'PlasticShader')
+si.NewShader('head_shader', 'plastic_shader')
 si.SetProperty3('head_shader', 'diffuse', .8, .8, .8)
 
-si.NewShader('hair_shader', 'HairShader')
+si.NewShader('hair_shader1', 'hair_shader')
 
-si.NewShader('dome_shader', 'ConstantShader')
+si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
@@ -56,7 +56,7 @@ si.AssignShader('head1', 'DEFAULT_SHADING_GROUP', 'head_shader')
 
 si.NewObjectInstance('hair1', 'hair_curve')
 si.SetProperty3('hair1', 'rotate', 0, obj_rot, 0)
-si.AssignShader('hair1', 'DEFAULT_SHADING_GROUP', 'hair_shader')
+si.AssignShader('hair1', 'DEFAULT_SHADING_GROUP', 'hair_shader1')
 
 si.NewObjectInstance('dome1', 'dome_mesh')
 si.SetProperty3('dome1', 'rotate', 0, rot, 0)

@@ -14,9 +14,9 @@ import fujiyama
 si = fujiyama.SceneInterface()
 
 #plugins
-si.OpenPlugin('PlasticShader')
-si.OpenPlugin('ConstantShader')
-si.OpenPlugin('HairShader')
+si.OpenPlugin('plastic_shader', 'PlasticShader')
+si.OpenPlugin('constant_shader', 'ConstantShader')
+si.OpenPlugin('hair_shader', 'HairShader')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -125,16 +125,16 @@ si.SetProperty1('light31', 'intensity', 0.03125)
 si.NewTexture('tex1', '../../hdr/glacier.hdr')
 
 #Shader
-si.NewShader('curve_shader', 'HairShader')
-si.NewShader('bunny_shader', 'PlasticShader')
+si.NewShader('curve_shader', 'hair_shader')
+si.NewShader('bunny_shader', 'plastic_shader')
 si.SetProperty3('bunny_shader', 'diffuse', 0.8, 0.5, 0.3)
 si.SetProperty3('bunny_shader', 'reflect', 0, 0, 0)
 
-si.NewShader('floor_shader', 'PlasticShader')
+si.NewShader('floor_shader', 'plastic_shader')
 si.SetProperty3('floor_shader', 'diffuse', 0.3, 0.35, 0.4)
 si.SetProperty3('floor_shader', 'reflect', 0, 0, 0)
 
-si.NewShader('dome_shader', 'ConstantShader')
+si.NewShader('dome_shader', 'constant_shader')
 
 #Curve
 si.NewCurve('curve_data', '../../crv/bunny.crv')

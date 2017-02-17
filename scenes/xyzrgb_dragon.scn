@@ -2,9 +2,8 @@
 # Copyright (c) 2011-2016 Hiroshi Tsubokawa
 
 #plugins
-OpenPlugin PlasticShader
-OpenPlugin GlassShader
-OpenPlugin ConstantShader
+OpenPlugin plastic_shader  PlasticShader
+OpenPlugin constant_shader ConstantShader
 
 #Camera
 NewCamera cam1 PerspectiveCamera
@@ -113,11 +112,11 @@ SetProperty1 light31 intensity 0.03125
 NewTexture tex1 ../../mip/pisa.mip
 
 #Shader
-NewShader xyzrgb_dragon_shader0 PlasticShader
+NewShader xyzrgb_dragon_shader0 plastic_shader
 SetProperty1 xyzrgb_dragon_shader0 ior 50
 SetProperty3 xyzrgb_dragon_shader0 diffuse 0 0 0
-NewShader floor_shader PlasticShader
-NewShader dome_shader ConstantShader
+NewShader floor_shader plastic_shader
+NewShader dome_shader constant_shader
 
 #Mesh
 NewMesh xyzrgb_dragon_mesh   ../../mesh/xyzrgb_dragon.mesh

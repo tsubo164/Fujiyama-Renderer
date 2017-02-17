@@ -11,9 +11,9 @@ import fujiyama
 si = fujiyama.SceneInterface()
 
 #plugins
-si.OpenPlugin('PlasticShader')
-si.OpenPlugin('GlassShader')
-si.OpenPlugin('ConstantShader')
+si.OpenPlugin('plastic_shader', 'PlasticShader')
+si.OpenPlugin('glass_shader', 'GlassShader')
+si.OpenPlugin('constant_shader', 'ConstantShader')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -123,9 +123,9 @@ si.SetProperty1('light31', 'intensity', 0.03125)
 si.NewTexture('tex1', '../../hdr/grace-new.hdr')
 
 #Shader
-si.NewShader('teapot_shader', 'GlassShader')
-si.NewShader('floor_shader', 'PlasticShader')
-si.NewShader('dome_shader', 'ConstantShader')
+si.NewShader('teapot_shader', 'glass_shader')
+si.NewShader('floor_shader', 'plastic_shader')
+si.NewShader('dome_shader', 'constant_shader')
 
 #Mesh
 # You can specify file paths to *.ply/*.obj file via python API

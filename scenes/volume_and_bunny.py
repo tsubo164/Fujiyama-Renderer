@@ -8,9 +8,9 @@ import fujiyama
 si = fujiyama.SceneInterface()
 
 #plugins
-si.OpenPlugin('PlasticShader')
-si.OpenPlugin('VolumeShader')
-si.OpenPlugin('ConstantVolumeProcedure')
+si.OpenPlugin('plastic_shader', 'PlasticShader')
+si.OpenPlugin('volume_shader', 'VolumeShader')
+si.OpenPlugin('ConstantVolumeProcedure', 'ConstantVolumeProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -22,14 +22,14 @@ si.NewLight('light1', 'PointLight')
 si.SetProperty3('light1', 'translate', 5, 12, -5)
 
 #Shader
-si.NewShader('bunny_shader', 'PlasticShader')
+si.NewShader('bunny_shader', 'plastic_shader')
 si.SetProperty3('bunny_shader', 'diffuse', .9, .6, .4)
 si.SetProperty3('bunny_shader', 'reflect', 0, 0, 0)
 
-si.NewShader('floor_shader', 'PlasticShader')
+si.NewShader('floor_shader', 'plastic_shader')
 si.SetProperty3('floor_shader', 'diffuse', .2, .25, .3)
 si.SetProperty1('floor_shader', 'ior', 2)
-si.NewShader('volume_shader1', 'VolumeShader')
+si.NewShader('volume_shader1', 'volume_shader')
 
 #Volume
 si.NewVolume('volume_data')

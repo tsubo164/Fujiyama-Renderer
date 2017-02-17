@@ -8,7 +8,7 @@ import fujiyama
 si = fujiyama.SceneInterface()
 
 #plugins
-si.OpenPlugin('SSSShader')
+si.OpenPlugin('sss_shader', 'SSSShader')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -20,7 +20,7 @@ si.NewLight('light1', 'PointLight')
 si.SetProperty3('light1', 'translate', -5, 2, -2)
 
 #Shader
-si.NewShader('head_shader1', 'SSSShader')
+si.NewShader('head_shader1', 'sss_shader')
 si.SetProperty3('head_shader1', 'reflect', 0, 0, 0)
 si.SetProperty1('head_shader1', 'enable_single_scattering', 1)
 si.SetProperty1('head_shader1', 'enable_multiple_scattering', 0)
@@ -29,7 +29,7 @@ si.SetProperty1('head_shader1', 'multiple_scattering_samples', 1)
 si.SetProperty3('head_shader1', 'scattering_coefficient', .007, .018, .003)
 si.SetProperty3('head_shader1', 'absorption_coefficient', .097, .0061, .145)
 
-si.NewShader('head_shader2', 'SSSShader')
+si.NewShader('head_shader2', 'sss_shader')
 si.SetProperty3('head_shader2', 'reflect', 0, 0, 0)
 si.SetProperty1('head_shader2', 'enable_single_scattering', 1)
 si.SetProperty1('head_shader2', 'enable_multiple_scattering', 0)
@@ -39,7 +39,7 @@ si.SetProperty3('head_shader2', 'scattering_coefficient', .07, .122, .19)
 si.SetProperty3('head_shader2', 'absorption_coefficient', .00014, .00025, .00142)
 si.SetProperty3('head_shader2', 'specular', .01, .01, .01)
 
-si.NewShader('head_shader3', 'SSSShader')
+si.NewShader('head_shader3', 'sss_shader')
 si.SetProperty3('head_shader3', 'reflect', 0, 0, 0)
 si.SetProperty1('head_shader3', 'enable_single_scattering', 1)
 si.SetProperty1('head_shader3', 'enable_multiple_scattering', 0)
@@ -50,7 +50,7 @@ si.SetProperty3('head_shader3', 'absorption_coefficient', .0032, .017, .048)
 si.SetProperty3('head_shader3', 'specular', .1, .1, .1)
 si.SetProperty1('head_shader3', 'roughness', .2)
 
-si.NewShader('head_shader4', 'SSSShader')
+si.NewShader('head_shader4', 'sss_shader')
 si.SetProperty3('head_shader4', 'reflect', 0, 0, 0)
 si.SetProperty1('head_shader4', 'enable_single_scattering', 1)
 si.SetProperty1('head_shader4', 'enable_multiple_scattering', 0)

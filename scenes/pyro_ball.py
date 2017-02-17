@@ -8,10 +8,10 @@ import fujiyama
 si = fujiyama.SceneInterface()
 
 #plugins
-si.OpenPlugin('ConstantShader')
-si.OpenPlugin('PlasticShader')
-si.OpenPlugin('VolumeShader')
-si.OpenPlugin('PointCloudsProcedure')
+si.OpenPlugin('constant_shader', 'ConstantShader')
+si.OpenPlugin('plastic_shader', 'PlasticShader')
+si.OpenPlugin('volume_shader', 'VolumeShader')
+si.OpenPlugin('pointclouds_procedure', 'PointCloudsProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -23,12 +23,12 @@ si.NewLight('light1', 'PointLight')
 si.SetProperty3('light1', 'translate', 10, 12, 10)
 
 #Shader
-si.NewShader('floor_shader', 'PlasticShader')
+si.NewShader('floor_shader', 'plastic_shader')
 si.SetProperty3('floor_shader', 'diffuse', .2, .25, .3)
 si.SetProperty1('floor_shader', 'ior', 2)
-si.NewShader('volume_shader1', 'VolumeShader')
+si.NewShader('volume_shader1', 'volume_shader')
 
-si.NewShader('dome_shader', 'ConstantShader')
+si.NewShader('dome_shader', 'constant_shader')
 si.SetProperty3('dome_shader', 'diffuse', .8, .8, .8)
 
 #Turbulence
@@ -43,7 +43,7 @@ si.SetProperty3('volume_data', 'bounds_max', 1, 1, 1)
 si.SetProperty3('volume_data', 'resolution', 500, 500, 500)
 
 #Procedure
-si.NewProcedure('proc1', 'PointCloudsProcedure')
+si.NewProcedure('proc1', 'pointclouds_procedure')
 si.AssignVolume('proc1', 'volume', 'volume_data')
 si.AssignTurbulence('proc1', 'turbulence', 'turbulence_data')
 

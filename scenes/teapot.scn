@@ -2,9 +2,9 @@
 # Copyright (c) 2011-2016 Hiroshi Tsubokawa
 
 #plugins
-OpenPlugin PlasticShader
-OpenPlugin GlassShader
-OpenPlugin ConstantShader
+OpenPlugin plastic_shader  PlasticShader
+OpenPlugin glass_shader    GlassShader
+OpenPlugin constant_shader ConstantShader
 
 #Camera
 NewCamera cam1 PerspectiveCamera
@@ -113,9 +113,9 @@ SetProperty1 light31 intensity 0.03125
 NewTexture tex1 ../../mip/grace-new.mip
 
 #Shader
-NewShader teapot_shader GlassShader
-NewShader floor_shader PlasticShader
-NewShader dome_shader ConstantShader
+NewShader teapot_shader glass_shader
+NewShader floor_shader plastic_shader
+NewShader dome_shader constant_shader
 
 #SetProperty3 teapot_shader filter_color .2 .5 .1
 

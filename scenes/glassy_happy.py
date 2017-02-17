@@ -8,9 +8,9 @@ import fujiyama
 si = fujiyama.SceneInterface()
 
 #plugins
-si.OpenPlugin('ConstantShader')
-si.OpenPlugin('PlasticShader')
-si.OpenPlugin('GlassShader')
+si.OpenPlugin('constant_shader', 'ConstantShader')
+si.OpenPlugin('plastic_shader', 'PlasticShader')
+si.OpenPlugin('glass_shader', 'GlassShader')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -21,17 +21,17 @@ si.NewLight('light1', 'PointLight')
 si.SetProperty3('light1', 'translate', 5, 12, -5)
 
 #Shader
-si.NewShader('armadillo_shader', 'GlassShader')
+si.NewShader('armadillo_shader', 'glass_shader')
 si.SetProperty3('armadillo_shader', 'filter_color', .75, .025, .4)
 
-si.NewShader('happy_shader', 'GlassShader')
+si.NewShader('happy_shader', 'glass_shader')
 si.SetProperty3('happy_shader', 'filter_color', .4, .75, .025)
 
-si.NewShader('horse_shader', 'GlassShader')
+si.NewShader('horse_shader', 'glass_shader')
 si.SetProperty3('horse_shader', 'filter_color', .025, .4, .75)
 
-si.NewShader('dome_shader', 'ConstantShader')
-si.NewShader('floor_shader', 'PlasticShader')
+si.NewShader('dome_shader', 'constant_shader')
+si.NewShader('floor_shader', 'plastic_shader')
 
 #Mesh
 si.NewMesh('armadillo_mesh', '../../ply/armadillo.ply')

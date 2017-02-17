@@ -9,8 +9,8 @@ import wavefrontobj
 si = fujiyama.SceneInterface()
 
 #plugins
-si.OpenPlugin('ConstantShader')
-si.OpenPlugin('PlasticShader')
+si.OpenPlugin('constant_shader', 'ConstantShader')
+si.OpenPlugin('plastic_shader', 'PlasticShader')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -32,7 +32,7 @@ si.NewTexture('tex1', '../../hdr/austria.hdr')
 si.AssignTexture('light1', 'environment_map', 'tex1')
 
 #Shader
-si.NewShader('dome_shader', 'ConstantShader')
+si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
@@ -54,7 +54,7 @@ si.AssignShader('dome1', 'DEFAULT_SHADING_GROUP', 'dome_shader')
 # NewShader, SetProperty* and AssignShader.
 # It parses *.obj to find face group names and material names.
 # And it also parses *.mtl to set up shaders.
-wavefrontobj.assign_materials(si, '../../obj/rungholt/rungholt.obj', 'rungholt1', 'PlasticShader')
+wavefrontobj.assign_materials(si, '../../obj/rungholt/rungholt.obj', 'rungholt1', 'plastic_shader')
 
 #ObjectGroup
 # Create shadow_target for some objects.

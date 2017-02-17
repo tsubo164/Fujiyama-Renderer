@@ -2,9 +2,8 @@
 # Copyright (c) 2011-2016 Hiroshi Tsubokawa
 
 #plugins
-OpenPlugin PlasticShader
-OpenPlugin GlassShader
-OpenPlugin ConstantShader
+OpenPlugin plastic_shader  PlasticShader
+OpenPlugin constant_shader ConstantShader
 
 #Camera
 NewCamera cam1 PerspectiveCamera
@@ -113,41 +112,41 @@ SetProperty1 light31 intensity 0.03125
 NewTexture tex1 ../../mip/uffizi-large.mip
 
 #Shader
-NewShader buddha_shader0 PlasticShader
+NewShader buddha_shader0 plastic_shader
 SetProperty3 buddha_shader0 diffuse 0.420094 0.420094 0.350488
-NewShader buddha_shader1 PlasticShader
+NewShader buddha_shader1 plastic_shader
 SetProperty3 buddha_shader1 diffuse 0.28069 0.458229 0.137373
-NewShader buddha_shader2 PlasticShader
+NewShader buddha_shader2 plastic_shader
 SetProperty3 buddha_shader2 diffuse 0.0677194 0.243452 0.17638
-NewShader buddha_shader3 PlasticShader
+NewShader buddha_shader3 plastic_shader
 SetProperty3 buddha_shader3 diffuse 0.103483 0.282905 0.463173
-NewShader buddha_shader4 PlasticShader
+NewShader buddha_shader4 plastic_shader
 SetProperty3 buddha_shader4 diffuse 0.3928 0.316322 0.499749
-NewShader buddha_shader5 PlasticShader
+NewShader buddha_shader5 plastic_shader
 SetProperty3 buddha_shader5 diffuse 0.177487 0.107719 0.285897
-NewShader buddha_shader6 PlasticShader
+NewShader buddha_shader6 plastic_shader
 SetProperty3 buddha_shader6 diffuse 0.464536 0.145117 0.0744061
-NewShader buddha_shader7 PlasticShader
+NewShader buddha_shader7 plastic_shader
 SetProperty3 buddha_shader7 diffuse 0.25295 0.432513 0.363791
-NewShader buddha_shader8 PlasticShader
+NewShader buddha_shader8 plastic_shader
 SetProperty3 buddha_shader8 diffuse 0.0438571 0.469678 0.397773
-NewShader buddha_shader9 PlasticShader
+NewShader buddha_shader9 plastic_shader
 SetProperty3 buddha_shader9 diffuse 0.329916 0.258578 0.437995
-NewShader buddha_shader10 PlasticShader
+NewShader buddha_shader10 plastic_shader
 SetProperty3 buddha_shader10 diffuse 0.114984 0.29606 0.224838
-NewShader buddha_shader11 PlasticShader
+NewShader buddha_shader11 plastic_shader
 SetProperty3 buddha_shader11 diffuse 0.153974 0.084485 0.262245
-NewShader buddha_shader12 PlasticShader
+NewShader buddha_shader12 plastic_shader
 SetProperty3 buddha_shader12 diffuse 0.19063 0.119706 0.299113
-NewShader buddha_shader13 PlasticShader
+NewShader buddha_shader13 plastic_shader
 SetProperty3 buddha_shader13 diffuse 0.478574 0.409711 0.335123
-NewShader buddha_shader14 PlasticShader
+NewShader buddha_shader14 plastic_shader
 SetProperty3 buddha_shader14 diffuse 0.016735 0.196075 0.374869
-NewShader buddha_shader15 PlasticShader
+NewShader buddha_shader15 plastic_shader
 SetProperty3 buddha_shader15 diffuse 0.304462 0.234848 0.41284
 
-NewShader floor_shader PlasticShader
-NewShader dome_shader ConstantShader
+NewShader floor_shader plastic_shader
+NewShader dome_shader constant_shader
 
 #Mesh
 NewMesh buddha_mesh ../../mesh/happy.mesh
