@@ -126,7 +126,7 @@ class SceneInterface:
 		cmd = '# %.128s' % (comment)
 		self.commands.append(cmd)
 
-	def OpenPlugin(self, plugin_path):
+	def OpenPlugin(self, name, plugin_path):
 		"""
 		Opens a plugin. DSO extension (.so, .dll, ...) will be added when missing
 		"""
@@ -140,7 +140,7 @@ class SceneInterface:
 		if plugin_ext != dso_ext:
 			path += dso_ext
 
-		cmd = 'OpenPlugin %s' % (path)
+		cmd = 'OpenPlugin %s %s' % (name, path)
 		self.commands.append(cmd)
 
 	def RenderScene(self, renderer):

@@ -14,11 +14,13 @@ static int print_property_list(const char *type_name);
 /* OpenPlugin */
 static const int OpenPlugin_args[] = {
   ARG_COMMAND_NAME,
+  ARG_NEW_ENTRY_ID,
   ARG_FILE_PATH};
 static CommandResult OpenPlugin_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.status = SiOpenPlugin(args[1].str);
+  result.new_entry_id = SiOpenPlugin(args[2].str);
+  result.new_entry_name = args[1].str;
   return result;
 }
 
@@ -135,11 +137,11 @@ static CommandResult NewTurbulence_run(const CommandArgument *args)
 static const int NewProcedure_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID,
-  ARG_STRING};
+  ARG_ENTRY_ID};
 static CommandResult NewProcedure_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.new_entry_id = SiNewProcedure(args[2].str);
+  result.new_entry_id = SiNewProcedure(args[2].id);
   result.new_entry_name = args[1].str;
   return result;
 }
@@ -173,11 +175,11 @@ static CommandResult NewTexture_run(const CommandArgument *args)
 static const int NewShader_args[] = {
   ARG_COMMAND_NAME,
   ARG_NEW_ENTRY_ID,
-  ARG_STRING};
+  ARG_ENTRY_ID};
 static CommandResult NewShader_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.new_entry_id = SiNewShader(args[2].str);
+  result.new_entry_id = SiNewShader(args[2].id);
   result.new_entry_name = args[1].str;
   return result;
 }

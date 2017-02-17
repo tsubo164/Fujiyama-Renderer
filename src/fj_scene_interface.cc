@@ -182,37 +182,35 @@ int SiGetErrorNo(void)
 }
 
 /* Plugin interfaces */
-Status SiOpenPlugin(const char *filename)
+ID SiOpenPlugin(const char *filename)
 {
-  if (get_scene()->OpenPlugin(filename) == NULL) {
-    /* TODO make a mapping function */
-    switch (PlgGetErrorNo()) {
-    case PLG_ERR_PLUGIN_NOT_FOUND:
-      set_errno(SI_ERR_PLUGIN_NOT_FOUND);
-      break;
-    case PLG_ERR_INIT_PLUGIN_FUNC_NOT_EXIST:
-      set_errno(SI_ERR_INIT_PLUGIN_FUNC_NOT_EXIST);
-      break;
-    case PLG_ERR_INIT_PLUGIN_FUNC_FAIL:
-      set_errno(SI_ERR_INIT_PLUGIN_FUNC_FAIL);
-      break;
-    case PLG_ERR_BAD_PLUGIN_INFO:
-      set_errno(SI_ERR_BAD_PLUGIN_INFO);
-      break;
-    case PLG_ERR_NO_MEMORY:
-      set_errno(SI_ERR_NO_MEMORY);
-      break;
-    case PLG_ERR_CLOSE_PLUGIN_FAIL:
-      set_errno(SI_ERR_CLOSE_PLUGIN_FAIL);
-      break;
-    default:
-      break;
-    }
-    return SI_FAIL;
+  get_scene()->OpenPlugin(filename);
+
+  switch (PlgGetErrorNo()) {
+  case PLG_ERR_PLUGIN_NOT_FOUND:
+    set_errno(SI_ERR_PLUGIN_NOT_FOUND);
+    return SI_BADID;
+  case PLG_ERR_INIT_PLUGIN_FUNC_NOT_EXIST:
+    set_errno(SI_ERR_INIT_PLUGIN_FUNC_NOT_EXIST);
+    return SI_BADID;
+  case PLG_ERR_INIT_PLUGIN_FUNC_FAIL:
+    set_errno(SI_ERR_INIT_PLUGIN_FUNC_FAIL);
+    return SI_BADID;
+  case PLG_ERR_BAD_PLUGIN_INFO:
+    set_errno(SI_ERR_BAD_PLUGIN_INFO);
+    return SI_BADID;
+  case PLG_ERR_NO_MEMORY:
+    set_errno(SI_ERR_NO_MEMORY);
+    return SI_BADID;
+  case PLG_ERR_CLOSE_PLUGIN_FAIL:
+    set_errno(SI_ERR_CLOSE_PLUGIN_FAIL);
+    return SI_BADID;
+  default:
+    break;
   }
 
   set_errno(SI_ERR_NONE);
-  return SI_SUCCESS;
+  return encode_id(Type_Plugin, GET_LAST_ADDED_ID(Plugin));
 }
 
 /* Scene interfaces */
@@ -494,24 +492,20 @@ ID SiNewTurbulence(void)
   return encode_id(Type_Turbulence, GET_LAST_ADDED_ID(Turbulence));
 }
 
-ID SiNewProcedure(const char *plugin_name)
+ID SiNewProcedure(ID plugin)
 {
-  Plugin **plugins = get_scene()->GetPluginList();
-  Plugin *found = NULL;
-  const int N = (int) get_scene()->GetPluginCount();
-  int i = 0;
+  const Entry entry = decode_id(plugin);
 
-  for (i = 0; i < N; i++) {
-    if (strcmp(plugin_name, plugins[i]->GetName()) == 0) {
-      found = plugins[i];
-      break;
-    }
-  }
-  if (found == NULL) {
-    set_errno(SI_ERR_FAILNEW);
+  if (entry.type != Type_Plugin) {
     return SI_BADID;
   }
-  if (get_scene()->NewProcedure(found) == NULL) {
+
+  Plugin *plugin_ptr = get_scene()->GetPlugin(entry.index);
+  if (plugin_ptr == NULL) {
+    return SI_BADID;
+  }
+
+  if (get_scene()->NewProcedure(plugin_ptr) == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
   }
@@ -563,24 +557,20 @@ ID SiNewCamera(const char *arg)
   return encode_id(Type_Camera, GET_LAST_ADDED_ID(Camera));
 }
 
-ID SiNewShader(const char *plugin_name)
+ID SiNewShader(ID plugin)
 {
-  Plugin **plugins = get_scene()->GetPluginList();
-  Plugin *found = NULL;
-  const int N = (int) get_scene()->GetPluginCount();
-  int i = 0;
+  const Entry entry = decode_id(plugin);
 
-  for (i = 0; i < N; i++) {
-    if (strcmp(plugin_name, plugins[i]->GetName()) == 0) {
-      found = plugins[i];
-      break;
-    }
-  }
-  if (found == NULL) {
-    set_errno(SI_ERR_FAILNEW);
+  if (entry.type != Type_Plugin) {
     return SI_BADID;
   }
-  if (get_scene()->NewShader(found) == NULL) {
+
+  Plugin *plugin_ptr = get_scene()->GetPlugin(entry.index);
+  if (plugin_ptr == NULL) {
+    return SI_BADID;
+  }
+
+  if (get_scene()->NewShader(plugin_ptr) == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
   }

@@ -64,7 +64,7 @@ enum SiSamplerType {
 FJ_API int SiGetErrorNo(void);
 
 /* Plugin interfaces */
-FJ_API Status SiOpenPlugin(const char *filename);
+FJ_API ID SiOpenPlugin(const char *filename);
 
 /* Scene interfaces */
 FJ_API Status SiOpenScene(void);
@@ -80,11 +80,11 @@ FJ_API ID SiNewFrameBuffer(const char *arg);
 FJ_API ID SiNewObjectGroup(void);
 FJ_API ID SiNewPointCloud(const char *filename);
 FJ_API ID SiNewTurbulence(void);
-FJ_API ID SiNewProcedure(const char *plugin_name);
+FJ_API ID SiNewProcedure(ID plugin);
 FJ_API ID SiNewRenderer(void);
 FJ_API ID SiNewTexture(const char *filename);
 FJ_API ID SiNewCamera(const char *arg);
-FJ_API ID SiNewShader(const char *plugin_name);
+FJ_API ID SiNewShader(ID plugin);
 FJ_API ID SiNewVolume(void);
 FJ_API ID SiNewCurve(const char *filename);
 FJ_API ID SiNewLight(int light_type);
