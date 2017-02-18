@@ -2,13 +2,6 @@
 // See LICENSE and README
 
 #include "fj_procedure.h"
-#include "fj_volume_filling.h"
-#include "fj_turbulence.h"
-#include "fj_progress.h"
-#include "fj_numeric.h"
-#include "fj_random.h"
-#include "fj_vector.h"
-#include "fj_volume.h"
 
 using namespace fj;
 
@@ -23,7 +16,6 @@ public:
 
 private:
   virtual int run() const;
-  const Property *get_property_list() const;
 };
 
 static void *MyCreateFunction(void);
@@ -123,11 +115,6 @@ int SplineWispsProcedure::run() const
   const int err = FillWithSpecksAlongLine(volume, &cp0, &cp1, turbulence);
 
   return err;
-}
-
-const Property *SplineWispsProcedure::get_property_list() const
-{
-  return MyPropertyList;
 }
 
 static int set_volume(void *self, const PropertyValue &value)

@@ -25,7 +25,6 @@ public:
 private:
   virtual void evaluate(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
-  const Property *get_property_list() const;
 };
 
 static void *MyCreateFunction(void);
@@ -131,11 +130,6 @@ void GlassShader::evaluate(const TraceContext &cxt,
   out->Cs.b += Kt * C_refr.b;
 
   out->Os = 1;
-}
-
-const Property *GlassShader::get_property_list() const
-{
-  return MyPropertyList;
 }
 
 static int set_diffuse(void *self, const PropertyValue &value)

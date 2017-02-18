@@ -17,7 +17,6 @@ public:
 private:
   virtual void evaluate(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
-  const Property *get_property_list() const;
 };
 
 static void *MyCreateFunction(void);
@@ -92,11 +91,6 @@ void ConstantShader::evaluate(const TraceContext &cxt,
   out->Cs.g = C_tex.g;
   out->Cs.b = C_tex.b;
   out->Os = 1;
-}
-
-const Property *ConstantShader::get_property_list() const
-{
-  return MyPropertyList;
 }
 
 static int set_diffuse(void *self, const PropertyValue &value)

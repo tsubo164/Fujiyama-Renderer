@@ -5,13 +5,16 @@
 #define FJ_PROCEDURE_H
 
 #include "fj_compatibility.h"
-#include "fj_scene_node.h"
+#include "fj_volume_filling.h"
+#include "fj_turbulence.h"
+#include "fj_progress.h"
 #include "fj_numeric.h"
 #include "fj_shading.h"
 #include "fj_texture.h"
 #include "fj_plugin.h"
 #include "fj_random.h"
 #include "fj_vector.h"
+#include "fj_volume.h"
 #include "fj_color.h"
 #include "fj_light.h"
 #include <string>
@@ -21,7 +24,7 @@
 
 namespace fj {
 
-class FJ_API Procedure : public SceneNode {
+class FJ_API Procedure {
 public:
   Procedure();
   virtual ~Procedure();

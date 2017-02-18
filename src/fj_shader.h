@@ -5,7 +5,6 @@
 #define FJ_SHADER_H
 
 #include "fj_compatibility.h"
-#include "fj_scene_node.h"
 #include "fj_numeric.h"
 #include "fj_shading.h"
 #include "fj_texture.h"
@@ -21,7 +20,7 @@
 
 namespace fj {
 
-class FJ_API Shader : public SceneNode {
+class FJ_API Shader {
 public:
   Shader();
   virtual ~Shader();

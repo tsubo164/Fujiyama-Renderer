@@ -16,7 +16,6 @@ public:
 private:
   virtual void evaluate(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
-  const Property *get_property_list() const;
 };
 
 static void *MyCreateFunction(void);
@@ -94,11 +93,6 @@ void VolumeShader::evaluate(const TraceContext &cxt,
 
   // Os
   out->Os = 1.0;
-}
-
-const Property *VolumeShader::get_property_list() const
-{
-  return MyPropertyList;
 }
 
 static int set_diffuse(void *self, const PropertyValue &value)

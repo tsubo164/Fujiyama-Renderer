@@ -57,7 +57,6 @@ public:
 private:
   virtual void evaluate(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
-  const Property *get_property_list() const;
 
   Color single_scattering(const TraceContext &cxt, const SurfaceInput &in,
       const LightSample &light_sample) const;
@@ -212,11 +211,6 @@ void SSSShader::evaluate(const TraceContext &cxt,
 
   out->Os = 1.0;
   out->Os = opacity;
-}
-
-const Property *SSSShader::get_property_list() const
-{
-  return MyPropertyList;
 }
 
 Color SSSShader::single_scattering(const TraceContext &cxt, const SurfaceInput &in,

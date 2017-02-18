@@ -2,9 +2,6 @@
 // See LICENSE and README
 
 #include "fj_procedure.h"
-#include "fj_numeric.h"
-#include "fj_vector.h"
-#include "fj_volume.h"
 
 using namespace fj;
 
@@ -19,7 +16,6 @@ public:
 
 private:
   virtual int run() const;
-  const Property *get_property_list() const;
 };
 
 static void *MyCreateFunction(void);
@@ -81,11 +77,6 @@ int ConstantVolumeProcedure::run() const
   const int err = FillWithConstant(volume, density);
 
   return err;
-}
-
-const Property *ConstantVolumeProcedure::get_property_list() const
-{
-  return MyPropertyList;
 }
 
 static int set_volume(void *self, const PropertyValue &value)
