@@ -120,6 +120,7 @@ static void set_scene(Scene *scene)
 typedef std::map<ID,ID> IDMap;
 IDMap object_to_primset;
 IDMap primset_to_accelerator;
+IDMap instance_to_plugin;
 
 static void push_idmap_entry(IDMap &map, ID key, ID value)
 {
@@ -159,6 +160,16 @@ static ID find_primset_from(ID object)
   return find_idmap_entry(object_to_primset, object);
 }
 
+static void bind_instance_to_plugin(ID instance, ID plugin)
+{
+  push_idmap_entry(instance_to_plugin, instance, plugin);
+}
+
+static ID find_plugin_from(ID instance)
+{
+  return find_idmap_entry(instance_to_plugin, instance);
+}
+
 /* the global error code */
 static int si_errno = SI_ERR_NONE;
 
@@ -169,8 +180,8 @@ static int prepare_render(const Renderer *renderer);
 static void set_errno(int err_no);
 static Status status_of_error(int err);
 
-static int set_property(const Entry *entry,
-    const char *name, const PropertyValue *value);
+static int set_property(const Entry &entry,
+    const char *name, const PropertyValue &value);
 
 /* property list description */
 #include "internal/fj_property_list_include.cc"
@@ -510,8 +521,11 @@ ID SiNewProcedure(ID plugin)
     return SI_BADID;
   }
 
+  const ID procedure_id = encode_id(Type_Procedure, GET_LAST_ADDED_ID(Procedure));
+  bind_instance_to_plugin(procedure_id, plugin);
+
   set_errno(SI_ERR_NONE);
-  return encode_id(Type_Procedure, GET_LAST_ADDED_ID(Procedure));
+  return procedure_id;
 }
 
 ID SiNewRenderer(void)
@@ -575,8 +589,11 @@ ID SiNewShader(ID plugin)
     return SI_BADID;
   }
 
+  const ID shader_id = encode_id(Type_Shader, GET_LAST_ADDED_ID(Shader));
+  bind_instance_to_plugin(shader_id, plugin);
+
   set_errno(SI_ERR_NONE);
-  return encode_id(Type_Shader, GET_LAST_ADDED_ID(Shader));
+  return shader_id;
 }
 
 ID SiNewVolume(void)
@@ -767,7 +784,7 @@ Status SiAssignObjectGroup(ID id, const char *name, ID group)
     return SI_FAIL;
 
   value = PropObjectGroup(group_ptr);
-  err = set_property(&entry, name, &value);
+  err = set_property(entry, name, value);
 
   return status_of_error(err);
 }
@@ -788,7 +805,7 @@ Status SiAssignTexture(ID id, const char *name, ID texture)
     return SI_FAIL;
 
   value = PropTexture(texture_ptr);
-  err = set_property(&entry, name, &value);
+  err = set_property(entry, name, value);
 
   return status_of_error(err);
 }
@@ -855,7 +872,7 @@ Status SiSetProperty1(ID id, const char *name, double v0)
 {
   const Entry entry = decode_id(id);
   const PropertyValue value = PropScalar(v0);
-  const int err = set_property(&entry, name, &value);
+  const int err = set_property(entry, name, value);
 
   return status_of_error(err);
 }
@@ -864,7 +881,7 @@ Status SiSetProperty2(ID id, const char *name, double v0, double v1)
 {
   const Entry entry = decode_id(id);
   const PropertyValue value = PropVector2(v0, v1);
-  const int err = set_property(&entry, name, &value);
+  const int err = set_property(entry, name, value);
 
   return status_of_error(err);
 }
@@ -873,7 +890,7 @@ Status SiSetProperty3(ID id, const char *name, double v0, double v1, double v2)
 {
   const Entry entry = decode_id(id);
   const PropertyValue value = PropVector3(v0, v1, v2);
-  const int err = set_property(&entry, name, &value);
+  const int err = set_property(entry, name, value);
 
   return status_of_error(err);
 }
@@ -882,7 +899,7 @@ Status SiSetProperty4(ID id, const char *name, double v0, double v1, double v2, 
 {
   const Entry entry = decode_id(id);
   const PropertyValue value = PropVector4(v0, v1, v2, v3);
-  const int err = set_property(&entry, name, &value);
+  const int err = set_property(entry, name, value);
 
   return status_of_error(err);
 }
@@ -891,7 +908,7 @@ Status SiSetStringProperty(ID id, const char *name, const char *string)
 {
   const Entry entry = decode_id(id);
   const PropertyValue value = PropString(string);
-  const int err = set_property(&entry, name, &value);
+  const int err = set_property(entry, name, value);
 
   return status_of_error(err);
 }
@@ -904,7 +921,7 @@ Status SiSetSampleProperty3(ID id, const char *name, double v0, double v1, doubl
   int err = 0;
 
   value.time = time;
-  err = set_property(&entry, name, &value);
+  err = set_property(entry, name, value);
 
   return status_of_error(err);
 }
@@ -925,7 +942,7 @@ Status SiAssignTurbulence(ID id, const char *name, ID turbulence)
     return SI_FAIL;
 
   value = PropTurbulence(turbulence_ptr);
-  err = set_property(&entry, name, &value);
+  err = set_property(entry, name, value);
 
   return status_of_error(err);
 }
@@ -946,7 +963,7 @@ Status SiAssignVolume(ID id, const char *name, ID volume)
     return SI_FAIL;
 
   value = PropVolume(volume_ptr);
-  err = set_property(&entry, name, &value);
+  err = set_property(entry, name, value);
 
   return status_of_error(err);
 }
@@ -967,7 +984,7 @@ Status SiAssignMesh(ID id, const char *name, ID mesh)
     return SI_FAIL;
 
   value = PropMesh(mesh_ptr);
-  err = set_property(&entry, name, &value);
+  err = set_property(entry, name, value);
 
   return status_of_error(err);
 }
@@ -1014,6 +1031,7 @@ Status SiSetTileReportCallback(ID id, void *data,
 
 const Property *SiGetPropertyList(const char *type_name)
 {
+  // TODO by ID instead of by type name?
   return get_property_list(type_name);
 }
 
@@ -1199,52 +1217,44 @@ static Status status_of_error(int err)
     return SI_SUCCESS;
 }
 
-/* TODO refactoring in terms of variable names */
-static int find_and_set_property(void *self, const Property *src_props,
-    const char *prop_name, const PropertyValue *src_data)
+static int find_and_set_property(void *self, const Property *property_list,
+    const char *property_name, const PropertyValue &value)
 {
-  const Property *dst_prop = PropFind(src_props, src_data->type, prop_name);
-  if (dst_prop == NULL)
+  const Property *property = PropFind(property_list, value.type, property_name);
+  if (property == NULL) {
     return -1;
-
-  if (self == NULL)
+  }
+  if (self == NULL) {
     return -1;
-
-  return dst_prop->SetValue(self, *src_data);
+  }
+  return property->SetValue(self, value);
 }
 
-static int set_property(const Entry *entry,
-    const char *name, const PropertyValue *value)
+static int set_property(const Entry &entry,
+    const char *name, const PropertyValue &value)
 {
-  const Property *src_props = NULL;
-  void *dst_entry = NULL;
+  void *self = NULL;
 
-  /* procedure and shader type properties */
-  if (entry->type == Type_Procedure) {
-    Procedure *procedure = get_scene()->GetProcedure(entry->index);
-    if (procedure == NULL)
-      return SI_FAIL;
-
-    return procedure->SetProperty(name, *value);
-  }
-  else if (entry->type == Type_Shader) {
-    Shader *shader = get_scene()->GetShader(entry->index);
-    if (shader == NULL)
-      return SI_FAIL;
-
-    return shader->SetProperty(name, *value);
+  switch (entry.type) {
+  case Type_Procedure:
+    self = get_scene()->GetProcedure(entry.index);
+    break;
+  case Type_Shader:
+    self = get_scene()->GetShader(entry.index);
+    break;
+  default:
+    self = get_builtin_type_entry(get_scene(), entry);
+    break;
   }
 
-  /* builtin type properties */
-  dst_entry = get_builtin_type_entry(get_scene(), entry);
-  src_props = get_builtin_type_property_list(entry->type);
-
-  assert(src_props && "Some types are not implemented yet");
+  const Property *property_list = get_property_list(entry);
+  assert(property_list && "Some types are not implemented yet");
   
-  if (dst_entry == NULL)
+  if (self == NULL) {
     return -1;
+  }
 
-  return find_and_set_property(dst_entry, src_props, name, value);
+  return find_and_set_property(self, property_list, name, value);
 }
 
 } // namespace xxx

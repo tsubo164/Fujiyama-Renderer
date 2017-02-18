@@ -520,13 +520,13 @@ static const property_desc property_desc_list[] = {
 #undef DEFINE_GET_ENTRY_FUNC
 #undef PROPERTY_DESC
 
-static void *get_builtin_type_entry(Scene *scene, const Entry *entry)
+static void *get_builtin_type_entry(Scene *scene, const Entry &entry)
 {
   const property_desc *desc = NULL;
 
   for (desc = property_desc_list; desc->type_name != NULL; desc++) {
-    if (desc->entry_type == entry->type) {
-      return desc->get_entry_from_scene(scene, entry->index);
+    if (desc->entry_type == entry.type) {
+      return desc->get_entry_from_scene(scene, entry.index);
     }
   }
   return NULL;
@@ -586,5 +586,26 @@ static const Property *get_property_list(const char *type_name)
     } else {
       return found->GetPropertyList();
     }
+  }
+}
+
+static const Property *get_property_list(const Entry &entry)
+{
+  // builtin type properties
+  const Property *builtin_props = get_builtin_type_property_list(entry.type);
+
+  if (builtin_props != NULL) {
+    return builtin_props;
+  }
+
+  // plugin type properties
+  const ID plugin_id = find_plugin_from(encode_id(entry.type, entry.index));
+  const Entry plugin_entry = decode_id(plugin_id);
+  Plugin *plugin = get_scene()->GetPlugin(plugin_entry.index);
+
+  if (plugin == NULL) {
+    return NULL;
+  } else {
+    return plugin->GetPropertyList();
   }
 }
