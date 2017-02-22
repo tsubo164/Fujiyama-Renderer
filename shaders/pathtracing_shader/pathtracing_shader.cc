@@ -42,13 +42,13 @@ private:
   virtual void evaluate(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
 
-  void evaluate_diffuse(const TraceContext &cxt,
+  Color evaluate_diffuse(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
 
-  void evaluate_specular(const TraceContext &cxt,
+  Color evaluate_specular(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
 
-  void evaluate_refract(const TraceContext &cxt,
+  Color evaluate_refract(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
 
   mutable XorShift rng[16];
@@ -127,6 +127,21 @@ static void MyDeleteFunction(void *self)
 void PathtracingShader::evaluate(const TraceContext &cxt,
     const SurfaceInput &in, SurfaceOutput *out) const
 {
+  Color Lo, Le, L_diffuse, L_specular;
+
+  Le = emission;
+
+  if (Luminance(diffuse) > 0.) {
+    L_diffuse = evaluate_diffuse(cxt, in, out);
+  }
+  if (Luminance(reflect) > 0.) {
+    L_specular = evaluate_specular(cxt, in, out);
+  }
+
+  Lo = Le + L_diffuse + L_specular;
+
+  out->Cs = Lo;
+#if 0
   switch (surface_type) {
   case SURFACE_EMISSION:
     out->Cs = emission;
@@ -144,9 +159,10 @@ void PathtracingShader::evaluate(const TraceContext &cxt,
   default:
     break;
   }
+#endif
 }
 
-void PathtracingShader::evaluate_diffuse(const TraceContext &cxt,
+Color PathtracingShader::evaluate_diffuse(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const
 {
   Vector u, v, w;
@@ -175,11 +191,15 @@ void PathtracingShader::evaluate_diffuse(const TraceContext &cxt,
   SlTrace(&refl_cxt, &in.P, &dir, .001, 1000, &Lo, &t_hit);
   const Color weight = diffuse / prob;
 
-  out->Cs = emission + weight * ToColor(Lo);
+  //out->Cs = weight * ToColor(Lo);
+  out->Cs = diffuse * ToColor(Lo);
   out->Os = 1.0;
+
+  // TODO TEST
+  return out->Cs;
 }
 
-void PathtracingShader::evaluate_specular(const TraceContext &cxt,
+Color PathtracingShader::evaluate_specular(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const
 {
   const Real prob = Luminance(reflect);
@@ -191,14 +211,20 @@ void PathtracingShader::evaluate_specular(const TraceContext &cxt,
   Color4 Lo;
   Real t_hit = REAL_MAX;
 
+  const Real Kr = SlFresnel(&in.I, &in.N, 1./ior);
+  //const Kt = 1 - Kr;
+
   SlTrace(&refl_cxt, &in.P, &dir, .001, 1000, &Lo, &t_hit);
   const Color weight = reflect / prob;
 
-  out->Cs = emission + weight * ToColor(Lo);
+  out->Cs = weight * ToColor(Lo) * Kr;
   out->Os = 1.0;
+
+  // TODO TEST
+  return out->Cs;
 }
 
-void PathtracingShader::evaluate_refract(const TraceContext &cxt,
+Color PathtracingShader::evaluate_refract(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const
 {
   const int id = MtGetThreadID();
@@ -229,7 +255,7 @@ void PathtracingShader::evaluate_refract(const TraceContext &cxt,
     const Color4 Lo = Kr * C_refl + Kt * C_refr;
     const Color weight = refract / prob;
 
-    out->Cs = emission + weight * ToColor(Lo);
+    out->Cs = weight * ToColor(Lo);
     out->Os = 1.0;
   } else {
     const Real p = .25 + .5 * Kr;
@@ -239,7 +265,7 @@ void PathtracingShader::evaluate_refract(const TraceContext &cxt,
       SlTrace(&refl_cxt, &in.P, &R, .0001, 1000, &C_refl, &t_hit);
       const Color weight = reflect / (p * prob);
       const Color4 Lo = Kr * C_refl;
-      out->Cs = emission + weight * ToColor(Lo);
+      out->Cs = weight * ToColor(Lo);
       out->Os = 1.0;
     } else {
       // refract
@@ -247,10 +273,11 @@ void PathtracingShader::evaluate_refract(const TraceContext &cxt,
       SlTrace(&refr_cxt, &in.P, &T, .0001, 1000, &C_refr, &t_hit);
       const Color weight = refract / ((1 - p) * prob);
       const Color4 Lo = Kt * C_refr;
-      out->Cs = emission + weight * ToColor(Lo);
+      out->Cs = weight * ToColor(Lo);
       out->Os = 1.0;
     }
   }
+  return out->Cs;
 }
 
 static int set_emission(void *self, const PropertyValue &value)
