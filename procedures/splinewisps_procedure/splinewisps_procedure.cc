@@ -104,9 +104,9 @@ int SplineWispsProcedure::run() const
   cp0.wdir.z = cp1.orig.z - cp0.orig.z;
   cp0.udir = Cross(cp0.wdir, cp0.vdir);
   cp0.vdir = Cross(cp0.udir, cp0.wdir);
-  Normalize(&cp0.udir);
-  Normalize(&cp0.vdir);
-  Normalize(&cp0.wdir);
+  cp0.udir = Normalize(cp0.udir);
+  cp0.vdir = Normalize(cp0.vdir);
+  cp0.wdir = Normalize(cp0.wdir);
 
   cp1.udir = cp0.udir;
   cp1.vdir = cp0.vdir;

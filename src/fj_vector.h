@@ -153,18 +153,12 @@ inline Real Length(const Vector2 &a)
   return std::sqrt(Dot(a, a));
 }
 
-inline const Vector2 &Normalize(Vector2 *a)
+inline Vector2 Normalize(const Vector2 &a)
 {
-  const Real len = Length(*a);
+  const Real len = Length(a);
   if (len == 0)
-    return *a;
-  return *a /= len;
-}
-
-inline Vector2 GetNormalized(const Vector2 &a)
-{
-  Vector2 b(a);
-  return Normalize(&b);
+    return a;
+  return a / len;
 }
 
 inline Vector2 Lerp(const Vector2 &a, const Vector2 &b, Real t)
@@ -342,18 +336,12 @@ inline Real Length(const Vector &a)
   return std::sqrt(Dot(a, a));
 }
 
-inline const Vector &Normalize(Vector *a)
+inline Vector Normalize(const Vector &a)
 {
-  const Real len = Length(*a);
+  const Real len = Length(a);
   if (len == 0)
-    return *a;
-  return *a /= len;
-}
-
-inline Vector GetNormalized(const Vector &a)
-{
-  Vector b(a);
-  return Normalize(&b);
+    return a;
+  return a / len;
 }
 
 inline Vector Lerp(const Vector &a, const Vector &b, Real t)

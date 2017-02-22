@@ -229,7 +229,7 @@ static void grid_light_get_samples(const Light *light,
 
   Vector N_sample(0, 1, 0);
   XfmTransformVector(&transform_interp, &N_sample);
-  Normalize(&N_sample);
+  N_sample = Normalize(N_sample);
 
   int nsamples = light->GetSampleCount();
   nsamples = Min(nsamples, max_samples);
@@ -255,7 +255,7 @@ static void grid_light_illuminate(const Light *light,
     const Vector *Ps, Color *Cl)
 {
   Vector Ln = *Ps - sample->P;
-  Normalize(&Ln);
+  Ln = Normalize(Ln);
 
   Real dot = Dot(Ln, sample->N);
   if (light->double_sided_) {
@@ -294,7 +294,7 @@ static void sphere_light_get_samples(const Light *light,
 
     XfmTransformPoint(&transform_interp, &P_sample);
     XfmTransformVector(&transform_interp, &N_sample);
-    Normalize(&N_sample);
+    N_sample = Normalize(N_sample);
 
     samples[i].P = P_sample;
     samples[i].N = N_sample;
@@ -307,7 +307,7 @@ static void sphere_light_illuminate(const Light *light,
     const Vector *Ps, Color *Cl)
 {
   Vector Ln = *Ps - sample->P;
-  Normalize(&Ln);
+  Ln = Normalize(Ln);
 
   const Real dot = Dot(Ln, sample->N);
   if (dot > 0) {
@@ -365,7 +365,7 @@ static int dome_light_preprocess(Light *light)
   init_sample.uv = TexCoord(1./NSAMPLES, 1./NSAMPLES);
   init_sample.color = Color(1, .63, .63);
   init_sample.dir = Vector(1./NSAMPLES, 1, 1./NSAMPLES);
-  Normalize(&init_sample.dir);
+  init_sample.dir = Normalize(init_sample.dir);
 
   light->dome_samples_.resize(NSAMPLES, init_sample);
   std::vector<DomeSample>(light->dome_samples_).swap(light->dome_samples_);

@@ -211,8 +211,7 @@ int main(int argc, const char **argv)
   }
   // normalize N
   for (i = 0; i < nverts; i++) {
-    Vector *nml = &N[i];
-    Normalize(nml);
+    N[i] = Normalize(N[i]);
   }
 
   // setup MeshOutput

@@ -165,7 +165,7 @@ void PlasticShader::evaluate(const TraceContext &cxt,
     const TraceContext refl_cxt = SlReflectContext(&cxt, in.shaded_object);
 
     SlReflect(&in.I, &Nf, &R);
-    Normalize(&R);
+    R = Normalize(R);
     SlTrace(&refl_cxt, &in.P, &R, .001, 1000, &C_refl, &t_hit);
 
     Kr = SlFresnel(&in.I, &Nf, 1/ior);

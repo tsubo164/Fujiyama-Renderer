@@ -283,7 +283,7 @@ int ObjBufferComputeNormals(ObjBuffer &buffer)
 
   // normalize N
   for (int i = 0; i < vertex_count; i++) {
-    Normalize(&N[i]);
+    N[i] = Normalize(N[i]);
   }
 
   return 0;

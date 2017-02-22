@@ -88,7 +88,7 @@ void Camera::GetRay(const Vector2 &screen_uv, Real time, Ray *ray) const
   XfmTransformPoint(&transform_interp, &eye);
 
   ray->dir  = target - eye;
-  Normalize(&ray->dir);
+  ray->dir  = Normalize(ray->dir);
   ray->orig = eye;
 
   ray->tmin = znear_;

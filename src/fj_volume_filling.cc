@@ -23,9 +23,9 @@ void LerpWispConstrolPoint(WispsControlPoint *cp,
   cp->vdir = Lerp(cp0->vdir, cp1->vdir, t);
   cp->wdir = Lerp(cp0->wdir, cp1->wdir, t);
   cp->noise_space = Lerp(cp0->noise_space, cp1->noise_space, t);
-  Normalize(&cp->udir);
-  Normalize(&cp->vdir);
-  Normalize(&cp->wdir);
+  cp->udir = Normalize(cp->udir);
+  cp->vdir = Normalize(cp->vdir);
+  cp->wdir = Normalize(cp->wdir);
 
   cp->density = Lerp(cp0->density, cp1->density, t);
   cp->radius = Lerp(cp0->radius, cp1->radius, t);
@@ -46,9 +46,9 @@ void BilerpWispConstrolPoint(WispsControlPoint *cp,
   VEC3_BILERP(&cp->wdir, &cp00->wdir, &cp10->wdir, &cp01->wdir, &cp11->wdir, s, t);
   VEC3_BILERP(&cp->noise_space, &cp00->noise_space, &cp10->noise_space,
       &cp01->noise_space, &cp11->noise_space, s, t);
-  Normalize(&cp->udir);
-  Normalize(&cp->vdir);
-  Normalize(&cp->wdir);
+  cp->udir = Normalize(cp->udir);
+  cp->vdir = Normalize(cp->vdir);
+  cp->wdir = Normalize(cp->wdir);
 
   cp->density = Bilerp(cp00->density, cp10->density, cp01->density, cp11->density, s, t);
   cp->radius = Bilerp(cp00->radius, cp10->radius, cp01->radius, cp11->radius, s, t);

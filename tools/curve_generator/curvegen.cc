@@ -166,12 +166,12 @@ int main(int argc, const char **argv)
       src_N->y = t * N0.y + u * N1.y + v * N2.y;
       src_N->z = t * N0.z + u * N1.z + v * N2.z;
 
-      Normalize(src_N);
+      *src_N = Normalize(*src_N);
 
       srand(i+j);
       gravity = .5 + .5 * (((double) rand()) / RAND_MAX);
       src_N->y -= gravity;
-      Normalize(src_N);
+      *src_N = Normalize(*src_N);
 
       curve_id++;
 
@@ -425,7 +425,7 @@ static int gen_hair(int argc, const char **argv)
       src_N.y = t * N0.y + u * N1.y + v * N2.y;
       src_N.z = t * N0.z + u * N1.z + v * N2.z;
 
-      Normalize(&src_N);
+      src_N = Normalize(src_N);
 
       src_N.y = Min(src_N.y, .1);
       if (src_N.x < .1 && src_N.z < .1) {
@@ -434,7 +434,7 @@ static int gen_hair(int argc, const char **argv)
         src_N.x *= .5;
         src_N.z *= .5;
       }
-      Normalize(&src_N);
+      src_N = Normalize(src_N);
 
       {
         int vtx;
@@ -482,10 +482,10 @@ static int gen_hair(int argc, const char **argv)
               next_N.x = next_P.x - curr_P.x;
               next_N.y = next_P.y - curr_P.y;
               next_N.z = next_P.z - curr_P.z;
-              Normalize(&next_N);
+              next_N = Normalize(next_N);
 
               next_N.y += -.5;
-              Normalize(&next_N);
+              next_N = Normalize(next_N);
             }
             // compute velocity
             {

@@ -201,7 +201,7 @@ void SSSShader::evaluate(const TraceContext &cxt,
     const TraceContext refl_cxt = SlReflectContext(&cxt, in.shaded_object);
 
     SlReflect(&in.I, &in.N, &R);
-    Normalize(&R);
+    R = Normalize(R);
     // TODO fix hard-coded trace distance
     SlTrace(&refl_cxt, &in.P, &R, .001, 1000, &C_refl, &t_hit);
 
@@ -241,14 +241,14 @@ Color SSSShader::single_scattering(const TraceContext &cxt, const SurfaceInput &
   Ln.x = light_sample.P.x - P.x;
   Ln.y = light_sample.P.y - P.y;
   Ln.z = light_sample.P.z - P.z;
-  Normalize(&Ln);
+  Ln = Normalize(Ln);
 
   Li.x = -Ln.x;
   Li.y = -Ln.y;
   Li.z = -Ln.z;
 
   SlRefract(&in.I, &in.N, one_over_eta, &To);
-  Normalize(&To);
+  To = Normalize(To);
 
   for (i = 0; i < nsamples; i++) {
     XorShift &mutable_rng = const_cast<XorShift &>(rng);
@@ -297,7 +297,7 @@ Color SSSShader::single_scattering(const TraceContext &cxt, const SurfaceInput &
           sqrt(1 - one_over_eta * one_over_eta * (1 - Ln_dot_Ni * Ln_dot_Ni));
 
       SlRefract(&Li, &Ni, one_over_eta, &Ti);
-      Normalize(&Ti);
+      Ti = Normalize(Ti);
 
       Kri = SlFresnel(&Li, &Ni, one_over_eta);
       Kti = 1 - Kri;
@@ -368,7 +368,7 @@ Color SSSShader::diffusion_scattering(const TraceContext &cxt, const SurfaceInpu
   Ln.x = light_sample.P.x - P.x;
   Ln.y = light_sample.P.y - P.y;
   Ln.z = light_sample.P.z - P.z;
-  Normalize(&Ln);
+  Ln = Normalize(Ln);
 
   N_neg.x = -N.x;
   N_neg.y = -N.y;
@@ -382,7 +382,7 @@ Color SSSShader::diffusion_scattering(const TraceContext &cxt, const SurfaceInpu
   }
 
   base1 = Cross(N, up);
-  Normalize(&base1);
+  base1 = Normalize(base1);
   base2 = Cross(N, base1);
 
   for (i = 0; i < nsamples; i++) {

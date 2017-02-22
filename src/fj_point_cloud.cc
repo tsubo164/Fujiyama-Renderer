@@ -54,7 +54,7 @@ bool PointCloud::ray_intersect(Index prim_id, const Ray &ray,
 
   isect->P = RayPointAt(ray, t_hit);
   isect->N = isect->P - center;
-  Normalize(&isect->N);
+  isect->N = Normalize(isect->N);
 
   isect->object = NULL;
   isect->prim_id = prim_id;

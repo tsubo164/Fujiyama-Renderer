@@ -127,84 +127,6 @@ static void MyDeleteFunction(void *self)
 void PathtracingShader::evaluate(const TraceContext &cxt,
     const SurfaceInput &in, SurfaceOutput *out) const
 {
-#if 0
-  Color diff;
-  Color spec;
-  Color4 diff_map(1, 1, 1, 1);
-  Vector Nf;
-  int i = 0;
-
-  LightSample *samples = NULL;
-  const int nsamples = SlGetLightSampleCount(&in);
-
-  SlFaceforward(&in.I, &in.N, &Nf);
-
-  // bump map
-  if (bump_map != NULL) {
-    Vector N_bump;
-    SlBumpMapping(bump_map,
-        &in.dPdu, &in.dPdv,
-        &in.uv, bump_amplitude,
-        &Nf, &N_bump);
-    Nf = N_bump;
-  }
-
-  // allocate samples
-  samples = SlNewLightSamples(&in);
-
-  for (i = 0; i < nsamples; i++) {
-    LightOutput Lout;
-    float Kd = 0;
-    SlIlluminance(&cxt, &samples[i], &in.P, &Nf, PI / 2., &in, &Lout);
-    // spec
-#if 0
-    Ks = SlPhong(in.I, Nf, Ln, .05);
-#endif
-
-    // diff
-    Kd = Dot(Nf, Lout.Ln);
-    Kd = Max(0, Kd);
-    diff.r += Kd * Lout.Cl.r;
-    diff.g += Kd * Lout.Cl.g;
-    diff.b += Kd * Lout.Cl.b;
-  }
-
-  // free samples
-  SlFreeLightSamples(samples);
-
-  // diffuse map
-  if (diffuse_map != NULL) {
-    diff_map = diffuse_map->Lookup(in.uv.u, in.uv.v);
-  }
-
-  // Cs
-  out->Cs.r = diff.r * diffuse.r * diff_map.r + spec.r;
-  out->Cs.g = diff.g * diffuse.g * diff_map.g + spec.g;
-  out->Cs.b = diff.b * diffuse.b * diff_map.b + spec.b;
-
-  // reflect
-  if (do_reflect) {
-    Color4 C_refl;
-    Vector R;
-    double t_hit = REAL_MAX;
-    double Kr = 0;
-
-    const TraceContext refl_cxt = SlReflectContext(&cxt, in.shaded_object);
-
-    SlReflect(&in.I, &Nf, &R);
-    Normalize(&R);
-    SlTrace(&refl_cxt, &in.P, &R, .001, 1000, &C_refl, &t_hit);
-
-    Kr = SlFresnel(&in.I, &Nf, 1/ior);
-    out->Cs.r += Kr * C_refl.r * reflect.r;
-    out->Cs.g += Kr * C_refl.g * reflect.g;
-    out->Cs.b += Kr * C_refl.b * reflect.b;
-  }
-
-  out->Os = 1;
-  out->Os = opacity;
-#endif
-
   switch (surface_type) {
   case SURFACE_EMISSION:
     out->Cs = emission;
@@ -222,8 +144,6 @@ void PathtracingShader::evaluate(const TraceContext &cxt,
   default:
     break;
   }
-
-  return;
 }
 
 void PathtracingShader::evaluate_diffuse(const TraceContext &cxt,
@@ -233,7 +153,7 @@ void PathtracingShader::evaluate_diffuse(const TraceContext &cxt,
   w = in.N;
   u = Abs(w.x) > .001 ? Vector(0, 1, 0) : Vector(1, 0, 0);
   u = Cross(u, w);
-  u = Normalize(&u); // TODO fix Normalize(const Vector *)
+  u = Normalize(u);
   v = Cross(w, u);
 
   const int id = MtGetThreadID();
@@ -246,7 +166,7 @@ void PathtracingShader::evaluate_diffuse(const TraceContext &cxt,
     u * cos(r1) * r2sqrt +
     v * sin(r1) * r2sqrt +
     w * sqrt(1. - r2);
-  dir = Normalize(&dir); // TODO fix Normalize(const Vector *)
+  dir = Normalize(dir);
 
   const TraceContext refl_cxt = SlReflectContext(&cxt, in.shaded_object);
   Color4 Lo;
@@ -265,7 +185,7 @@ void PathtracingShader::evaluate_specular(const TraceContext &cxt,
   const Real prob = Luminance(reflect);
   Vector dir;
   SlReflect(&in.I, &in.N, &dir);
-  Normalize(&dir);
+  dir = Normalize(dir);
 
   const TraceContext refl_cxt = SlReflectContext(&cxt, in.shaded_object);
   Color4 Lo;
@@ -281,18 +201,14 @@ void PathtracingShader::evaluate_specular(const TraceContext &cxt,
 void PathtracingShader::evaluate_refract(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const
 {
-  /*
-  const Real nc = 1.;
-  const Real nt = ior;
-  */
   const int id = MtGetThreadID();
   const Real prob = Luminance(refract);
   
   Vector R, T;
   SlReflect(&in.I, &in.N, &R);
-  Normalize(&R);
+  R = Normalize(R);
   SlRefract(&in.I, &in.N, 1/ior, &T);
-  Normalize(&T);
+  T = Normalize(T);
 
   Real t_hit = REAL_MAX;
   Color4 C_refl;

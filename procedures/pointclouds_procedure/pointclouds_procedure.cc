@@ -169,7 +169,7 @@ static int FillWithPointClouds(Volume *volume,
         }
 
         P_noise_space = P_local_space;
-        Normalize(&P_noise_space);
+        P_noise_space = Normalize(P_noise_space);
         P_noise_space.x += cp->noise_space.x;
         P_noise_space.y += cp->noise_space.y;
         P_noise_space.z += cp->noise_space.z;

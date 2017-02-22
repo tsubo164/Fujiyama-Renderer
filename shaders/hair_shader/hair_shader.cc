@@ -103,7 +103,7 @@ void HairShader::evaluate(const TraceContext &cxt,
     SlIlluminance(&cxt, &samples[i], &in.P, &in.N, PI, &in, &Lout);
 
     tangent = in.dPdv;
-    Normalize(&tangent);
+    tangent = Normalize(tangent);
 
     diff = kajiya_diffuse(tangent, Lout.Ln);
     spec = kajiya_specular(tangent, Lout.Ln, in.I);

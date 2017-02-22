@@ -232,7 +232,7 @@ bool ObjectInstance::RayIntersect(const Ray &ray, Real time, Intersection *isect
   // transform intersection back to world space
   XfmTransformPoint(&transform_interp, &isect->P);
   XfmTransformVector(&transform_interp, &isect->N);
-  Normalize(&isect->N);
+  isect->N = Normalize(isect->N);
 
   XfmTransformVector(&transform_interp, &isect->dPdu);
   XfmTransformVector(&transform_interp, &isect->dPdv);

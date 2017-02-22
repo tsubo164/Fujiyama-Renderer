@@ -106,7 +106,7 @@ void GlassShader::evaluate(const TraceContext &cxt,
   // reflect
   refl_cxt = SlReflectContext(&cxt, in.shaded_object);
   SlReflect(&in.I, &in.N, &R);
-  Normalize(&R);
+  R = Normalize(R);
   // TODO fix hard-coded trace distance
   SlTrace(&refl_cxt, &in.P, &R, .0001, 1000, &C_refl, &t_hit);
   out->Cs.r += Kr * C_refl.r;
@@ -116,7 +116,7 @@ void GlassShader::evaluate(const TraceContext &cxt,
   // refract
   refr_cxt = SlRefractContext(&cxt, in.shaded_object);
   SlRefract(&in.I, &in.N, 1/ior, &T);
-  Normalize(&T);
+  T = Normalize(T);
   SlTrace(&refr_cxt, &in.P, &T, .0001, 1000, &C_refr, &t_hit);
 
   if (do_color_filter && Dot(in.I, in.N) < 0) {

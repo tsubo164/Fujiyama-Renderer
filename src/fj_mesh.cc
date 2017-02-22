@@ -224,7 +224,8 @@ void Mesh::ComputeNormals()
   // normalize N
   for (int i = 0; i < nverts; i++) {
     Vector N = GetPointNormal(i);
-    SetPointNormal(i, Normalize(&N));
+    N = Normalize(N);
+    SetPointNormal(i, N);
   }
 }
 
