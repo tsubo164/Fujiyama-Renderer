@@ -1111,7 +1111,9 @@ static int create_implicit_groups(void)
   {
     const int nlights = get_scene()->GetLightCount();
     Light **lightlist = get_scene()->GetLightList();
-    renderer->SetTargetLights(lightlist, nlights);
+    if (nlights > 0) {
+      renderer->SetTargetLights(lightlist, nlights);
+    }
   }
 
   return SI_SUCCESS;

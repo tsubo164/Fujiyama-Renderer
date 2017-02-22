@@ -187,7 +187,7 @@ void SSSShader::evaluate(const TraceContext &cxt,
   if (diffuse_map != NULL) {
     diff_map4 = diffuse_map->Lookup(in.uv.u, in.uv.v);
   }
-  const Color diff_map = ToColor3(diff_map4);
+  const Color diff_map = ToColor(diff_map4);
 
   // Cs
   out->Cs = diff * diffuse * diff_map + spec;

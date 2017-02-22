@@ -120,6 +120,15 @@ inline Color operator-(const Color &A)
   return -1 * A;
 }
 
+inline std::ostream &operator<<(std::ostream &os, const Color &A)
+{
+  os << "(" <<
+    A[0] << ", " <<
+    A[1] << ", " <<
+    A[2] << ")";
+  return os;
+}
+
 class Color4 {
 public:
   Color4() : r(0), g(0), b(0), a(0) {}
@@ -238,6 +247,16 @@ inline Color4 operator-(const Color4 &A)
   return -1 * A;
 }
 
+inline std::ostream &operator<<(std::ostream &os, const Color4 &A)
+{
+  os << "(" <<
+    A[0] << ", " <<
+    A[1] << ", " <<
+    A[2] << ", " <<
+    A[3] << ")";
+  return os;
+}
+
 inline float Luminance(const Color &A)
 {
   return .298912 * A[0] + .586611 * A[1] + .114478 * A[2];
@@ -261,7 +280,7 @@ inline Color Gamma(const Color &A, float gamma)
       Gamma(A[2], gamma));
 }
 
-inline Color ToColor3(const Color4 &A)
+inline Color ToColor(const Color4 &A)
 {
   return Color(
       A[0],
@@ -276,16 +295,6 @@ inline Color4 ToColor4(const Color &A, float alpha = 1.0)
       A[1],
       A[2],
       alpha);
-}
-
-inline std::ostream &operator<<(std::ostream &os, const Color4 &A)
-{
-  os << "(" <<
-    A[0] << ", " <<
-    A[1] << ", " <<
-    A[2] << ", " <<
-    A[3] << ")";
-  return os;
 }
 
 } // namespace xxx

@@ -25,6 +25,9 @@ install_libs += lib/GlassShader.so
 build_dirs   += shaders/hair_shader
 install_libs += lib/HairShader.so
 
+build_dirs   += shaders/pathtracing_shader
+install_libs += lib/PathtracingShader.so
+
 build_dirs   += shaders/plastic_shader
 install_libs += lib/PlasticShader.so
 
