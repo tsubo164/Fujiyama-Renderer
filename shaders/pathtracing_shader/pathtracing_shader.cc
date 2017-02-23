@@ -24,6 +24,7 @@ public:
   Color diffuse;
   Color specular;
   Color ambient;
+  Color filter_color;
   float roughness;
 
   Color reflect;
@@ -38,17 +39,18 @@ public:
   Texture *bump_map;
   float bump_amplitude;
 
+  bool do_color_filter;
 private:
   virtual void evaluate(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
 
-  Color evaluate_diffuse(const TraceContext &cxt,
+  Color integrate_diffuse(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
 
-  Color evaluate_specular(const TraceContext &cxt,
+  Color integrate_reflect(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
 
-  Color evaluate_refract(const TraceContext &cxt,
+  Color integrate_refract(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
 
   mutable XorShift rng[16];
@@ -62,6 +64,7 @@ static int set_emission(void *self, const PropertyValue &value);
 static int set_diffuse(void *self, const PropertyValue &value);
 static int set_specular(void *self, const PropertyValue &value);
 static int set_ambient(void *self, const PropertyValue &value);
+static int set_filter_color(void *self, const PropertyValue &value);
 static int set_roughness(void *self, const PropertyValue &value);
 static int set_reflect(void *self, const PropertyValue &value);
 static int set_refract(void *self, const PropertyValue &value);
@@ -76,6 +79,7 @@ static const Property MyPropertyList[] = {
   Property("diffuse",        PropVector3(.8, .8, .8), set_diffuse),
   Property("specular",       PropVector3(1, 1, 1),    set_specular),
   Property("ambient",        PropVector3(1, 1, 1),    set_ambient),
+  Property("filter_color",   PropVector3(1, 1, 1),    set_filter_color),
   Property("roughness",      PropScalar(.1),          set_roughness),
   Property("reflect",        PropVector3(0, 0, 0),    set_reflect),
   Property("refract",        PropVector3(0, 0, 0),    set_refract),
@@ -127,42 +131,34 @@ static void MyDeleteFunction(void *self)
 void PathtracingShader::evaluate(const TraceContext &cxt,
     const SurfaceInput &in, SurfaceOutput *out) const
 {
-  Color Lo, Le, L_diffuse, L_specular;
+  Color Lo, Le, L_diffuse, L_reflect, L_refract;
 
   Le = emission;
 
   if (Luminance(diffuse) > 0.) {
-    L_diffuse = evaluate_diffuse(cxt, in, out);
+    L_diffuse = integrate_diffuse(cxt, in, out);
   }
   if (Luminance(reflect) > 0.) {
-    L_specular = evaluate_specular(cxt, in, out);
+    L_reflect = integrate_reflect(cxt, in, out);
+  }
+  if (Luminance(refract) > 0.) {
+    L_refract = integrate_refract(cxt, in, out);
   }
 
-  Lo = Le + L_diffuse + L_specular;
+  Lo = Le + L_diffuse + L_reflect + L_refract;
 
   out->Cs = Lo;
-#if 0
-  switch (surface_type) {
-  case SURFACE_EMISSION:
-    out->Cs = emission;
-    out->Os = 1;
-    break;
-  case SURFACE_DIFFUSE:
-    evaluate_diffuse(cxt, in, out);
-    break;
-  case SURFACE_SPECULAR:
-    evaluate_specular(cxt, in, out);
-    break;
-  case SURFACE_REFRACT:
-    evaluate_refract(cxt, in, out);
-    break;
-  default:
-    break;
-  }
-#endif
+  out->Os = 1;
 }
 
-Color PathtracingShader::evaluate_diffuse(const TraceContext &cxt,
+// TODO TEST NEW FUNCTIONS
+#if 0
+Vector ReflectionDir(const Vector &I, const Vector &N);
+Vector RefractionDir(const Vector &I, const Vector &N, Real ior,
+    bool *is_total_internal_reflection);
+#endif
+
+Color PathtracingShader::integrate_diffuse(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const
 {
   Vector u, v, w;
@@ -176,107 +172,73 @@ Color PathtracingShader::evaluate_diffuse(const TraceContext &cxt,
   const Real r1 = 2. * PI * rng[id].NextFloat01();
   const Real r2 = rng[id].NextFloat01();
   const Real r2sqrt = Sqrt(r2);
-  const Real prob = Luminance(diffuse);
 
-  Vector dir = 
+  const Vector D = Normalize(
     u * cos(r1) * r2sqrt +
     v * sin(r1) * r2sqrt +
-    w * sqrt(1. - r2);
-  dir = Normalize(dir);
+    w * sqrt(1. - r2));
 
-  const TraceContext refl_cxt = SlReflectContext(&cxt, in.shaded_object);
-  Color4 Lo;
+  const Real Kd = Dot(in.N, D);
+
+  Color4 C_diff;
   Real t_hit = REAL_MAX;
+  const TraceContext refl_cxt = SlReflectContext(&cxt, in.shaded_object);
 
-  SlTrace(&refl_cxt, &in.P, &dir, .001, 1000, &Lo, &t_hit);
-  const Color weight = diffuse / prob;
+  SlTrace(&refl_cxt, &in.P, &D, .001, 1000, &C_diff, &t_hit);
 
-  //out->Cs = weight * ToColor(Lo);
-  out->Cs = diffuse * ToColor(Lo);
+  out->Cs = Kd * diffuse * ToColor(C_diff);
   out->Os = 1.0;
 
-  // TODO TEST
   return out->Cs;
 }
 
-Color PathtracingShader::evaluate_specular(const TraceContext &cxt,
+Color PathtracingShader::integrate_reflect(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const
 {
-  const Real prob = Luminance(reflect);
-  Vector dir;
-  SlReflect(&in.I, &in.N, &dir);
-  dir = Normalize(dir);
-
-  const TraceContext refl_cxt = SlReflectContext(&cxt, in.shaded_object);
-  Color4 Lo;
-  Real t_hit = REAL_MAX;
-
-  const Real Kr = SlFresnel(&in.I, &in.N, 1./ior);
-  //const Kt = 1 - Kr;
-
-  SlTrace(&refl_cxt, &in.P, &dir, .001, 1000, &Lo, &t_hit);
-  const Color weight = reflect / prob;
-
-  out->Cs = weight * ToColor(Lo) * Kr;
-  out->Os = 1.0;
-
-  // TODO TEST
-  return out->Cs;
-}
-
-Color PathtracingShader::evaluate_refract(const TraceContext &cxt,
-      const SurfaceInput &in, SurfaceOutput *out) const
-{
-  const int id = MtGetThreadID();
-  const Real prob = Luminance(refract);
-  
-  Vector R, T;
+  Vector R;
   SlReflect(&in.I, &in.N, &R);
   R = Normalize(R);
-  SlRefract(&in.I, &in.N, 1/ior, &T);
-  T = Normalize(T);
 
-  Real t_hit = REAL_MAX;
+  const Real Kr = SlFresnel(&in.I, &in.N, 1./ior);
+
   Color4 C_refl;
-  Color4 C_refr;
+  Real t_hit = REAL_MAX;
+  const TraceContext refl_cxt = SlReflectContext(&cxt, in.shaded_object);
+
+  SlTrace(&refl_cxt, &in.P, &R, .001, 1000, &C_refl, &t_hit);
+
+  out->Cs = Kr * reflect * ToColor(C_refl);
+  out->Os = 1.0;
+
+  return out->Cs;
+}
+
+Color PathtracingShader::integrate_refract(const TraceContext &cxt,
+      const SurfaceInput &in, SurfaceOutput *out) const
+{
+  Vector T;
+  SlRefract(&in.I, &in.N, 1./ior, &T);
+  T = Normalize(T);
 
   double Kr, Kt;
   Kr = SlFresnel(&in.I, &in.N, 1/ior);
   Kt = 1 - Kr;
 
-  if ((cxt.reflect_depth == 0 && cxt.refract_depth == 0) || false) {
-    // reflect
-    const TraceContext refl_cxt = SlReflectContext(&cxt, in.shaded_object);
-    SlTrace(&refl_cxt, &in.P, &R, .0001, 1000, &C_refl, &t_hit);
-    // refract
-    const TraceContext refr_cxt = SlRefractContext(&cxt, in.shaded_object);
-    SlTrace(&refr_cxt, &in.P, &T, .0001, 1000, &C_refr, &t_hit);
+  Color4 C_refr;
+  Real t_hit = REAL_MAX;
+  const TraceContext refr_cxt = SlRefractContext(&cxt, in.shaded_object);
 
-    const Color4 Lo = Kr * C_refl + Kt * C_refr;
-    const Color weight = refract / prob;
+  SlTrace(&refr_cxt, &in.P, &T, .0001, 1000, &C_refr, &t_hit);
 
-    out->Cs = weight * ToColor(Lo);
-    out->Os = 1.0;
-  } else {
-    const Real p = .25 + .5 * Kr;
-    if (rng[id].NextFloat01() < p) {
-      // reflect
-      const TraceContext refl_cxt = SlReflectContext(&cxt, in.shaded_object);
-      SlTrace(&refl_cxt, &in.P, &R, .0001, 1000, &C_refl, &t_hit);
-      const Color weight = reflect / (p * prob);
-      const Color4 Lo = Kr * C_refl;
-      out->Cs = weight * ToColor(Lo);
-      out->Os = 1.0;
-    } else {
-      // refract
-      const TraceContext refr_cxt = SlRefractContext(&cxt, in.shaded_object);
-      SlTrace(&refr_cxt, &in.P, &T, .0001, 1000, &C_refr, &t_hit);
-      const Color weight = refract / ((1 - p) * prob);
-      const Color4 Lo = Kt * C_refr;
-      out->Cs = weight * ToColor(Lo);
-      out->Os = 1.0;
-    }
+  if (do_color_filter && Dot(in.I, in.N) < 0) {
+    C_refr.r *= pow(filter_color.r, t_hit);
+    C_refr.g *= pow(filter_color.g, t_hit);
+    C_refr.b *= pow(filter_color.b, t_hit);
   }
+
+  out->Cs = Kt * refract * ToColor(C_refr);
+  out->Os = 1;
+
   return out->Cs;
 }
 
@@ -335,6 +297,28 @@ static int set_ambient(void *self, const PropertyValue &value)
   ambient.g = Max(0, value.vector[1]);
   ambient.b = Max(0, value.vector[2]);
   pathtracing->ambient = ambient;
+
+  return 0;
+}
+
+static int set_filter_color(void *self, const PropertyValue &value)
+{
+  PathtracingShader *pathtracing = (PathtracingShader *) self;
+  Color filter_color;
+
+  filter_color.r = Max(.001, value.vector[0]);
+  filter_color.g = Max(.001, value.vector[1]);
+  filter_color.b = Max(.001, value.vector[2]);
+  pathtracing->filter_color = filter_color;
+
+  if (pathtracing->filter_color.r == 1 &&
+    pathtracing->filter_color.g == 1 &&
+    pathtracing->filter_color.b == 1) {
+    pathtracing->do_color_filter = 0;
+  }
+  else {
+    pathtracing->do_color_filter = 1;
+  }
 
   return 0;
 }
@@ -439,3 +423,40 @@ static int set_bump_amplitude(void *self, const PropertyValue &value)
 
   return 0;
 }
+
+// TODO TEST NEW FUNCTIONS
+#if 0
+Vector ReflectionDir(const Vector &I, const Vector &N)
+{
+  const Real cos = Dot(-I, N);
+  return Normalize(I + 2 * cos * N);
+}
+
+Vector RefractionDir(const Vector &I, const Vector &N, Real ior,
+    bool *is_total_internal_reflection)
+{
+  Vector Nf = N;
+  Real eta = ior;
+  Real cos1 = 0;
+
+  cos1 = Dot(-I, N);
+  if (cos1 < 0) {
+    cos1 *= -1;
+    eta = 1./eta;
+    Nf *= -1;
+  }
+
+  // check total internal reflection
+  const Real radicand = 1 - eta*eta * (1 - cos1*cos1);
+  if (radicand < 0.) {
+    *is_total_internal_reflection = true;
+    return ReflectionDir(I, -N);
+    //return Vector();
+  } else {
+    *is_total_internal_reflection = false;
+  }
+
+  const Real ncoeff = eta * cos1 - Sqrt(radicand);
+  return Normalize(eta * I + ncoeff * Nf);
+}
+#endif
