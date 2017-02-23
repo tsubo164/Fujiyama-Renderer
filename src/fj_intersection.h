@@ -21,6 +21,13 @@ class Shader;
 class Intersection {
 public:
   Intersection() :
+      P(),
+      N(),
+      Cd(1,1,1),
+      uv(),
+      dPdu(),
+      dPdv(),
+
       object(NULL),
       prim_id(0),
       shading_group_id(0),

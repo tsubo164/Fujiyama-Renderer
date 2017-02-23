@@ -54,6 +54,13 @@ public:
     (*this)[2] -= A[2];
     return *this;
   }
+  const Color &operator*=(const Color &A)
+  {
+    (*this)[0] *= A[0];
+    (*this)[1] *= A[1];
+    (*this)[2] *= A[2];
+    return *this;
+  }
   const Color &operator*=(float scalar)
   {
     (*this)[0] *= scalar;
@@ -174,6 +181,14 @@ public:
     (*this)[1] -= A[1];
     (*this)[2] -= A[2];
     (*this)[3] -= A[3];
+    return *this;
+  }
+  const Color4 &operator*=(const Color4 &A)
+  {
+    (*this)[0] *= A[0];
+    (*this)[1] *= A[1];
+    (*this)[2] *= A[2];
+    (*this)[3] *= A[3];
     return *this;
   }
   const Color4 &operator*=(float scalar)

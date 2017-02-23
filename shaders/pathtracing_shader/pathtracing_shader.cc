@@ -131,18 +131,36 @@ static void MyDeleteFunction(void *self)
 void PathtracingShader::evaluate(const TraceContext &cxt,
     const SurfaceInput &in, SurfaceOutput *out) const
 {
+  // TODO come up with the best way to pass attributes to integrators
+  SurfaceInput in_modified = in;
+
+  // diffuse map
+  if (diffuse_map != NULL) {
+    const Color4 C_diff_map = diffuse_map->Lookup(in.uv.u, in.uv.v);
+    in_modified.Cd *= ToColor(C_diff_map);
+  }
+  // bump map
+  if (bump_map != NULL) {
+    Vector N_bump;
+    SlBumpMapping(bump_map,
+        &in.dPdu, &in.dPdv,
+        &in.uv, bump_amplitude,
+        &in.N, &N_bump);
+    in_modified.N = N_bump;
+  }
+
   Color Lo, Le, L_diffuse, L_reflect, L_refract;
 
   Le = emission;
 
   if (Luminance(diffuse) > 0.) {
-    L_diffuse = integrate_diffuse(cxt, in, out);
+    L_diffuse = integrate_diffuse(cxt, in_modified, out);
   }
   if (Luminance(reflect) > 0.) {
-    L_reflect = integrate_reflect(cxt, in, out);
+    L_reflect = integrate_reflect(cxt, in_modified, out);
   }
   if (Luminance(refract) > 0.) {
-    L_refract = integrate_refract(cxt, in, out);
+    L_refract = integrate_refract(cxt, in_modified, out);
   }
 
   Lo = Le + L_diffuse + L_reflect + L_refract;
@@ -186,7 +204,7 @@ Color PathtracingShader::integrate_diffuse(const TraceContext &cxt,
 
   SlTrace(&refl_cxt, &in.P, &D, .001, 1000, &C_diff, &t_hit);
 
-  out->Cs = Kd * diffuse * ToColor(C_diff);
+  out->Cs = in.Cd * Kd * diffuse * ToColor(C_diff);
   out->Os = 1.0;
 
   return out->Cs;

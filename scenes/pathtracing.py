@@ -15,6 +15,13 @@ si.NewCamera('cam1', 'PerspectiveCamera')
 si.SetSampleProperty3('cam1', 'translate', 0, 0.5, 1.85, 0)
 si.SetProperty1('cam1', 'fov', 40)
 
+#Texture
+#si.NewTexture('rock_tex1', '../../jpg/rock_new.jpg')
+si.NewTexture('rock_tex1', '../../jpg/rock.jpg')
+si.NewTexture('rust_tex1', '../../jpg/rust.jpg')
+si.NewTexture('concrete_tex1', '../../jpg/concrete.jpg')
+si.NewTexture('pattern_tex1', '../../jpg/pattern.jpg')
+
 #Light
 
 #Shader
@@ -42,6 +49,30 @@ si.NewShader('plastic_shader1', 'pathtracing_shader')
 si.SetProperty3('plastic_shader1', 'diffuse', .2, .4, .8)
 si.SetProperty3('plastic_shader1', 'reflect', 1, 1, 1)
 
+si.NewShader('textured_shader1', 'pathtracing_shader')
+#si.SetProperty3('plastic_shader1', 'diffuse', .2, .4, .8)
+#si.SetProperty3('plastic_shader1', 'reflect', 1, 1, 1)
+
+si.AssignTexture('textured_shader1', 'diffuse_map', 'rock_tex1')
+si.AssignTexture('textured_shader1', 'bump_map', 'rock_tex1')
+si.SetProperty1('textured_shader1', 'bump_amplitude', 3)
+
+#si.AssignTexture('textured_shader1', 'diffuse_map', 'rock_tex1')
+#si.AssignTexture('textured_shader1', 'bump_map', 'rock_tex1')
+#si.SetProperty1('textured_shader1', 'bump_amplitude', 3)
+
+#si.AssignTexture('textured_shader1', 'diffuse_map', 'rust_tex1')
+#si.AssignTexture('textured_shader1', 'bump_map', 'rust_tex1')
+#si.SetProperty1('textured_shader1', 'bump_amplitude', 1)
+
+#si.AssignTexture('textured_shader1', 'diffuse_map', 'concrete_tex1')
+#si.AssignTexture('textured_shader1', 'bump_map', 'concrete_tex1')
+#si.SetProperty1('textured_shader1', 'bump_amplitude', 1)
+
+#si.AssignTexture('textured_shader1', 'diffuse_map', 'pattern_tex1')
+#si.AssignTexture('textured_shader1', 'bump_map', 'pattern_tex1')
+#si.SetProperty1('textured_shader1', 'bump_amplitude', -1)
+
 si.NewShader('glass_shader1', 'pathtracing_shader')
 si.SetProperty3('glass_shader1', 'diffuse', 0, 0, 0)
 si.SetProperty3('glass_shader1', 'reflect', 1, 1, 1)
@@ -63,7 +94,8 @@ si.SetProperty3('light_shader1', 'emission', emit_r*emit_x, emit_g*emit_x, emit_
 si.NewMesh('happy_mesh', '../../ply/happy.ply')
 si.NewMesh('bunny_mesh', '../../ply/bunny.ply')
 si.NewMesh('floor_mesh', '../../ply/floor.ply')
-si.NewMesh('sphere_mesh', '../../ply/sphere.ply')
+#si.NewMesh('sphere_mesh', '../../ply/sphere.ply')
+si.NewMesh('sphere_mesh', '../../ply/sphere_uv.ply')
 
 #ObjectInstance
 si.NewObjectInstance('floor1', 'floor_mesh')
@@ -95,19 +127,21 @@ si.SetProperty3('wall3', 'rotate', 90, 0, 0)
 si.SetProperty3('wall3', 'translate', 0, .5, -.5)
 
 si.NewObjectInstance('bunny1', 'bunny_mesh')
-#si.AssignShader('bunny1', 'DEFAULT_SHADING_GROUP', 'mirror_shader1')
 si.AssignShader('bunny1', 'DEFAULT_SHADING_GROUP', 'glass_shader1')
-si.SetProperty3('bunny1', 'translate', -.21, 0, .21)
+si.SetProperty3('bunny1', 'translate', -.23, 0, .21)
 si.SetProperty3('bunny1', 'scale', .3, .3, .3)
 
 si.NewObjectInstance('sphere2', 'sphere_mesh')
-si.AssignShader('sphere2', 'DEFAULT_SHADING_GROUP', 'glass_shader1')
+si.AssignShader('sphere2', 'DEFAULT_SHADING_GROUP', 'textured_shader1')
 si.SetProperty3('sphere2', 'translate', .25, .15, .15)
 si.SetProperty3('sphere2', 'scale', .15, .15, .15)
+si.SetProperty3('sphere2', 'translate', .3, .15, .23)
+si.SetProperty3('sphere2', 'scale', .15, .15, .15)
+si.SetProperty3('sphere2', 'rotate', -15, 0, 0)
 
 si.NewObjectInstance('happy1', 'happy_mesh')
 si.AssignShader('happy1', 'DEFAULT_SHADING_GROUP', 'plastic_shader1')
-si.SetProperty3('happy1', 'translate', .0, 0, .0)
+si.SetProperty3('happy1', 'translate', .0, 0, -.1)
 si.SetProperty3('happy1', 'scale', .25, .25, .25)
 
 si.NewObjectInstance('light_source1', 'sphere_mesh')
@@ -143,11 +177,12 @@ si.NewRenderer('ren1')
 si.AssignCamera('ren1', 'cam1')
 si.AssignFrameBuffer('ren1', 'fb1')
 si.SetProperty2('ren1', 'resolution', 640, 480)
-si.SetProperty2('ren1', 'resolution', 160, 120)
-si.SetProperty2('ren1', 'resolution', 160*2, 120*2)
+#si.SetProperty2('ren1', 'resolution', 160, 120)
+#si.SetProperty2('ren1', 'resolution', 160*2, 120*2)
+#si.SetProperty2('ren1', 'pixelsamples', 9, 9)
 si.SetProperty2('ren1', 'pixelsamples', 12, 12)
 si.SetProperty2('ren1', 'pixelsamples', 24, 24)
-si.SetProperty2('ren1', 'pixelsamples', 64, 64)
+#si.SetProperty2('ren1', 'pixelsamples', 64, 64)
 #TODO Fix adaptive_max_subdivision bug
 #si.SetProperty1('ren1', 'sampler_type', 1)
 #si.SetProperty1('ren1', 'adaptive_max_subdivision', 1)
