@@ -206,8 +206,10 @@ TraceContext SlCameraContext(const ObjectGroup *target)
   TraceContext cxt;
 
   cxt.ray_context = CXT_CAMERA_RAY;
+  cxt.diffuse_depth = 0;
   cxt.reflect_depth = 0;
   cxt.refract_depth = 0;
+  cxt.max_diffuse_depth = 5;
   cxt.max_reflect_depth = 5;
   cxt.max_refract_depth = 5;
   cxt.cast_shadow = 1;
@@ -218,10 +220,23 @@ TraceContext SlCameraContext(const ObjectGroup *target)
   cxt.opacity_threshold = .995f;
   cxt.raymarch_step = .05;
   cxt.raymarch_shadow_step = .05;
+  cxt.raymarch_diffuse_step = .05;
   cxt.raymarch_reflect_step = .05;
   cxt.raymarch_refract_step = .05;
 
   return cxt;
+}
+
+TraceContext SlDiffuseContext(const TraceContext *cxt,
+    const ObjectInstance *obj)
+{
+  TraceContext diff_cxt = *cxt;
+
+  diff_cxt.diffuse_depth++;
+  diff_cxt.ray_context = CXT_DIFFUSE_RAY;
+  diff_cxt.trace_target = obj->GetReflectTarget();
+
+  return diff_cxt;
 }
 
 TraceContext SlReflectContext(const TraceContext *cxt,
@@ -254,7 +269,8 @@ TraceContext SlShadowContext(const TraceContext *cxt,
   TraceContext shad_cxt = *cxt;
 
   shad_cxt.ray_context = CXT_SHADOW_RAY;
-  // turn off the secondary trance on occluding objects
+  // turn off the secondary trace on occluding objects
+  shad_cxt.max_diffuse_depth = 0;
   shad_cxt.max_reflect_depth = 0;
   shad_cxt.max_refract_depth = 0;
   shad_cxt.trace_target = obj->GetShadowTarget();
@@ -462,6 +478,10 @@ static int has_reached_bounce_limit(const TraceContext *cxt)
     current_depth = 0;
     max_depth = 1;
     break;
+  case CXT_DIFFUSE_RAY:
+    current_depth = cxt->diffuse_depth;
+    max_depth = cxt->max_diffuse_depth;
+    break;
   case CXT_REFLECT_RAY:
     current_depth = cxt->reflect_depth;
     max_depth = cxt->max_reflect_depth;
@@ -583,6 +603,9 @@ static int raymarch_volume(const TraceContext *cxt, const Ray *ray,
       break;
     case CXT_SHADOW_RAY:
       t_delta = cxt->raymarch_shadow_step;
+      break;
+    case CXT_DIFFUSE_RAY:
+      t_delta = cxt->raymarch_diffuse_step;
       break;
     case CXT_REFLECT_RAY:
       t_delta = cxt->raymarch_reflect_step;

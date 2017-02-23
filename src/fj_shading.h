@@ -18,6 +18,7 @@ class Texture;
 enum RayContext {
   CXT_CAMERA_RAY = 0,
   CXT_SHADOW_RAY,
+  CXT_DIFFUSE_RAY,
   CXT_REFLECT_RAY,
   CXT_REFRACT_RAY
 };
@@ -25,8 +26,10 @@ enum RayContext {
 class FJ_API TraceContext {
 public:
   int ray_context;
+  int diffuse_depth;
   int reflect_depth;
   int refract_depth;
+  int max_diffuse_depth;
   int max_reflect_depth;
   int max_refract_depth;
   int cast_shadow;
@@ -36,6 +39,7 @@ public:
   float opacity_threshold;
   double raymarch_step;
   double raymarch_shadow_step;
+  double raymarch_diffuse_step;
   double raymarch_reflect_step;
   double raymarch_refract_step;
 
@@ -92,6 +96,8 @@ FJ_API int SlSurfaceRayIntersect(const TraceContext *cxt,
     Vector *P_hit, Vector *N_hit, double *t_hit);
 
 FJ_API TraceContext SlCameraContext(const ObjectGroup *target);
+FJ_API TraceContext SlDiffuseContext(const TraceContext *cxt,
+    const ObjectInstance *obj);
 FJ_API TraceContext SlReflectContext(const TraceContext *cxt,
     const ObjectInstance *obj);
 FJ_API TraceContext SlRefractContext(const TraceContext *cxt,

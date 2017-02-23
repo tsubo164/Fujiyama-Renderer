@@ -124,6 +124,13 @@ static int set_Renderer_cast_shadow(void *self, const PropertyValue &value)
   return 0;
 }
 
+static int set_Renderer_max_diffuse_depth(void *self, const PropertyValue &value)
+{
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetMaxDiffuseDepth((int) value.vector[0]);
+  return 0;
+}
+
 static int set_Renderer_max_reflect_depth(void *self, const PropertyValue &value)
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
@@ -149,6 +156,13 @@ static int set_Renderer_raymarch_shadow_step(void *self, const PropertyValue &va
 {
   Renderer *renderer = reinterpret_cast<Renderer *>(self);
   renderer->SetRaymarchShadowStep(value.vector[0]);
+  return 0;
+}
+
+static int set_Renderer_raymarch_diffuse_step(void *self, const PropertyValue &value)
+{
+  Renderer *renderer = reinterpret_cast<Renderer *>(self);
+  renderer->SetRaymarchDiffuseStep(value.vector[0]);
   return 0;
 }
 
@@ -437,10 +451,12 @@ static const Property Turbulence_properties[] = {
 static const Property Renderer_properties[] = {
   Property("sample_jitter",         PropScalar(1),     set_Renderer_sample_jitter),
   Property("cast_shadow",           PropScalar(1),     set_Renderer_cast_shadow),
+  Property("max_diffuse_depth",     PropScalar(3),     set_Renderer_max_diffuse_depth),
   Property("max_reflect_depth",     PropScalar(3),     set_Renderer_max_reflect_depth),
   Property("max_refract_depth",     PropScalar(3),     set_Renderer_max_refract_depth),
   Property("raymarch_step",         PropScalar(.05),   set_Renderer_raymarch_step),
   Property("raymarch_shadow_step",  PropScalar(.1),    set_Renderer_raymarch_shadow_step),
+  Property("raymarch_diffuse_step", PropScalar(.1),    set_Renderer_raymarch_diffuse_step),
   Property("raymarch_reflect_step", PropScalar(.1),    set_Renderer_raymarch_reflect_step),
   Property("raymarch_refract_step", PropScalar(.1),    set_Renderer_raymarch_refract_step),
   Property("sample_time_range",     PropVector2(0, 1), set_Renderer_sample_time_range),

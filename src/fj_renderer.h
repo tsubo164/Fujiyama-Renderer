@@ -59,11 +59,13 @@ public:
   void SetSampleTimeRange(double start_time, double end_time);
 
   void SetShadowEnable(int enable);
+  void SetMaxDiffuseDepth(int max_depth);
   void SetMaxReflectDepth(int max_depth);
   void SetMaxRefractDepth(int max_depth);
 
   void SetRaymarchStep(double step);
   void SetRaymarchShadowStep(double step);
+  void SetRaymarchDiffuseStep(double step);
   void SetRaymarchReflectStep(double step);
   void SetRaymarchRefractStep(double step);
 
@@ -117,11 +119,13 @@ public:
   double sample_time_end_;
 
   int cast_shadow_;
+  int max_diffuse_depth_;
   int max_reflect_depth_;
   int max_refract_depth_;
 
   double raymarch_step_;
   double raymarch_shadow_step_;
+  double raymarch_diffuse_step_;
   double raymarch_reflect_step_;
   double raymarch_refract_step_;
 

@@ -200,7 +200,7 @@ Color PathtracingShader::integrate_diffuse(const TraceContext &cxt,
 
   Color4 C_diff;
   Real t_hit = REAL_MAX;
-  const TraceContext refl_cxt = SlReflectContext(&cxt, in.shaded_object);
+  const TraceContext refl_cxt = SlDiffuseContext(&cxt, in.shaded_object);
 
   SlTrace(&refl_cxt, &in.P, &D, .001, 1000, &C_diff, &t_hit);
 

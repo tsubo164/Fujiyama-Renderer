@@ -537,6 +537,12 @@ void Renderer::SetShadowEnable(int enable)
   cast_shadow_ = enable;
 }
 
+void Renderer::SetMaxDiffuseDepth(int max_depth)
+{
+  assert(max_depth >= 0);
+  max_diffuse_depth_ = max_depth;
+}
+
 void Renderer::SetMaxReflectDepth(int max_depth)
 {
   assert(max_depth >= 0);
@@ -559,6 +565,12 @@ void Renderer::SetRaymarchShadowStep(double step)
 {
   assert(step > 0);
   raymarch_shadow_step_ = Max(step, .001);
+}
+
+void Renderer::SetRaymarchDiffuseStep(double step)
+{
+  assert(step > 0);
+  raymarch_diffuse_step_ = Max(step, .001);
 }
 
 void Renderer::SetRaymarchReflectStep(double step)
@@ -883,10 +895,12 @@ static void init_worker(Worker *worker, int id,
   /* context */
   worker->context = SlCameraContext(renderer->target_objects_);
   worker->context.cast_shadow = renderer->cast_shadow_;
+  worker->context.max_diffuse_depth = renderer->max_diffuse_depth_;
   worker->context.max_reflect_depth = renderer->max_reflect_depth_;
   worker->context.max_refract_depth = renderer->max_refract_depth_;
   worker->context.raymarch_step = renderer->raymarch_step_;
   worker->context.raymarch_shadow_step = renderer->raymarch_shadow_step_;
+  worker->context.raymarch_diffuse_step = renderer->raymarch_diffuse_step_;
   worker->context.raymarch_reflect_step = renderer->raymarch_reflect_step_;
   worker->context.raymarch_refract_step = renderer->raymarch_refract_step_;
 
