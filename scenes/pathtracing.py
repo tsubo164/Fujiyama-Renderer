@@ -55,7 +55,7 @@ si.SetProperty3('wall_shader3', 'diffuse', diff, diff, diff)
 
 si.NewShader('mirror_shader1', 'pathtracing_shader')
 si.SetProperty3('mirror_shader1', 'diffuse', .05, .05, .05)
-si.SetProperty3('mirror_shader1', 'reflect', 1, 1, .3)
+si.SetProperty3('mirror_shader1', 'reflect', .2, .4, .8)
 si.SetProperty1('mirror_shader1', 'ior', 20)
 
 si.NewShader('plastic_shader1', 'pathtracing_shader')

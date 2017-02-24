@@ -1,0 +1,23 @@
+Fujiyama Renderer v0.3.3(Alpha) Release Notes
+=============================================
+
+New features since v0.3.2
+-------------------------
+ * Pathtracing algorithm has been implemented in shader.
+
+ * Python API has new options to override output image resolution, pixel samples
+   and output scene descripton.
+
+ * Added ConstantVolumeShader to re-produce volume_and_bunny.py
+
+ * OpenPlugin command has a small change with arguments
+
+Features under development
+--------------------------
+ * Deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support
