@@ -4,6 +4,7 @@
 #See LICENSE and README
 
 import subprocess
+import argparse
 import platform
 import tempfile
 import shutil
@@ -19,6 +20,15 @@ class SceneInterface:
 		self.pre_conversions = []
 		self.post_conversions = []
 		self.tempdir = ''
+
+		self.ap = argparse.ArgumentParser()
+		self.ap.add_argument('-P', '--print', dest='p', action='store_true',
+                        help='force to print scene descriptions instead of running')
+		self.ap.add_argument('-R', '--resolution', dest='res', nargs=2,
+                        help='override resolution')
+		self.ap.add_argument('-S', '--pixelsamples', dest='samples', nargs=2,
+                        help='override pixel samples')
+		self.args = self.ap.parse_args()
 
 	def __del__(self):
 		if self.tempdir != '':
@@ -46,6 +56,10 @@ class SceneInterface:
 			print cmd
 
 	def Run(self):
+		if self.args.p:
+			self.Print()
+			return
+
 		"""
 		Runs scene parser with input stream
 		"""
@@ -286,7 +300,15 @@ class SceneInterface:
 		self.commands.append(cmd)
 
 	def SetProperty2(self, entry_name, prop_name, v0, v1):
-		cmd = 'SetProperty2 %s %s %s %s' % (entry_name, prop_name, v0, v1)
+		#porperty override
+		if self.args.res and prop_name == 'resolution':
+			cmd = 'SetProperty2 %s %s %s %s' % \
+			(entry_name, prop_name, self.args.res[0], self.args.res[1])
+		elif self.args.samples and prop_name == 'pixelsamples':
+			cmd = 'SetProperty2 %s %s %s %s' % \
+                        (entry_name, prop_name, self.args.samples[0], self.args.samples[1])
+		else:
+			cmd = 'SetProperty2 %s %s %s %s' % (entry_name, prop_name, v0, v1)
 		self.commands.append(cmd)
 
 	def SetProperty3(self, entry_name, prop_name, v0, v1, v2):
