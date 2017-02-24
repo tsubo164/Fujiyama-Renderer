@@ -158,6 +158,14 @@ class SceneInterface:
 		self.commands.append(cmd)
 
 	def RenderScene(self, renderer):
+		#porperty override
+		if self.args.res:
+			self.SetProperty2(renderer, 'resolution',
+                                self.args.res[0], self.args.res[1])
+		if self.args.samples:
+			self.SetProperty2(renderer, 'pixelsamples',
+                                self.args.samples[0], self.args.samples[1])
+
 		cmd = 'RenderScene %s' % (renderer)
 		self.commands.append(cmd)
 
@@ -300,15 +308,7 @@ class SceneInterface:
 		self.commands.append(cmd)
 
 	def SetProperty2(self, entry_name, prop_name, v0, v1):
-		#porperty override
-		if self.args.res and prop_name == 'resolution':
-			cmd = 'SetProperty2 %s %s %s %s' % \
-			(entry_name, prop_name, self.args.res[0], self.args.res[1])
-		elif self.args.samples and prop_name == 'pixelsamples':
-			cmd = 'SetProperty2 %s %s %s %s' % \
-                        (entry_name, prop_name, self.args.samples[0], self.args.samples[1])
-		else:
-			cmd = 'SetProperty2 %s %s %s %s' % (entry_name, prop_name, v0, v1)
+		cmd = 'SetProperty2 %s %s %s %s' % (entry_name, prop_name, v0, v1)
 		self.commands.append(cmd)
 
 	def SetProperty3(self, entry_name, prop_name, v0, v1, v2):
