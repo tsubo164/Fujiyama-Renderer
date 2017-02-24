@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# 2 teapots and 2 bunnies with 1 sphere light
+# 1 sphere, 1 bunny and 1 happy buddha in cornel box with pathtracing
 # Copyright (c) 2011-2016 Hiroshi Tsubokawa
 
 import fujiyama
@@ -16,29 +16,42 @@ si.SetSampleProperty3('cam1', 'translate', 0, 0.5, 1.85, 0)
 si.SetProperty1('cam1', 'fov', 40)
 
 #Texture
-#si.NewTexture('rock_tex1', '../../jpg/rock_new.jpg')
 si.NewTexture('rock_tex1', '../../jpg/rock.jpg')
-si.NewTexture('rust_tex1', '../../jpg/rust.jpg')
-si.NewTexture('concrete_tex1', '../../jpg/concrete.jpg')
-si.NewTexture('pattern_tex1', '../../jpg/pattern.jpg')
 
 #Light
+#NOTE Wehn using CG light for direct lighting (not yet)
+'''
+si.NewLight('light1', 'SphereLight')
+si.SetProperty3('light1', 'translate', 0, 1, 0)
+si.SetProperty3('light1', 'scale', .2, .05, .2)
+si.SetProperty1('light1', 'intensity', 1)
+si.SetProperty3('light1', 'color', 1.2, 1.1, 0.9)
+si.SetProperty1('light1', 'sample_count', 16)
+#si.NewLight('light1', 'GridLight')
+#si.SetProperty3('light1', 'translate', 0, 1-.001, 0)
+#si.SetProperty3('light1', 'scale', .2, 1, .2)
+#si.SetProperty3('light1', 'rotate', 180, 0, 0)
+#si.SetProperty1('light1', 'intensity', 1)
+#si.SetProperty3('light1', 'color', 1.2, 1.1, 0.9)
+#si.SetProperty1('light1', 'sample_count', 16)
+'''
 
 #Shader
+diff = .8
 si.NewShader('floor_shader1', 'pathtracing_shader')
-si.SetProperty3('floor_shader1', 'diffuse', .8, .8, .8)
+si.SetProperty3('floor_shader1', 'diffuse', diff, diff, diff)
 
 si.NewShader('ceiling_shader1', 'pathtracing_shader')
-si.SetProperty3('ceiling_shader1', 'diffuse', .8, .8, .8)
+si.SetProperty3('ceiling_shader1', 'diffuse', diff, diff, diff)
 
 si.NewShader('wall_shader1', 'pathtracing_shader')
-si.SetProperty3('wall_shader1', 'diffuse', .8, 0, 0)
+si.SetProperty3('wall_shader1', 'diffuse', diff, 0, 0)
 
 si.NewShader('wall_shader2', 'pathtracing_shader')
-si.SetProperty3('wall_shader2', 'diffuse', 0, .8, 0)
+si.SetProperty3('wall_shader2', 'diffuse', 0, diff, 0)
 
 si.NewShader('wall_shader3', 'pathtracing_shader')
-si.SetProperty3('wall_shader3', 'diffuse', .8, .8, .8)
+si.SetProperty3('wall_shader3', 'diffuse', diff, diff, diff)
 
 si.NewShader('mirror_shader1', 'pathtracing_shader')
 si.SetProperty3('mirror_shader1', 'diffuse', .05, .05, .05)
@@ -48,30 +61,12 @@ si.SetProperty1('mirror_shader1', 'ior', 20)
 si.NewShader('plastic_shader1', 'pathtracing_shader')
 si.SetProperty3('plastic_shader1', 'diffuse', .2, .4, .8)
 si.SetProperty3('plastic_shader1', 'reflect', 1, 1, 1)
+si.SetProperty3('plastic_shader1', 'specular', .1, .1, .1)
 
 si.NewShader('textured_shader1', 'pathtracing_shader')
-#si.SetProperty3('plastic_shader1', 'diffuse', .2, .4, .8)
-#si.SetProperty3('plastic_shader1', 'reflect', 1, 1, 1)
-
 si.AssignTexture('textured_shader1', 'diffuse_map', 'rock_tex1')
 si.AssignTexture('textured_shader1', 'bump_map', 'rock_tex1')
 si.SetProperty1('textured_shader1', 'bump_amplitude', 3)
-
-#si.AssignTexture('textured_shader1', 'diffuse_map', 'rock_tex1')
-#si.AssignTexture('textured_shader1', 'bump_map', 'rock_tex1')
-#si.SetProperty1('textured_shader1', 'bump_amplitude', 3)
-
-#si.AssignTexture('textured_shader1', 'diffuse_map', 'rust_tex1')
-#si.AssignTexture('textured_shader1', 'bump_map', 'rust_tex1')
-#si.SetProperty1('textured_shader1', 'bump_amplitude', 1)
-
-#si.AssignTexture('textured_shader1', 'diffuse_map', 'concrete_tex1')
-#si.AssignTexture('textured_shader1', 'bump_map', 'concrete_tex1')
-#si.SetProperty1('textured_shader1', 'bump_amplitude', 1)
-
-#si.AssignTexture('textured_shader1', 'diffuse_map', 'pattern_tex1')
-#si.AssignTexture('textured_shader1', 'bump_map', 'pattern_tex1')
-#si.SetProperty1('textured_shader1', 'bump_amplitude', -1)
 
 si.NewShader('glass_shader1', 'pathtracing_shader')
 si.SetProperty3('glass_shader1', 'diffuse', 0, 0, 0)
@@ -81,13 +76,14 @@ si.SetProperty3('glass_shader1', 'filter_color', .2, .1, .0)
 
 si.NewShader('light_shader1', 'pathtracing_shader')
 si.SetProperty3('light_shader1', 'diffuse', 0, 0, 0)
-si.SetProperty3('light_shader1', 'emission', 1, 1, 1)
-si.SetProperty3('light_shader1', 'emission', 3, 3, 3)
-si.SetProperty3('light_shader1', 'emission', 6, 6, 6)
 emit_r = 1.2
 emit_g = 1.1
 emit_b = 0.9
-emit_x = 12 + 8
+emit_x = 20
+#NOTE When using CG light for direct lighting (not yet)
+'''
+emit_x = 10
+'''
 si.SetProperty3('light_shader1', 'emission', emit_r*emit_x, emit_g*emit_x, emit_b*emit_x)
 
 #Mesh
@@ -148,26 +144,33 @@ si.NewObjectInstance('light_source1', 'sphere_mesh')
 si.AssignShader('light_source1', 'DEFAULT_SHADING_GROUP', 'light_shader1')
 si.SetProperty3('light_source1', 'translate', 0, 1, 0)
 si.SetProperty3('light_source1', 'scale', .2, .05, .2)
-"""
-si.NewObjectInstance('light_source1', 'floor_mesh')
-si.AssignShader('light_source1', 'DEFAULT_SHADING_GROUP', 'light_shader1')
-si.SetProperty3('light_source1', 'translate', 0, 1-.001, 0)
-scale = .03
-si.SetProperty3('light_source1', 'scale', scale, scale, scale)
-"""
+#si.NewObjectInstance('light_source1', 'floor_mesh')
+#si.AssignShader('light_source1', 'DEFAULT_SHADING_GROUP', 'light_shader1')
+#si.SetProperty3('light_source1', 'translate', 0, 1-.001, 0)
+#scale = .03
+#si.SetProperty3('light_source1', 'scale', scale, scale, scale)
 
 #ObjectGroup
-#si.NewObjectGroup('group1')
-#si.AddObjectToGroup('group1', 'teapot1')
-#si.AddObjectToGroup('group1', 'teapot1')
-#si.AddObjectToGroup('group1', 'teapot2')
-#si.AddObjectToGroup('group1', 'bunny1')
-#si.AddObjectToGroup('group1', 'bunny2')
-#si.AssignObjectGroup('teapot1', 'shadow_target', 'group1')
-#si.AssignObjectGroup('teapot2', 'shadow_target', 'group1')
-#si.AssignObjectGroup('bunny1', 'shadow_target', 'group1')
-#si.AssignObjectGroup('bunny2', 'shadow_target', 'group1')
-#si.AssignObjectGroup('floor1', 'shadow_target', 'group1')
+#NOTE Wehn using CG light for direct lighting (not yet)
+'''
+si.NewObjectGroup('group1')
+si.AddObjectToGroup('group1', 'wall1')
+si.AddObjectToGroup('group1', 'wall2')
+si.AddObjectToGroup('group1', 'wall3')
+si.AddObjectToGroup('group1', 'floor1')
+si.AddObjectToGroup('group1', 'ceiling1')
+si.AddObjectToGroup('group1', 'bunny1')
+si.AddObjectToGroup('group1', 'sphere2')
+si.AddObjectToGroup('group1', 'happy1')
+si.AssignObjectGroup('wall1',    'shadow_target', 'group1')
+si.AssignObjectGroup('wall2',    'shadow_target', 'group1')
+si.AssignObjectGroup('wall3',    'shadow_target', 'group1')
+si.AssignObjectGroup('floor1',   'shadow_target', 'group1')
+si.AssignObjectGroup('ceiling1', 'shadow_target', 'group1')
+si.AssignObjectGroup('bunny1',   'shadow_target', 'group1')
+si.AssignObjectGroup('sphere2',  'shadow_target', 'group1')
+si.AssignObjectGroup('happy1',   'shadow_target', 'group1')
+'''
 
 #FrameBuffer
 si.NewFrameBuffer('fb1', 'rgba')
@@ -177,16 +180,19 @@ si.NewRenderer('ren1')
 si.AssignCamera('ren1', 'cam1')
 si.AssignFrameBuffer('ren1', 'fb1')
 si.SetProperty2('ren1', 'resolution', 640, 480)
-#si.SetProperty2('ren1', 'resolution', 160, 120)
-si.SetProperty2('ren1', 'resolution', 160*2, 120*2)
-si.SetProperty2('ren1', 'pixelsamples', 9, 9)
+#si.SetProperty2('ren1', 'resolution', 160*2, 120*2)
+si.SetProperty2('ren1', 'pixelsamples', 6, 6)
 si.SetProperty2('ren1', 'pixelsamples', 12, 12)
-#si.SetProperty2('ren1', 'pixelsamples', 24, 24)
-#si.SetProperty2('ren1', 'pixelsamples', 64, 64)
+si.SetProperty2('ren1', 'pixelsamples', 24, 24)
+
+#NOTE CG light for direct lighting (not yet)
+'''
+si.SetProperty1('ren1', 'max_diffuse_depth', 2)
+'''
+
 #TODO Fix adaptive_max_subdivision bug
 #si.SetProperty1('ren1', 'sampler_type', 1)
 #si.SetProperty1('ren1', 'adaptive_max_subdivision', 1)
-si.SetProperty1('ren1', 'max_diffuse_depth', 2)
 
 #Rendering
 si.RenderScene('ren1')

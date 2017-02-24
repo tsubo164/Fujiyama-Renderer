@@ -53,6 +53,10 @@ private:
   Color integrate_refract(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
 
+  // TODO TEST
+  Color direct_lighting(const TraceContext &cxt,
+      const SurfaceInput &in, SurfaceOutput *out) const;
+
   mutable XorShift rng[16];
 };
 
@@ -77,7 +81,7 @@ static int set_bump_amplitude(void *self, const PropertyValue &value);
 static const Property MyPropertyList[] = {
   Property("emission",       PropVector3(0, 0, 0),    set_emission),
   Property("diffuse",        PropVector3(.8, .8, .8), set_diffuse),
-  Property("specular",       PropVector3(1, 1, 1),    set_specular),
+  Property("specular",       PropVector3(0, 0, 0),    set_specular),
   Property("ambient",        PropVector3(1, 1, 1),    set_ambient),
   Property("filter_color",   PropVector3(1, 1, 1),    set_filter_color),
   Property("roughness",      PropScalar(.1),          set_roughness),
@@ -149,9 +153,12 @@ void PathtracingShader::evaluate(const TraceContext &cxt,
     in_modified.N = N_bump;
   }
 
-  Color Lo, Le, L_diffuse, L_reflect, L_refract;
+  Color Lo, Le, /*L_direct,*/ L_diffuse, L_reflect, L_refract;
 
   Le = emission;
+
+  // TODO TEST
+  //L_direct = direct_lighting(cxt, in_modified, out);
 
   if (Luminance(diffuse) > 0.) {
     L_diffuse = integrate_diffuse(cxt, in_modified, out);
@@ -163,7 +170,7 @@ void PathtracingShader::evaluate(const TraceContext &cxt,
     L_refract = integrate_refract(cxt, in_modified, out);
   }
 
-  Lo = Le + L_diffuse + L_reflect + L_refract;
+  Lo = Le + /*L_direct +*/ L_diffuse + L_reflect + L_refract;
 
   out->Cs = Lo;
   out->Os = 1;
@@ -238,9 +245,8 @@ Color PathtracingShader::integrate_refract(const TraceContext &cxt,
   SlRefract(&in.I, &in.N, 1./ior, &T);
   T = Normalize(T);
 
-  double Kr, Kt;
-  Kr = SlFresnel(&in.I, &in.N, 1/ior);
-  Kt = 1 - Kr;
+  const Real Kr = SlFresnel(&in.I, &in.N, 1/ior);
+  const Real Kt = 1 - Kr;
 
   Color4 C_refr;
   Real t_hit = REAL_MAX;
@@ -258,6 +264,32 @@ Color PathtracingShader::integrate_refract(const TraceContext &cxt,
   out->Os = 1;
 
   return out->Cs;
+}
+
+Color PathtracingShader::direct_lighting(const TraceContext &cxt,
+      const SurfaceInput &in, SurfaceOutput *out) const
+{
+  Vector Nf;
+  SlFaceforward(&in.I, &in.N, &Nf);
+
+  // allocate samples
+  LightSample *samples = SlNewLightSamples(&in);
+  const int nsamples = SlGetLightSampleCount(&in);
+
+  Color C_direct;
+  for (int i = 0; i < nsamples; i++) {
+    LightOutput Lout;
+    SlIlluminance(&cxt, &samples[i], &in.P, &Nf, PI / 2., &in, &Lout);
+
+    const float Ks = SlPhong(&in.I, &Nf, &Lout.Ln, .05) * 0;
+    const float Kd = Max(0, Dot(Nf, Lout.Ln));
+
+    C_direct += in.Cd * Kd * diffuse * Lout.Cl + Ks * specular * Lout.Cl;
+  }
+  // free samples
+  SlFreeLightSamples(samples);
+
+  return C_direct;
 }
 
 static int set_emission(void *self, const PropertyValue &value)
