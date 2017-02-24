@@ -90,6 +90,13 @@ target_list = [
 	'additional_libs':    'libscene.lib',
 },
 {
+	'name':               'PathtracingShader.dll',
+	'source_list':        glob(top_dir + '/shaders/pathtracing_shader/*.cc'),
+	'additional_cflags':  '',
+	'additional_ldflags': '/DLL',
+	'additional_libs':    'libscene.lib',
+},
+{
 	'name':               'PlasticShader.dll',
 	'source_list':        glob(top_dir + '/shaders/plastic_shader/*.cc'),
 	'additional_cflags':  '',
@@ -111,6 +118,13 @@ target_list = [
 	'additional_libs':    'libscene.lib',
 },
 # procedures
+{
+	'name':               'ConstantVolumeProcedure.dll',
+	'source_list':        glob(top_dir + '/procedures/constantvolume_procedure/*.cc'),
+	'additional_cflags':  '',
+	'additional_ldflags': '/DLL',
+	'additional_libs':    'libscene.lib',
+},
 {
 	'name':               'PointCloudsProcedure.dll',
 	'source_list':        glob(top_dir + '/procedures/pointclouds_procedure/*.cc'),

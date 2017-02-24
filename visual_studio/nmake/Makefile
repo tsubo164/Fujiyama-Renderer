@@ -22,9 +22,11 @@ cube_exe = $(out_dir)\cube.exe
 ConstantShader_dll = $(out_dir)\ConstantShader.dll
 GlassShader_dll = $(out_dir)\GlassShader.dll
 HairShader_dll = $(out_dir)\HairShader.dll
+PathtracingShader_dll = $(out_dir)\PathtracingShader.dll
 PlasticShader_dll = $(out_dir)\PlasticShader.dll
 SSSShader_dll = $(out_dir)\SSSShader.dll
 VolumeShader_dll = $(out_dir)\VolumeShader.dll
+ConstantVolumeProcedure_dll = $(out_dir)\ConstantVolumeProcedure.dll
 PointCloudsProcedure_dll = $(out_dir)\PointCloudsProcedure.dll
 SplineWispsProcedure_dll = $(out_dir)\SplineWispsProcedure.dll
 SurfaceWispsProcedure_dll = $(out_dir)\SurfaceWispsProcedure.dll
@@ -49,9 +51,11 @@ all: \
   $(ConstantShader_dll) \
   $(GlassShader_dll) \
   $(HairShader_dll) \
+  $(PathtracingShader_dll) \
   $(PlasticShader_dll) \
   $(SSSShader_dll) \
   $(VolumeShader_dll) \
+  $(ConstantVolumeProcedure_dll) \
   $(PointCloudsProcedure_dll) \
   $(SplineWispsProcedure_dll) \
   $(SurfaceWispsProcedure_dll) \
@@ -117,6 +121,7 @@ libscene_dll_obj = \
   ..\..\src\fj_sampler.obj \
   ..\..\src\fj_scene.obj \
   ..\..\src\fj_scene_interface.obj \
+  ..\..\src\fj_scene_node.obj \
   ..\..\src\fj_shader.obj \
   ..\..\src\fj_shading.obj \
   ..\..\src\fj_socket.obj \
@@ -262,6 +267,9 @@ libscene_dll_obj = \
 ..\..\src\fj_scene_interface.obj : ..\..\src\fj_scene_interface.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_scene_interface.cc
 
+..\..\src\fj_scene_node.obj : ..\..\src\fj_scene_node.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_scene_node.cc
+
 ..\..\src\fj_shader.obj : ..\..\src\fj_shader.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_shader.cc
 
@@ -359,6 +367,20 @@ HairShader_dll_lib = $(out_dir)\HairShader.lib
 HairShader_dll_exp = $(out_dir)\HairShader.exp
 
 #===============================================================================
+PathtracingShader_dll_obj = \
+  ..\..\shaders\pathtracing_shader\pathtracing_shader.obj
+
+..\..\shaders\pathtracing_shader\pathtracing_shader.obj : ..\..\shaders\pathtracing_shader\pathtracing_shader.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\shaders\pathtracing_shader\pathtracing_shader.cc
+
+$(PathtracingShader_dll) : $(PathtracingShader_dll_obj)
+	@echo PathtracingShader.dll
+	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(PathtracingShader_dll_obj)
+
+PathtracingShader_dll_lib = $(out_dir)\PathtracingShader.lib
+PathtracingShader_dll_exp = $(out_dir)\PathtracingShader.exp
+
+#===============================================================================
 PlasticShader_dll_obj = \
   ..\..\shaders\plastic_shader\plastic_shader.obj
 
@@ -399,6 +421,20 @@ $(VolumeShader_dll) : $(VolumeShader_dll_obj)
 
 VolumeShader_dll_lib = $(out_dir)\VolumeShader.lib
 VolumeShader_dll_exp = $(out_dir)\VolumeShader.exp
+
+#===============================================================================
+ConstantVolumeProcedure_dll_obj = \
+  ..\..\procedures\constantvolume_procedure\constantvolume_procedure.obj
+
+..\..\procedures\constantvolume_procedure\constantvolume_procedure.obj : ..\..\procedures\constantvolume_procedure\constantvolume_procedure.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\procedures\constantvolume_procedure\constantvolume_procedure.cc
+
+$(ConstantVolumeProcedure_dll) : $(ConstantVolumeProcedure_dll_obj)
+	@echo ConstantVolumeProcedure.dll
+	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(ConstantVolumeProcedure_dll_obj)
+
+ConstantVolumeProcedure_dll_lib = $(out_dir)\ConstantVolumeProcedure.lib
+ConstantVolumeProcedure_dll_exp = $(out_dir)\ConstantVolumeProcedure.exp
 
 #===============================================================================
 PointCloudsProcedure_dll_obj = \
@@ -655,6 +691,10 @@ clean:
 	$(RM) $(HairShader_dll_obj)
 	$(RM) $(HairShader_dll_lib)
 	$(RM) $(HairShader_dll_exp)
+	$(RM) $(PathtracingShader_dll)
+	$(RM) $(PathtracingShader_dll_obj)
+	$(RM) $(PathtracingShader_dll_lib)
+	$(RM) $(PathtracingShader_dll_exp)
 	$(RM) $(PlasticShader_dll)
 	$(RM) $(PlasticShader_dll_obj)
 	$(RM) $(PlasticShader_dll_lib)
@@ -667,6 +707,10 @@ clean:
 	$(RM) $(VolumeShader_dll_obj)
 	$(RM) $(VolumeShader_dll_lib)
 	$(RM) $(VolumeShader_dll_exp)
+	$(RM) $(ConstantVolumeProcedure_dll)
+	$(RM) $(ConstantVolumeProcedure_dll_obj)
+	$(RM) $(ConstantVolumeProcedure_dll_lib)
+	$(RM) $(ConstantVolumeProcedure_dll_exp)
 	$(RM) $(PointCloudsProcedure_dll)
 	$(RM) $(PointCloudsProcedure_dll_obj)
 	$(RM) $(PointCloudsProcedure_dll_lib)
