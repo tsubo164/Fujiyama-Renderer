@@ -1,4 +1,4 @@
-@rem Copyright (c) 2011-2016 Hiroshi Tsubokawa
+@rem Copyright (c) 2011-2017 Hiroshi Tsubokawa
 @rem See LICENSE and README
 
 @rem set PATH=%PATH%;%CD%\bin;C:\bin

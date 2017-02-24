@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#Copyright (c) 2011-2016 Hiroshi Tsubokawa
+#Copyright (c) 2011-2017 Hiroshi Tsubokawa
 #See LICENSE and README
 
 import subprocess

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # 1 sphere, 1 bunny and 1 happy buddha in cornel box with pathtracing
-# Copyright (c) 2011-2016 Hiroshi Tsubokawa
+# Copyright (c) 2011-2017 Hiroshi Tsubokawa
 
 import fujiyama
 

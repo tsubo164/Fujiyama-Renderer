@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2016 Hiroshi Tsubokawa
+// Copyright (c) 2011-2017 Hiroshi Tsubokawa
 // See LICENSE and README
 
 #ifndef FJ_TURBULENCE_H

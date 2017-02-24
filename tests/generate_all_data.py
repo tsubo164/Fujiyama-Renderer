@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # generate all mesh, crv and mip data for example scenes
-# Copyright (c) 2011-2016 Hiroshi Tsubokawa
+# Copyright (c) 2011-2017 Hiroshi Tsubokawa
 
 import subprocess
 
