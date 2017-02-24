@@ -6,20 +6,12 @@
 
 using namespace fj;
 
-enum SurfaceType {
-  SURFACE_EMISSION,
-  SURFACE_DIFFUSE,
-  SURFACE_SPECULAR,
-  SURFACE_REFRACT
-};
-
 class PathtracingShader : public Shader {
 public:
-  PathtracingShader() : surface_type(SURFACE_DIFFUSE) {}
+  PathtracingShader() {}
   virtual ~PathtracingShader() {}
 
 public:
-  int surface_type;
   Color emission;
   Color diffuse;
   Color specular;
@@ -269,6 +261,26 @@ Color PathtracingShader::integrate_refract(const TraceContext &cxt,
 Color PathtracingShader::direct_lighting(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const
 {
+  // allocate samples
+  LightSample *samples = SlNewLightSamples(&in);
+  const Vector D = Normalize(samples[0].P - in.P);
+  // free samples
+  SlFreeLightSamples(samples);
+  //----------------------------------------------------------
+
+  const Real Kd = Dot(in.N, D);
+
+  Color4 C_diff;
+  Real t_hit = REAL_MAX;
+  const TraceContext refl_cxt = SlDiffuseContext(&cxt, in.shaded_object);
+
+  SlTrace(&refl_cxt, &in.P, &D, .001, 1000, &C_diff, &t_hit);
+
+  out->Cs = in.Cd * Kd * diffuse * ToColor(C_diff);
+  out->Os = 1.0;
+
+  return out->Cs;
+#if 0
   Vector Nf;
   SlFaceforward(&in.I, &in.N, &Nf);
 
@@ -290,6 +302,7 @@ Color PathtracingShader::direct_lighting(const TraceContext &cxt,
   SlFreeLightSamples(samples);
 
   return C_direct;
+#endif
 }
 
 static int set_emission(void *self, const PropertyValue &value)
@@ -300,12 +313,6 @@ static int set_emission(void *self, const PropertyValue &value)
   emission.r = Max(0, value.vector[0]);
   emission.g = Max(0, value.vector[1]);
   emission.b = Max(0, value.vector[2]);
-
-  if (emission.r >= 1 || emission.g >= 1 || emission.b >= 1) {
-    pathtracing->surface_type = SURFACE_EMISSION;
-  } else {
-    pathtracing->surface_type = SURFACE_DIFFUSE;
-  }
   pathtracing->emission = emission;
 
   return 0;
@@ -319,7 +326,6 @@ static int set_diffuse(void *self, const PropertyValue &value)
   diffuse.r = Max(0, value.vector[0]);
   diffuse.g = Max(0, value.vector[1]);
   diffuse.b = Max(0, value.vector[2]);
-  pathtracing->surface_type = SURFACE_DIFFUSE;
   pathtracing->diffuse = diffuse;
 
   return 0;
@@ -392,13 +398,6 @@ static int set_reflect(void *self, const PropertyValue &value)
   reflect.r = Max(0, value.vector[0]);
   reflect.g = Max(0, value.vector[1]);
   reflect.b = Max(0, value.vector[2]);
-
-  if (reflect.r > 0 || reflect.g > 0 || reflect.b > 0 ) {
-    pathtracing->surface_type = SURFACE_SPECULAR;
-  }
-  else {
-    pathtracing->surface_type = SURFACE_DIFFUSE;
-  }
   pathtracing->reflect = reflect;
 
   return 0;
@@ -412,13 +411,6 @@ static int set_refract(void *self, const PropertyValue &value)
   refract.r = Max(0, value.vector[0]);
   refract.g = Max(0, value.vector[1]);
   refract.b = Max(0, value.vector[2]);
-
-  if (refract.r > 0 || refract.g > 0 || refract.b > 0 ) {
-    pathtracing->surface_type = SURFACE_REFRACT;
-  }
-  else {
-    pathtracing->surface_type = SURFACE_DIFFUSE;
-  }
   pathtracing->refract = refract;
 
   return 0;
