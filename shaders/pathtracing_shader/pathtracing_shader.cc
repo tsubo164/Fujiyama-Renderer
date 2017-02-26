@@ -16,7 +16,7 @@ public:
   Color diffuse;
   Color specular;
   Color ambient;
-  Color filter_color;
+  Color transmit;
   float roughness;
 
   Color reflect;
@@ -24,8 +24,6 @@ public:
   float ior;
 
   float opacity;
-
-  int do_reflect;
 
   Texture *diffuse_map;
   Texture *bump_map;
@@ -49,7 +47,7 @@ private:
   Color direct_lighting(const TraceContext &cxt,
       const SurfaceInput &in, SurfaceOutput *out) const;
 
-  mutable XorShift rng[16];
+  mutable XorShift rng[64];
 };
 
 static void *MyCreateFunction(void);
@@ -60,7 +58,7 @@ static int set_emission(void *self, const PropertyValue &value);
 static int set_diffuse(void *self, const PropertyValue &value);
 static int set_specular(void *self, const PropertyValue &value);
 static int set_ambient(void *self, const PropertyValue &value);
-static int set_filter_color(void *self, const PropertyValue &value);
+static int set_transmit(void *self, const PropertyValue &value);
 static int set_roughness(void *self, const PropertyValue &value);
 static int set_reflect(void *self, const PropertyValue &value);
 static int set_refract(void *self, const PropertyValue &value);
@@ -75,7 +73,7 @@ static const Property MyPropertyList[] = {
   Property("diffuse",        PropVector3(.8, .8, .8), set_diffuse),
   Property("specular",       PropVector3(0, 0, 0),    set_specular),
   Property("ambient",        PropVector3(1, 1, 1),    set_ambient),
-  Property("filter_color",   PropVector3(1, 1, 1),    set_filter_color),
+  Property("transmit",       PropVector3(1, 1, 1),    set_transmit),
   Property("roughness",      PropScalar(.1),          set_roughness),
   Property("reflect",        PropVector3(0, 0, 0),    set_reflect),
   Property("refract",        PropVector3(0, 0, 0),    set_refract),
@@ -247,9 +245,9 @@ Color PathtracingShader::integrate_refract(const TraceContext &cxt,
   SlTrace(&refr_cxt, &in.P, &T, .0001, 1000, &C_refr, &t_hit);
 
   if (do_color_filter && Dot(in.I, in.N) < 0) {
-    C_refr.r *= pow(filter_color.r, t_hit);
-    C_refr.g *= pow(filter_color.g, t_hit);
-    C_refr.b *= pow(filter_color.b, t_hit);
+    C_refr.r *= pow(transmit.r, t_hit);
+    C_refr.g *= pow(transmit.g, t_hit);
+    C_refr.b *= pow(transmit.b, t_hit);
   }
 
   out->Cs = Kt * refract * ToColor(C_refr);
@@ -357,19 +355,19 @@ static int set_ambient(void *self, const PropertyValue &value)
   return 0;
 }
 
-static int set_filter_color(void *self, const PropertyValue &value)
+static int set_transmit(void *self, const PropertyValue &value)
 {
   PathtracingShader *pathtracing = (PathtracingShader *) self;
-  Color filter_color;
+  Color transmit;
 
-  filter_color.r = Max(.001, value.vector[0]);
-  filter_color.g = Max(.001, value.vector[1]);
-  filter_color.b = Max(.001, value.vector[2]);
-  pathtracing->filter_color = filter_color;
+  transmit.r = Max(.001, value.vector[0]);
+  transmit.g = Max(.001, value.vector[1]);
+  transmit.b = Max(.001, value.vector[2]);
+  pathtracing->transmit = transmit;
 
-  if (pathtracing->filter_color.r == 1 &&
-    pathtracing->filter_color.g == 1 &&
-    pathtracing->filter_color.b == 1) {
+  if (pathtracing->transmit.r == 1 &&
+    pathtracing->transmit.g == 1 &&
+    pathtracing->transmit.b == 1) {
     pathtracing->do_color_filter = 0;
   }
   else {
