@@ -4,6 +4,8 @@
 #ifndef FJ_MULTI_THREAD_H
 #define FJ_MULTI_THREAD_H
 
+#include "fj_compatibility.h"
+
 namespace fj {
 
 class ThreadContext {
@@ -33,7 +35,8 @@ typedef void (*CriticalFunction)(void *data);
 
 extern int MtGetMaxThreadCount(void);
 extern int MtGetRunningThreadCount(void);
-extern int MtGetThreadID(void);
+// TODO possible to hide this from plugin?
+FJ_API int MtGetThreadID(void);
 
 extern void MtSetMaxThreadCount(int count);
 
