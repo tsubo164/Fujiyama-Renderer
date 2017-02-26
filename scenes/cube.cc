@@ -62,6 +62,7 @@ int main(int argc, const char **argv)
   ID renderer;
   ID camera;
   ID object;
+  ID plugin;
   ID shader;
   ID light;
   ID mesh;
@@ -70,7 +71,8 @@ int main(int argc, const char **argv)
   SiOpenScene();
 
   // Plugin
-  if (SiOpenPlugin("PlasticShader")) {
+  plugin = SiOpenPlugin("PlasticShader");
+  if (plugin == SI_BADID) {
     // TODO error handling
 #if 0
     fprintf(stderr, "Could not open shader: %s\n", SiGetErrorMessage(SiGetErrorNo()));
@@ -95,7 +97,7 @@ int main(int argc, const char **argv)
   SiSetProperty3(light, "translate", 1, 12, 3);
 
   // Shader
-  shader = SiNewShader("PlasticShader");
+  shader = SiNewShader(plugin);
   if (shader == SI_BADID) {
     fprintf(stderr, "Could not create shader: PlasticShader\n");
     return -1;
