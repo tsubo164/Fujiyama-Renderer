@@ -373,7 +373,7 @@ def setup_environment():
 	if platform_name == 'Darwin':
 		lib_path = 'DYLD_LIBRARY_PATH'
 	elif platform_name == 'Linux':
-		lib_path = 'DYLD_LIBRARY_PATH'
+		lib_path = 'LD_LIBRARY_PATH'
 	elif platform_name == 'Windows':
 		lib_path = 'PATH'
 		is_win = True
@@ -390,7 +390,7 @@ def setup_environment():
 			os.environ[lib_path] = os.environ[lib_path] + ';' + os.environ[fj_lib_path]
 		else:
 			os.environ[lib_path] = os.environ[fj_lib_path]
-		print '#', fj_lib_path, ' =', os.environ[lib_path]
+		print '#', fj_lib_path, '=', os.environ[lib_path]
 		print
 	else:
 		print
