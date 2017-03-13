@@ -297,7 +297,7 @@ Status SiSaveFrameBuffer(ID framebuffer, const char *filename)
     return SI_FAIL;
   }
 
-  err = FbSaveCroppedData(framebuffer_ptr, filename);
+  err = WriteFrameBuffer(*framebuffer_ptr, filename);
   if (err) {
     /* TODO error handling */
     return SI_FAIL;

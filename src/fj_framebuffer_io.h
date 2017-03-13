@@ -7,6 +7,8 @@
 #include "fj_compatibility.h"
 #include <stdio.h>
 
+#include <string>
+
 namespace fj {
 
 class FrameBuffer;
@@ -69,6 +71,7 @@ FJ_API void FbWriteFile(FbOutput *out);
 
 // high level interface for saving framebuffer file
 FJ_API int FbSaveCroppedData(FrameBuffer *fb, const char *filename);
+FJ_API int WriteFrameBuffer(const FrameBuffer &fb, const std::string &filename);
 
 } // namespace xxx
 

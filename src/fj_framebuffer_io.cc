@@ -5,6 +5,7 @@
 #include "fj_framebuffer.h"
 #include "fj_file_io.h"
 #include "fj_vector.h"
+#include "fj_color.h"
 #include "fj_box.h"
 
 #include <cstdlib>
@@ -222,6 +223,47 @@ int FbSaveCroppedData(FrameBuffer *fb, const char *filename)
   BOX2_COPY(out->viewbox, viewbox);
   BOX2_COPY(out->databox, databox);
   out->data = cropped.GetReadOnly(0, 0, 0);
+
+  FbWriteFile(out);
+  FbCloseOutputFile(out);
+
+  return 0;
+}
+
+int WriteFrameBuffer(const FrameBuffer &fb, const std::string &filename)
+{
+  FbOutput *out = FbOpenOutputFile(filename.c_str());
+  if (out == NULL) {
+    return -1;
+  }
+
+  out->databox[0] = 0;
+  out->databox[1] = 0;
+  out->databox[2] = fb.GetWidth();
+  out->databox[3] = fb.GetHeight();
+  out->viewbox[0] = out->databox[0];
+  out->viewbox[1] = out->databox[1];
+  out->viewbox[2] = out->databox[2];
+  out->viewbox[3] = out->databox[3];
+
+  out->width = fb.GetWidth();
+  out->height = fb.GetHeight();
+  out->nchannels = fb.GetChannelCount();
+
+  const int W = fb.GetWidth();
+  const int H = fb.GetHeight();
+  const int C = fb.GetChannelCount();
+  std::vector<float> data(W * H * C);
+  for (int y = 0; y < H; y++) {
+    for (int x = 0; x < W; x++) {
+      const int index = y * C * W + x * C;
+      const Color4 color = fb.GetColor(x, y);
+      for (int z = 0; z < C; z++) {
+        data[index + z] = color[z];
+      }
+    }
+  }
+  out->data = &data[0];
 
   FbWriteFile(out);
   FbCloseOutputFile(out);
