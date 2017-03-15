@@ -63,46 +63,7 @@ float *FrameBuffer::Resize(int width, int height, int nchannels)
   return &buf_[0];
 }
 
-int FrameBuffer::ComputeBounds(int *bounds)
-{
-  int xmin =  INT_MAX;
-  int ymin =  INT_MAX;
-  int xmax = -INT_MAX;
-  int ymax = -INT_MAX;
-
-  // bounds can be computed only if alpha channel exists
-  if (GetChannelCount() != 4)
-    return -1;
-
-  for (int y = 0; y < GetHeight(); y++) {
-    for (int x = 0; x < GetWidth(); x++) {
-      const float *rgba = GetReadOnly(x, y, 0);
-      if (rgba[0] > 0 ||
-        rgba[1] > 0 ||
-        rgba[2] > 0 ||
-        rgba[3] > 0) {
-        xmin = Min(xmin, x);
-        ymin = Min(ymin, y);
-        xmax = Max(xmax, x + 1);
-        ymax = Max(ymax, y + 1);
-      }
-    }
-  }
-  if (xmin ==  INT_MAX &&
-    ymin ==  INT_MAX &&
-    xmax == -INT_MAX &&
-    ymax == -INT_MAX) {
-    xmin = 0;
-    ymin = 0;
-    xmax = 0;
-    ymax = 0;
-  }
-
-  BOX2_SET(bounds, xmin, ymin, xmax, ymax);
-  return 0;
-}
-
-int FrameBuffer::IsEmpty() const
+bool FrameBuffer::IsEmpty() const
 {
   return buf_.empty();
 }
@@ -125,12 +86,12 @@ const float *FrameBuffer::GetReadOnly(int x, int y, int z) const
 
 Color4 FrameBuffer::GetColor(int x, int y) const
 {
-  const float *pixel = GetReadOnly(x, y, 0);
-  const int channel_count = GetChannelCount();
-  
-  if (pixel == NULL) {
+  if (!is_inside(x, y, 0)) {
     return Color4();
   }
+
+  const float *pixel = &buf_[get_index(x, y, 0)];
+  const int channel_count = GetChannelCount();
   
   if (channel_count == 1) {
     return Color4(

@@ -43,10 +43,7 @@ public:
   // Returns the head of buffer if resize is done, otherwise NULL.
   float *Resize(int width, int height, int nchannels);
 
-  // Returns 0 if fb is has rgba channels otherwise -1.
-  // Bounds can be computed only when fb is an rgba buffer.
-  int ComputeBounds(int *bounds);
-  int IsEmpty() const;
+  bool IsEmpty() const;
 
   // Use these functions with caution.
   // Returns NULL if (x, y, z) is out of bounds.
