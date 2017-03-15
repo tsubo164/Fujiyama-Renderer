@@ -78,6 +78,8 @@ private:
 FJ_API void Copy(FrameBuffer &dst, const FrameBuffer &src,
     int src_offsetx, int src_offsety);
 
+FJ_API void CopyToVector(const FrameBuffer &fb, std::vector<float> &v);
+
 } // namespace xxx
 
 #endif // FJ_XXX_H

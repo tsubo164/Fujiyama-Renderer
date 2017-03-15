@@ -3,6 +3,7 @@
 
 #include "fj_framebuffer_io.h"
 #include "fj_framebuffer.h"
+#include "fj_color.h"
 #include <ImfChannelList.h>
 #include <ImfOutputFile.h>
 #include <ImfRgbaFile.h>
@@ -23,8 +24,7 @@ static const char USAGE[] =
 "  --help         Display this information\n"
 "\n";
 
-static void copy_fb_into_rgba(const float* src, Imf::Rgba* dst,
-    int width, int height, int nchannels);
+static void copy_fb_into_rgba(const FrameBuffer &fb, Imf::Rgba* rgba);
 static void write_rgba_layer(const char *filename,
     const Imf::Rgba* pixels, const Imath::Box2i &dispwin, const Imath::Box2i &datawin);
 static Imath::Box2i make_box2i(int *box);
@@ -68,12 +68,8 @@ try {
   FbReadData(in);
   FbCloseInputFile(in);
 
-  const int width = fb.GetWidth();
-  const int height = fb.GetHeight();
-  const int nchannels = fb.GetChannelCount();
-  vector<Imf::Rgba> rgba(width * height);
-
-  copy_fb_into_rgba(fb.GetReadOnly(0, 0, 0), &rgba[0], width, height, nchannels);
+  vector<Imf::Rgba> rgba(fb.GetWidth() * fb.GetHeight());
+  copy_fb_into_rgba(fb, &rgba[0]);
 
   write_rgba_layer(argv[2], &rgba[0], dispwin, datawin);
 
@@ -84,17 +80,43 @@ catch (const std::exception& e) {
   return -1;
 }
 
-static void copy_fb_into_rgba(const float* src, Imf::Rgba* dst,
-    int width, int height, int nchannels)
+static void copy_fb_into_rgba(const FrameBuffer &fb, Imf::Rgba* rgba)
 {
-  for (int i = 0; i < width * height; i++) {
-    dst[i].r = src[i*nchannels + 0];
-    dst[i].g = src[i*nchannels + 1];
-    dst[i].b = src[i*nchannels + 2];
-    if (nchannels == 4)
-      dst[i].a = src[i*nchannels + 3];
-    else
-      dst[i].a = 1;
+  const int W = fb.GetWidth();
+  const int H = fb.GetHeight();
+  const int C = fb.GetChannelCount();
+
+  for (int y = 0; y < H; y++) {
+    for (int x = 0; x < W; x++) {
+      const int index = y * W + x;
+      const Color4 color = fb.GetColor(x, y);
+      switch (C) {
+      case 1:
+        rgba[index].r = color[0];
+        rgba[index].g = color[0];
+        rgba[index].b = color[0];
+        rgba[index].a = 1;
+        break;
+      case 3:
+        rgba[index].r = color[0];
+        rgba[index].g = color[1];
+        rgba[index].b = color[2];
+        rgba[index].a = 1;
+        break;
+      case 4:
+        rgba[index].r = color[0];
+        rgba[index].g = color[1];
+        rgba[index].b = color[2];
+        rgba[index].a = color[3];
+        break;
+      default:
+        rgba[index].r = 0;
+        rgba[index].g = 0;
+        rgba[index].b = 0;
+        rgba[index].a = 0;
+        break;
+      }
+    }
   }
 }
 

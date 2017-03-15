@@ -182,54 +182,6 @@ void FbWriteFile(FbOutput *out)
   }
 }
 
-int FbSaveCroppedData(FrameBuffer *fb, const char *filename)
-{
-  int x, y;
-  int xmin, ymin, xmax, ymax;
-  int viewbox[4] = {0, 0, 0, 0};
-  int databox[4] = {0, 0, 0, 0};
-  FbOutput *out = NULL;
-
-  out = FbOpenOutputFile(filename);
-  if (out == NULL) {
-    return -1;
-  }
-
-  fb->ComputeBounds(databox);
-
-  xmin = databox[0];
-  ymin = databox[1];
-  xmax = databox[2];
-  ymax = databox[3];
-  BOX2_SET(viewbox, 0, 0, fb->GetWidth(), fb->GetHeight());
-
-  FrameBuffer cropped;
-  cropped.Resize(xmax-xmin, ymax-ymin, fb->GetChannelCount());
-
-  for ( y = ymin; y < ymax; y++) {
-    for ( x = xmin; x < xmax; x++) {
-      const float *src = (float *) fb->GetReadOnly(x, y, 0);
-      float *dst = cropped.GetWritable(x-xmin, y-ymin, 0);
-      dst[0] = src[0];
-      dst[1] = src[1];
-      dst[2] = src[2];
-      dst[3] = src[3];
-    }
-  }
-
-  out->width = cropped.GetWidth();
-  out->height = cropped.GetHeight();
-  out->nchannels = cropped.GetChannelCount();
-  BOX2_COPY(out->viewbox, viewbox);
-  BOX2_COPY(out->databox, databox);
-  out->data = cropped.GetReadOnly(0, 0, 0);
-
-  FbWriteFile(out);
-  FbCloseOutputFile(out);
-
-  return 0;
-}
-
 int WriteFrameBuffer(const FrameBuffer &fb, const std::string &filename)
 {
   FbOutput *out = FbOpenOutputFile(filename.c_str());
