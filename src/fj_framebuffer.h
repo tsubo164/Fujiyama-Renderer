@@ -40,9 +40,7 @@ public:
   int GetHeight() const;
   int GetChannelCount() const;
 
-  // Returns the head of buffer if resize is done, otherwise NULL.
-  float *Resize(int width, int height, int nchannels);
-
+  void Resize(int width, int height, int nchannels);
   bool IsEmpty() const;
 
   // Use these functions with caution.

@@ -49,7 +49,8 @@ int main(int argc, const char **argv)
     return -1;
   }
 
-  if (hdr.Resize(width, height, 3) == NULL) {
+  hdr.Resize(width, height, 3);
+  if (hdr.IsEmpty()) {
     fprintf(stderr, "error: could not allocate framebuffer: %d x %d\n", width, height);
     return -1;
   }

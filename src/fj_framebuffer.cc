@@ -39,7 +39,7 @@ int FrameBuffer::GetChannelCount() const
   return nchannels_;
 }
 
-float *FrameBuffer::Resize(int width, int height, int nchannels)
+void FrameBuffer::Resize(int width, int height, int nchannels)
 {
   assert(width >= 0);
   assert(height >= 0);
@@ -48,19 +48,17 @@ float *FrameBuffer::Resize(int width, int height, int nchannels)
   const int total_alloc = width * height * nchannels;
   // check overflow
   if (total_alloc < 0)
-    return NULL;
+    return;
 
   std::vector<float> buftmp(total_alloc);
   if (buftmp.empty())
-    return NULL;
+    return;
 
   // commit
   buf_.swap(buftmp);
   width_     = width;
   height_    = height;
   nchannels_ = nchannels;
-
-  return &buf_[0];
 }
 
 bool FrameBuffer::IsEmpty() const

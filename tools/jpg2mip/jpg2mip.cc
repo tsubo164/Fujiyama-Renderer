@@ -98,7 +98,8 @@ int main(int argc, const char **argv)
     goto cleanup_jpeg;
   }
 
-  if (fb.Resize(width, height, nchans) == NULL) {
+  fb.Resize(width, height, nchans);
+  if (fb.IsEmpty()) {
     fprintf(stderr, "error: could not allocate framebuffer: %d x %d\n", width, height);
     goto cleanup_jpeg;
   }
