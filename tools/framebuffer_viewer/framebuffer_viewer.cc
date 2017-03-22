@@ -155,46 +155,6 @@ void FrameBufferViewer::PressButton(MouseButton button, int x, int y)
 
   switch (button) {
   case MOUSE_BUTTON_LEFT:
-#if 0
-    {
-      const float *buf;
-      float pixel[4] = {0, 0, 0, 1};
-      int bufx, bufy;
-      int view_width;
-      int y_inv;
-      GLdouble wx;
-      GLdouble wy;
-      GLdouble wz;
-      GLint view[4];
-      GLdouble model[16];
-      GLdouble proj[16];
-
-      glGetIntegerv(GL_VIEWPORT, view);
-      glGetDoublev(GL_MODELVIEW_MATRIX, model);
-      glGetDoublev(GL_PROJECTION_MATRIX, proj);
-      y_inv=view[3]-(GLint)y-1;
-      printf ("Coordinates at cursor are (%4d, %4d)\n",x, y_inv);
-      gluUnProject(x, y_inv, 0., model, proj, view, &wx, &wy, &wz);
-      printf ("World coords at z=0.0 are (%g, %g, %g)\n", wx, wy, wz);
-      //gluUnProject(x, y_inv, 1., model, proj, view, &wx, &wy, &wz);
-      //printf ("World coords at z=1.0 are (%g, %g, %g)\n", wx, wy, wz);
-      view_width = viewbox[2] - viewbox[0];
-      bufx = (int) wx - viewbox[0];
-      bufy = (int) wy - viewbox[1] * view_width;
-      //bufy = (databox[3]-databox[1]-1) - bufy;
-      //printf ("++++++(%d, %d)\n", bufx, (databox[3]-databox[1]-1) - bufy);
-      bufy = FbGetHeight(fb) - bufy - 1;
-      //printf ("------(%d, %d)\n", bufx, bufy);
-      //bufx = CLAMP(bufx, 0, databox[2]-databox[0]-1);
-      //bufy = CLAMP(bufy, 0, databox[3]-databox[1]-1);
-      bufx = CLAMP(bufx, 0, FbGetWidth(fb)-1);
-      bufy = CLAMP(bufy, 0, FbGetHeight(fb)-1);
-      //printf ("(%d, %d)\n", bufx, bufy);
-      buf = FbGetReadOnly(fb, (int) bufx, (int) bufy, 0);
-      memcpy(pixel, buf, sizeof(float) * FbGetChannelCount(fb));
-      printf("R:%g G:%g B:%g A:%g\n", pixel[0], pixel[1], pixel[2], pixel[3]);
-        }
-#endif
     break;
   case MOUSE_BUTTON_MIDDLE:
     pressbutton_ = MOUSE_BUTTON_MIDDLE;
@@ -366,9 +326,9 @@ void FrameBufferViewer::Listen()
   }
   else {
     Message message;
-    FrameBuffer tile_data;
+    FrameBuffer tilebuf;
 
-    int e = ReceiveMessage(client, message, tile_data);
+    int e = ReceiveMessage(client, message, tilebuf);
     if (e < 0) {
       // TODO ERROR HANDLING
     }
@@ -458,18 +418,18 @@ void FrameBufferViewer::Listen()
 
       {
         // TODO define gamma function
-        float *pixel = tile_data.GetWritable(0, 0, 0);
+        float *pixel = tilebuf.GetWritable(0, 0, 0);
         const int N =
-            tile_data.GetWidth() *
-            tile_data.GetHeight() *
-            tile_data.GetChannelCount();
+            tilebuf.GetWidth() *
+            tilebuf.GetHeight() *
+            tilebuf.GetChannelCount();
         const float gamma = 1 / 2.2;
         for (int i = 0; i < N; i++) {
           pixel[i] = pow(pixel[i], gamma);
         }
       }
 
-      Copy(fb_, tile_data,
+      PasteInto(fb_, tilebuf,
           tile_status_[message.tile_id].region.min[0],
           tile_status_[message.tile_id].region.min[1]);
 

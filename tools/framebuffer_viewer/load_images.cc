@@ -73,13 +73,9 @@ int LoadMip(const std::string &filename, FrameBuffer *fb, BufferInfo *info)
   for (int y = 0; y < in.GetTileCountY(); y++) {
     for (int x = 0; x < in.GetTileCountX(); x++) {
       in.ReadTile(x, y, tilebuf.GetWritable(0, 0, 0));
-      for (int i = 0; i < in.GetTileSize(); i++) {
-        float *dst;
-        const float *src;
-        dst = fb->GetWritable(x * in.GetTileSize(), y * in.GetTileSize() + i, 0);
-        src = tilebuf.GetReadOnly(0, i, 0);
-        memcpy(dst, src, sizeof(float) * in.GetTileSize() * in.GetChannelCount());
-      }
+      const int start_x = x * in.GetTileSize();
+      const int start_y = y * in.GetTileSize();
+      PasteInto(*fb, tilebuf, start_x, start_y);
     }
   }
 

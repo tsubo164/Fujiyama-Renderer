@@ -162,20 +162,6 @@ bool FrameBuffer::is_inside(int x, int y, int z) const
   return true;
 }
 
-void Copy(FrameBuffer &dst, const FrameBuffer &src,
-    int src_offsetx, int src_offsety)
-{
-  for (int y = 0; y < src.GetHeight(); y++) {
-    for (int x = 0; x < src.GetWidth(); x++) {
-      const Color4 color = src.GetColor(x, y);
-      dst.SetColor(
-          x + src_offsetx,
-          y + src_offsety,
-          color);
-    }
-  }
-}
-
 void CopyInto(const FrameBuffer &src, FrameBuffer &dst,
     int dst_offsetx, int dst_offsety)
 {
@@ -184,8 +170,20 @@ void CopyInto(const FrameBuffer &src, FrameBuffer &dst,
       const int src_x = x + dst_offsetx;
       const int src_y = y + dst_offsety;
       const Color4 color = src.GetColor(src_x, src_y);
-
       dst.SetColor(x, y, color);
+    }
+  }
+}
+
+void PasteInto(FrameBuffer &dst, const FrameBuffer &src,
+    int src_offsetx, int src_offsety)
+{
+  for (int y = 0; y < src.GetHeight(); y++) {
+    for (int x = 0; x < src.GetWidth(); x++) {
+      const Color4 color = src.GetColor(x, y);
+      const int dst_x = x + src_offsetx;
+      const int dst_y = y + src_offsety;
+      dst.SetColor(dst_x, dst_y, color);
     }
   }
 }

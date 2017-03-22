@@ -71,11 +71,11 @@ private:
   int nchannels_;
 };
 
-FJ_API void Copy(FrameBuffer &dst, const FrameBuffer &src,
-    int src_offsetx, int src_offsety);
-
 FJ_API void CopyInto(const FrameBuffer &src, FrameBuffer &dst,
     int dst_offsetx, int dst_offsety);
+
+FJ_API void PasteInto(FrameBuffer &dst, const FrameBuffer &src,
+    int src_offsetx, int src_offsety);
 
 } // namespace xxx
 
