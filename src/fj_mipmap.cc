@@ -287,12 +287,14 @@ void MipOutput::WriteFile()
   const int XNTILES = width_ / TILESIZE;
   const int YNTILES = height_ / TILESIZE;
 
+  FrameBuffer tilebuf;
+  tilebuf.Resize(TILESIZE, TILESIZE, nchannels_);
   for (int y = 0; y < YNTILES; y++) {
     for (int x = 0; x < XNTILES; x++) {
-      for (int i = 0; i < TILESIZE; i++) {
-        const float *line = fb_.GetReadOnly(x * TILESIZE, y * TILESIZE + i, 0);
-        fwrite(line, sizeof(float), TILESIZE * nchannels_, file_);
-      }
+      const int TILE_STARTX = x * TILESIZE;
+      const int TILE_STARTY = y * TILESIZE;
+      CopyInto(fb_, tilebuf, TILE_STARTX, TILE_STARTY);
+      fwrite(tilebuf.GetReadOnly(0, 0, 0), sizeof(float), tilebuf.GetSize(), file_);
     }
   }
 }

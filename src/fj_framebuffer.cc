@@ -39,6 +39,11 @@ int FrameBuffer::GetChannelCount() const
   return nchannels_;
 }
 
+int FrameBuffer::GetSize() const
+{
+  return GetWidth() * GetHeight() * GetChannelCount();
+}
+
 void FrameBuffer::Resize(int width, int height, int nchannels)
 {
   assert(width >= 0);
@@ -171,21 +176,16 @@ void Copy(FrameBuffer &dst, const FrameBuffer &src,
   }
 }
 
-FJ_API void CopyToVector(const FrameBuffer &fb, std::vector<float> &v)
+void CopyInto(const FrameBuffer &src, FrameBuffer &dst,
+    int dst_offsetx, int dst_offsety)
 {
-  const int W = fb.GetWidth();
-  const int H = fb.GetHeight();
-  const int C = fb.GetChannelCount();
+  for (int y = 0; y < dst.GetHeight(); y++) {
+    for (int x = 0; x < dst.GetWidth(); x++) {
+      const int src_x = x + dst_offsetx;
+      const int src_y = y + dst_offsety;
+      const Color4 color = src.GetColor(src_x, src_y);
 
-  v.resize(W * H * C);
-
-  for (int y = 0; y < H; y++) {
-    for (int x = 0; x < W; x++) {
-      const int index = y * C * W + x * C;
-      const Color4 color = fb.GetColor(x, y);
-      for (int z = 0; z < C; z++) {
-        v[index + z] = color[z];
-      }
+      dst.SetColor(x, y, color);
     }
   }
 }

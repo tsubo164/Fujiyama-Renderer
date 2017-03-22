@@ -40,6 +40,7 @@ public:
   int GetHeight() const;
   int GetChannelCount() const;
 
+  int GetSize() const;
   void Resize(int width, int height, int nchannels);
   bool IsEmpty() const;
 
@@ -73,7 +74,8 @@ private:
 FJ_API void Copy(FrameBuffer &dst, const FrameBuffer &src,
     int src_offsetx, int src_offsety);
 
-FJ_API void CopyToVector(const FrameBuffer &fb, std::vector<float> &v);
+FJ_API void CopyInto(const FrameBuffer &src, FrameBuffer &dst,
+    int dst_offsetx, int dst_offsety);
 
 } // namespace xxx
 
