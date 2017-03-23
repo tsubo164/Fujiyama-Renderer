@@ -7,6 +7,7 @@
 #include "fj_protocol.h"
 #include "fj_numeric.h"
 #include "fj_mipmap.h"
+#include "fj_color.h"
 #include "fj_box.h"
 
 #include "compatible_opengl.h"
@@ -416,16 +417,11 @@ void FrameBufferViewer::Listen()
       tile_status_[message.tile_id].region.max[1] = message.ymax;
       tile_status_[message.tile_id].state = STATE_DONE;
 
-      {
-        // TODO define gamma function
-        float *pixel = tilebuf.GetWritable(0, 0, 0);
-        const int N =
-            tilebuf.GetWidth() *
-            tilebuf.GetHeight() *
-            tilebuf.GetChannelCount();
-        const float gamma = 1 / 2.2;
-        for (int i = 0; i < N; i++) {
-          pixel[i] = pow(pixel[i], gamma);
+      // Gamma
+      for (int y = 0; y < tilebuf.GetHeight(); y++) {
+        for (int x = 0; x < tilebuf.GetWidth(); x++) {
+          const Color4 color = tilebuf.GetColor(x, y);
+          tilebuf.SetColor(x, y, Gamma(color, 1/2.2));
         }
       }
 
@@ -491,16 +487,11 @@ int FrameBufferViewer::LoadImage(const std::string &filename)
     return -1;
   }
 
-  {
-    // TODO define gamma function
-    float *pixel = fb_.GetWritable(0, 0, 0);
-    const int N = fb_.GetWidth() * fb_.GetHeight() * fb_.GetChannelCount();
-    int i;
-
-    const float gamma = 1 / 2.2;
-
-    for (i = 0; i < N; i++) {
-      pixel[i] = pow(pixel[i], gamma);
+  // Gamma
+  for (int y = 0; y < fb_.GetHeight(); y++) {
+    for (int x = 0; x < fb_.GetWidth(); x++) {
+      const Color4 color = fb_.GetColor(x, y);
+      fb_.SetColor(x, y, Gamma(color, 1/2.2));
     }
   }
 

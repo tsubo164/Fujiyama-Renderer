@@ -295,6 +295,15 @@ inline Color Gamma(const Color &A, float gamma)
       Gamma(A[2], gamma));
 }
 
+inline Color4 Gamma(const Color4 &A, float gamma)
+{
+  return Color4(
+      Gamma(A[0], gamma),
+      Gamma(A[1], gamma),
+      Gamma(A[2], gamma),
+      A[3]);
+}
+
 inline Color ToColor(const Color4 &A)
 {
   return Color(
