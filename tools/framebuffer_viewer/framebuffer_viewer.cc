@@ -28,6 +28,9 @@ FrameBufferViewer::FrameBufferViewer() :
     win_height_(0),
     diplay_channel_(DISPLAY_RGB),
     pressbutton_(MOUSE_BUTTON_NONE),
+
+    viewbox_(),
+
     tilesize_(0),
     draw_tile_(1),
     window_object_(NULL),
@@ -39,7 +42,6 @@ FrameBufferViewer::FrameBufferViewer() :
     frame_id_(-1)
 {
   set_to_home_position();
-  BOX2_SET(viewbox_, 0, 0, 0, 0);
 }
 
 FrameBufferViewer::~FrameBufferViewer()
@@ -55,8 +57,8 @@ FrameBufferViewer::~FrameBufferViewer()
 
 void FrameBufferViewer::Draw() const
 {
-  const int xviewsize = viewbox_[2] - viewbox_[0];
-  const int yviewsize = viewbox_[3] - viewbox_[1];
+  const int xviewsize = viewbox_.Size()[0];
+  const int yviewsize = viewbox_.Size()[1];
   const int xmove = scale_ * xoffset_; 
   const int ymove = scale_ * yoffset_; 
 
@@ -77,10 +79,10 @@ void FrameBufferViewer::Draw() const
   // render background
   glColor3f(0.f, 0.f, 0.f);
   glBegin(GL_QUADS);
-    glVertex3f(viewbox_[0], viewbox_[1], 0.f);
-    glVertex3f(viewbox_[2], viewbox_[1], 0.f);
-    glVertex3f(viewbox_[2], viewbox_[3], 0.f);
-    glVertex3f(viewbox_[0], viewbox_[3], 0.f);
+    glVertex3f(viewbox_.min[0], viewbox_.min[1], 0.f);
+    glVertex3f(viewbox_.max[0], viewbox_.min[1], 0.f);
+    glVertex3f(viewbox_.max[0], viewbox_.max[1], 0.f);
+    glVertex3f(viewbox_.min[0], viewbox_.max[1], 0.f);
   glEnd();
 
   // render framebuffer
@@ -345,18 +347,18 @@ void FrameBufferViewer::Listen()
       }
       frame_id_   = message.frame_id;
       fb_.Resize(message.xres, message.yres, message.channel_count);
-      viewbox_[0] = 0;
-      viewbox_[1] = 0;
-      viewbox_[2] = message.xres;
-      viewbox_[3] = message.yres;
+      viewbox_.min[0] = 0;
+      viewbox_.min[1] = 0;
+      viewbox_.max[0] = message.xres;
+      viewbox_.max[1] = message.yres;
       setup_image_card();
       tile_status_.clear();
       tile_status_.resize(message.tile_count);
       state_ = STATE_RENDERING;
 
       if (resize_window_ != NULL) {
-        const int new_window_size_x = viewbox_[2] - viewbox_[0];
-        const int new_window_size_y = viewbox_[3] - viewbox_[1];
+        const int new_window_size_x = viewbox_.Size()[0];
+        const int new_window_size_y = viewbox_.Size()[1];
         resize_window_(window_object_, new_window_size_x, new_window_size_y);
       }
       if (change_window_title_ != NULL) {
@@ -464,13 +466,13 @@ int FrameBufferViewer::LoadImage(const std::string &filename)
   if (ext == "fb") {
     BufferInfo info;
     err = LoadFb(filename_, &fb_, &info);
-    BOX2_COPY(viewbox_, info.viewbox);
+    viewbox_ = info.viewbox;
     tilesize_ = info.tilesize;
   }
   else if (ext == "mip") {
     BufferInfo info;
     err = LoadMip(filename_, &fb_, &info);
-    BOX2_COPY(viewbox_, info.viewbox);
+    viewbox_ = info.viewbox;
     tilesize_ = info.tilesize;
   }
   else {
@@ -493,8 +495,8 @@ int FrameBufferViewer::LoadImage(const std::string &filename)
   if (resize_window_ != NULL) {
     resize_window_(
         window_object_,
-        viewbox_[2] - viewbox_[0],
-        viewbox_[3] - viewbox_[1]);
+        viewbox_.Size()[0],
+        viewbox_.Size()[1]);
   }
   if (change_window_title_ != NULL) {
     change_window_title_(window_object_, filename_.c_str());
@@ -503,9 +505,9 @@ int FrameBufferViewer::LoadImage(const std::string &filename)
   return err;
 }
 
-void FrameBufferViewer::GetImageSize(int viewbox[4], int *nchannels) const
+void FrameBufferViewer::GetImageSize(Rectangle &viewbox, int *nchannels) const
 {
-  BOX2_COPY(viewbox, viewbox_);
+  viewbox = viewbox_;
   *nchannels = fb_.GetChannelCount();
 }
 
@@ -547,10 +549,10 @@ void FrameBufferViewer::setup_image_card()
 
   image_.Init(fb_.GetReadOnly(0, 0, 0),
       fb_.GetChannelCount(), diplay_channel_,
-      viewbox_[0],
-      -viewbox_[1],
-      viewbox_[2] - viewbox_[0],
-      viewbox_[3] - viewbox_[1]);
+      viewbox_.min[0],
+      -viewbox_.min[1],
+      viewbox_.Size()[0],
+      viewbox_.Size()[1]);
 }
 
 void FrameBufferViewer::draw_viewbox() const
@@ -590,10 +592,10 @@ void FrameBufferViewer::draw_viewbox() const
   glLineStipple(1, 0x0F0F);
   glColor3f(r, g, b);
   glBegin(GL_LINE_LOOP);
-    glVertex3f(viewbox_[0], viewbox_[1], 0.f);
-    glVertex3f(viewbox_[0], viewbox_[3], 0.f);
-    glVertex3f(viewbox_[2], viewbox_[3], 0.f);
-    glVertex3f(viewbox_[2], viewbox_[1], 0.f);
+    glVertex3f(viewbox_.min[0], viewbox_.min[1], 0.f);
+    glVertex3f(viewbox_.min[0], viewbox_.max[1], 0.f);
+    glVertex3f(viewbox_.max[0], viewbox_.max[1], 0.f);
+    glVertex3f(viewbox_.max[0], viewbox_.min[1], 0.f);
   glEnd();
   glPopAttrib();
 }

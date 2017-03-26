@@ -46,7 +46,7 @@ public:
 
   int LoadImage(const std::string &filename);
 
-  void GetImageSize(int viewbox[4], int *nchannels) const;
+  void GetImageSize(Rectangle &viewbox, int *nchannels) const;
 
   void SetWindowResizeRequest(
       void *window_object,
@@ -83,7 +83,8 @@ private:
   int xlockoffset_;
   int ylockoffset_;
 
-  int viewbox_[4];
+  //int viewbox_[4];
+  Rectangle viewbox_;
 
   int tilesize_;
   int draw_tile_;

@@ -16,6 +16,20 @@
 #define FB_FILE_MAGIC "FBUF"
 #define FB_MAGIC_SIZE 4
 
+#define BOX2_SET(dst,xmin,ymin,xmax,ymax) do { \
+  (dst)[0] = (xmin); \
+  (dst)[1] = (ymin); \
+  (dst)[2] = (xmax); \
+  (dst)[3] = (ymax); \
+  } while(0)
+
+#define BOX2_COPY(dst,a) do { \
+  (dst)[0] = (a)[0]; \
+  (dst)[1] = (a)[1]; \
+  (dst)[2] = (a)[2]; \
+  (dst)[3] = (a)[3]; \
+  } while(0)
+
 namespace fj {
 
 static void set_error(int err);

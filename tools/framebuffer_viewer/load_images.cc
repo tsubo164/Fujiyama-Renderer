@@ -41,7 +41,10 @@ int LoadFb(const std::string &filename, FrameBuffer *fb, BufferInfo *info)
   in->data = fb->GetWritable(0, 0, 0);
   FbReadData(in);
 
-  BOX2_COPY(info->viewbox, in->viewbox);
+  info->viewbox.min[0] = in->viewbox[0];
+  info->viewbox.min[1] = in->viewbox[1];
+  info->viewbox.max[0] = in->viewbox[2];
+  info->viewbox.max[1] = in->viewbox[3];
   info->tilesize = 0;
 
   FbCloseInputFile(in);
@@ -78,7 +81,10 @@ int LoadMip(const std::string &filename, FrameBuffer *fb, BufferInfo *info)
     }
   }
 
-  BOX2_SET(info->viewbox, 0, 0, in.GetWidth(), in.GetHeight());
+  info->viewbox.min[0] = 0;
+  info->viewbox.min[1] = 0;
+  info->viewbox.max[0] = in.GetWidth();
+  info->viewbox.max[1] = in.GetHeight();
   info->tilesize = in.GetTileSize();
 
   return 0;

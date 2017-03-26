@@ -4,6 +4,7 @@
 #ifndef LOAD_IMAGES_H
 #define LOAD_IMAGES_H
 
+#include "fj_rectangle.h"
 #include <string>
 
 namespace fj {
@@ -16,7 +17,7 @@ public:
   ~BufferInfo() {}
 
 public:
-  int viewbox[4];
+  Rectangle viewbox;
   int tilesize;
 };
 

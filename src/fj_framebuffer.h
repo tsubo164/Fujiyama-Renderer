@@ -7,26 +7,6 @@
 #include "fj_compatibility.h"
 #include <vector>
 
-/* TODO delete BOX2 */
-/* BOX2 */
-/* BOX2[4] {min{0, 0}, max{0, 0}} */
-#define BOX2_XSIZE(box) ((box)[2]-(box)[0])
-#define BOX2_YSIZE(box) ((box)[3]-(box)[1])
-
-#define BOX2_SET(dst,xmin,ymin,xmax,ymax) do { \
-  (dst)[0] = (xmin); \
-  (dst)[1] = (ymin); \
-  (dst)[2] = (xmax); \
-  (dst)[3] = (ymax); \
-  } while(0)
-
-#define BOX2_COPY(dst,a) do { \
-  (dst)[0] = (a)[0]; \
-  (dst)[1] = (a)[1]; \
-  (dst)[2] = (a)[2]; \
-  (dst)[3] = (a)[3]; \
-  } while(0)
-
 namespace fj {
 
 class Color4;
