@@ -5,6 +5,11 @@
 
 namespace fj {
 
+Int2 Rectangle::Size() const
+{
+  return max - min;
+}
+
 std::ostream &operator<<(std::ostream &os, const Rectangle &rect)
 {
   return os << "(" << rect.min << ", " << rect.max << ")";

@@ -42,7 +42,6 @@ int LoadFb(const std::string &filename, FrameBuffer *fb, BufferInfo *info)
   FbReadData(in);
 
   BOX2_COPY(info->viewbox, in->viewbox);
-  BOX2_COPY(info->databox, in->databox);
   info->tilesize = 0;
 
   FbCloseInputFile(in);
@@ -80,7 +79,6 @@ int LoadMip(const std::string &filename, FrameBuffer *fb, BufferInfo *info)
   }
 
   BOX2_SET(info->viewbox, 0, 0, in.GetWidth(), in.GetHeight());
-  BOX2_COPY(info->databox, info->viewbox);
   info->tilesize = in.GetTileSize();
 
   return 0;

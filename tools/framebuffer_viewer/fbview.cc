@@ -204,7 +204,6 @@ static void window_change_title_callback(void *win, const char *title)
 
 static int initialize_viewer(const char *filename)
 {
-  int databox[4] = {0, 0, 0, 0};
   int viewbox[4] = {0, 0, 0, 0};
 
   // create viewer
@@ -237,7 +236,7 @@ static int initialize_viewer(const char *filename)
       const char *format;
       int nchannels;
       // get image size info
-      viewer->GetImageSize(viewbox, databox, &nchannels);
+      viewer->GetImageSize(viewbox, &nchannels);
       switch (nchannels) {
       case 3:
         format = "RGB";
@@ -251,7 +250,6 @@ static int initialize_viewer(const char *filename)
       }
       printf("%d x %d: %s\n", viewbox[2]-viewbox[0], viewbox[3]-viewbox[1], format);
       printf("viewbox: %d %d %d %d\n", viewbox[0], viewbox[1], viewbox[2], viewbox[3]);
-      printf("databox: %d %d %d %d\n", databox[0], databox[1], databox[2], databox[3]);
     }
   }
 

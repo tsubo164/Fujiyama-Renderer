@@ -12,11 +12,10 @@ class FrameBuffer;
 
 class BufferInfo {
 public:
-  BufferInfo() : databox(), viewbox(), tilesize(0) {}
+  BufferInfo() : viewbox(), tilesize(0) {}
   ~BufferInfo() {}
 
 public:
-  int databox[4];
   int viewbox[4];
   int tilesize;
 };

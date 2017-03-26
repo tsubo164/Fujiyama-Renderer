@@ -39,7 +39,6 @@ FrameBufferViewer::FrameBufferViewer() :
     frame_id_(-1)
 {
   set_to_home_position();
-  BOX2_SET(databox_, 0, 0, 0, 0);
   BOX2_SET(viewbox_, 0, 0, 0, 0);
 }
 
@@ -350,10 +349,6 @@ void FrameBufferViewer::Listen()
       viewbox_[1] = 0;
       viewbox_[2] = message.xres;
       viewbox_[3] = message.yres;
-      databox_[0] = viewbox_[0];
-      databox_[1] = viewbox_[1];
-      databox_[2] = viewbox_[2];
-      databox_[3] = viewbox_[3];
       setup_image_card();
       tile_status_.clear();
       tile_status_.resize(message.tile_count);
@@ -470,14 +465,12 @@ int FrameBufferViewer::LoadImage(const std::string &filename)
     BufferInfo info;
     err = LoadFb(filename_, &fb_, &info);
     BOX2_COPY(viewbox_, info.viewbox);
-    BOX2_COPY(databox_, info.databox);
     tilesize_ = info.tilesize;
   }
   else if (ext == "mip") {
     BufferInfo info;
     err = LoadMip(filename_, &fb_, &info);
     BOX2_COPY(viewbox_, info.viewbox);
-    BOX2_COPY(databox_, info.databox);
     tilesize_ = info.tilesize;
   }
   else {
@@ -510,10 +503,9 @@ int FrameBufferViewer::LoadImage(const std::string &filename)
   return err;
 }
 
-void FrameBufferViewer::GetImageSize(int viewbox[4], int databox[4], int *nchannels) const
+void FrameBufferViewer::GetImageSize(int viewbox[4], int *nchannels) const
 {
   BOX2_COPY(viewbox, viewbox_);
-  BOX2_COPY(databox, databox_);
   *nchannels = fb_.GetChannelCount();
 }
 
@@ -555,10 +547,10 @@ void FrameBufferViewer::setup_image_card()
 
   image_.Init(fb_.GetReadOnly(0, 0, 0),
       fb_.GetChannelCount(), diplay_channel_,
-      databox_[0],
-      viewbox_[3] - viewbox_[1] - databox_[3],
-      databox_[2] - databox_[0],
-      databox_[3] - databox_[1]);
+      viewbox_[0],
+      -viewbox_[1],
+      viewbox_[2] - viewbox_[0],
+      viewbox_[3] - viewbox_[1]);
 }
 
 void FrameBufferViewer::draw_viewbox() const

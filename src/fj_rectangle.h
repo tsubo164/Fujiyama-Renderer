@@ -21,11 +21,6 @@ public:
   Int2 min, max;
 };
 
-inline Int2 Rectangle::Size() const
-{
-  return max - min;
-}
-
 std::ostream &operator<<(std::ostream &os, const Rectangle &rect);
 
 } // namespace xxx

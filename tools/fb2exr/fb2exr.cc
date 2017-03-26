@@ -59,7 +59,7 @@ try {
     return -1;
   }
   const Imath::Box2i dispwin = make_box2i(in->viewbox);
-  const Imath::Box2i datawin = make_box2i(in->databox);
+  const Imath::Box2i datawin = make_box2i(in->viewbox);
 
   fj::FrameBuffer fb;
   fb.Resize(in->width, in->height, in->nchannels);
