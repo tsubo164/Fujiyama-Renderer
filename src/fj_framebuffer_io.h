@@ -71,6 +71,7 @@ FJ_API void FbWriteFile(FbOutput *out);
 
 // high level interface for saving framebuffer file
 FJ_API int WriteFrameBuffer(const FrameBuffer &fb, const std::string &filename);
+FJ_API int ReadFrameBuffer(FrameBuffer &fb, const std::string &filename);
 
 } // namespace xxx
 

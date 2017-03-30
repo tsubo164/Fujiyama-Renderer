@@ -27,6 +27,14 @@ int LoadFb(const std::string &filename, FrameBuffer *fb, BufferInfo *info)
   if (fb == NULL)
     return -1;
 
+  ReadFrameBuffer(*fb, filename);
+  info->viewbox.min[0] = 0;
+  info->viewbox.min[1] = 0;
+  info->viewbox.max[0] = fb->GetWidth();
+  info->viewbox.max[1] = fb->GetHeight();
+  info->tilesize = 0;
+  return 0;
+
   FbInput *in = FbOpenInputFile(filename.c_str());
   if (in == NULL) {
     return -1;
