@@ -25,15 +25,11 @@ static const char USAGE[] =
 "\n";
 
 static void copy_fb_into_rgba(const FrameBuffer &fb, Imf::Rgba* rgba);
-static void write_rgba_layer(const char *filename,
-    const Imf::Rgba* pixels, const Imath::Box2i &dispwin, const Imath::Box2i &datawin);
-static Imath::Box2i make_box2i(int *box);
+static void write_rgba(const char *filename, const Imf::Rgba *pixels, int width, int height);
 
 int main(int argc, const char** argv)
 try {
   using namespace std;
-  //using namespace Imf;
-  //using ::FrameBuffer;
 
   if (argc == 2 && strcmp(argv[1], "--help") == 0) {
     cout << USAGE;
@@ -46,32 +42,13 @@ try {
     return -1;
   }
 
-  const string in_file(argv[1]);
-  FbInput *in = FbOpenInputFile(in_file.c_str());
-  if (in == NULL) {
-    cerr << "error: could not open input file: " << in_file << "\n";
-    return -1;
-  }
-
-  if (FbReadHeader(in)) {
-    cerr << "error: failed to read header: " << in_file << "\n";
-    FbCloseInputFile(in);
-    return -1;
-  }
-  const Imath::Box2i dispwin = make_box2i(in->viewbox);
-  const Imath::Box2i datawin = make_box2i(in->viewbox);
-
+  const std::string filename(argv[1]);
   fj::FrameBuffer fb;
-  fb.Resize(in->width, in->height, in->nchannels);
-  in->data = fb.GetWritable(0, 0, 0);
-
-  FbReadData(in);
-  FbCloseInputFile(in);
+  ReadFrameBuffer(filename, fb);
 
   vector<Imf::Rgba> rgba(fb.GetWidth() * fb.GetHeight());
   copy_fb_into_rgba(fb, &rgba[0]);
-
-  write_rgba_layer(argv[2], &rgba[0], dispwin, datawin);
+  write_rgba(argv[2], &rgba[0], fb.GetWidth(), fb.GetHeight());
 
   return 0;
 }
@@ -120,57 +97,9 @@ static void copy_fb_into_rgba(const FrameBuffer &fb, Imf::Rgba* rgba)
   }
 }
 
-static void write_rgba_layer(const char *filename,
-    const Imf::Rgba* pixels, const Imath::Box2i &dispwin, const Imath::Box2i &datawin)
+static void write_rgba(const char *filename, const Imf::Rgba *pixels, int width, int height)
 {
-  using namespace Imf;
-
-  const int DISP_WIDTH  = dispwin.max.x - dispwin.min.x + 1;
-  const int DISP_HEIGHT = dispwin.max.y - dispwin.min.y + 1;
-
-  const int DATA_WIDTH = datawin.max.x - datawin.min.x + 1;
-  const int DATA_HEIGHT = datawin.max.y - datawin.min.y + 1;
-  const Imf::Rgba* BASE = pixels - datawin.min.x - datawin.min.y * DATA_WIDTH;
-
-  Imf::Header header(DISP_WIDTH, DISP_HEIGHT);
-  header.dataWindow() = datawin;
-  header.channels().insert("R", Imf::Channel(Imf::HALF));
-  header.channels().insert("G", Imf::Channel(Imf::HALF));
-  header.channels().insert("B", Imf::Channel(Imf::HALF));
-  header.channels().insert("A", Imf::Channel(Imf::HALF));
-
-  Imf::OutputFile exr(filename, header);
-  Imf::FrameBuffer frameBuffer;
-
-  frameBuffer.insert("R",               // name
-      Imf::Slice(Imf::HALF,             // type
-          (char *)(&BASE->r),           // base
-          sizeof(*BASE),                // xStride
-          sizeof(*BASE) * DATA_WIDTH)); // yStride
-
-  frameBuffer.insert("G",               // name
-      Imf::Slice(Imf::HALF,             // type
-          (char *)(&BASE->g),           // base
-          sizeof(*BASE),                // xStride
-          sizeof(*BASE) * DATA_WIDTH)); // yStride
-
-  frameBuffer.insert("B",               // name
-      Imf::Slice(Imf::HALF,             // type
-          (char *)(&BASE->b),           // base
-          sizeof(*BASE),                // xStride
-          sizeof(*BASE) * DATA_WIDTH)); // yStride
-
-  frameBuffer.insert("A",               // name
-      Imf::Slice(Imf::HALF,             // type
-          (char *)(&BASE->a),           // base
-          sizeof(*BASE),                // xStride
-          sizeof(*BASE) * DATA_WIDTH)); // yStride
-
-  exr.setFrameBuffer(frameBuffer);
-  exr.writePixels(DATA_HEIGHT);
-}
-
-static Imath::Box2i make_box2i(int *box)
-{
-  return Imath::Box2i(Imath::V2i(box[0], box[1]), Imath::V2i(box[2] - 1, box[3] - 1));
+  Imf::RgbaOutputFile file(filename, width, height, Imf::WRITE_RGBA);
+  file.setFrameBuffer(pixels, 1, width);
+  file.writePixels(height);
 }

@@ -297,7 +297,7 @@ Status SiSaveFrameBuffer(ID framebuffer, const char *filename)
     return SI_FAIL;
   }
 
-  err = WriteFrameBuffer(*framebuffer_ptr, filename);
+  err = WriteFrameBuffer(filename, *framebuffer_ptr);
   if (err) {
     /* TODO error handling */
     return SI_FAIL;

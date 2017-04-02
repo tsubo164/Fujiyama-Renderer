@@ -7,35 +7,63 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
 #include <cassert>
 #include <cstdlib>
 
 namespace fj {
+
+const std::string PTO_HEADER = "#PTO Plain Text Object";
+
+inline void WritePtoHeader(std::ostream &strm)
+{
+  strm << PTO_HEADER << std::endl;
+}
+
+inline bool ReadPtoHeader(std::istream &strm)
+{
+  std::string header;
+  getline(strm, header);
+  return header == PTO_HEADER;
+}
 
 class PtoParser {
 public:
   PtoParser() {}
   virtual ~PtoParser() {}
 
-  void Parse(std::istream &strm)
+  bool ParseHeader(std::istream &strm)
+  {
+    return ReadPtoHeader(strm);
+  }
+
+  void ParseBody(std::istream &strm)
   {
     parse_lines(strm);
+  }
+
+  int Parse(std::istream &strm)
+  {
+    if (!ParseHeader(strm)) {
+      return -1;
+    }
+
+    ParseBody(strm);
+    return 0;
   }
 
 protected:
   long to_integer(const std::string &s, long otherwise)
   {
-    char *end;
-    const long l = strtol(s.c_str(), &end, 0);
-    return *end == '\0' ? l : otherwise;
+    char *endp = NULL;
+    const long l = strtol(s.c_str(), &endp, 0);
+    return *endp == '\0' ? l : otherwise;
   }
 
   double to_float(const std::string &s, float otherwise)
   {
-    char *end;
-    const float f = strtod(s.c_str(), &end);
-    return *end == '\0' ? f : otherwise;
+    char *endp = NULL;
+    const double f = strtod(s.c_str(), &endp);
+    return *endp == '\0' ? f : otherwise;
   }
 
 private:
@@ -45,8 +73,7 @@ private:
 
   enum TokenKind {
     TK_value = 256,
-    TK_string,
-    TK_eof = EOF
+    TK_string
   };
 
   std::vector<std::string> tokens;

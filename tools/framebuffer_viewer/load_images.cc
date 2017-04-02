@@ -7,14 +7,11 @@
 #include "fj_mipmap.h"
 #include "fj_box.h"
 
-#include <cstring>
-
 namespace fj {
 
 std::string GetFileExtension(const std::string &filename)
 {
   const size_t dotpos = filename.rfind('.');
-
   if(dotpos == std::string::npos){
     return std::string("");
   }
@@ -24,52 +21,32 @@ std::string GetFileExtension(const std::string &filename)
 
 int LoadFb(const std::string &filename, FrameBuffer *fb, BufferInfo *info)
 {
-  if (fb == NULL)
+  if (fb == NULL) {
     return -1;
+  }
 
-  ReadFrameBuffer(*fb, filename);
+  ReadFrameBuffer(filename, *fb);
   info->viewbox.min[0] = 0;
   info->viewbox.min[1] = 0;
   info->viewbox.max[0] = fb->GetWidth();
   info->viewbox.max[1] = fb->GetHeight();
   info->tilesize = 0;
-  return 0;
-
-  FbInput *in = FbOpenInputFile(filename.c_str());
-  if (in == NULL) {
-    return -1;
-  }
-
-  if (FbReadHeader(in)) {
-    FbCloseInputFile(in);
-    return -1;
-  }
-
-  fb->Resize(in->width, in->height, in->nchannels);
-  in->data = fb->GetWritable(0, 0, 0);
-  FbReadData(in);
-
-  info->viewbox.min[0] = in->viewbox[0];
-  info->viewbox.min[1] = in->viewbox[1];
-  info->viewbox.max[0] = in->viewbox[2];
-  info->viewbox.max[1] = in->viewbox[3];
-  info->tilesize = 0;
-
-  FbCloseInputFile(in);
 
   return 0;
 }
 
 int LoadMip(const std::string &filename, FrameBuffer *fb, BufferInfo *info)
 {
-  if (fb == NULL)
+  if (fb == NULL) {
     return -1;
+  }
 
   MipInput in;
 
   in.Open(filename);
-  if (!in.IsOpen())
+  if (!in.IsOpen()) {
     return -1;
+  }
 
   if (in.ReadHeader()) {
     return -1;
