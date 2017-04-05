@@ -461,18 +461,14 @@ ID SiNewPointCloud(const char *filename)
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
   }
-  /*
   if (strcmp(filename, "null") == 0) {
-    MshClear(ptc);
+    //MshClear(ptc);
   } else {
-  */
     if (PtcLoadFile(*ptc, filename)) {
       set_errno(SI_ERR_FAILLOAD);
       return SI_BADID;
     }
-  /*
   }
-  */
 
   acc = get_scene()->NewAccelerator(ACC_GRID);
   if (acc == NULL) {
@@ -784,6 +780,27 @@ Status SiAssignObjectGroup(ID id, const char *name, ID group)
     return SI_FAIL;
 
   value = PropObjectGroup(group_ptr);
+  err = set_property(entry, name, value);
+
+  return status_of_error(err);
+}
+
+Status SiAssignPointCloud(ID id, const char *name, ID pointcloud)
+{
+  const Entry entry = decode_id(id);
+  const Entry pointcloud_ent = decode_id(pointcloud);
+  PropertyValue value;
+  PointCloud *pointcloud_ptr = NULL;
+  int err = 0;
+
+  if (pointcloud_ent.type != Type_PointCloud)
+    return SI_FAIL;
+
+  pointcloud_ptr = get_scene()->GetPointCloud(pointcloud_ent.index);
+  if (pointcloud_ptr == NULL)
+    return SI_FAIL;
+
+  value = PropPointCloud(pointcloud_ptr);
   err = set_property(entry, name, value);
 
   return status_of_error(err);

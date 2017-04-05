@@ -99,6 +99,16 @@ PropertyValue PropObjectGroup(ObjectGroup *group)
   return value;
 }
 
+PropertyValue PropPointCloud(PointCloud *pointcloud)
+{
+  PropertyValue value;
+
+  value.type = PROP_POINTCLOUD;
+  value.pointcloud = pointcloud;
+
+  return value;
+}
+
 PropertyValue PropTurbulence(Turbulence *turbulence)
 {
   PropertyValue value;

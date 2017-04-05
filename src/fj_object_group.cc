@@ -1,7 +1,5 @@
-/*
-Copyright (c) 2011-2017 Hiroshi Tsubokawa
-See LICENSE and README
-*/
+// Copyright (c) 2011-2017 Hiroshi Tsubokawa
+// See LICENSE and README
 
 #include "fj_object_group.h"
 #include "fj_volume_accelerator.h"
@@ -67,6 +65,21 @@ void ObjectGroup::ComputeBounds()
 {
   surface_set.ComputeBounds();
   volume_set.ComputeBounds();
+
+  if (surface_acc) {
+    surface_acc->ComputeBounds();
+  }
+  if (volume_acc) {
+    //volume_acc->ComputeBounds();
+    /*
+    VolumeAccSetTargetGeometry(volume_acc,
+        &volume_set,
+        volume_set.GetObjectCount(),
+        &volume_set.GetBounds(),
+        volume_ray_intersect,
+        volume_bounds);
+    */
+  }
 }
 
 ObjectGroup *ObjGroupNew(void)

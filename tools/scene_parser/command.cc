@@ -273,6 +273,19 @@ static CommandResult AssignObjectGroup_run(const CommandArgument *args)
   return result;
 }
 
+/* AssignPointCloud */
+static const int AssignPointCloud_args[] = {
+  ARG_COMMAND_NAME,
+  ARG_ENTRY_ID,
+  ARG_PROPERTY_NAME,
+  ARG_ENTRY_ID};
+static CommandResult AssignPointCloud_run(const CommandArgument *args)
+{
+  CommandResult result;
+  result.status = SiAssignPointCloud(args[1].id, args[2].str, args[3].id);
+  return result;
+}
+
 /* AssignTurbulence */
 static const int AssignTurbulence_args[] = {
   ARG_COMMAND_NAME,
@@ -479,6 +492,7 @@ static const Command command_list[] = {
   REGISTER_COMMAND(NewMesh),
   REGISTER_COMMAND(AssignFrameBuffer),
   REGISTER_COMMAND(AssignObjectGroup),
+  REGISTER_COMMAND(AssignPointCloud),
   REGISTER_COMMAND(AssignTurbulence),
   REGISTER_COMMAND(AssignTexture),
   REGISTER_COMMAND(AssignCamera),

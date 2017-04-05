@@ -10,6 +10,23 @@ si = fujiyama.SceneInterface()
 #plugins
 si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('plastic_shader', 'PlasticShader')
+si.OpenPlugin('pointcloud_generator', 'PointcloudGenerator')
+
+"""
+#--------------
+si.OpenPlugin('ConstantVolumeProcedure', 'ConstantVolumeProcedure')
+#Volume
+si.NewVolume('volume_data')
+si.SetProperty3('volume_data', 'bounds_min', -1, -1, -1)
+si.SetProperty3('volume_data', 'bounds_max', 1, 1, 1)
+si.SetProperty3('volume_data', 'resolution', 100, 100, 100)
+#Procedure
+si.NewProcedure('proc2', 'ConstantVolumeProcedure')
+si.AssignVolume('proc2', 'volume', 'volume_data')
+si.SetProperty1('proc2', 'density', 1.)
+si.RunProcedure('proc2')
+#--------------
+"""
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -37,11 +54,18 @@ si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #PointCloud
-si.NewPointCloud('ptc_data', '../../ptc/bunny.ptc')
+si.NewPointCloud('ptc_data', 'null')
 
 #Mesh
+si.NewMesh('bunny_mesh', '../../ply/bunny.ply')
 si.NewMesh('dome_mesh', '../../ply/dome.ply')
 si.NewMesh('floor_mesh', '../../ply/floor.ply')
+
+#Procedure
+si.NewProcedure('proc1', 'pointcloud_generator')
+si.AssignMesh('proc1', 'mesh', 'bunny_mesh')
+si.AssignPointCloud('proc1', 'pointcloud', 'ptc_data')
+si.RunProcedure('proc1')
 
 #ObjectInstance
 si.NewObjectInstance('floor1', 'floor_mesh')
@@ -79,4 +103,3 @@ si.SaveFrameBuffer('fb1', '../point_cloud.fb')
 #Run commands
 si.Run()
 #si.Print()
-

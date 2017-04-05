@@ -92,6 +92,7 @@ FJ_API ID SiNewMesh(const char *filename);
 
 FJ_API Status SiAssignFrameBuffer(ID renderer, ID framebuffer);
 FJ_API Status SiAssignObjectGroup(ID id, const char *name, ID group);
+FJ_API Status SiAssignPointCloud(ID id, const char *name, ID pointcloud);
 FJ_API Status SiAssignTurbulence(ID id, const char *name, ID turbulence);
 FJ_API Status SiAssignTexture(ID id, const char *name, ID texture);
 FJ_API Status SiAssignVolume(ID id, const char *name, ID volume);

@@ -50,6 +50,9 @@ install_libs += lib/SplineWispsProcedure.so
 build_dirs   += procedures/surfacewisps_procedure
 install_libs += lib/SurfaceWispsProcedure.so
 
+build_dirs   += procedures/pointcloud_generator
+install_libs += lib/PointcloudGenerator.so
+
 #tools
 build_dirs   += tools/curve_generator
 install_bins += bin/curvegen

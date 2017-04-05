@@ -7,6 +7,7 @@
 #include "fj_compatibility.h"
 #include "fj_volume_filling.h"
 #include "fj_turbulence.h"
+#include "fj_point_cloud.h"
 #include "fj_progress.h"
 #include "fj_numeric.h"
 #include "fj_shading.h"
@@ -17,6 +18,7 @@
 #include "fj_volume.h"
 #include "fj_color.h"
 #include "fj_light.h"
+#include "fj_mesh.h"
 #include <string>
 
 // TODO const char *GetPluginType();

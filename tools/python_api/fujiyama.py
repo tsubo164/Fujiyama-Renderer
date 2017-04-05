@@ -287,6 +287,10 @@ class SceneInterface:
 		cmd = 'AssignObjectGroup %s %s %s' % (entry_name, prop_name, object_group)
 		self.commands.append(cmd)
 
+	def AssignPointCloud(self, entry_name, prop_name, object_group):
+		cmd = 'AssignPointCloud %s %s %s' % (entry_name, prop_name, object_group)
+		self.commands.append(cmd)
+
 	def AssignFrameBuffer(self, renderer, framebuffer):
 		cmd = 'AssignFrameBuffer %s %s' % (renderer, framebuffer)
 		self.commands.append(cmd)

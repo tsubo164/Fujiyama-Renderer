@@ -18,6 +18,7 @@ enum PropertyType {
   PROP_VECTOR4,
   PROP_STRING,
   PROP_OBJECTGROUP,
+  PROP_POINTCLOUD,
   PROP_TURBULENCE,
   PROP_TEXTURE,
   PROP_SHADER,
@@ -26,6 +27,7 @@ enum PropertyType {
 };
 
 class ObjectGroup;
+class PointCloud;
 class Turbulence;
 class Texture;
 class Shader;
@@ -39,6 +41,7 @@ public:
     vector(),
     string      (NULL),
     object_group(NULL),
+    pointcloud  (NULL),
     turbulence  (NULL),
     texture     (NULL),
     shader      (NULL),
@@ -54,6 +57,7 @@ public:
   const char *string;
 
   ObjectGroup *object_group;
+  PointCloud *pointcloud;
   Turbulence *turbulence;
   Texture *texture;
   Shader *shader;
@@ -71,6 +75,7 @@ FJ_API PropertyValue PropVector4(Real v0, Real v1, Real v2, Real v3);
 FJ_API PropertyValue PropString(const char *string);
 
 FJ_API PropertyValue PropObjectGroup(ObjectGroup *group);
+FJ_API PropertyValue PropPointCloud(PointCloud *pointcloud);
 FJ_API PropertyValue PropTurbulence(Turbulence *turbulence);
 FJ_API PropertyValue PropTexture(Texture *texture);
 FJ_API PropertyValue PropVolume(Volume *volume);
