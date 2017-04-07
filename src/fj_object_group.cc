@@ -5,47 +5,48 @@
 #include "fj_volume_accelerator.h"
 #include "fj_bvh_accelerator.h"
 #include "fj_object_instance.h"
-#include "fj_accelerator.h"
-#include "fj_interval.h"
-#include "fj_ray.h"
 
 #include <cassert>
 
 namespace fj {
 
+class Interval;
+class Ray;
+
+//TODO remove these
 static void volume_bounds(const void *prim_set, int prim_id, Box *bounds);
 static int volume_ray_intersect(const void *prim_set, int prim_id, double time,
     const Ray *ray, Interval *interval);
 
 ObjectGroup::ObjectGroup() :
-    surface_set(),
-    volume_set(),
-    surface_acc(NULL),
-    volume_acc(NULL)
+    surface_set_(),
+    volume_set_(),
+    surface_set_acc_(NULL),
+    volume_set_acc_(NULL)
 {
-  surface_acc = new BVHAccelerator();
-  volume_acc = VolumeAccNew(VOLACC_BVH);
+  surface_set_acc_ = new BVHAccelerator();
+  volume_set_acc_ = VolumeAccNew(VOLACC_BVH);
 }
 
 ObjectGroup::~ObjectGroup()
 {
-  delete surface_acc;
-  VolumeAccFree(volume_acc);
+  delete surface_set_acc_;
+  VolumeAccFree(volume_set_acc_);
 }
 
 void ObjectGroup::AddObject(const ObjectInstance *obj)
 {
   if (obj->IsSurface()) {
-    surface_set.AddObject(obj);
-    surface_acc->SetPrimitiveSet(&surface_set);
+    surface_set_.AddObject(obj);
+    surface_set_acc_->SetPrimitiveSet(&surface_set_);
   }
   else if (obj->IsVolume()) {
-    volume_set.AddObject(obj);
+    volume_set_.AddObject(obj);
 
-    VolumeAccSetTargetGeometry(volume_acc,
-        &volume_set,
-        volume_set.GetObjectCount(),
-        &volume_set.GetBounds(),
+    VolumeAccSetTargetGeometry(volume_set_acc_,
+        &volume_set_,
+        volume_set_.GetObjectCount(),
+        &volume_set_.GetBounds(),
         volume_ray_intersect,
         volume_bounds);
   }
@@ -53,43 +54,38 @@ void ObjectGroup::AddObject(const ObjectInstance *obj)
 
 const Accelerator *ObjectGroup::GetSurfaceAccelerator() const
 {
-  return surface_acc;
+  return surface_set_acc_;
 }
 
 const VolumeAccelerator *ObjectGroup::GetVolumeAccelerator() const
 {
-  return volume_acc;
+  return volume_set_acc_;
 }
 
 void ObjectGroup::ComputeBounds()
 {
-  surface_set.ComputeBounds();
-  volume_set.ComputeBounds();
+  surface_set_.ComputeBounds();
+  volume_set_.ComputeBounds();
 
-  if (surface_acc) {
-    surface_acc->ComputeBounds();
-  }
-  if (volume_acc) {
-    //volume_acc->ComputeBounds();
-    /*
-    VolumeAccSetTargetGeometry(volume_acc,
-        &volume_set,
-        volume_set.GetObjectCount(),
-        &volume_set.GetBounds(),
-        volume_ray_intersect,
-        volume_bounds);
-    */
-  }
+  surface_set_acc_->ComputeBounds();
+
+  //TODO volume_set_acc_->ComputeBounds();
+  VolumeAccSetTargetGeometry(volume_set_acc_,
+      &volume_set_,
+      volume_set_.GetObjectCount(),
+      &volume_set_.GetBounds(),
+      volume_ray_intersect,
+      volume_bounds);
 }
 
-ObjectGroup *ObjGroupNew(void)
+ObjectGroup *ObjGroupNew()
 {
   return new ObjectGroup();
 }
 
-void ObjGroupFree(ObjectGroup *grp)
+void ObjGroupFree(ObjectGroup *group)
 {
-  delete grp;
+  delete group;
 }
 
 static void volume_bounds(const void *prim_set, int prim_id, Box *bounds)

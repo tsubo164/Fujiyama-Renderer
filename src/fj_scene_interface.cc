@@ -462,7 +462,7 @@ ID SiNewPointCloud(const char *filename)
     return SI_BADID;
   }
   if (strcmp(filename, "null") == 0) {
-    //MshClear(ptc);
+    ptc->Clear();
   } else {
     if (PtcLoadFile(*ptc, filename)) {
       set_errno(SI_ERR_FAILLOAD);

@@ -24,15 +24,15 @@ public:
   void ComputeBounds();
 
 private:
-  ObjectSet surface_set;
-  ObjectSet volume_set;
+  ObjectSet surface_set_;
+  ObjectSet volume_set_;
 
-  Accelerator *surface_acc;
-  VolumeAccelerator *volume_acc;
+  Accelerator *surface_set_acc_;
+  VolumeAccelerator *volume_set_acc_;
 };
 
-extern ObjectGroup *ObjGroupNew(void);
-extern void ObjGroupFree(ObjectGroup *grp);
+extern ObjectGroup *ObjGroupNew();
+extern void ObjGroupFree(ObjectGroup *group);
 
 } // namespace xxx
 

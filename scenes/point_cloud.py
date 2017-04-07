@@ -12,22 +12,6 @@ si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('plastic_shader', 'PlasticShader')
 si.OpenPlugin('pointcloud_generator', 'PointcloudGenerator')
 
-"""
-#--------------
-si.OpenPlugin('ConstantVolumeProcedure', 'ConstantVolumeProcedure')
-#Volume
-si.NewVolume('volume_data')
-si.SetProperty3('volume_data', 'bounds_min', -1, -1, -1)
-si.SetProperty3('volume_data', 'bounds_max', 1, 1, 1)
-si.SetProperty3('volume_data', 'resolution', 100, 100, 100)
-#Procedure
-si.NewProcedure('proc2', 'ConstantVolumeProcedure')
-si.AssignVolume('proc2', 'volume', 'volume_data')
-si.SetProperty1('proc2', 'density', 1.)
-si.RunProcedure('proc2')
-#--------------
-"""
-
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
 si.SetProperty3('cam1', 'translate', 0, .5, 3)

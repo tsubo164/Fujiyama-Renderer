@@ -22,6 +22,7 @@ public:
 
   const Box &GetBounds() const;
   void ComputeBounds();
+  void Clear();
 
   // Position
   void   AddPointPosition();

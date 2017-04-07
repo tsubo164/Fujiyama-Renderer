@@ -124,10 +124,9 @@ static int set_density(void *self, const PropertyValue &value)
 
 static int generate_pointcloud(const Mesh &mesh, PointCloud &pointcloud)
 {
-  //mesh->Clear();
-  //pointcloud->Clear();
-  bool add_velocity = false;
+  pointcloud.Clear();
 
+  bool add_velocity = false;
   int total_point_count = 0;
 
   const int face_count = mesh.GetFaceCount();

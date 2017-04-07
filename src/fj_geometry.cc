@@ -33,6 +33,15 @@ void Geometry::ComputeBounds()
   compute_bounds();
 }
 
+void Geometry::Clear()
+{
+  SetPointCount(0);
+  PointPosition_.clear();
+  PointVelocity_.clear();
+  PointRadius_.clear();
+  ComputeBounds();
+}
+
 void Geometry::set_bounds(const Box &bounds)
 {
   bounds_ = bounds;
