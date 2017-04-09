@@ -11,13 +11,13 @@ using namespace fj;
 
 class PointCloudGenerator : Procedure {
 public:
-  PointCloudGenerator() : mesh(NULL), density(1.) {}
+  PointCloudGenerator() : mesh(NULL), add_velocity(false) {}
   virtual ~PointCloudGenerator() {}
 
 public:
   Mesh *mesh;
   PointCloud *pointcloud;
-  float density;
+  bool add_velocity;
 
 private:
   virtual int run() const;
@@ -29,14 +29,15 @@ static const char MyPluginName[] = "PointCloudGenerator";
 
 static int set_mesh(void *self, const PropertyValue &value);
 static int set_pointcloud(void *self, const PropertyValue &value);
-static int set_density(void *self, const PropertyValue &value);
+static int set_add_velocity(void *self, const PropertyValue &value);
 
-static int generate_pointcloud(const Mesh &mesh, PointCloud &pointcloud);
+static int generate_pointcloud(const Mesh &mesh, PointCloud &pointcloud, bool add_velocity);
+static void noise_position(Vector &P, const Vector &N, Vector &velocity);
 
 static const Property MyPropertyList[] = {
-  Property("mesh",       PropMesh(NULL), set_mesh),
-  Property("pointcloud", PropPointCloud(NULL), set_pointcloud),
-  Property("density",    PropScalar(1),    set_density),
+  Property("mesh",         PropMesh(NULL),       set_mesh),
+  Property("pointcloud",   PropPointCloud(NULL), set_pointcloud),
+  Property("add_velocity", PropScalar(0),        set_add_velocity),
   Property()
 };
 
@@ -84,7 +85,7 @@ int PointCloudGenerator::run() const
     return -1;
   }
 
-  const int err = generate_pointcloud(*mesh, *pointcloud);
+  const int err = generate_pointcloud(*mesh, *pointcloud, add_velocity);
 
   return err;
 }
@@ -113,20 +114,20 @@ static int set_pointcloud(void *self, const PropertyValue &value)
   return 0;
 }
 
-static int set_density(void *self, const PropertyValue &value)
+static int set_add_velocity(void *self, const PropertyValue &value)
 {
   PointCloudGenerator *ptcgen = (PointCloudGenerator *) self;
 
-  ptcgen->density = Max(0, value.vector[0]);
+  ptcgen->add_velocity = value.vector[0] > 0;
 
   return 0;
 }
 
-static int generate_pointcloud(const Mesh &mesh, PointCloud &pointcloud)
+static int generate_pointcloud(const Mesh &mesh, PointCloud &pointcloud, bool add_velocity)
 {
   pointcloud.Clear();
 
-  bool add_velocity = false;
+  //bool add_velocity = false;
   int total_point_count = 0;
 
   const int face_count = mesh.GetFaceCount();
@@ -187,13 +188,10 @@ static int generate_pointcloud(const Mesh &mesh, PointCloud &pointcloud)
       P_out += offset * normal;
 
       if (add_velocity) {
-        /*
         radius = .01 * .2 * 3;
-
         Vector vel;
         noise_position(P_out, normal, vel);
         pointcloud.SetPointVelocity(point_id, vel);
-        */
       } else {
         radius = .01 * .2;
       }
@@ -206,15 +204,6 @@ static int generate_pointcloud(const Mesh &mesh, PointCloud &pointcloud)
   }
   pointcloud.ComputeBounds();
   const Box box = pointcloud.GetBounds();
-
-  return 0;
-}
-
-#if N
-{
-  // Output point cloud
-  PointCloud ptc;
-  PtcSaveFile(ptc, out_filename);
 
   return 0;
 }
@@ -232,4 +221,3 @@ static void noise_position(Vector &P, const Vector &N, Vector &velocity)
   P += noise_amp * noise_vec;
   velocity = .2 * noise_amp * noise_vec;
 }
-#endif

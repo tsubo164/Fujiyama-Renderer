@@ -11,6 +11,7 @@ si = fujiyama.SceneInterface()
 #plugins
 si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('plastic_shader', 'PlasticShader')
+si.OpenPlugin('pointcloud_generator', 'PointcloudGenerator')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -42,14 +43,22 @@ si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #PointCloud
-si.NewPointCloud('ptc_data', '../../ptc/armadillo.ptc')
+si.NewPointCloud('ptc_data', 'null')
 
 #Mesh
 # This dome_mesh has nothing to do with dome light
 # We need to exclude dome_mesh from shadow target
 # since this is just for background.
+si.NewMesh('armadillo_mesh', '../../mesh/armadillo.mesh')
 si.NewMesh('dome_mesh', '../../ply/dome.ply')
 si.NewMesh('floor_mesh', '../../ply/floor.ply')
+
+#Procedure
+si.NewProcedure('proc1', 'pointcloud_generator')
+si.AssignMesh('proc1', 'mesh', 'armadillo_mesh')
+si.AssignPointCloud('proc1', 'pointcloud', 'ptc_data')
+si.SetProperty1('proc1', 'add_velocity', 1)
+si.RunProcedure('proc1')
 
 #ObjectInstance
 si.NewObjectInstance('floor1', 'floor_mesh')
