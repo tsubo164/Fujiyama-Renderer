@@ -75,9 +75,6 @@ install_bins += bin/obj2mesh
 build_dirs   += tools/ply2mesh
 install_bins += bin/ply2mesh
 
-build_dirs   += tools/point_cloud_generator
-install_bins += bin/ptcgen
-
 build_dirs   += tools/scene_parser
 install_bins += bin/scene
 

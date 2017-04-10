@@ -4,7 +4,6 @@
 #include "fj_scene_interface.h"
 #include "fj_volume_accelerator.h"
 #include "fj_framebuffer_io.h"
-#include "fj_point_cloud_io.h"
 #include "fj_primitive_set.h"
 #include "fj_multi_thread.h"
 #include "fj_curve_io.h"
@@ -464,10 +463,8 @@ ID SiNewPointCloud(const char *filename)
   if (strcmp(filename, "null") == 0) {
     ptc->Clear();
   } else {
-    if (PtcLoadFile(*ptc, filename)) {
-      set_errno(SI_ERR_FAILLOAD);
-      return SI_BADID;
-    }
+    //FIXME LATER
+    ptc->Clear();
   }
 
   acc = get_scene()->NewAccelerator(ACC_GRID);
