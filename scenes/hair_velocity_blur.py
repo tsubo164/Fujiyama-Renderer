@@ -15,6 +15,7 @@ si = fujiyama.SceneInterface()
 si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('plastic_shader', 'PlasticShader')
 si.OpenPlugin('hair_shader', 'HairShader')
+si.OpenPlugin('curve_generator_procedure', 'CurveGeneratorProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -42,19 +43,27 @@ si.NewShader('hair_shader1', 'hair_shader')
 si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
+#Curve
+#si.NewCurve('curve_data', '../../crv/hair.crv')
+si.NewCurve('curve_data', 'null')
+
 #Mesh
 si.NewMesh('head_mesh', '../../obj/head.obj')
 si.NewMesh('dome_mesh', '../../ply/dome.ply')
 
-#Curve
-si.NewCurve('hair_curve', '../../crv/hair.crv')
+#Procedure
+si.NewProcedure('proc1', 'curve_generator_procedure')
+si.AssignMesh('proc1', 'mesh', 'head_mesh')
+si.AssignCurve('proc1', 'curve', 'curve_data')
+si.SetProperty1('proc1', 'is_hair', 1)
+si.RunProcedure('proc1')
 
 #ObjectInstance
 si.NewObjectInstance('head1', 'head_mesh')
 si.SetProperty3('head1', 'rotate', 0, obj_rot, 0)
 si.AssignShader('head1', 'DEFAULT_SHADING_GROUP', 'head_shader')
 
-si.NewObjectInstance('hair1', 'hair_curve')
+si.NewObjectInstance('hair1', 'curve_data')
 si.SetProperty3('hair1', 'rotate', 0, obj_rot, 0)
 si.AssignShader('hair1', 'DEFAULT_SHADING_GROUP', 'hair_shader1')
 
