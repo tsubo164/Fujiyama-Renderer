@@ -139,6 +139,16 @@ PropertyValue PropVolume(Volume *volume)
   return value;
 }
 
+PropertyValue PropCurve(Curve *curve)
+{
+  PropertyValue value;
+
+  value.type = PROP_VOLUME;
+  value.curve = curve;
+
+  return value;
+}
+
 PropertyValue PropMesh(Mesh *mesh)
 {
   PropertyValue value;
@@ -204,6 +214,7 @@ const char *Property::GetTypeString() const
   case PROP_TEXTURE:     return "Texture";
   case PROP_SHADER:      return "Shader";
   case PROP_VOLUME:      return "Volume";
+  case PROP_CURVE:       return "Curve";
   case PROP_MESH:        return "Mesh";
   default:               return "(null)";
   }

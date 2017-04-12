@@ -127,7 +127,6 @@ static int generate_pointcloud(const Mesh &mesh, PointCloud &pointcloud, bool ad
 {
   pointcloud.Clear();
 
-  //bool add_velocity = false;
   int total_point_count = 0;
 
   const int face_count = mesh.GetFaceCount();
@@ -203,7 +202,6 @@ static int generate_pointcloud(const Mesh &mesh, PointCloud &pointcloud, bool ad
     }
   }
   pointcloud.ComputeBounds();
-  const Box box = pointcloud.GetBounds();
 
   return 0;
 }

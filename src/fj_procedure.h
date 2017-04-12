@@ -17,6 +17,7 @@
 #include "fj_vector.h"
 #include "fj_volume.h"
 #include "fj_color.h"
+#include "fj_curve.h"
 #include "fj_light.h"
 #include "fj_mesh.h"
 #include <string>

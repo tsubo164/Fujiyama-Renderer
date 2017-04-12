@@ -23,6 +23,7 @@ enum PropertyType {
   PROP_TEXTURE,
   PROP_SHADER,
   PROP_VOLUME,
+  PROP_CURVE,
   PROP_MESH
 };
 
@@ -32,6 +33,7 @@ class Turbulence;
 class Texture;
 class Shader;
 class Volume;
+class Curve;
 class Mesh;
 
 class FJ_API PropertyValue {
@@ -46,6 +48,7 @@ public:
     texture     (NULL),
     shader      (NULL),
     volume      (NULL),
+    curve       (NULL),
     mesh        (NULL),
     time        (0) {}
   ~PropertyValue() {}
@@ -62,6 +65,7 @@ public:
   Texture *texture;
   Shader *shader;
   Volume *volume;
+  Curve *curve;
   Mesh *mesh;
 
   Real time;
@@ -79,6 +83,7 @@ FJ_API PropertyValue PropPointCloud(PointCloud *pointcloud);
 FJ_API PropertyValue PropTurbulence(Turbulence *turbulence);
 FJ_API PropertyValue PropTexture(Texture *texture);
 FJ_API PropertyValue PropVolume(Volume *volume);
+FJ_API PropertyValue PropCurve(Curve *curve);
 FJ_API PropertyValue PropMesh(Mesh *mesh);
 
 class FJ_API Property {

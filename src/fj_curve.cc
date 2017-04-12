@@ -148,6 +148,23 @@ void Curve::ComputeBounds()
   cache_split_depth();
 }
 
+void Curve::Clear()
+{
+  nverts_ = 0;
+  ncurves_ = 0;
+
+  P_.clear();
+  Cd_.clear();
+  uv_.clear();
+  velocity_.clear();
+  width_.clear();
+  indices_.clear();
+
+  bounds_ = Box();
+
+  split_depth_.clear();
+}
+
 void Curve::cache_split_depth()
 {
   assert(split_depth_.empty());

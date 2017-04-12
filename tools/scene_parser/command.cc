@@ -350,6 +350,19 @@ static CommandResult AssignVolume_run(const CommandArgument *args)
   return result;
 }
 
+/* AssignCurve */
+static const int AssignCurve_args[] = {
+  ARG_COMMAND_NAME,
+  ARG_ENTRY_ID,
+  ARG_PROPERTY_NAME,
+  ARG_ENTRY_ID};
+static CommandResult AssignCurve_run(const CommandArgument *args)
+{
+  CommandResult result;
+  result.status = SiAssignCurve(args[1].id, args[2].str, args[3].id);
+  return result;
+}
+
 /* AssignMesh */
 static const int AssignMesh_args[] = {
   ARG_COMMAND_NAME,
@@ -498,6 +511,7 @@ static const Command command_list[] = {
   REGISTER_COMMAND(AssignCamera),
   REGISTER_COMMAND(AssignShader),
   REGISTER_COMMAND(AssignVolume),
+  REGISTER_COMMAND(AssignCurve),
   REGISTER_COMMAND(AssignMesh),
   REGISTER_COMMAND(SetProperty1),
   REGISTER_COMMAND(SetProperty2),

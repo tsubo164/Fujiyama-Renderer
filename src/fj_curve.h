@@ -55,6 +55,7 @@ public:
   bool HasCurveIndices() const;
 
   void ComputeBounds();
+  void Clear();
 
 private:
   virtual bool ray_intersect(Index prim_id, const Ray &ray,

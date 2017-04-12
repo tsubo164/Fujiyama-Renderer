@@ -303,6 +303,10 @@ class SceneInterface:
 		cmd = 'AssignVolume %s %s %s' % (entry_name, prop_name, volume)
 		self.commands.append(cmd)
 
+	def AssignCurve(self, entry_name, prop_name, curve):
+		cmd = 'AssignCurve %s %s %s' % (entry_name, prop_name, curve)
+		self.commands.append(cmd)
+
 	def AssignMesh(self, entry_name, prop_name, mesh):
 		cmd = 'AssignMesh %s %s %s' % (entry_name, prop_name, mesh)
 		self.commands.append(cmd)

@@ -17,6 +17,7 @@ si = fujiyama.SceneInterface()
 si.OpenPlugin('plastic_shader', 'PlasticShader')
 si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('hair_shader', 'HairShader')
+si.OpenPlugin('curve_generator_procedure', 'CurveGeneratorProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -137,12 +138,18 @@ si.SetProperty3('floor_shader', 'reflect', 0, 0, 0)
 si.NewShader('dome_shader', 'constant_shader')
 
 #Curve
-si.NewCurve('curve_data', '../../crv/bunny.crv')
+si.NewCurve('curve_data', 'null')
 
 #Mesh
 si.NewMesh('bunny_mesh', '../../ply/bunny.ply')
 si.NewMesh('floor_mesh', '../../ply/floor.ply')
 si.NewMesh('dome_mesh', '../../ply/dome.ply')
+
+#Procedure
+si.NewProcedure('proc1', 'curve_generator_procedure')
+si.AssignMesh('proc1', 'mesh', 'bunny_mesh')
+si.AssignCurve('proc1', 'curve', 'curve_data')
+si.RunProcedure('proc1')
 
 #ObjectInstance
 si.NewObjectInstance('bunny1', 'bunny_mesh')

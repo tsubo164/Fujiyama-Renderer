@@ -622,9 +622,14 @@ ID SiNewCurve(const char *filename)
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
   }
-  if (CrvLoadFile(curve, filename)) {
-    set_errno(SI_ERR_FAILLOAD);
-    return SI_BADID;
+  if (strcmp(filename, "null") == 0) {
+    curve->Clear();
+  } else {
+    //FIXME LATER
+    if (CrvLoadFile(curve, filename)) {
+      set_errno(SI_ERR_FAILLOAD);
+      return SI_BADID;
+    }
   }
 
   acc = get_scene()->NewAccelerator(ACC_GRID);
@@ -882,6 +887,90 @@ Status SiAssignFrameBuffer(ID renderer, ID framebuffer)
   return SI_SUCCESS;
 }
 
+Status SiAssignTurbulence(ID id, const char *name, ID turbulence)
+{
+  const Entry entry = decode_id(id);
+  const Entry turbulence_ent = decode_id(turbulence);
+  PropertyValue value;
+  Turbulence *turbulence_ptr = NULL;
+  int err = 0;
+
+  if (turbulence_ent.type != Type_Turbulence)
+    return SI_FAIL;
+
+  turbulence_ptr = get_scene()->GetTurbulence(turbulence_ent.index);
+  if (turbulence_ptr == NULL)
+    return SI_FAIL;
+
+  value = PropTurbulence(turbulence_ptr);
+  err = set_property(entry, name, value);
+
+  return status_of_error(err);
+}
+
+Status SiAssignVolume(ID id, const char *name, ID volume)
+{
+  const Entry entry = decode_id(id);
+  const Entry volume_ent = decode_id(volume);
+  PropertyValue value;
+  Volume *volume_ptr = NULL;
+  int err = 0;
+
+  if (volume_ent.type != Type_Volume)
+    return SI_FAIL;
+
+  volume_ptr = get_scene()->GetVolume(volume_ent.index);
+  if (volume_ptr == NULL)
+    return SI_FAIL;
+
+  value = PropVolume(volume_ptr);
+  err = set_property(entry, name, value);
+
+  return status_of_error(err);
+}
+
+Status SiAssignCurve(ID id, const char *name, ID curve)
+{
+  const Entry entry = decode_id(id);
+  const Entry curve_ent = decode_id(curve);
+  PropertyValue value;
+  Curve *curve_ptr = NULL;
+  int err = 0;
+
+  if (curve_ent.type != Type_Curve)
+    return SI_FAIL;
+
+  curve_ptr = get_scene()->GetCurve(curve_ent.index);
+  if (curve_ptr == NULL)
+    return SI_FAIL;
+
+  value = PropCurve(curve_ptr);
+  err = set_property(entry, name, value);
+
+  return status_of_error(err);
+}
+
+Status SiAssignMesh(ID id, const char *name, ID mesh)
+{
+  const Entry entry = decode_id(id);
+  const Entry mesh_ent = decode_id(mesh);
+  PropertyValue value;
+  Mesh *mesh_ptr = NULL;
+  int err = 0;
+
+  if (mesh_ent.type != Type_Mesh)
+    return SI_FAIL;
+
+  mesh_ptr = get_scene()->GetMesh(mesh_ent.index);
+  if (mesh_ptr == NULL)
+    return SI_FAIL;
+
+  value = PropMesh(mesh_ptr);
+  err = set_property(entry, name, value);
+
+  return status_of_error(err);
+}
+
 Status SiSetProperty1(ID id, const char *name, double v0)
 {
   const Entry entry = decode_id(id);
@@ -935,69 +1024,6 @@ Status SiSetSampleProperty3(ID id, const char *name, double v0, double v1, doubl
   int err = 0;
 
   value.time = time;
-  err = set_property(entry, name, value);
-
-  return status_of_error(err);
-}
-
-Status SiAssignTurbulence(ID id, const char *name, ID turbulence)
-{
-  const Entry entry = decode_id(id);
-  const Entry turbulence_ent = decode_id(turbulence);
-  PropertyValue value;
-  Turbulence *turbulence_ptr = NULL;
-  int err = 0;
-
-  if (turbulence_ent.type != Type_Turbulence)
-    return SI_FAIL;
-
-  turbulence_ptr = get_scene()->GetTurbulence(turbulence_ent.index);
-  if (turbulence_ptr == NULL)
-    return SI_FAIL;
-
-  value = PropTurbulence(turbulence_ptr);
-  err = set_property(entry, name, value);
-
-  return status_of_error(err);
-}
-
-Status SiAssignVolume(ID id, const char *name, ID volume)
-{
-  const Entry entry = decode_id(id);
-  const Entry volume_ent = decode_id(volume);
-  PropertyValue value;
-  Volume *volume_ptr = NULL;
-  int err = 0;
-
-  if (volume_ent.type != Type_Volume)
-    return SI_FAIL;
-
-  volume_ptr = get_scene()->GetVolume(volume_ent.index);
-  if (volume_ptr == NULL)
-    return SI_FAIL;
-
-  value = PropVolume(volume_ptr);
-  err = set_property(entry, name, value);
-
-  return status_of_error(err);
-}
-
-Status SiAssignMesh(ID id, const char *name, ID mesh)
-{
-  const Entry entry = decode_id(id);
-  const Entry mesh_ent = decode_id(mesh);
-  PropertyValue value;
-  Mesh *mesh_ptr = NULL;
-  int err = 0;
-
-  if (mesh_ent.type != Type_Mesh)
-    return SI_FAIL;
-
-  mesh_ptr = get_scene()->GetMesh(mesh_ent.index);
-  if (mesh_ptr == NULL)
-    return SI_FAIL;
-
-  value = PropMesh(mesh_ptr);
   err = set_property(entry, name, value);
 
   return status_of_error(err);
