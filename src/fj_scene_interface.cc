@@ -6,7 +6,6 @@
 #include "fj_framebuffer_io.h"
 #include "fj_primitive_set.h"
 #include "fj_multi_thread.h"
-#include "fj_curve_io.h"
 #include "fj_mesh_io.h"
 #include "fj_shader.h"
 #include "fj_scene.h"
@@ -447,7 +446,7 @@ ID SiNewObjectGroup(void)
   return encode_id(Type_ObjectGroup, GET_LAST_ADDED_ID(ObjectGroup));
 }
 
-ID SiNewPointCloud(const char *filename)
+ID SiNewPointCloud(void)
 {
   PointCloud *ptc = NULL;
   Accelerator *acc = NULL;
@@ -459,12 +458,6 @@ ID SiNewPointCloud(const char *filename)
   if (ptc == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
-  }
-  if (strcmp(filename, "null") == 0) {
-    ptc->Clear();
-  } else {
-    //FIXME LATER
-    ptc->Clear();
   }
 
   acc = get_scene()->NewAccelerator(ACC_GRID);
@@ -609,7 +602,7 @@ ID SiNewVolume(void)
   return volume_id;
 }
 
-ID SiNewCurve(const char *filename)
+ID SiNewCurve(void)
 {
   Curve *curve = NULL;
   Accelerator *acc = NULL;
@@ -621,15 +614,6 @@ ID SiNewCurve(const char *filename)
   if (curve == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
-  }
-  if (strcmp(filename, "null") == 0) {
-    curve->Clear();
-  } else {
-    //FIXME LATER
-    if (CrvLoadFile(curve, filename)) {
-      set_errno(SI_ERR_FAILLOAD);
-      return SI_BADID;
-    }
   }
 
   acc = get_scene()->NewAccelerator(ACC_GRID);

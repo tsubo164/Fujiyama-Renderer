@@ -111,12 +111,11 @@ static CommandResult NewObjectGroup_run(const CommandArgument *args)
 /* NewPointCloud */
 static const int NewPointCloud_args[] = {
   ARG_COMMAND_NAME,
-  ARG_NEW_ENTRY_ID,
-  ARG_FILE_PATH};
+  ARG_NEW_ENTRY_ID};
 static CommandResult NewPointCloud_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.new_entry_id = SiNewPointCloud(args[2].str);
+  result.new_entry_id = SiNewPointCloud();
   result.new_entry_name = args[1].str;
   return result;
 }
@@ -212,12 +211,11 @@ static CommandResult NewVolume_run(const CommandArgument *args)
 /* NewCurve */
 static const int NewCurve_args[] = {
   ARG_COMMAND_NAME,
-  ARG_NEW_ENTRY_ID,
-  ARG_FILE_PATH};
+  ARG_NEW_ENTRY_ID};
 static CommandResult NewCurve_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.new_entry_id = SiNewCurve(args[2].str);
+  result.new_entry_id = SiNewCurve();
   result.new_entry_name = args[1].str;
   return result;
 }

@@ -44,8 +44,7 @@ si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Curve
-#si.NewCurve('curve_data', '../../crv/hair.crv')
-si.NewCurve('curve_data', 'null')
+si.NewCurve('curve_data')
 
 #Mesh
 si.NewMesh('head_mesh', '../../obj/head.obj')

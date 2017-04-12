@@ -78,7 +78,7 @@ FJ_API Status SiAddObjectToGroup(ID group, ID object);
 FJ_API ID SiNewObjectInstance(ID primset);
 FJ_API ID SiNewFrameBuffer(const char *arg);
 FJ_API ID SiNewObjectGroup(void);
-FJ_API ID SiNewPointCloud(const char *filename);
+FJ_API ID SiNewPointCloud(void);
 FJ_API ID SiNewTurbulence(void);
 FJ_API ID SiNewProcedure(ID plugin);
 FJ_API ID SiNewRenderer(void);
@@ -86,7 +86,7 @@ FJ_API ID SiNewTexture(const char *filename);
 FJ_API ID SiNewCamera(const char *arg);
 FJ_API ID SiNewShader(ID plugin);
 FJ_API ID SiNewVolume(void);
-FJ_API ID SiNewCurve(const char *filename);
+FJ_API ID SiNewCurve(void);
 FJ_API ID SiNewLight(int light_type);
 FJ_API ID SiNewMesh(const char *filename);
 

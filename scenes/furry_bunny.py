@@ -138,7 +138,7 @@ si.SetProperty3('floor_shader', 'reflect', 0, 0, 0)
 si.NewShader('dome_shader', 'constant_shader')
 
 #Curve
-si.NewCurve('curve_data', 'null')
+si.NewCurve('curve_data')
 
 #Mesh
 si.NewMesh('bunny_mesh', '../../ply/bunny.ply')

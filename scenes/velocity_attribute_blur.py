@@ -43,7 +43,7 @@ si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #PointCloud
-si.NewPointCloud('ptc_data', 'null')
+si.NewPointCloud('ptc_data')
 
 #Mesh
 # This dome_mesh has nothing to do with dome light

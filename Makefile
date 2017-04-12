@@ -57,9 +57,6 @@ build_dirs   += procedures/pointcloud_generator
 install_libs += lib/PointcloudGenerator.so
 
 #tools
-build_dirs   += tools/curve_generator
-install_bins += bin/curvegen
-
 build_dirs   += tools/fb2exr
 install_bins += bin/fb2exr
 

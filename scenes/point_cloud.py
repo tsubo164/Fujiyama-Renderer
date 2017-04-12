@@ -38,7 +38,7 @@ si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #PointCloud
-si.NewPointCloud('ptc_data', 'null')
+si.NewPointCloud('ptc_data')
 
 #Mesh
 si.NewMesh('bunny_mesh', '../../ply/bunny.ply')
