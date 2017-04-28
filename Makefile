@@ -72,9 +72,6 @@ install_bins += bin/hdr2mip
 build_dirs   += tools/jpg2mip
 install_bins += bin/jpg2mip
 
-build_dirs   += tools/obj2mesh
-install_bins += bin/obj2mesh
-
 build_dirs   += tools/ply2mesh
 install_bins += bin/ply2mesh
 
