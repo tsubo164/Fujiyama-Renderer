@@ -9,6 +9,7 @@ si = fujiyama.SceneInterface()
 
 #plugins
 si.OpenPlugin('sss_shader', 'SSSShader')
+si.OpenPlugin('wavefrontobj_procedure', 'WavefrontObjProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -60,7 +61,14 @@ si.SetProperty3('head_shader4', 'scattering_coefficient', .255, .321, .377)
 si.SetProperty3('head_shader4', 'absorption_coefficient', .00011, .00024, .0014)
 
 #Mesh
-si.NewMesh('head_mesh', '../../obj/head.obj')
+si.NewMesh('head_mesh', 'null')
+
+#Procedure
+si.NewProcedure('proc1', 'wavefrontobj_procedure')
+si.AssignMesh('proc1', 'mesh', 'head_mesh')
+si.SetStringProperty('proc1', 'filepath', '../../obj/head.obj')
+si.SetStringProperty('proc1', 'io_mode', 'r')
+si.RunProcedure('proc1')
 
 #ObjectInstance
 si.NewObjectInstance('head1', 'head_mesh')
@@ -116,4 +124,3 @@ si.SaveFrameBuffer('fb1', '../subsurface_scattering.fb')
 #Run commands
 si.Run()
 #si.Print()
-

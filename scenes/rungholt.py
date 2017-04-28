@@ -11,6 +11,7 @@ si = fujiyama.SceneInterface()
 #plugins
 si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('plastic_shader', 'PlasticShader')
+si.OpenPlugin('wavefrontobj_procedure', 'WavefrontObjProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -36,8 +37,15 @@ si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
-si.NewMesh('rungholt_mesh', '../../obj/rungholt/rungholt.obj')
+si.NewMesh('rungholt_mesh', 'null')
 si.NewMesh('dome_mesh', '../../ply/dome.ply')
+
+#Procedure
+si.NewProcedure('proc1', 'wavefrontobj_procedure')
+si.AssignMesh('proc1', 'mesh', 'rungholt_mesh')
+si.SetStringProperty('proc1', 'filepath', '../../obj/rungholt/rungholt.obj')
+si.SetStringProperty('proc1', 'io_mode', 'r')
+si.RunProcedure('proc1')
 
 #ObjectInstance
 si.NewObjectInstance('rungholt1', 'rungholt_mesh')

@@ -56,6 +56,9 @@ install_libs += lib/CurveGeneratorProcedure.so
 build_dirs   += procedures/pointcloud_generator
 install_libs += lib/PointcloudGenerator.so
 
+build_dirs   += procedures/wavefrontobj_procedure
+install_libs += lib/WavefrontObjProcedure.so
+
 #tools
 build_dirs   += tools/fb2exr
 install_bins += bin/fb2exr
