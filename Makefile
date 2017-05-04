@@ -56,6 +56,9 @@ install_libs += lib/CurveGeneratorProcedure.so
 build_dirs   += procedures/pointcloud_generator
 install_libs += lib/PointcloudGenerator.so
 
+build_dirs   += procedures/velocity_generator_procedure
+install_libs += lib/VelocityGeneratorProcedure.so
+
 build_dirs   += procedures/wavefrontobj_procedure
 install_libs += lib/WavefrontObjProcedure.so
 

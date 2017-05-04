@@ -14,6 +14,7 @@ si = fujiyama.SceneInterface()
 #plugins
 si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('plastic_shader', 'PlasticShader')
+si.OpenPlugin('velocity_generator_procedure', 'VelocityGeneratorProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -42,9 +43,14 @@ si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
-si.NewMesh('dragon_mesh', '../../mesh/dragon_vel.mesh')
+si.NewMesh('dragon_mesh', '../../mesh/dragon.mesh')
 si.NewMesh('dome_mesh', '../../ply/dome.ply')
 si.NewMesh('floor_mesh', '../../ply/floor.ply')
+
+#Procedure
+si.NewProcedure('proc1', 'velocity_generator_procedure')
+si.AssignMesh('proc1', 'mesh', 'dragon_mesh')
+si.RunProcedure('proc1')
 
 #ObjectInstance
 si.NewObjectInstance('dragon1', 'dragon_mesh')
