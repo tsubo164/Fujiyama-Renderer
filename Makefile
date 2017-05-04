@@ -81,9 +81,6 @@ install_bins += bin/ply2mesh
 build_dirs   += tools/scene_parser
 install_bins += bin/scene
 
-build_dirs   += tools/velocity_generator
-install_bins += bin/scene
-
 clean_dirs += $(build_dirs)
 clean_dirs += tools/python_api
 
