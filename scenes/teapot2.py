@@ -14,6 +14,7 @@ si = fujiyama.SceneInterface()
 si.OpenPlugin('plastic_shader', 'PlasticShader')
 si.OpenPlugin('glass_shader', 'GlassShader')
 si.OpenPlugin('constant_shader', 'ConstantShader')
+si.OpenPlugin('stanfordply_procedure', 'StanfordPlyProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -128,10 +129,28 @@ si.NewShader('floor_shader', 'plastic_shader')
 si.NewShader('dome_shader', 'constant_shader')
 
 #Mesh
-# You can specify file paths to *.ply/*.obj file via python API
-si.NewMesh('teapot_mesh', '../../ply/teapot.ply')
-si.NewMesh('floor_mesh',  '../../ply/floor.ply')
-si.NewMesh('dome_mesh',   '../../ply/dome.ply')
+si.NewMesh('teapot_mesh', 'null')
+si.NewMesh('floor_mesh',  'null')
+si.NewMesh('dome_mesh',   'null')
+
+#Procedure
+si.NewProcedure('proc1', 'stanfordply_procedure')
+si.AssignMesh('proc1', 'mesh', 'teapot_mesh')
+si.SetStringProperty('proc1', 'filepath', '../../ply/teapot.ply')
+si.SetStringProperty('proc1', 'io_mode', 'r')
+si.RunProcedure('proc1')
+
+si.NewProcedure('proc2', 'stanfordply_procedure')
+si.AssignMesh('proc2', 'mesh', 'floor_mesh')
+si.SetStringProperty('proc2', 'filepath', '../../ply/floor.ply')
+si.SetStringProperty('proc2', 'io_mode', 'r')
+si.RunProcedure('proc2')
+
+si.NewProcedure('proc3', 'stanfordply_procedure')
+si.AssignMesh('proc3', 'mesh', 'dome_mesh')
+si.SetStringProperty('proc3', 'filepath', '../../ply/dome.ply')
+si.SetStringProperty('proc3', 'io_mode', 'r')
+si.RunProcedure('proc3')
 
 #ObjectInstance
 si.NewObjectInstance('teapot1', 'teapot_mesh')
@@ -167,7 +186,8 @@ si.RenderScene('ren1')
 
 #Output
 # You can specify file paths to *.exr file via python API
-si.SaveFrameBuffer('fb1', '../teapot2.exr')
+#si.SaveFrameBuffer('fb1', '../teapot2.exr')
+si.SaveFrameBuffer('fb1', '../teapot2.fb')
 
 #Run commands
 si.Run()

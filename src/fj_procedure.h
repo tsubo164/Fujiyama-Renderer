@@ -9,6 +9,7 @@
 #include "fj_turbulence.h"
 #include "fj_point_cloud.h"
 #include "fj_progress.h"
+#include "fj_triangle.h"
 #include "fj_numeric.h"
 #include "fj_shading.h"
 #include "fj_texture.h"

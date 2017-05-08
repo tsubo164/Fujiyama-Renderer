@@ -54,7 +54,7 @@ int WriteFrameBuffer(const std::string &filename, const FrameBuffer &fb)
   WritePtoHeader(strm);
   strm << "#Fujiyama Renderer FrameBuffer\n";
   strm << "resolution " << fb.GetWidth() << " " << fb.GetHeight() << '\n';
-  strm << "nchannels " << fb.GetChannelCount() << '\n';
+  strm << "channel_count " << fb.GetChannelCount() << '\n';
   strm << "begin pixels\n";
   for (int y = 0; y < fb.GetHeight(); y++) {
     for (int x = 0; x < fb.GetWidth(); x++) {
@@ -100,7 +100,7 @@ private:
       width_ = to_integer(tokens[1], 0);
       height_ = to_integer(tokens[2], 0);
     }
-    else if (tokens[0] == "nchannels" && tokens.size() == 2) {
+    else if (tokens[0] == "channel_count" && tokens.size() == 2) {
       nchannels_ = to_integer(tokens[1], 0);
 
       if (width_ > 0 && height_ > 0 && nchannels_ > 0) {
