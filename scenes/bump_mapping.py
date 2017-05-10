@@ -10,6 +10,7 @@ si = fujiyama.SceneInterface()
 #Plugins
 si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('plastic_shader', 'PlasticShader')
+si.OpenPlugin('stanfordply_procedure', 'StanfordPlyProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -61,8 +62,21 @@ si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'env_tex1')
 
 #Mesh
-si.NewMesh('sphere_mesh', '../../ply/sphere_uv.ply')
-si.NewMesh('dome_mesh', '../../ply/dome.ply')
+si.NewMesh('sphere_mesh', 'null')
+si.NewMesh('dome_mesh', 'null')
+
+#Procedure
+si.NewProcedure('proc1', 'stanfordply_procedure')
+si.AssignMesh('proc1', 'mesh', 'sphere_mesh')
+si.SetStringProperty('proc1', 'filepath', '../../ply/sphere_uv.ply')
+si.SetStringProperty('proc1', 'io_mode', 'r')
+si.RunProcedure('proc1')
+
+si.NewProcedure('proc2', 'stanfordply_procedure')
+si.AssignMesh('proc2', 'mesh', 'dome_mesh')
+si.SetStringProperty('proc2', 'filepath', '../../ply/dome.ply')
+si.SetStringProperty('proc2', 'io_mode', 'r')
+si.RunProcedure('proc2')
 
 #ObjectInstance
 si.NewObjectInstance('sphere1', 'sphere_mesh')
