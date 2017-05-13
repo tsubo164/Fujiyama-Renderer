@@ -10,6 +10,7 @@ si = fujiyama.SceneInterface()
 #plugins
 si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('plastic_shader', 'PlasticShader')
+si.OpenPlugin('stanfordply_procedure', 'StanfordPlyProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -42,9 +43,28 @@ si.SetProperty3('sphere_shader2', 'diffuse', .5, .5, .5)
 si.SetProperty3('sphere_shader2', 'reflect', 0, 0, 0)
 
 #Mesh
-si.NewMesh('happy_mesh', '../../ply/happy.ply')
-si.NewMesh('dome_mesh', '../../ply/dome.ply')
-si.NewMesh('sphere_mesh', '../../ply/sphere.ply')
+si.NewMesh('happy_mesh', 'null')
+si.NewMesh('dome_mesh', 'null')
+si.NewMesh('sphere_mesh', 'null')
+
+#Procedure
+si.NewProcedure('happy_proc', 'stanfordply_procedure')
+si.AssignMesh('happy_proc', 'mesh', 'happy_mesh')
+si.SetStringProperty('happy_proc', 'filepath', '../../ply/happy.ply')
+si.SetStringProperty('happy_proc', 'io_mode', 'r')
+si.RunProcedure('happy_proc')
+
+si.NewProcedure('sphere_proc', 'stanfordply_procedure')
+si.AssignMesh('sphere_proc', 'mesh', 'sphere_mesh')
+si.SetStringProperty('sphere_proc', 'filepath', '../../ply/sphere.ply')
+si.SetStringProperty('sphere_proc', 'io_mode', 'r')
+si.RunProcedure('sphere_proc')
+
+si.NewProcedure('dome_proc', 'stanfordply_procedure')
+si.AssignMesh('dome_proc', 'mesh', 'dome_mesh')
+si.SetStringProperty('dome_proc', 'filepath', '../../ply/dome.ply')
+si.SetStringProperty('dome_proc', 'io_mode', 'r')
+si.RunProcedure('dome_proc')
 
 #ObjectInstance
 si.NewObjectInstance('happy1', 'happy_mesh')
