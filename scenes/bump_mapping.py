@@ -66,17 +66,17 @@ si.NewMesh('sphere_mesh', 'null')
 si.NewMesh('dome_mesh', 'null')
 
 #Procedure
-si.NewProcedure('proc1', 'stanfordply_procedure')
-si.AssignMesh('proc1', 'mesh', 'sphere_mesh')
-si.SetStringProperty('proc1', 'filepath', '../../ply/sphere_uv.ply')
-si.SetStringProperty('proc1', 'io_mode', 'r')
-si.RunProcedure('proc1')
+si.NewProcedure('sphere_proc', 'stanfordply_procedure')
+si.AssignMesh('sphere_proc', 'mesh', 'sphere_mesh')
+si.SetStringProperty('sphere_proc', 'filepath', '../../ply/sphere_uv.ply')
+si.SetStringProperty('sphere_proc', 'io_mode', 'r')
+si.RunProcedure('sphere_proc')
 
-si.NewProcedure('proc2', 'stanfordply_procedure')
-si.AssignMesh('proc2', 'mesh', 'dome_mesh')
-si.SetStringProperty('proc2', 'filepath', '../../ply/dome.ply')
-si.SetStringProperty('proc2', 'io_mode', 'r')
-si.RunProcedure('proc2')
+si.NewProcedure('dome_proc', 'stanfordply_procedure')
+si.AssignMesh('dome_proc', 'mesh', 'dome_mesh')
+si.SetStringProperty('dome_proc', 'filepath', '../../ply/dome.ply')
+si.SetStringProperty('dome_proc', 'io_mode', 'r')
+si.RunProcedure('dome_proc')
 
 #ObjectInstance
 si.NewObjectInstance('sphere1', 'sphere_mesh')
