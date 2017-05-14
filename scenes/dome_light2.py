@@ -66,7 +66,6 @@ si.SetStringProperty('dome_proc', 'filepath', '../../ply/dome.ply')
 si.SetStringProperty('dome_proc', 'io_mode', 'r')
 si.RunProcedure('dome_proc')
 
-
 #ObjectInstance
 si.NewObjectInstance('happy1', 'happy_mesh')
 si.AssignShader('happy1', 'DEFAULT_SHADING_GROUP', 'happy_shader')

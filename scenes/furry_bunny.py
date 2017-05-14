@@ -18,6 +18,7 @@ si.OpenPlugin('plastic_shader', 'PlasticShader')
 si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('hair_shader', 'HairShader')
 si.OpenPlugin('curve_generator_procedure', 'CurveGeneratorProcedure')
+si.OpenPlugin('stanfordply_procedure', 'StanfordPlyProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -141,15 +142,33 @@ si.NewShader('dome_shader', 'constant_shader')
 si.NewCurve('curve_data')
 
 #Mesh
-si.NewMesh('bunny_mesh', '../../ply/bunny.ply')
-si.NewMesh('floor_mesh', '../../ply/floor.ply')
-si.NewMesh('dome_mesh', '../../ply/dome.ply')
+si.NewMesh('bunny_mesh', 'null')
+si.NewMesh('floor_mesh', 'null')
+si.NewMesh('dome_mesh', 'null')
 
 #Procedure
-si.NewProcedure('proc1', 'curve_generator_procedure')
-si.AssignMesh('proc1', 'mesh', 'bunny_mesh')
-si.AssignCurve('proc1', 'curve', 'curve_data')
-si.RunProcedure('proc1')
+si.NewProcedure('bunny_proc', 'stanfordply_procedure')
+si.AssignMesh('bunny_proc', 'mesh', 'bunny_mesh')
+si.SetStringProperty('bunny_proc', 'filepath', '../../ply/bunny.ply')
+si.SetStringProperty('bunny_proc', 'io_mode', 'r')
+si.RunProcedure('bunny_proc')
+
+si.NewProcedure('dome_proc', 'stanfordply_procedure')
+si.AssignMesh('dome_proc', 'mesh', 'dome_mesh')
+si.SetStringProperty('dome_proc', 'filepath', '../../ply/dome.ply')
+si.SetStringProperty('dome_proc', 'io_mode', 'r')
+si.RunProcedure('dome_proc')
+
+si.NewProcedure('floor_proc', 'stanfordply_procedure')
+si.AssignMesh('floor_proc', 'mesh', 'floor_mesh')
+si.SetStringProperty('floor_proc', 'filepath', '../../ply/floor.ply')
+si.SetStringProperty('floor_proc', 'io_mode', 'r')
+si.RunProcedure('floor_proc')
+
+si.NewProcedure('bunny_hair_gen', 'curve_generator_procedure')
+si.AssignMesh('bunny_hair_gen', 'mesh', 'bunny_mesh')
+si.AssignCurve('bunny_hair_gen', 'curve', 'curve_data')
+si.RunProcedure('bunny_hair_gen')
 
 #ObjectInstance
 si.NewObjectInstance('bunny1', 'bunny_mesh')
