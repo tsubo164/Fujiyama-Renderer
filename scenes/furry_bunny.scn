@@ -8,6 +8,8 @@
 OpenPlugin plastic_shader  PlasticShader
 OpenPlugin constant_shader ConstantShader
 OpenPlugin hair_shader     HairShader
+OpenPlugin curve_generator_procedure CurveGeneratorProcedure
+OpenPlugin stanfordply_procedure StanfordPlyProcedure
 
 #Camera
 NewCamera cam1 PerspectiveCamera
@@ -128,12 +130,36 @@ SetProperty3 floor_shader reflect 0 0 0
 NewShader dome_shader constant_shader
 
 #Curve
-NewCurve curve_data   ../../crv/bunny.crv
+NewCurve curve_data
 
 #Mesh
-NewMesh bunny_mesh ../../mesh/bunny.mesh
-NewMesh floor_mesh ../../mesh/floor.mesh
-NewMesh dome_mesh  ../../mesh/dome.mesh
+NewMesh bunny_mesh null
+NewMesh floor_mesh null
+NewMesh dome_mesh  null
+
+#Procedure
+NewProcedure      bunny_proc stanfordply_procedure
+AssignMesh        bunny_proc mesh bunny_mesh
+SetStringProperty bunny_proc filepath ../../ply/bunny.ply
+SetStringProperty bunny_proc io_mode r
+RunProcedure      bunny_proc
+
+NewProcedure      dome_proc stanfordply_procedure
+AssignMesh        dome_proc mesh dome_mesh
+SetStringProperty dome_proc filepath ../../ply/dome.ply
+SetStringProperty dome_proc io_mode r
+RunProcedure      dome_proc
+
+NewProcedure      floor_proc stanfordply_procedure
+AssignMesh        floor_proc mesh floor_mesh
+SetStringProperty floor_proc filepath ../../ply/floor.ply
+SetStringProperty floor_proc io_mode r
+RunProcedure      floor_proc
+
+NewProcedure      bunny_hair_gen curve_generator_procedure
+AssignMesh        bunny_hair_gen mesh bunny_mesh
+AssignCurve       bunny_hair_gen curve curve_data
+RunProcedure      bunny_hair_gen
 
 #ObjectInstance
 NewObjectInstance  bunny1 bunny_mesh
