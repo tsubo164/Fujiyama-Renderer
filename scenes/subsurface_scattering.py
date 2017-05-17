@@ -64,11 +64,11 @@ si.SetProperty3('head_shader4', 'absorption_coefficient', .00011, .00024, .0014)
 si.NewMesh('head_mesh', 'null')
 
 #Procedure
-si.NewProcedure('proc1', 'wavefrontobj_procedure')
-si.AssignMesh('proc1', 'mesh', 'head_mesh')
-si.SetStringProperty('proc1', 'filepath', '../../obj/head.obj')
-si.SetStringProperty('proc1', 'io_mode', 'r')
-si.RunProcedure('proc1')
+si.NewProcedure('head_proc', 'wavefrontobj_procedure')
+si.AssignMesh('head_proc', 'mesh', 'head_mesh')
+si.SetStringProperty('head_proc', 'filepath', '../../obj/head.obj')
+si.SetStringProperty('head_proc', 'io_mode', 'r')
+si.RunProcedure('head_proc')
 
 #ObjectInstance
 si.NewObjectInstance('head1', 'head_mesh')

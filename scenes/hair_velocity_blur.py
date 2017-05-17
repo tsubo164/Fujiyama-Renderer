@@ -16,6 +16,8 @@ si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('plastic_shader', 'PlasticShader')
 si.OpenPlugin('hair_shader', 'HairShader')
 si.OpenPlugin('curve_generator_procedure', 'CurveGeneratorProcedure')
+si.OpenPlugin('wavefrontobj_procedure', 'WavefrontObjProcedure')
+si.OpenPlugin('stanfordply_procedure', 'StanfordPlyProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -47,15 +49,28 @@ si.AssignTexture('dome_shader', 'texture', 'tex1')
 si.NewCurve('curve_data')
 
 #Mesh
-si.NewMesh('head_mesh', '../../obj/head.obj')
-si.NewMesh('dome_mesh', '../../ply/dome.ply')
+si.NewMesh('head_mesh', 'null')
+si.NewMesh('dome_mesh', 'null')
 
 #Procedure
-si.NewProcedure('proc1', 'curve_generator_procedure')
-si.AssignMesh('proc1', 'mesh', 'head_mesh')
-si.AssignCurve('proc1', 'curve', 'curve_data')
-si.SetProperty1('proc1', 'is_hair', 1)
-si.RunProcedure('proc1')
+si.NewProcedure('head_proc', 'wavefrontobj_procedure')
+si.AssignMesh('head_proc', 'mesh', 'head_mesh')
+si.SetStringProperty('head_proc', 'filepath', '../../obj/head.obj')
+si.SetStringProperty('head_proc', 'io_mode', 'r')
+si.RunProcedure('head_proc')
+
+si.NewProcedure('dome_proc', 'stanfordply_procedure')
+si.AssignMesh('dome_proc', 'mesh', 'dome_mesh')
+si.SetStringProperty('dome_proc', 'filepath', '../../ply/dome.ply')
+si.SetStringProperty('dome_proc', 'io_mode', 'r')
+si.RunProcedure('dome_proc')
+
+#This needs to be run after mesh is loaded.
+si.NewProcedure('hair_proc', 'curve_generator_procedure')
+si.AssignMesh('hair_proc', 'mesh', 'head_mesh')
+si.AssignCurve('hair_proc', 'curve', 'curve_data')
+si.SetProperty1('hair_proc', 'is_hair', 1)
+si.RunProcedure('hair_proc')
 
 #ObjectInstance
 si.NewObjectInstance('head1', 'head_mesh')
