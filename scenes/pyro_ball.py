@@ -12,6 +12,7 @@ si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('plastic_shader', 'PlasticShader')
 si.OpenPlugin('volume_shader', 'VolumeShader')
 si.OpenPlugin('pointclouds_procedure', 'PointCloudsProcedure')
+si.OpenPlugin('stanfordply_procedure', 'StanfordPlyProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -43,15 +44,27 @@ si.SetProperty3('volume_data', 'bounds_max', 1, 1, 1)
 si.SetProperty3('volume_data', 'resolution', 500, 500, 500)
 
 #Procedure
-si.NewProcedure('proc1', 'pointclouds_procedure')
-si.AssignVolume('proc1', 'volume', 'volume_data')
-si.AssignTurbulence('proc1', 'turbulence', 'turbulence_data')
-
-si.RunProcedure('proc1')
+si.NewProcedure('pyro_proc', 'pointclouds_procedure')
+si.AssignVolume('pyro_proc', 'volume', 'volume_data')
+si.AssignTurbulence('pyro_proc', 'turbulence', 'turbulence_data')
+si.RunProcedure('pyro_proc')
 
 #Mesh
-si.NewMesh('dome_mesh', '../../ply/dome.ply')
-si.NewMesh('floor_mesh', '../../ply/floor.ply')
+si.NewMesh('floor_mesh',  'null')
+si.NewMesh('dome_mesh',   'null')
+
+#Procedure
+si.NewProcedure('floor_proc', 'stanfordply_procedure')
+si.AssignMesh('floor_proc', 'mesh', 'floor_mesh')
+si.SetStringProperty('floor_proc', 'filepath', '../../ply/floor.ply')
+si.SetStringProperty('floor_proc', 'io_mode', 'r')
+si.RunProcedure('floor_proc')
+
+si.NewProcedure('dome_proc', 'stanfordply_procedure')
+si.AssignMesh('dome_proc', 'mesh', 'dome_mesh')
+si.SetStringProperty('dome_proc', 'filepath', '../../ply/dome.ply')
+si.SetStringProperty('dome_proc', 'io_mode', 'r')
+si.RunProcedure('dome_proc')
 
 #ObjectInstance
 si.NewObjectInstance('floor1', 'floor_mesh')
@@ -93,4 +106,3 @@ si.SaveFrameBuffer('fb1', '../pyro_ball.fb')
 #Run commands
 si.Run()
 #si.Print()
-
