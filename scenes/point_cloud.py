@@ -11,6 +11,7 @@ si = fujiyama.SceneInterface()
 si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('plastic_shader', 'PlasticShader')
 si.OpenPlugin('pointcloud_generator', 'PointcloudGenerator')
+si.OpenPlugin('stanfordply_procedure', 'StanfordPlyProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -41,15 +42,33 @@ si.AssignTexture('dome_shader', 'texture', 'tex1')
 si.NewPointCloud('ptc_data')
 
 #Mesh
-si.NewMesh('bunny_mesh', '../../ply/bunny.ply')
-si.NewMesh('dome_mesh', '../../ply/dome.ply')
-si.NewMesh('floor_mesh', '../../ply/floor.ply')
+si.NewMesh('bunny_mesh', 'null')
+si.NewMesh('floor_mesh',  'null')
+si.NewMesh('dome_mesh',   'null')
 
 #Procedure
-si.NewProcedure('proc1', 'pointcloud_generator')
-si.AssignMesh('proc1', 'mesh', 'bunny_mesh')
-si.AssignPointCloud('proc1', 'pointcloud', 'ptc_data')
-si.RunProcedure('proc1')
+si.NewProcedure('bunny_proc', 'stanfordply_procedure')
+si.AssignMesh('bunny_proc', 'mesh', 'bunny_mesh')
+si.SetStringProperty('bunny_proc', 'filepath', '../../ply/bunny.ply')
+si.SetStringProperty('bunny_proc', 'io_mode', 'r')
+si.RunProcedure('bunny_proc')
+
+si.NewProcedure('floor_proc', 'stanfordply_procedure')
+si.AssignMesh('floor_proc', 'mesh', 'floor_mesh')
+si.SetStringProperty('floor_proc', 'filepath', '../../ply/floor.ply')
+si.SetStringProperty('floor_proc', 'io_mode', 'r')
+si.RunProcedure('floor_proc')
+
+si.NewProcedure('dome_proc', 'stanfordply_procedure')
+si.AssignMesh('dome_proc', 'mesh', 'dome_mesh')
+si.SetStringProperty('dome_proc', 'filepath', '../../ply/dome.ply')
+si.SetStringProperty('dome_proc', 'io_mode', 'r')
+si.RunProcedure('dome_proc')
+
+si.NewProcedure('ptc_proc', 'pointcloud_generator')
+si.AssignMesh('ptc_proc', 'mesh', 'bunny_mesh')
+si.AssignPointCloud('ptc_proc', 'pointcloud', 'ptc_data')
+si.RunProcedure('ptc_proc')
 
 #ObjectInstance
 si.NewObjectInstance('floor1', 'floor_mesh')
