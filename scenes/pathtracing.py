@@ -9,6 +9,7 @@ si = fujiyama.SceneInterface()
 
 #plugin
 si.OpenPlugin('pathtracing_shader', 'PathtracingShader')
+si.OpenPlugin('stanfordply_procedure', 'StanfordPlyProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -87,11 +88,43 @@ emit_x = 10
 si.SetProperty3('light_shader1', 'emission', emit_r*emit_x, emit_g*emit_x, emit_b*emit_x)
 
 #Mesh
+"""
 si.NewMesh('happy_mesh', '../../ply/happy.ply')
 si.NewMesh('bunny_mesh', '../../ply/bunny.ply')
 si.NewMesh('floor_mesh', '../../ply/floor.ply')
 #si.NewMesh('sphere_mesh', '../../ply/sphere.ply')
 si.NewMesh('sphere_mesh', '../../ply/sphere_uv.ply')
+"""
+#Mesh
+si.NewMesh('happy_mesh', 'null')
+si.NewMesh('bunny_mesh', 'null')
+si.NewMesh('floor_mesh',  'null')
+si.NewMesh('sphere_mesh',   'null')
+
+#Procedure
+si.NewProcedure('happy_proc', 'stanfordply_procedure')
+si.AssignMesh('happy_proc', 'mesh', 'happy_mesh')
+si.SetStringProperty('happy_proc', 'filepath', '../../ply/happy.ply')
+si.SetStringProperty('happy_proc', 'io_mode', 'r')
+si.RunProcedure('happy_proc')
+
+si.NewProcedure('bunny_proc', 'stanfordply_procedure')
+si.AssignMesh('bunny_proc', 'mesh', 'bunny_mesh')
+si.SetStringProperty('bunny_proc', 'filepath', '../../ply/bunny.ply')
+si.SetStringProperty('bunny_proc', 'io_mode', 'r')
+si.RunProcedure('bunny_proc')
+
+si.NewProcedure('floor_proc', 'stanfordply_procedure')
+si.AssignMesh('floor_proc', 'mesh', 'floor_mesh')
+si.SetStringProperty('floor_proc', 'filepath', '../../ply/floor.ply')
+si.SetStringProperty('floor_proc', 'io_mode', 'r')
+si.RunProcedure('floor_proc')
+
+si.NewProcedure('sphere_proc', 'stanfordply_procedure')
+si.AssignMesh('sphere_proc', 'mesh', 'sphere_mesh')
+si.SetStringProperty('sphere_proc', 'filepath', '../../ply/sphere.ply')
+si.SetStringProperty('sphere_proc', 'io_mode', 'r')
+si.RunProcedure('sphere_proc')
 
 #ObjectInstance
 si.NewObjectInstance('floor1', 'floor_mesh')
