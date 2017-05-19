@@ -5,6 +5,7 @@
 OpenPlugin plastic_shader  PlasticShader
 OpenPlugin glass_shader    GlassShader
 OpenPlugin constant_shader ConstantShader
+OpenPlugin stanfordply_procedure StanfordPlyProcedure
 
 #Camera
 NewCamera cam1 PerspectiveCamera
@@ -120,9 +121,29 @@ NewShader dome_shader constant_shader
 #SetProperty3 teapot_shader filter_color .2 .5 .1
 
 #Mesh
-NewMesh teapot_mesh ../../mesh/teapot.mesh
-NewMesh floor_mesh  ../../mesh/floor.mesh
-NewMesh dome_mesh   ../../mesh/dome.mesh
+NewMesh teapot_mesh null
+NewMesh floor_mesh  null
+NewMesh dome_mesh   null
+
+#Procedure
+NewProcedure teapot_proc stanfordply_procedure
+AssignMesh teapot_proc mesh teapot_mesh
+SetStringProperty teapot_proc filepath ../../ply/teapot.ply
+SetStringProperty teapot_proc io_mode r
+RunProcedure teapot_proc
+
+NewProcedure floor_proc stanfordply_procedure
+AssignMesh floor_proc mesh floor_mesh
+SetStringProperty floor_proc filepath ../../ply/floor.ply
+SetStringProperty floor_proc io_mode r
+RunProcedure floor_proc
+
+NewProcedure dome_proc stanfordply_procedure
+AssignMesh dome_proc mesh dome_mesh
+SetStringProperty dome_proc filepath ../../ply/dome.ply
+SetStringProperty dome_proc io_mode r
+RunProcedure dome_proc
+
 
 #ObjectInstance
 NewObjectInstance teapot1 teapot_mesh
