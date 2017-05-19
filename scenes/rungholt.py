@@ -12,6 +12,7 @@ si = fujiyama.SceneInterface()
 si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('plastic_shader', 'PlasticShader')
 si.OpenPlugin('wavefrontobj_procedure', 'WavefrontObjProcedure')
+si.OpenPlugin('stanfordply_procedure', 'StanfordPlyProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -38,14 +39,20 @@ si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
 si.NewMesh('rungholt_mesh', 'null')
-si.NewMesh('dome_mesh', '../../ply/dome.ply')
+si.NewMesh('dome_mesh',   'null')
 
 #Procedure
-si.NewProcedure('proc1', 'wavefrontobj_procedure')
-si.AssignMesh('proc1', 'mesh', 'rungholt_mesh')
-si.SetStringProperty('proc1', 'filepath', '../../obj/rungholt/rungholt.obj')
-si.SetStringProperty('proc1', 'io_mode', 'r')
-si.RunProcedure('proc1')
+si.NewProcedure('dome_proc', 'stanfordply_procedure')
+si.AssignMesh('dome_proc', 'mesh', 'dome_mesh')
+si.SetStringProperty('dome_proc', 'filepath', '../../ply/dome.ply')
+si.SetStringProperty('dome_proc', 'io_mode', 'r')
+si.RunProcedure('dome_proc')
+
+si.NewProcedure('rungholt_proc', 'wavefrontobj_procedure')
+si.AssignMesh('rungholt_proc', 'mesh', 'rungholt_mesh')
+si.SetStringProperty('rungholt_proc', 'filepath', '../../obj/rungholt/rungholt.obj')
+si.SetStringProperty('rungholt_proc', 'io_mode', 'r')
+si.RunProcedure('rungholt_proc')
 
 #ObjectInstance
 si.NewObjectInstance('rungholt1', 'rungholt_mesh')
