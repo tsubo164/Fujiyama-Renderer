@@ -43,12 +43,6 @@ si.SetProperty3('volume_data', 'bounds_min', -1, -1, -1)
 si.SetProperty3('volume_data', 'bounds_max', 1, 1, 1)
 si.SetProperty3('volume_data', 'resolution', 500, 500, 500)
 
-#Procedure
-si.NewProcedure('pyro_proc', 'pointclouds_procedure')
-si.AssignVolume('pyro_proc', 'volume', 'volume_data')
-si.AssignTurbulence('pyro_proc', 'turbulence', 'turbulence_data')
-si.RunProcedure('pyro_proc')
-
 #Mesh
 si.NewMesh('floor_mesh',  'null')
 si.NewMesh('dome_mesh',   'null')
@@ -65,6 +59,11 @@ si.AssignMesh('dome_proc', 'mesh', 'dome_mesh')
 si.SetStringProperty('dome_proc', 'filepath', '../../ply/dome.ply')
 si.SetStringProperty('dome_proc', 'io_mode', 'r')
 si.RunProcedure('dome_proc')
+
+si.NewProcedure('pyro_proc', 'pointclouds_procedure')
+si.AssignVolume('pyro_proc', 'volume', 'volume_data')
+si.AssignTurbulence('pyro_proc', 'turbulence', 'turbulence_data')
+si.RunProcedure('pyro_proc')
 
 #ObjectInstance
 si.NewObjectInstance('floor1', 'floor_mesh')
