@@ -12,6 +12,7 @@ si = fujiyama.SceneInterface()
 si.OpenPlugin('constant_shader', 'ConstantShader')
 si.OpenPlugin('plastic_shader', 'PlasticShader')
 si.OpenPlugin('pointcloud_generator', 'PointcloudGenerator')
+si.OpenPlugin('stanfordply_procedure', 'StanfordPlyProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -49,16 +50,34 @@ si.NewPointCloud('ptc_data')
 # This dome_mesh has nothing to do with dome light
 # We need to exclude dome_mesh from shadow target
 # since this is just for background.
-si.NewMesh('armadillo_mesh', '../../mesh/armadillo.mesh')
-si.NewMesh('dome_mesh', '../../ply/dome.ply')
-si.NewMesh('floor_mesh', '../../ply/floor.ply')
+si.NewMesh('armadillo_mesh', 'null')
+si.NewMesh('floor_mesh',  'null')
+si.NewMesh('dome_mesh',   'null')
 
 #Procedure
-si.NewProcedure('proc1', 'pointcloud_generator')
-si.AssignMesh('proc1', 'mesh', 'armadillo_mesh')
-si.AssignPointCloud('proc1', 'pointcloud', 'ptc_data')
-si.SetProperty1('proc1', 'add_velocity', 1)
-si.RunProcedure('proc1')
+si.NewProcedure('armadillo_proc', 'stanfordply_procedure')
+si.AssignMesh('armadillo_proc', 'mesh', 'armadillo_mesh')
+si.SetStringProperty('armadillo_proc', 'filepath', '../../ply/armadillo.ply')
+si.SetStringProperty('armadillo_proc', 'io_mode', 'r')
+si.RunProcedure('armadillo_proc')
+
+si.NewProcedure('floor_proc', 'stanfordply_procedure')
+si.AssignMesh('floor_proc', 'mesh', 'floor_mesh')
+si.SetStringProperty('floor_proc', 'filepath', '../../ply/floor.ply')
+si.SetStringProperty('floor_proc', 'io_mode', 'r')
+si.RunProcedure('floor_proc')
+
+si.NewProcedure('dome_proc', 'stanfordply_procedure')
+si.AssignMesh('dome_proc', 'mesh', 'dome_mesh')
+si.SetStringProperty('dome_proc', 'filepath', '../../ply/dome.ply')
+si.SetStringProperty('dome_proc', 'io_mode', 'r')
+si.RunProcedure('dome_proc')
+
+si.NewProcedure('pointcloud_proc', 'pointcloud_generator')
+si.AssignMesh('pointcloud_proc', 'mesh', 'armadillo_mesh')
+si.AssignPointCloud('pointcloud_proc', 'pointcloud', 'ptc_data')
+si.SetProperty1('pointcloud_proc', 'add_velocity', 1)
+si.RunProcedure('pointcloud_proc')
 
 #ObjectInstance
 si.NewObjectInstance('floor1', 'floor_mesh')

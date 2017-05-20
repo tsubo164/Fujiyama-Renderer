@@ -58,7 +58,6 @@ si.SetStringProperty('dome_proc', 'filepath', '../../ply/dome.ply')
 si.SetStringProperty('dome_proc', 'io_mode', 'r')
 si.RunProcedure('dome_proc')
 
-
 #ObjectInstance
 si.NewObjectInstance('armadillo1', 'armadillo_mesh')
 si.AssignShader('armadillo1', 'DEFAULT_SHADING_GROUP', 'armadillo_shader')
