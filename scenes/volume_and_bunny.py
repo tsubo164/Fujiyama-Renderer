@@ -11,6 +11,7 @@ si = fujiyama.SceneInterface()
 si.OpenPlugin('plastic_shader', 'PlasticShader')
 si.OpenPlugin('volume_shader', 'VolumeShader')
 si.OpenPlugin('ConstantVolumeProcedure', 'ConstantVolumeProcedure')
+si.OpenPlugin('stanfordply_procedure', 'StanfordPlyProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -37,15 +38,27 @@ si.SetProperty3('volume_data', 'bounds_min', -1, -1, -1)
 si.SetProperty3('volume_data', 'bounds_max', 1, 1, 1)
 si.SetProperty3('volume_data', 'resolution', 100, 100, 100)
 
-#Procedure
-si.NewProcedure('proc1', 'ConstantVolumeProcedure')
-si.AssignVolume('proc1', 'volume', 'volume_data')
-si.SetProperty1('proc1', 'density', 1.)
-si.RunProcedure('proc1')
-
 #Mesh
-si.NewMesh('bunny_mesh', '../../ply/bunny.ply')
-si.NewMesh('floor_mesh', '../../ply/floor.ply')
+si.NewMesh('bunny_mesh', 'null')
+si.NewMesh('floor_mesh',  'null')
+
+#Procedure
+si.NewProcedure('bunny_proc', 'stanfordply_procedure')
+si.AssignMesh('bunny_proc', 'mesh', 'bunny_mesh')
+si.SetStringProperty('bunny_proc', 'filepath', '../../ply/bunny.ply')
+si.SetStringProperty('bunny_proc', 'io_mode', 'r')
+si.RunProcedure('bunny_proc')
+
+si.NewProcedure('floor_proc', 'stanfordply_procedure')
+si.AssignMesh('floor_proc', 'mesh', 'floor_mesh')
+si.SetStringProperty('floor_proc', 'filepath', '../../ply/floor.ply')
+si.SetStringProperty('floor_proc', 'io_mode', 'r')
+si.RunProcedure('floor_proc')
+
+si.NewProcedure('constantvolume_proc', 'ConstantVolumeProcedure')
+si.AssignVolume('constantvolume_proc', 'volume', 'volume_data')
+si.SetProperty1('constantvolume_proc', 'density', 1.)
+si.RunProcedure('constantvolume_proc')
 
 #ObjectInstance
 si.NewObjectInstance('bunny1', 'bunny_mesh')
