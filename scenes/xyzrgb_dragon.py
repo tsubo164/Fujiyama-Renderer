@@ -9,6 +9,7 @@ si = fujiyama.SceneInterface()
 #plugins
 si.OpenPlugin('plastic_shader', 'PlasticShader')
 si.OpenPlugin('constant_shader', 'ConstantShader')
+si.OpenPlugin('stanfordply_procedure', 'StanfordPlyProcedure')
 
 #Camera
 si.NewCamera('cam1', 'PerspectiveCamera')
@@ -124,9 +125,28 @@ si.NewShader('floor_shader', 'plastic_shader')
 si.NewShader('dome_shader', 'constant_shader')
 
 #Mesh
-si.NewMesh('xyzrgb_dragon_mesh', '../../ply/xyzrgb_dragon.ply')
-si.NewMesh('floor_mesh', '../../ply/floor.ply')
-si.NewMesh('dome_mesh', '../../ply/dome.ply')
+si.NewMesh('xyzrgb_dragon_mesh', 'null')
+si.NewMesh('floor_mesh',  'null')
+si.NewMesh('dome_mesh',   'null')
+
+#Procedure
+si.NewProcedure('xyzrgb_dragon_proc', 'stanfordply_procedure')
+si.AssignMesh('xyzrgb_dragon_proc', 'mesh', 'xyzrgb_dragon_mesh')
+si.SetStringProperty('xyzrgb_dragon_proc', 'filepath', '../../ply/xyzrgb_dragon.ply')
+si.SetStringProperty('xyzrgb_dragon_proc', 'io_mode', 'r')
+si.RunProcedure('xyzrgb_dragon_proc')
+
+si.NewProcedure('floor_proc', 'stanfordply_procedure')
+si.AssignMesh('floor_proc', 'mesh', 'floor_mesh')
+si.SetStringProperty('floor_proc', 'filepath', '../../ply/floor.ply')
+si.SetStringProperty('floor_proc', 'io_mode', 'r')
+si.RunProcedure('floor_proc')
+
+si.NewProcedure('dome_proc', 'stanfordply_procedure')
+si.AssignMesh('dome_proc', 'mesh', 'dome_mesh')
+si.SetStringProperty('dome_proc', 'filepath', '../../ply/dome.ply')
+si.SetStringProperty('dome_proc', 'io_mode', 'r')
+si.RunProcedure('dome_proc')
 
 #ObjectInstance
 si.NewObjectInstance('xyzrgb_dragon1', 'xyzrgb_dragon_mesh')
