@@ -4,6 +4,7 @@
 #plugins
 OpenPlugin plastic_shader  PlasticShader
 OpenPlugin constant_shader ConstantShader
+OpenPlugin stanfordply_procedure StanfordPlyProcedure
 
 #Camera
 NewCamera cam1 PerspectiveCamera
@@ -119,9 +120,28 @@ NewShader floor_shader plastic_shader
 NewShader dome_shader constant_shader
 
 #Mesh
-NewMesh xyzrgb_dragon_mesh   ../../mesh/xyzrgb_dragon.mesh
-NewMesh floor_mesh           ../../mesh/floor.mesh
-NewMesh dome_mesh            ../../mesh/dome.mesh
+NewMesh xyzrgb_dragon_mesh null
+NewMesh floor_mesh  null
+NewMesh dome_mesh   null
+
+#Procedure
+NewProcedure xyzrgb_dragon_proc stanfordply_procedure
+AssignMesh xyzrgb_dragon_proc mesh xyzrgb_dragon_mesh
+SetStringProperty xyzrgb_dragon_proc filepath ../../ply/xyzrgb_dragon.ply
+SetStringProperty xyzrgb_dragon_proc io_mode r
+RunProcedure xyzrgb_dragon_proc
+
+NewProcedure floor_proc stanfordply_procedure
+AssignMesh floor_proc mesh floor_mesh
+SetStringProperty floor_proc filepath ../../ply/floor.ply
+SetStringProperty floor_proc io_mode r
+RunProcedure floor_proc
+
+NewProcedure dome_proc stanfordply_procedure
+AssignMesh dome_proc mesh dome_mesh
+SetStringProperty dome_proc filepath ../../ply/dome.ply
+SetStringProperty dome_proc io_mode r
+RunProcedure dome_proc
 
 #ObjectInstance
 NewObjectInstance  xyzrgb_dragon1 xyzrgb_dragon_mesh
