@@ -121,9 +121,9 @@ NewShader dome_shader constant_shader
 #SetProperty3 teapot_shader filter_color .2 .5 .1
 
 #Mesh
-NewMesh teapot_mesh null
-NewMesh floor_mesh  null
-NewMesh dome_mesh   null
+NewMesh teapot_mesh
+NewMesh floor_mesh
+NewMesh dome_mesh
 
 #Procedure
 NewProcedure teapot_proc stanfordply_procedure

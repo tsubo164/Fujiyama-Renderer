@@ -150,9 +150,9 @@ NewShader floor_shader plastic_shader
 NewShader dome_shader constant_shader
 
 #Mesh
-NewMesh buddha_mesh null
-NewMesh floor_mesh  null
-NewMesh dome_mesh   null
+NewMesh buddha_mesh
+NewMesh floor_mesh
+NewMesh dome_mesh
 
 #Procedure
 NewProcedure      happy_proc stanfordply_procedure

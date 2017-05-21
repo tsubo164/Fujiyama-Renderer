@@ -40,10 +40,10 @@ si.NewShader('sphere_shader', 'constant_shader')
 si.SetProperty3('sphere_shader', 'diffuse', intensity, intensity, intensity)
 
 #Mesh
-si.NewMesh('teapot_mesh', 'null')
+si.NewMesh('teapot_mesh')
 si.NewMesh('bunny_mesh',  'null')
 si.NewMesh('floor_mesh',  'null')
-si.NewMesh('sphere_mesh', 'null')
+si.NewMesh('sphere_mesh')
 
 #Procedure
 si.NewProcedure('teapot_proc', 'stanfordply_procedure')

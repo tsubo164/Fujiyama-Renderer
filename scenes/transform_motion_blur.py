@@ -35,7 +35,7 @@ si.SetProperty3('dome_shader', 'diffuse', .8, .8, .8)
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
-si.NewMesh('armadillo_mesh', 'null')
+si.NewMesh('armadillo_mesh')
 si.NewMesh('floor_mesh',  'null')
 si.NewMesh('dome_mesh',   'null')
 

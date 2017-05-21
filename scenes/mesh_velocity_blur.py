@@ -44,7 +44,7 @@ si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
-si.NewMesh('dragon_mesh', 'null')
+si.NewMesh('dragon_mesh')
 si.NewMesh('floor_mesh',  'null')
 si.NewMesh('dome_mesh',   'null')
 

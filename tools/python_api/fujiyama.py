@@ -255,19 +255,7 @@ class SceneInterface:
 		cmd = 'NewLight %s %s' % (name, arg)
 		self.commands.append(cmd)
 
-	def NewMesh(self, name, filename):
-		filepath, ext = os.path.splitext(filename)
-
-		if ext == '.mesh':
-			temp_filename = filename
-		#elif ext == '.ply':
-			#temp_filename = self.__setup_pre_conversion('ply2mesh', filename, '.ply', '.mesh')
-		#elif ext == '.obj':
-			#temp_filename = self.__setup_pre_conversion('obj2mesh', filename, '.obj', '.mesh')
-		else:
-			temp_filename = filename
-			print 'non supported texture file format'
-
+	def NewMesh(self, name):
 		cmd = 'NewMesh %s' % (name)
 		self.commands.append(cmd)
 

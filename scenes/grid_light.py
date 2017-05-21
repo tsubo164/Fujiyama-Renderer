@@ -41,7 +41,7 @@ si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
-si.NewMesh('armadillo_mesh', 'null')
+si.NewMesh('armadillo_mesh')
 si.NewMesh('floor_mesh',  'null')
 si.NewMesh('dome_mesh',   'null')
 

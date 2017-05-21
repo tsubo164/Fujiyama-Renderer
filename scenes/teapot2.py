@@ -129,7 +129,7 @@ si.NewShader('floor_shader', 'plastic_shader')
 si.NewShader('dome_shader', 'constant_shader')
 
 #Mesh
-si.NewMesh('teapot_mesh', 'null')
+si.NewMesh('teapot_mesh')
 si.NewMesh('floor_mesh',  'null')
 si.NewMesh('dome_mesh',   'null')
 

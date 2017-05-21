@@ -96,8 +96,8 @@ si.NewMesh('floor_mesh', '../../ply/floor.ply')
 si.NewMesh('sphere_mesh', '../../ply/sphere_uv.ply')
 """
 #Mesh
-si.NewMesh('happy_mesh', 'null')
-si.NewMesh('bunny_mesh', 'null')
+si.NewMesh('happy_mesh')
+si.NewMesh('bunny_mesh')
 si.NewMesh('floor_mesh',  'null')
 si.NewMesh('sphere_mesh',   'null')
 

@@ -61,7 +61,7 @@ si.SetProperty3('head_shader4', 'scattering_coefficient', .255, .321, .377)
 si.SetProperty3('head_shader4', 'absorption_coefficient', .00011, .00024, .0014)
 
 #Mesh
-si.NewMesh('head_mesh', 'null')
+si.NewMesh('head_mesh')
 
 #Procedure
 si.NewProcedure('head_proc', 'wavefrontobj_procedure')

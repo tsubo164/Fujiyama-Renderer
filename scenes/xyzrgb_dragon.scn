@@ -120,9 +120,9 @@ NewShader floor_shader plastic_shader
 NewShader dome_shader constant_shader
 
 #Mesh
-NewMesh xyzrgb_dragon_mesh null
-NewMesh floor_mesh  null
-NewMesh dome_mesh   null
+NewMesh xyzrgb_dragon_mesh
+NewMesh floor_mesh
+NewMesh dome_mesh
 
 #Procedure
 NewProcedure xyzrgb_dragon_proc stanfordply_procedure

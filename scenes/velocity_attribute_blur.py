@@ -50,7 +50,7 @@ si.NewPointCloud('ptc_data')
 # This dome_mesh has nothing to do with dome light
 # We need to exclude dome_mesh from shadow target
 # since this is just for background.
-si.NewMesh('armadillo_mesh', 'null')
+si.NewMesh('armadillo_mesh')
 si.NewMesh('floor_mesh',  'null')
 si.NewMesh('dome_mesh',   'null')
 

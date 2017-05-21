@@ -35,11 +35,11 @@ si.NewShader('dome_shader', 'constant_shader')
 si.NewShader('floor_shader', 'plastic_shader')
 
 #Mesh
-si.NewMesh('armadillo_mesh', 'null')
-si.NewMesh('happy_mesh', 'null')
-si.NewMesh('horse_mesh', 'null')
-si.NewMesh('dome_mesh', 'null')
-si.NewMesh('floor_mesh', 'null')
+si.NewMesh('armadillo_mesh')
+si.NewMesh('happy_mesh')
+si.NewMesh('horse_mesh')
+si.NewMesh('dome_mesh')
+si.NewMesh('floor_mesh')
 
 #Procedure
 si.NewProcedure('armadillo_proc', 'stanfordply_procedure')

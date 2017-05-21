@@ -62,8 +62,8 @@ si.NewShader('dome_shader', 'constant_shader')
 si.AssignTexture('dome_shader', 'texture', 'env_tex1')
 
 #Mesh
-si.NewMesh('sphere_mesh', 'null')
-si.NewMesh('dome_mesh', 'null')
+si.NewMesh('sphere_mesh')
+si.NewMesh('dome_mesh')
 
 #Procedure
 si.NewProcedure('sphere_proc', 'stanfordply_procedure')

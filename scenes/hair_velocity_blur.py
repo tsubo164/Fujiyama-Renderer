@@ -49,8 +49,8 @@ si.AssignTexture('dome_shader', 'texture', 'tex1')
 si.NewCurve('curve_data')
 
 #Mesh
-si.NewMesh('head_mesh', 'null')
-si.NewMesh('dome_mesh', 'null')
+si.NewMesh('head_mesh')
+si.NewMesh('dome_mesh')
 
 #Procedure
 si.NewProcedure('head_proc', 'wavefrontobj_procedure')

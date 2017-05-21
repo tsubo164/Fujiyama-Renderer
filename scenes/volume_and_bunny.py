@@ -39,7 +39,7 @@ si.SetProperty3('volume_data', 'bounds_max', 1, 1, 1)
 si.SetProperty3('volume_data', 'resolution', 100, 100, 100)
 
 #Mesh
-si.NewMesh('bunny_mesh', 'null')
+si.NewMesh('bunny_mesh')
 si.NewMesh('floor_mesh',  'null')
 
 #Procedure

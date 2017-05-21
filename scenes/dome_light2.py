@@ -43,9 +43,9 @@ si.SetProperty3('sphere_shader2', 'diffuse', .5, .5, .5)
 si.SetProperty3('sphere_shader2', 'reflect', 0, 0, 0)
 
 #Mesh
-si.NewMesh('happy_mesh', 'null')
-si.NewMesh('dome_mesh', 'null')
-si.NewMesh('sphere_mesh', 'null')
+si.NewMesh('happy_mesh')
+si.NewMesh('dome_mesh')
+si.NewMesh('sphere_mesh')
 
 #Procedure
 si.NewProcedure('happy_proc', 'stanfordply_procedure')
