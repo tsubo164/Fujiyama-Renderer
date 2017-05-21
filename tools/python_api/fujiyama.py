@@ -260,8 +260,8 @@ class SceneInterface:
 
 		if ext == '.mesh':
 			temp_filename = filename
-		elif ext == '.ply':
-			temp_filename = self.__setup_pre_conversion('ply2mesh', filename, '.ply', '.mesh')
+		#elif ext == '.ply':
+			#temp_filename = self.__setup_pre_conversion('ply2mesh', filename, '.ply', '.mesh')
 		#elif ext == '.obj':
 			#temp_filename = self.__setup_pre_conversion('obj2mesh', filename, '.obj', '.mesh')
 		else:
