@@ -268,7 +268,7 @@ class SceneInterface:
 			temp_filename = filename
 			print 'non supported texture file format'
 
-		cmd = 'NewMesh %s %s' % (name, temp_filename)
+		cmd = 'NewMesh %s' % (name)
 		self.commands.append(cmd)
 
 	def AssignShader(self, object_instance, shading_group, shader):

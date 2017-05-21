@@ -666,7 +666,7 @@ ID SiNewLight(int light_type)
   return encode_id(Type_Light, GET_LAST_ADDED_ID(Light));
 }
 
-ID SiNewMesh(const char *filename)
+ID SiNewMesh(void)
 {
   Mesh *mesh = NULL;
   Accelerator *acc = NULL;
@@ -679,6 +679,8 @@ ID SiNewMesh(const char *filename)
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
   }
+  mesh->Clear();
+  /*
   if (strcmp(filename, "null") == 0) {
     mesh->Clear();
   } else {
@@ -687,6 +689,7 @@ ID SiNewMesh(const char *filename)
       return SI_BADID;
     }
   }
+  */
 
   acc = get_scene()->NewAccelerator(ACC_GRID);
   if (acc == NULL) {

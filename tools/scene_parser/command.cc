@@ -236,12 +236,11 @@ static CommandResult NewLight_run(const CommandArgument *args)
 /* NewMesh */
 static const int NewMesh_args[] = {
   ARG_COMMAND_NAME,
-  ARG_NEW_ENTRY_ID,
-  ARG_FILE_PATH};
+  ARG_NEW_ENTRY_ID};
 static CommandResult NewMesh_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.new_entry_id = SiNewMesh(args[2].str);
+  result.new_entry_id = SiNewMesh();
   result.new_entry_name = args[1].str;
   return result;
 }

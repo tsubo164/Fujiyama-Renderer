@@ -88,7 +88,7 @@ FJ_API ID SiNewShader(ID plugin);
 FJ_API ID SiNewVolume(void);
 FJ_API ID SiNewCurve(void);
 FJ_API ID SiNewLight(int light_type);
-FJ_API ID SiNewMesh(const char *filename);
+FJ_API ID SiNewMesh(void);
 
 FJ_API Status SiAssignFrameBuffer(ID renderer, ID framebuffer);
 FJ_API Status SiAssignObjectGroup(ID id, const char *name, ID group);
