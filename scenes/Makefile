@@ -21,22 +21,19 @@ all: help
 
 help:
 	@echo
-	@echo 'Run this command to render sample scene file written in c'
+	@echo 'Run this command to render sample scene file written in C/C++'
 	@echo '  $$ make sample'
 	@echo
 
 sample: cube.fb $(topdir)bin/fbview
 	env $(ld_path_name)=$(topdir)lib $(topdir)bin/fbview $<
 
-cube.fb: cube cube.mesh
+cube.fb: cube
 	env $(ld_path_name)=$(topdir)lib ./cube
-
-cube.mesh: cube.ply $(topdir)bin/ply2mesh
-	env $(ld_path_name)=$(topdir)lib $(topdir)bin/ply2mesh $< $@
 
 cube: cube.cc $(topdir)lib/libscene.so $(topdir)lib/PlasticShader.so
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 clean:
 	@echo '  clean samples'
-	@-$(RM) cube cube.fb cube.mesh
+	@-$(RM) cube cube.fb

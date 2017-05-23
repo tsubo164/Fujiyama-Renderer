@@ -62,7 +62,9 @@ int main(int argc, const char **argv)
   ID renderer;
   ID camera;
   ID object;
-  ID plugin;
+  ID procedure_plugin;
+  ID procedure;
+  ID shader_plugin;
   ID shader;
   ID light;
   ID mesh;
@@ -71,11 +73,18 @@ int main(int argc, const char **argv)
   SiOpenScene();
 
   // Plugin
-  plugin = SiOpenPlugin("PlasticShader");
-  if (plugin == SI_BADID) {
+  shader_plugin = SiOpenPlugin("PlasticShader");
+  if (shader_plugin == SI_BADID) {
     // TODO error handling
 #if 0
     fprintf(stderr, "Could not open shader: %s\n", SiGetErrorMessage(SiGetErrorNo()));
+#endif
+  }
+  procedure_plugin = SiOpenPlugin("StanfordPlyProcedure");
+  if (procedure_plugin == SI_BADID) {
+    // TODO error handling
+#if 0
+    fprintf(stderr, "Could not open procedure: %s\n", SiGetErrorMessage(SiGetErrorNo()));
 #endif
   }
 
@@ -97,14 +106,14 @@ int main(int argc, const char **argv)
   SiSetProperty3(light, "translate", 1, 12, 3);
 
   // Shader
-  shader = SiNewShader(plugin);
+  shader = SiNewShader(shader_plugin);
   if (shader == SI_BADID) {
     fprintf(stderr, "Could not create shader: PlasticShader\n");
     return -1;
   }
 
   // Mesh and Accelerator
-  mesh = SiNewMesh("cube.mesh");
+  mesh = SiNewMesh();
   if (mesh == SI_BADID) {
     // TODO error handling
 #if 0
@@ -112,6 +121,11 @@ int main(int argc, const char **argv)
 #endif
     return -1;
   }
+  procedure = SiNewProcedure(procedure_plugin);
+  SiAssignMesh(procedure, "mesh", mesh);
+  SiSetStringProperty(procedure, "filepath", "./cube.ply");
+  SiSetStringProperty(procedure, "io_mode", "r");
+  SiRunProcedure(procedure);
 
   // ObjectInstance
   object = SiNewObjectInstance(mesh);
