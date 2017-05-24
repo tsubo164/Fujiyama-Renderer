@@ -7,7 +7,6 @@
 #include "ObjParser.h"
 #include "fj_tex_coord.h"
 #include "fj_triangle.h"
-#include "fj_mesh_io.h"
 #include "fj_vector.h"
 #include "fj_types.h"
 #include "fj_mesh.h"

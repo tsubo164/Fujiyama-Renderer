@@ -6,7 +6,6 @@
 #include "fj_framebuffer_io.h"
 #include "fj_primitive_set.h"
 #include "fj_multi_thread.h"
-#include "fj_mesh_io.h"
 #include "fj_shader.h"
 #include "fj_scene.h"
 #include "fj_timer.h"
@@ -680,16 +679,6 @@ ID SiNewMesh(void)
     return SI_BADID;
   }
   mesh->Clear();
-  /*
-  if (strcmp(filename, "null") == 0) {
-    mesh->Clear();
-  } else {
-    if (MshLoadFile(mesh, filename)) {
-      set_errno(SI_ERR_FAILLOAD);
-      return SI_BADID;
-    }
-  }
-  */
 
   acc = get_scene()->NewAccelerator(ACC_GRID);
   if (acc == NULL) {
