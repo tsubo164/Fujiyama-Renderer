@@ -9,6 +9,7 @@
 #include <vector>
 #include <cassert>
 #include <cstdlib>
+#include <cstdio>
 
 namespace fj {
 

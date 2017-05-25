@@ -6,6 +6,7 @@
 #include "fj_random.h"
 #include "fj_noise.h"
 #include <iostream>
+#include <cstdlib>
 
 using namespace fj;
 
