@@ -98,8 +98,8 @@ si.NewMesh('sphere_mesh', '../../ply/sphere_uv.ply')
 #Mesh
 si.NewMesh('happy_mesh')
 si.NewMesh('bunny_mesh')
-si.NewMesh('floor_mesh',  'null')
-si.NewMesh('sphere_mesh',   'null')
+si.NewMesh('floor_mesh')
+si.NewMesh('sphere_mesh')
 
 #Procedure
 si.NewProcedure('happy_proc', 'stanfordply_procedure')

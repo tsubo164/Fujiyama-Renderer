@@ -43,8 +43,8 @@ si.NewPointCloud('ptc_data')
 
 #Mesh
 si.NewMesh('bunny_mesh')
-si.NewMesh('floor_mesh',  'null')
-si.NewMesh('dome_mesh',   'null')
+si.NewMesh('floor_mesh')
+si.NewMesh('dome_mesh')
 
 #Procedure
 si.NewProcedure('bunny_proc', 'stanfordply_procedure')

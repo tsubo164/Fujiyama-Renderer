@@ -51,8 +51,8 @@ si.NewPointCloud('ptc_data')
 # We need to exclude dome_mesh from shadow target
 # since this is just for background.
 si.NewMesh('armadillo_mesh')
-si.NewMesh('floor_mesh',  'null')
-si.NewMesh('dome_mesh',   'null')
+si.NewMesh('floor_mesh')
+si.NewMesh('dome_mesh')
 
 #Procedure
 si.NewProcedure('armadillo_proc', 'stanfordply_procedure')

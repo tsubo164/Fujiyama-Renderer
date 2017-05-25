@@ -39,7 +39,7 @@ si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
 si.NewMesh('rungholt_mesh')
-si.NewMesh('dome_mesh',   'null')
+si.NewMesh('dome_mesh')
 
 #Procedure
 si.NewProcedure('dome_proc', 'stanfordply_procedure')

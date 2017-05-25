@@ -41,8 +41,8 @@ si.SetProperty3('sphere_shader', 'diffuse', intensity, intensity, intensity)
 
 #Mesh
 si.NewMesh('teapot_mesh')
-si.NewMesh('bunny_mesh',  'null')
-si.NewMesh('floor_mesh',  'null')
+si.NewMesh('bunny_mesh')
+si.NewMesh('floor_mesh')
 si.NewMesh('sphere_mesh')
 
 #Procedure

@@ -40,7 +40,7 @@ si.SetProperty3('volume_data', 'resolution', 100, 100, 100)
 
 #Mesh
 si.NewMesh('bunny_mesh')
-si.NewMesh('floor_mesh',  'null')
+si.NewMesh('floor_mesh')
 
 #Procedure
 si.NewProcedure('bunny_proc', 'stanfordply_procedure')

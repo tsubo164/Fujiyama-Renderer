@@ -42,8 +42,8 @@ si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
 si.NewMesh('armadillo_mesh')
-si.NewMesh('floor_mesh',  'null')
-si.NewMesh('dome_mesh',   'null')
+si.NewMesh('floor_mesh')
+si.NewMesh('dome_mesh')
 
 #Procedure
 si.NewProcedure('armadillo_proc', 'stanfordply_procedure')

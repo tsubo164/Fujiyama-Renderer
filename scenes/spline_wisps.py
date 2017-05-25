@@ -47,8 +47,8 @@ si.SetProperty3('volume_data', 'bounds_max', 1, 1, 1)
 si.SetProperty3('volume_data', 'resolution', 600, 600, 600)
 
 #Mesh
-si.NewMesh('floor_mesh',  'null')
-si.NewMesh('dome_mesh',   'null')
+si.NewMesh('floor_mesh')
+si.NewMesh('dome_mesh')
 
 #Procedure
 si.NewProcedure('floor_proc', 'stanfordply_procedure')

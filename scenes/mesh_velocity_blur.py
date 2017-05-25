@@ -45,8 +45,8 @@ si.AssignTexture('dome_shader', 'texture', 'tex1')
 
 #Mesh
 si.NewMesh('dragon_mesh')
-si.NewMesh('floor_mesh',  'null')
-si.NewMesh('dome_mesh',   'null')
+si.NewMesh('floor_mesh')
+si.NewMesh('dome_mesh')
 
 #Procedure
 si.NewProcedure('dragon_proc', 'stanfordply_procedure')

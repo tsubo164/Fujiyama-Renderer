@@ -126,8 +126,8 @@ si.NewShader('dome_shader', 'constant_shader')
 
 #Mesh
 si.NewMesh('xyzrgb_dragon_mesh')
-si.NewMesh('floor_mesh',  'null')
-si.NewMesh('dome_mesh',   'null')
+si.NewMesh('floor_mesh')
+si.NewMesh('dome_mesh')
 
 #Procedure
 si.NewProcedure('xyzrgb_dragon_proc', 'stanfordply_procedure')
