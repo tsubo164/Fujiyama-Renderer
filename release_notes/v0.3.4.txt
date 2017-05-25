@@ -1,0 +1,19 @@
+Fujiyama Renderer v0.3.4(Alpha) Release Notes
+=============================================
+
+New features since v0.3.3
+-------------------------
+ * Removed *.mesh file format from the core library. *.ply and *.obj file readers
+   are provided as plugins.
+
+ * FrameBuffer is now ascci file format.
+
+Features under development
+--------------------------
+ * Deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support

@@ -37,15 +37,12 @@ designed to handle production image rendering.
   + Volume Filling Procedure - Surface wisps procedure provided
 
 * File format
-  + Original mesh format - ply2mesh and obj2mesh are provided
-  + Original curve format - curvegen is provided
-  + Original point cloud format - ptcgen is provided
   + Original mipmap format - hdr2mip is provided
   + Original framebuffer format - fb2exr is provided
   + Command-like scene description language - works with text filter tools
   + Python Binding scene description - can utilize control structures and libraries
   + FrameBuffer Viewer - displays *.fb and *.mip 
-  + Input format - *.mesh, *.ply, *.obj, *.mip, *.hdr, *.jpg (through Python API)
+  + Input format - *.ply, *.obj, *.mip, *.hdr, *.jpg (through Python API)
   + Output format - *.fb, *.exr (through Python API)
 
 
