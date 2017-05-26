@@ -18,6 +18,9 @@
 
 namespace fj {
 
+// for windows DLL
+template class FJ_API VertexAttribute<Vector>;
+
 #define ATTR(Class, Type, Name, Label) \
 void Mesh::Add##Class##Label() \
 { \

@@ -26,20 +26,20 @@ PathtracingShader_dll = $(out_dir)\PathtracingShader.dll
 PlasticShader_dll = $(out_dir)\PlasticShader.dll
 SSSShader_dll = $(out_dir)\SSSShader.dll
 VolumeShader_dll = $(out_dir)\VolumeShader.dll
+CurveGeneneratorProcedure_dll = $(out_dir)\CurveGeneneratorProcedure.dll
 ConstantVolumeProcedure_dll = $(out_dir)\ConstantVolumeProcedure.dll
+WavefrontObjProcedure_dll = $(out_dir)\WavefrontObjProcedure.dll
+PointCloudGenerator_dll = $(out_dir)\PointCloudGenerator.dll
 PointCloudsProcedure_dll = $(out_dir)\PointCloudsProcedure.dll
 SplineWispsProcedure_dll = $(out_dir)\SplineWispsProcedure.dll
+StanfordPlyProcedure_dll = $(out_dir)\StanfordPlyProcedure.dll
 SurfaceWispsProcedure_dll = $(out_dir)\SurfaceWispsProcedure.dll
-curvegen_exe = $(out_dir)\curvegen.exe
+VelocityGeneratorProcedure_dll = $(out_dir)\VelocityGeneratorProcedure.dll
 fb2exr_exe = $(out_dir)\fb2exr.exe
 fbview_exe = $(out_dir)\fbview.exe
 hdr2mip_exe = $(out_dir)\hdr2mip.exe
 jpg2mip_exe = $(out_dir)\jpg2mip.exe
-obj2mesh_exe = $(out_dir)\obj2mesh.exe
-ply2mesh_exe = $(out_dir)\ply2mesh.exe
-ptcgen_exe = $(out_dir)\ptcgen.exe
 scene_exe = $(out_dir)\scene.exe
-velgen_exe = $(out_dir)\velgen.exe
 box_test_exe = $(out_dir)\box_test.exe
 numeric_test_exe = $(out_dir)\numeric_test.exe
 vector_test_exe = $(out_dir)\vector_test.exe
@@ -55,20 +55,20 @@ all: \
   $(PlasticShader_dll) \
   $(SSSShader_dll) \
   $(VolumeShader_dll) \
+  $(CurveGeneneratorProcedure_dll) \
   $(ConstantVolumeProcedure_dll) \
+  $(WavefrontObjProcedure_dll) \
+  $(PointCloudGenerator_dll) \
   $(PointCloudsProcedure_dll) \
   $(SplineWispsProcedure_dll) \
+  $(StanfordPlyProcedure_dll) \
   $(SurfaceWispsProcedure_dll) \
-  $(curvegen_exe) \
+  $(VelocityGeneratorProcedure_dll) \
   $(fb2exr_exe) \
   $(fbview_exe) \
   $(hdr2mip_exe) \
   $(jpg2mip_exe) \
-  $(obj2mesh_exe) \
-  $(ply2mesh_exe) \
-  $(ptcgen_exe) \
   $(scene_exe) \
-  $(velgen_exe) \
   $(box_test_exe) \
   $(numeric_test_exe) \
   $(vector_test_exe)
@@ -84,8 +84,6 @@ libscene_dll_obj = \
   ..\..\src\fj_callback.obj \
   ..\..\src\fj_camera.obj \
   ..\..\src\fj_curve.obj \
-  ..\..\src\fj_curve_io.obj \
-  ..\..\src\fj_file_io.obj \
   ..\..\src\fj_filter.obj \
   ..\..\src\fj_fixed_grid_sampler.obj \
   ..\..\src\fj_framebuffer.obj \
@@ -99,7 +97,6 @@ libscene_dll_obj = \
   ..\..\src\fj_light.obj \
   ..\..\src\fj_matrix.obj \
   ..\..\src\fj_mesh.obj \
-  ..\..\src\fj_mesh_io.obj \
   ..\..\src\fj_mipmap.obj \
   ..\..\src\fj_multi_thread.obj \
   ..\..\src\fj_noise.obj \
@@ -109,7 +106,6 @@ libscene_dll_obj = \
   ..\..\src\fj_os.obj \
   ..\..\src\fj_plugin.obj \
   ..\..\src\fj_point_cloud.obj \
-  ..\..\src\fj_point_cloud_io.obj \
   ..\..\src\fj_primitive_set.obj \
   ..\..\src\fj_procedure.obj \
   ..\..\src\fj_progress.obj \
@@ -156,12 +152,6 @@ libscene_dll_obj = \
 ..\..\src\fj_curve.obj : ..\..\src\fj_curve.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_curve.cc
 
-..\..\src\fj_curve_io.obj : ..\..\src\fj_curve_io.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_curve_io.cc
-
-..\..\src\fj_file_io.obj : ..\..\src\fj_file_io.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_file_io.cc
-
 ..\..\src\fj_filter.obj : ..\..\src\fj_filter.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_filter.cc
 
@@ -201,9 +191,6 @@ libscene_dll_obj = \
 ..\..\src\fj_mesh.obj : ..\..\src\fj_mesh.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_mesh.cc
 
-..\..\src\fj_mesh_io.obj : ..\..\src\fj_mesh_io.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_mesh_io.cc
-
 ..\..\src\fj_mipmap.obj : ..\..\src\fj_mipmap.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_mipmap.cc
 
@@ -230,9 +217,6 @@ libscene_dll_obj = \
 
 ..\..\src\fj_point_cloud.obj : ..\..\src\fj_point_cloud.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_point_cloud.cc
-
-..\..\src\fj_point_cloud_io.obj : ..\..\src\fj_point_cloud_io.cc
-	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_point_cloud_io.cc
 
 ..\..\src\fj_primitive_set.obj : ..\..\src\fj_primitive_set.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_primitive_set.cc
@@ -423,6 +407,20 @@ VolumeShader_dll_lib = $(out_dir)\VolumeShader.lib
 VolumeShader_dll_exp = $(out_dir)\VolumeShader.exp
 
 #===============================================================================
+CurveGeneneratorProcedure_dll_obj = \
+  ..\..\procedures\curve_generator_procedure\curve_generator_procedure.obj
+
+..\..\procedures\curve_generator_procedure\curve_generator_procedure.obj : ..\..\procedures\curve_generator_procedure\curve_generator_procedure.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\procedures\curve_generator_procedure\curve_generator_procedure.cc
+
+$(CurveGeneneratorProcedure_dll) : $(CurveGeneneratorProcedure_dll_obj)
+	@echo CurveGeneneratorProcedure.dll
+	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(CurveGeneneratorProcedure_dll_obj)
+
+CurveGeneneratorProcedure_dll_lib = $(out_dir)\CurveGeneneratorProcedure.lib
+CurveGeneneratorProcedure_dll_exp = $(out_dir)\CurveGeneneratorProcedure.exp
+
+#===============================================================================
 ConstantVolumeProcedure_dll_obj = \
   ..\..\procedures\constantvolume_procedure\constantvolume_procedure.obj
 
@@ -435,6 +433,42 @@ $(ConstantVolumeProcedure_dll) : $(ConstantVolumeProcedure_dll_obj)
 
 ConstantVolumeProcedure_dll_lib = $(out_dir)\ConstantVolumeProcedure.lib
 ConstantVolumeProcedure_dll_exp = $(out_dir)\ConstantVolumeProcedure.exp
+
+#===============================================================================
+WavefrontObjProcedure_dll_obj = \
+  ..\..\procedures\wavefrontobj_procedure\ObjBuffer.obj \
+  ..\..\procedures\wavefrontobj_procedure\ObjParser.obj \
+  ..\..\procedures\wavefrontobj_procedure\wavefrontobj_procedure.obj
+
+..\..\procedures\wavefrontobj_procedure\ObjBuffer.obj : ..\..\procedures\wavefrontobj_procedure\ObjBuffer.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\procedures\wavefrontobj_procedure\ObjBuffer.cc
+
+..\..\procedures\wavefrontobj_procedure\ObjParser.obj : ..\..\procedures\wavefrontobj_procedure\ObjParser.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\procedures\wavefrontobj_procedure\ObjParser.cc
+
+..\..\procedures\wavefrontobj_procedure\wavefrontobj_procedure.obj : ..\..\procedures\wavefrontobj_procedure\wavefrontobj_procedure.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\procedures\wavefrontobj_procedure\wavefrontobj_procedure.cc
+
+$(WavefrontObjProcedure_dll) : $(WavefrontObjProcedure_dll_obj)
+	@echo WavefrontObjProcedure.dll
+	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(WavefrontObjProcedure_dll_obj)
+
+WavefrontObjProcedure_dll_lib = $(out_dir)\WavefrontObjProcedure.lib
+WavefrontObjProcedure_dll_exp = $(out_dir)\WavefrontObjProcedure.exp
+
+#===============================================================================
+PointCloudGenerator_dll_obj = \
+  ..\..\procedures\pointcloud_generator\pointcloud_generator.obj
+
+..\..\procedures\pointcloud_generator\pointcloud_generator.obj : ..\..\procedures\pointcloud_generator\pointcloud_generator.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\procedures\pointcloud_generator\pointcloud_generator.cc
+
+$(PointCloudGenerator_dll) : $(PointCloudGenerator_dll_obj)
+	@echo PointCloudGenerator.dll
+	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(PointCloudGenerator_dll_obj)
+
+PointCloudGenerator_dll_lib = $(out_dir)\PointCloudGenerator.lib
+PointCloudGenerator_dll_exp = $(out_dir)\PointCloudGenerator.exp
 
 #===============================================================================
 PointCloudsProcedure_dll_obj = \
@@ -465,6 +499,28 @@ SplineWispsProcedure_dll_lib = $(out_dir)\SplineWispsProcedure.lib
 SplineWispsProcedure_dll_exp = $(out_dir)\SplineWispsProcedure.exp
 
 #===============================================================================
+StanfordPlyProcedure_dll_obj = \
+  ..\..\procedures\stanfordply_procedure\ply2mesh.obj \
+  ..\..\procedures\stanfordply_procedure\stanfordply_procedure.obj \
+  ..\..\procedures\stanfordply_procedure\plyfile.obj
+
+..\..\procedures\stanfordply_procedure\ply2mesh.obj : ..\..\procedures\stanfordply_procedure\ply2mesh.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\procedures\stanfordply_procedure\ply2mesh.cc
+
+..\..\procedures\stanfordply_procedure\stanfordply_procedure.obj : ..\..\procedures\stanfordply_procedure\stanfordply_procedure.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\procedures\stanfordply_procedure\stanfordply_procedure.cc
+
+..\..\procedures\stanfordply_procedure\plyfile.obj : ..\..\procedures\stanfordply_procedure\plyfile.c
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\procedures\stanfordply_procedure\plyfile.c
+
+$(StanfordPlyProcedure_dll) : $(StanfordPlyProcedure_dll_obj)
+	@echo StanfordPlyProcedure.dll
+	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(StanfordPlyProcedure_dll_obj)
+
+StanfordPlyProcedure_dll_lib = $(out_dir)\StanfordPlyProcedure.lib
+StanfordPlyProcedure_dll_exp = $(out_dir)\StanfordPlyProcedure.exp
+
+#===============================================================================
 SurfaceWispsProcedure_dll_obj = \
   ..\..\procedures\surfacewisps_procedure\surfacewisps_procedure.obj
 
@@ -479,15 +535,18 @@ SurfaceWispsProcedure_dll_lib = $(out_dir)\SurfaceWispsProcedure.lib
 SurfaceWispsProcedure_dll_exp = $(out_dir)\SurfaceWispsProcedure.exp
 
 #===============================================================================
-curvegen_exe_obj = \
-  ..\..\tools\curve_generator\curvegen.obj
+VelocityGeneratorProcedure_dll_obj = \
+  ..\..\procedures\velocity_generator_procedure\velocity_generator_procedure.obj
 
-..\..\tools\curve_generator\curvegen.obj : ..\..\tools\curve_generator\curvegen.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\curve_generator\curvegen.cc
+..\..\procedures\velocity_generator_procedure\velocity_generator_procedure.obj : ..\..\procedures\velocity_generator_procedure\velocity_generator_procedure.cc
+	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\procedures\velocity_generator_procedure\velocity_generator_procedure.cc
 
-$(curvegen_exe) : $(curvegen_exe_obj)
-	@echo curvegen.exe
-	@$(LD) $(LDFLAGS) /out:$@  libscene.lib $(curvegen_exe_obj)
+$(VelocityGeneratorProcedure_dll) : $(VelocityGeneratorProcedure_dll_obj)
+	@echo VelocityGeneratorProcedure.dll
+	@$(LD) $(LDFLAGS) /out:$@ /DLL libscene.lib $(VelocityGeneratorProcedure_dll_obj)
+
+VelocityGeneratorProcedure_dll_lib = $(out_dir)\VelocityGeneratorProcedure.lib
+VelocityGeneratorProcedure_dll_exp = $(out_dir)\VelocityGeneratorProcedure.exp
 
 #===============================================================================
 fb2exr_exe_obj = \
@@ -554,47 +613,6 @@ $(jpg2mip_exe) : $(jpg2mip_exe_obj)
 	@$(LD) $(LDFLAGS) /out:$@  libscene.lib jpeg.lib $(jpg2mip_exe_obj)
 
 #===============================================================================
-obj2mesh_exe_obj = \
-  ..\..\tools\obj2mesh\obj2mesh.obj \
-  ..\..\tools\obj2mesh\ObjParser.obj
-
-..\..\tools\obj2mesh\obj2mesh.obj : ..\..\tools\obj2mesh\obj2mesh.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\obj2mesh\obj2mesh.cc
-
-..\..\tools\obj2mesh\ObjParser.obj : ..\..\tools\obj2mesh\ObjParser.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\obj2mesh\ObjParser.cc
-
-$(obj2mesh_exe) : $(obj2mesh_exe_obj)
-	@echo obj2mesh.exe
-	@$(LD) $(LDFLAGS) /out:$@  libscene.lib $(obj2mesh_exe_obj)
-
-#===============================================================================
-ply2mesh_exe_obj = \
-  ..\..\tools\ply2mesh\ply2mesh.obj \
-  ..\..\tools\ply2mesh\plyfile.obj
-
-..\..\tools\ply2mesh\ply2mesh.obj : ..\..\tools\ply2mesh\ply2mesh.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\ply2mesh\ply2mesh.cc
-
-..\..\tools\ply2mesh\plyfile.obj : ..\..\tools\ply2mesh\plyfile.c
-	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\ply2mesh\plyfile.c
-
-$(ply2mesh_exe) : $(ply2mesh_exe_obj)
-	@echo ply2mesh.exe
-	@$(LD) $(LDFLAGS) /out:$@  libscene.lib $(ply2mesh_exe_obj)
-
-#===============================================================================
-ptcgen_exe_obj = \
-  ..\..\tools\point_cloud_generator\ptcgen.obj
-
-..\..\tools\point_cloud_generator\ptcgen.obj : ..\..\tools\point_cloud_generator\ptcgen.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\point_cloud_generator\ptcgen.cc
-
-$(ptcgen_exe) : $(ptcgen_exe_obj)
-	@echo ptcgen.exe
-	@$(LD) $(LDFLAGS) /out:$@  libscene.lib $(ptcgen_exe_obj)
-
-#===============================================================================
 scene_exe_obj = \
   ..\..\tools\scene_parser\command.obj \
   ..\..\tools\scene_parser\main.obj \
@@ -616,17 +634,6 @@ scene_exe_obj = \
 $(scene_exe) : $(scene_exe_obj)
 	@echo scene.exe
 	@$(LD) $(LDFLAGS) /out:$@  libscene.lib $(scene_exe_obj)
-
-#===============================================================================
-velgen_exe_obj = \
-  ..\..\tools\velocity_generator\velgen.obj
-
-..\..\tools\velocity_generator\velgen.obj : ..\..\tools\velocity_generator\velgen.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\velocity_generator\velgen.cc
-
-$(velgen_exe) : $(velgen_exe_obj)
-	@echo velgen.exe
-	@$(LD) $(LDFLAGS) /out:$@  libscene.lib $(velgen_exe_obj)
 
 #===============================================================================
 box_test_exe_obj = \
@@ -707,10 +714,22 @@ clean:
 	$(RM) $(VolumeShader_dll_obj)
 	$(RM) $(VolumeShader_dll_lib)
 	$(RM) $(VolumeShader_dll_exp)
+	$(RM) $(CurveGeneneratorProcedure_dll)
+	$(RM) $(CurveGeneneratorProcedure_dll_obj)
+	$(RM) $(CurveGeneneratorProcedure_dll_lib)
+	$(RM) $(CurveGeneneratorProcedure_dll_exp)
 	$(RM) $(ConstantVolumeProcedure_dll)
 	$(RM) $(ConstantVolumeProcedure_dll_obj)
 	$(RM) $(ConstantVolumeProcedure_dll_lib)
 	$(RM) $(ConstantVolumeProcedure_dll_exp)
+	$(RM) $(WavefrontObjProcedure_dll)
+	$(RM) $(WavefrontObjProcedure_dll_obj)
+	$(RM) $(WavefrontObjProcedure_dll_lib)
+	$(RM) $(WavefrontObjProcedure_dll_exp)
+	$(RM) $(PointCloudGenerator_dll)
+	$(RM) $(PointCloudGenerator_dll_obj)
+	$(RM) $(PointCloudGenerator_dll_lib)
+	$(RM) $(PointCloudGenerator_dll_exp)
 	$(RM) $(PointCloudsProcedure_dll)
 	$(RM) $(PointCloudsProcedure_dll_obj)
 	$(RM) $(PointCloudsProcedure_dll_lib)
@@ -719,12 +738,18 @@ clean:
 	$(RM) $(SplineWispsProcedure_dll_obj)
 	$(RM) $(SplineWispsProcedure_dll_lib)
 	$(RM) $(SplineWispsProcedure_dll_exp)
+	$(RM) $(StanfordPlyProcedure_dll)
+	$(RM) $(StanfordPlyProcedure_dll_obj)
+	$(RM) $(StanfordPlyProcedure_dll_lib)
+	$(RM) $(StanfordPlyProcedure_dll_exp)
 	$(RM) $(SurfaceWispsProcedure_dll)
 	$(RM) $(SurfaceWispsProcedure_dll_obj)
 	$(RM) $(SurfaceWispsProcedure_dll_lib)
 	$(RM) $(SurfaceWispsProcedure_dll_exp)
-	$(RM) $(curvegen_exe)
-	$(RM) $(curvegen_exe_obj)
+	$(RM) $(VelocityGeneratorProcedure_dll)
+	$(RM) $(VelocityGeneratorProcedure_dll_obj)
+	$(RM) $(VelocityGeneratorProcedure_dll_lib)
+	$(RM) $(VelocityGeneratorProcedure_dll_exp)
 	$(RM) $(fb2exr_exe)
 	$(RM) $(fb2exr_exe_obj)
 	$(RM) $(fbview_exe)
@@ -733,16 +758,8 @@ clean:
 	$(RM) $(hdr2mip_exe_obj)
 	$(RM) $(jpg2mip_exe)
 	$(RM) $(jpg2mip_exe_obj)
-	$(RM) $(obj2mesh_exe)
-	$(RM) $(obj2mesh_exe_obj)
-	$(RM) $(ply2mesh_exe)
-	$(RM) $(ply2mesh_exe_obj)
-	$(RM) $(ptcgen_exe)
-	$(RM) $(ptcgen_exe_obj)
 	$(RM) $(scene_exe)
 	$(RM) $(scene_exe_obj)
-	$(RM) $(velgen_exe)
-	$(RM) $(velgen_exe_obj)
 	$(RM) $(box_test_exe)
 	$(RM) $(box_test_exe_obj)
 	$(RM) $(numeric_test_exe)

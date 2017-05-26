@@ -119,8 +119,29 @@ target_list = [
 },
 # procedures
 {
+	'name':               'CurveGeneneratorProcedure.dll',
+	'source_list':        glob(top_dir + '/procedures/curve_generator_procedure/*.cc'),
+	'additional_cflags':  '',
+	'additional_ldflags': '/DLL',
+	'additional_libs':    'libscene.lib',
+},
+{
 	'name':               'ConstantVolumeProcedure.dll',
 	'source_list':        glob(top_dir + '/procedures/constantvolume_procedure/*.cc'),
+	'additional_cflags':  '',
+	'additional_ldflags': '/DLL',
+	'additional_libs':    'libscene.lib',
+},
+{
+	'name':               'WavefrontObjProcedure.dll',
+	'source_list':        glob(top_dir + '/procedures/wavefrontobj_procedure/*.cc'),
+	'additional_cflags':  '',
+	'additional_ldflags': '/DLL',
+	'additional_libs':    'libscene.lib',
+},
+{
+	'name':               'PointCloudGenerator.dll',
+	'source_list':        glob(top_dir + '/procedures/pointcloud_generator/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
@@ -140,20 +161,27 @@ target_list = [
 	'additional_libs':    'libscene.lib',
 },
 {
+	'name':               'StanfordPlyProcedure.dll',
+	'source_list':        glob(top_dir + '/procedures/stanfordply_procedure/*.cc') + glob(top_dir + '/procedures/stanfordply_procedure/*.c'),
+	'additional_cflags':  '',
+	'additional_ldflags': '/DLL',
+	'additional_libs':    'libscene.lib',
+},
+{
 	'name':               'SurfaceWispsProcedure.dll',
 	'source_list':        glob(top_dir + '/procedures/surfacewisps_procedure/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
-# tools
 {
-	'name':               'curvegen.exe',
-	'source_list':        glob(top_dir + '/tools/curve_generator/*.cc'),
+	'name':               'VelocityGeneratorProcedure.dll',
+	'source_list':        glob(top_dir + '/procedures/velocity_generator_procedure/*.cc'),
 	'additional_cflags':  '',
-	'additional_ldflags': '',
+	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
+# tools
 {
 	'name':               'fb2exr.exe',
 	'source_list':        glob(top_dir + '/tools/fb2exr/*.cc'),
@@ -183,36 +211,8 @@ target_list = [
 	'additional_libs':    'libscene.lib jpeg.lib',
 },
 {
-	'name':               'obj2mesh.exe',
-	'source_list':        glob(top_dir + '/tools/obj2mesh/*.cc'),
-	'additional_cflags':  '',
-	'additional_ldflags': '',
-	'additional_libs':    'libscene.lib',
-},
-{
-	'name':               'ply2mesh.exe',
-	'source_list':        glob(top_dir + '/tools/ply2mesh/*.cc') + glob(top_dir + '/tools/ply2mesh/*.c'),
-	'additional_cflags':  '',
-	'additional_ldflags': '',
-	'additional_libs':    'libscene.lib',
-},
-{
-	'name':               'ptcgen.exe',
-	'source_list':        glob(top_dir + '/tools/point_cloud_generator/*.cc'),
-	'additional_cflags':  '',
-	'additional_ldflags': '',
-	'additional_libs':    'libscene.lib',
-},
-{
 	'name':               'scene.exe',
 	'source_list':        glob(top_dir + '/tools/scene_parser/*.cc'),
-	'additional_cflags':  '',
-	'additional_ldflags': '',
-	'additional_libs':    'libscene.lib',
-},
-{
-	'name':               'velgen.exe',
-	'source_list':        glob(top_dir + '/tools/velocity_generator/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '',
 	'additional_libs':    'libscene.lib',

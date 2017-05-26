@@ -204,7 +204,8 @@ static void window_change_title_callback(void *win, const char *title)
 
 static int initialize_viewer(const char *filename)
 {
-  Rectangle viewbox;
+  // avoid windows Rectangle
+  fj::Rectangle viewbox;
 
   // create viewer
   viewer = new FrameBufferViewer();
