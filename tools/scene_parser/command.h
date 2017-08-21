@@ -5,6 +5,7 @@
 #define COMMAND_H
 
 #include "fj_scene_interface.h"
+#include <string>
 
 using namespace fj;
 
@@ -25,13 +26,29 @@ enum ArgumentType {
 class CommandArgument {
 public:
   CommandArgument() :
-      str(NULL),
+      str_(""),
       num(0),
       id(SI_BADID) {}
   ~CommandArgument() {}
 
 public:
-  const char *str;
+  void SetString(const std::string str)
+  {
+    str_ = str;
+  }
+  const char *AsString() const
+  {
+    if (str_ == "") {
+      return "N/A"; //TODO string for invalid argument
+    } else {
+      return str_.c_str();
+    }
+  }
+
+private:
+  std::string str_;
+public:
+  //const char *str;
   double num;
   ID id;
 };

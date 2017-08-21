@@ -4,59 +4,49 @@
 #include "parser.h"
 #include "fj_scene_interface.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <float.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+
+#include <cstdio>
+#include <cstring>
+#include <cerrno>
+
+const char *usage = "usage: scene [path]";
 
 int main(int argc, const char **argv)
 {
-  Parser *parser = NULL;
-  char buf[1024] = {'\0'};
-  FILE *file = NULL;
-  int status = 0;
+  std::istream *strm = NULL;
+  std::ifstream file;
+  std::string line;
 
   if (argc == 2) {
-    file = fopen(argv[1], "r");
-    if (file == NULL) {
+    file.open(argv[1]);
+    if (!file) {
       fprintf(stderr, "error: %s: %s\n", argv[1], strerror(errno));
-      status = -1;
-      goto cleanup_and_exit;
+      return -1;
     }
+    strm = &file;
   }
   else if (argc == 1) {
-    file = stdin;
+    strm = &std::cin;
   }
   else {
-    fprintf(stderr, "error: invalid number of arguments\n");
-    status = -1;
-    goto cleanup_and_exit;
+    fprintf(stderr, "%s\n", usage);
+    return 0;
   }
 
-  parser = PsrNew();
-  if (parser == NULL) {
-    fprintf(stderr, "error: could not allocate a parser\n");
-    status = -1;
-    goto cleanup_and_exit;
-  }
+  Parser parser;
 
-  while (fgets(buf, 1000, file) != NULL) {
-    const int err = PsrParseLine(parser, buf);
+  while (getline(*strm, line)) {
+    const int err = PsrParseLine(&parser, line);
 
     if (err) {
-      fprintf(stderr, "error: %s: %d: %s",
-          PsrGetErrorMessage(parser), PsrGetLineNo(parser), buf);
-      status = -1;
-      goto cleanup_and_exit;
+      fprintf(stderr, "error: %s: %d: %s\n",
+          PsrGetErrorMessage(&parser), PsrGetLineNo(&parser), line.c_str());
+      return -1;
     }
   }
 
-cleanup_and_exit:
-  if (file != stdin && file != NULL) {
-    fclose(file);
-  }
-  PsrFree(parser);
-
-  return status;
+  return 0;
 }

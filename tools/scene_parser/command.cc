@@ -19,8 +19,8 @@ static const int OpenPlugin_args[] = {
 static CommandResult OpenPlugin_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.new_entry_id = SiOpenPlugin(args[2].str);
-  result.new_entry_name = args[1].str;
+  result.new_entry_id = SiOpenPlugin(args[2].AsString());
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -54,7 +54,7 @@ static const int SaveFrameBuffer_args[] = {
 static CommandResult SaveFrameBuffer_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.status = SiSaveFrameBuffer(args[1].id, args[2].str);
+  result.status = SiSaveFrameBuffer(args[1].id, args[2].AsString());
   return result;
 }
 
@@ -79,7 +79,7 @@ static CommandResult NewObjectInstance_run(const CommandArgument *args)
 {
   CommandResult result;
   result.new_entry_id = SiNewObjectInstance(args[2].id);
-  result.new_entry_name = args[1].str;
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -91,8 +91,8 @@ static const int NewFrameBuffer_args[] = {
 static CommandResult NewFrameBuffer_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.new_entry_id = SiNewFrameBuffer(args[2].str);
-  result.new_entry_name = args[1].str;
+  result.new_entry_id = SiNewFrameBuffer(args[2].AsString());
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -104,7 +104,7 @@ static CommandResult NewObjectGroup_run(const CommandArgument *args)
 {
   CommandResult result;
   result.new_entry_id = SiNewObjectGroup();
-  result.new_entry_name = args[1].str;
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -116,7 +116,7 @@ static CommandResult NewPointCloud_run(const CommandArgument *args)
 {
   CommandResult result;
   result.new_entry_id = SiNewPointCloud();
-  result.new_entry_name = args[1].str;
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -128,7 +128,7 @@ static CommandResult NewTurbulence_run(const CommandArgument *args)
 {
   CommandResult result;
   result.new_entry_id = SiNewTurbulence();
-  result.new_entry_name = args[1].str;
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -141,7 +141,7 @@ static CommandResult NewProcedure_run(const CommandArgument *args)
 {
   CommandResult result;
   result.new_entry_id = SiNewProcedure(args[2].id);
-  result.new_entry_name = args[1].str;
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -153,7 +153,7 @@ static CommandResult NewRenderer_run(const CommandArgument *args)
 {
   CommandResult result;
   result.new_entry_id = SiNewRenderer();
-  result.new_entry_name = args[1].str;
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -165,8 +165,8 @@ static const int NewTexture_args[] = {
 static CommandResult NewTexture_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.new_entry_id = SiNewTexture(args[2].str);
-  result.new_entry_name = args[1].str;
+  result.new_entry_id = SiNewTexture(args[2].AsString());
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -179,7 +179,7 @@ static CommandResult NewShader_run(const CommandArgument *args)
 {
   CommandResult result;
   result.new_entry_id = SiNewShader(args[2].id);
-  result.new_entry_name = args[1].str;
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -191,8 +191,8 @@ static const int NewCamera_args[] = {
 static CommandResult NewCamera_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.new_entry_id = SiNewCamera(args[2].str);
-  result.new_entry_name = args[1].str;
+  result.new_entry_id = SiNewCamera(args[2].AsString());
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -204,7 +204,7 @@ static CommandResult NewVolume_run(const CommandArgument *args)
 {
   CommandResult result;
   result.new_entry_id = SiNewVolume();
-  result.new_entry_name = args[1].str;
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -216,7 +216,7 @@ static CommandResult NewCurve_run(const CommandArgument *args)
 {
   CommandResult result;
   result.new_entry_id = SiNewCurve();
-  result.new_entry_name = args[1].str;
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -229,7 +229,7 @@ static CommandResult NewLight_run(const CommandArgument *args)
 {
   CommandResult result;
   result.new_entry_id = SiNewLight(args[2].num);
-  result.new_entry_name = args[1].str;
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -241,7 +241,7 @@ static CommandResult NewMesh_run(const CommandArgument *args)
 {
   CommandResult result;
   result.new_entry_id = SiNewMesh();
-  result.new_entry_name = args[1].str;
+  result.new_entry_name = args[1].AsString();
   return result;
 }
 
@@ -266,7 +266,7 @@ static const int AssignObjectGroup_args[] = {
 static CommandResult AssignObjectGroup_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.status = SiAssignObjectGroup(args[1].id, args[2].str, args[3].id);
+  result.status = SiAssignObjectGroup(args[1].id, args[2].AsString(), args[3].id);
   return result;
 }
 
@@ -279,7 +279,7 @@ static const int AssignPointCloud_args[] = {
 static CommandResult AssignPointCloud_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.status = SiAssignPointCloud(args[1].id, args[2].str, args[3].id);
+  result.status = SiAssignPointCloud(args[1].id, args[2].AsString(), args[3].id);
   return result;
 }
 
@@ -292,7 +292,7 @@ static const int AssignTurbulence_args[] = {
 static CommandResult AssignTurbulence_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.status = SiAssignTurbulence(args[1].id, args[2].str, args[3].id);
+  result.status = SiAssignTurbulence(args[1].id, args[2].AsString(), args[3].id);
   return result;
 }
 
@@ -305,7 +305,7 @@ static const int AssignTexture_args[] = {
 static CommandResult AssignTexture_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.status = SiAssignTexture(args[1].id, args[2].str, args[3].id);
+  result.status = SiAssignTexture(args[1].id, args[2].AsString(), args[3].id);
   return result;
 }
 
@@ -330,7 +330,7 @@ static const int AssignShader_args[] = {
 static CommandResult AssignShader_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.status = SiAssignShader(args[1].id, args[2].str, args[3].id);
+  result.status = SiAssignShader(args[1].id, args[2].AsString(), args[3].id);
   return result;
 }
 
@@ -343,7 +343,7 @@ static const int AssignVolume_args[] = {
 static CommandResult AssignVolume_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.status = SiAssignVolume(args[1].id, args[2].str, args[3].id);
+  result.status = SiAssignVolume(args[1].id, args[2].AsString(), args[3].id);
   return result;
 }
 
@@ -356,7 +356,7 @@ static const int AssignCurve_args[] = {
 static CommandResult AssignCurve_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.status = SiAssignCurve(args[1].id, args[2].str, args[3].id);
+  result.status = SiAssignCurve(args[1].id, args[2].AsString(), args[3].id);
   return result;
 }
 
@@ -369,7 +369,7 @@ static const int AssignMesh_args[] = {
 static CommandResult AssignMesh_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.status = SiAssignMesh(args[1].id, args[2].str, args[3].id);
+  result.status = SiAssignMesh(args[1].id, args[2].AsString(), args[3].id);
   return result;
 }
 
@@ -382,7 +382,7 @@ static const int SetProperty1_args[] = {
 static CommandResult SetProperty1_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.status = SiSetProperty1(args[1].id, args[2].str, args[3].num);
+  result.status = SiSetProperty1(args[1].id, args[2].AsString(), args[3].num);
   return result;
 }
 
@@ -397,7 +397,7 @@ static CommandResult SetProperty2_run(const CommandArgument *args)
 {
   CommandResult result;
   result.status = SiSetProperty2(
-      args[1].id, args[2].str, args[3].num, args[4].num);
+      args[1].id, args[2].AsString(), args[3].num, args[4].num);
   return result;
 }
 
@@ -413,7 +413,7 @@ static CommandResult SetProperty3_run(const CommandArgument *args)
 {
   CommandResult result;
   result.status = SiSetProperty3(
-      args[1].id, args[2].str,
+      args[1].id, args[2].AsString(),
       args[3].num, args[4].num, args[5].num);
   return result;
 }
@@ -431,7 +431,7 @@ static CommandResult SetProperty4_run(const CommandArgument *args)
 {
   CommandResult result;
   result.status = SiSetProperty4(
-      args[1].id, args[2].str,
+      args[1].id, args[2].AsString(),
       args[3].num, args[4].num, args[5].num, args[6].num);
   return result;
 }
@@ -445,7 +445,7 @@ static const int SetStringProperty_args[] = {
 static CommandResult SetStringProperty_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.status = SiSetStringProperty(args[1].id, args[2].str, args[3].str);
+  result.status = SiSetStringProperty(args[1].id, args[2].AsString(), args[3].AsString());
   return result;
 }
 
@@ -462,7 +462,7 @@ static CommandResult SetSampleProperty3_run(const CommandArgument *args)
 {
   CommandResult result;
   result.status = SiSetSampleProperty3(
-      args[1].id, args[2].str,
+      args[1].id, args[2].AsString(),
       args[3].num, args[4].num, args[5].num, args[6].num);
   return result;
 }
@@ -474,7 +474,7 @@ static const int ShowPropertyList_args[] = {
 static CommandResult ShowPropertyList_run(const CommandArgument *args)
 {
   CommandResult result;
-  result.status = print_property_list(args[1].str);
+  result.status = print_property_list(args[1].AsString());
   return result;
 }
 

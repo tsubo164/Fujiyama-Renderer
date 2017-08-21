@@ -3,7 +3,9 @@
 
 #include "parser.h"
 #include "command.h"
-#include "fj_scene_interface.h"
+
+#include <sstream>
+#include <vector>
 
 #include <cstring>
 #include <cstdlib>
@@ -16,11 +18,11 @@ static int symbol_to_number(CommandArgument *arg);
 static int scan_number(CommandArgument *arg);
 static int build_arguments(Parser *parser,
     const Command *command, CommandArgument *arguments);
-static int tokenize_line(const char *line,
-    char *tokenized, size_t tokenized_size,
+static int args_from_tokens(const std::vector<std::string> &tokens,
     CommandArgument *args, int max_args);
+static int tokenize(const std::string &str, std::vector<std::string> &tokens);
 
-static int parse_line(Parser *parser, const char *line);
+static int parse_line(Parser *parser, const std::string &line);
 static void parse_error(Parser *parser, int error_no);
 
 enum PsrErroNo {
@@ -32,28 +34,6 @@ enum PsrErroNo {
   PSR_ERR_BAD_ENUM,
   PSR_ERR_NAME_EXISTS,
   PSR_ERR_NAME_NOT_FOUND
-};
-
-using fj::ID;
-
-class Parser {
-public:
-  Parser();
-  ~Parser();
-
-public:
-  int line_no;
-
-  const char *error_message;
-  int error_no;
-
-public:
-  bool RegisterName(std::string name, ID id);
-  ID LookupName(std::string name) const;
-
-private:
-  typedef std::map<std::string, ID> NameMap;
-  NameMap name_map_;
 };
 
 Parser::Parser()
@@ -104,7 +84,7 @@ const char *PsrGetErrorMessage(const Parser *parser)
   return parser->error_message;
 }
 
-int PsrParseLine(Parser *parser, const char *line)
+int PsrParseLine(Parser *parser, const std::string &line)
 {
   parser->line_no++;
 
@@ -116,31 +96,33 @@ int PsrGetLineNo(const Parser *parser)
   return parser->line_no;
 }
 
-static int tokenize_line(const char *line,
-    char *tokenized, size_t tokenized_size,
-    CommandArgument *args, int max_args)
+static int tokenize(const std::string &str, std::vector<std::string> &tokens)
 {
-  CommandArgument *arg = args;
-  const char *src = line;
-  char *dst = tokenized;
-  int ntokens = 0;
+  std::istringstream iss(str);
+  std::string s;
+  tokens.clear();
 
-  while (*src != '\0' && *src != '\n' && ntokens < max_args) {
-    arg->str = dst;
+  while (!iss.eof()) {
+    s.clear();
 
-    while (*src != '\0' && isspace(*src)) {
-      src++;
-    }
-    if (*src == '\0') {
+    iss >> s;
+    if (!iss) {
       break;
     }
-    while (*src != '\0' && !isspace(*src)) {
-      *dst++ = *src++;
-    }
-    *dst = '\0';
-    dst++;
-    arg++;
-    ntokens++;
+
+    tokens.push_back(s);
+  }
+  return static_cast<int>(tokens.size());
+}
+
+static int args_from_tokens(const std::vector<std::string> &tokens,
+    CommandArgument *args, int max_args)
+{
+  int ntokens = static_cast<int>(tokens.size());
+
+  for (int i = 0; i < ntokens && i < max_args; i++) {
+    std::cout << "\t[" << tokens[i] << "]\n";
+    args[i].SetString(tokens[i]);
   }
 
   return ntokens;
@@ -150,9 +132,9 @@ static void print_command(const CommandArgument *args, int nargs)
 {
   int i = 0;
 
-  printf("-- %s: ", args[0].str);
+  printf("-- %s: ", args[0].AsString());
   for (i = 1; i < nargs; i++) {
-    printf("[%s]", args[i].str);
+    printf("[%s]", args[i].AsString());
     if (i == nargs - 1) {
       printf("\n");
     } else {
@@ -172,14 +154,14 @@ static int build_arguments(Parser *parser,
 
     switch(type) {
     case ARG_NEW_ENTRY_ID:
-      if (parser->LookupName(arg->str) != SI_BADID) {
+      if (parser->LookupName(arg->AsString()) != SI_BADID) {
         parse_error(parser, PSR_ERR_NAME_EXISTS);
         return -1;
       }
       break;
 
     case ARG_ENTRY_ID: {
-      const ID id = parser->LookupName(arg->str);
+      const ID id = parser->LookupName(arg->AsString());
       if (id == SI_BADID) {
         parse_error(parser, PSR_ERR_NAME_NOT_FOUND);
         return -1;
@@ -198,13 +180,13 @@ static int build_arguments(Parser *parser,
       }
 
     case ARG_LIGHT_TYPE:
-      if (strcmp(arg->str, "PointLight") == 0) {
+      if (strcmp(arg->AsString(), "PointLight") == 0) {
         arg->num = SI_POINT_LIGHT;
-      } else if (strcmp(arg->str, "GridLight") == 0) {
+      } else if (strcmp(arg->AsString(), "GridLight") == 0) {
         arg->num = SI_GRID_LIGHT;
-      } else if (strcmp(arg->str, "SphereLight") == 0) {
+      } else if (strcmp(arg->AsString(), "SphereLight") == 0) {
         arg->num = SI_SPHERE_LIGHT;
-      } else if (strcmp(arg->str, "DomeLight") == 0) {
+      } else if (strcmp(arg->AsString(), "DomeLight") == 0) {
         arg->num = SI_DOME_LIGHT;
       } else {
         parse_error(parser, PSR_ERR_BAD_ENUM);
@@ -215,8 +197,8 @@ static int build_arguments(Parser *parser,
     case ARG_PROPERTY_NAME:
       break;
     case ARG_GROUP_NAME:
-      if (strcmp(arg->str, "DEFAULT_SHADING_GROUP") == 0) {
-        arg->str = "";
+      if (strcmp(arg->AsString(), "DEFAULT_SHADING_GROUP") == 0) {
+        arg->SetString("");
       }
       break;
     case ARG_FILE_PATH:
@@ -233,30 +215,24 @@ static int build_arguments(Parser *parser,
   return 0;
 }
 
-static int parse_line(Parser *parser, const char *line)
+static int parse_line(Parser *parser, const std::string &line)
 {
+  std::vector<std::string> tokens;
+  const int ntokens = tokenize(line, tokens);
+
+  if (ntokens == 0) {
+    // blank line
+    return 0;
+  }
+  if (tokens[0][0] == '#') {
+    // comment line
+    return 0;
+  }
+
   CommandArgument arguments[16];
-  CommandResult result;
-  const Command *command = NULL;
+  args_from_tokens(tokens, arguments, 16);
 
-  const char *head = line;
-  char token_list[1024] = {'\0'};
-  int ntokens = 0;
-  int err = 0;
-
-  while (*head != '\0' && isspace(*head)) {
-    head++;
-  }
-
-  if (head[0] == '\0') {
-    return 0;
-  }
-  if (head[0] == '#') {
-    return 0;
-  }
-
-  ntokens = tokenize_line(head, token_list, 1024, arguments, 16);
-  command = CmdSearchCommand(arguments[0].str);
+  const Command *command = CmdSearchCommand(arguments[0].AsString());
   if (command == NULL) {
     parse_error(parser, PSR_ERR_UNKNOWN_COMMAND);
     return -1;
@@ -270,14 +246,14 @@ static int parse_line(Parser *parser, const char *line)
     return -1;
   }
 
-  err = build_arguments(parser, command, arguments);
+  const int err = build_arguments(parser, command, arguments);
   if (err) {
     return -1;
   }
 
   print_command(arguments, command->arg_count);
 
-  result = command->Run(arguments);
+  const CommandResult result = command->Run(arguments);
   if (!CmdSuccess(&result)) {
     parse_error(parser, SiGetErrorNo());
     return -1;
@@ -300,7 +276,7 @@ static int scan_number(CommandArgument *arg)
     return 0;
   }
 
-  arg->num = strtod(arg->str, &end);
+  arg->num = strtod(arg->AsString(), &end);
   if (*end != '\0') {
     return -1;
   }
@@ -310,7 +286,7 @@ static int scan_number(CommandArgument *arg)
 
 static int symbol_to_number(CommandArgument *arg)
 {
-  const char *str = arg->str;
+  const char *str = arg->AsString();
 
   // transform orders
   if (strcmp(str, "ORDER_SRT") == 0) {arg->num = SI_ORDER_SRT; return 1;}
@@ -377,4 +353,3 @@ static void parse_error(Parser *parser, int error_no)
     }
   }
 }
-
