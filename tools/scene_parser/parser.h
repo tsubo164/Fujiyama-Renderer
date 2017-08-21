@@ -4,6 +4,9 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <string>
+#include <map>
+
 class Parser;
 
 extern Parser *PsrNew(void);

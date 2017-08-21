@@ -2,7 +2,7 @@
 #See LICENSE and README
 
 CC = g++
-OPT = -O3
+OPT = -O3 -std=c++03
 CFLAGS = $(OPT) -Wall
 LDFLAGS = -lscene -lm
 RM = rm -f

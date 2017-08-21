@@ -3,7 +3,6 @@
 
 #include "parser.h"
 #include "command.h"
-#include "table.h"
 #include "fj_scene_interface.h"
 
 #include <cstring>
@@ -35,6 +34,8 @@ enum PsrErroNo {
   PSR_ERR_NAME_NOT_FOUND
 };
 
+using fj::ID;
+
 class Parser {
 public:
   Parser();
@@ -42,16 +43,22 @@ public:
 
 public:
   int line_no;
-  Table *table;
 
   const char *error_message;
   int error_no;
+
+public:
+  bool RegisterName(std::string name, ID id);
+  ID LookupName(std::string name) const;
+
+private:
+  typedef std::map<std::string, ID> NameMap;
+  NameMap name_map_;
 };
 
 Parser::Parser()
 {
   line_no = 0;
-  table = TblNew();
   SiOpenScene();
   parse_error(this, PSR_ERR_NONE);
 }
@@ -59,7 +66,27 @@ Parser::Parser()
 Parser::~Parser()
 {
   SiCloseScene();
-  TblFree(table);
+}
+
+bool Parser::RegisterName(std::string name, ID id)
+{
+  NameMap::const_iterator it = name_map_.find(name);
+  if (it == name_map_.end()) {
+    name_map_[name] = id;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+ID Parser::LookupName(std::string name) const
+{
+  NameMap::const_iterator it = name_map_.find(name);
+  if (it != name_map_.end()) {
+    return it->second;
+  } else {
+    return SI_BADID;
+  }
 }
 
 Parser *PsrNew(void)
@@ -145,19 +172,19 @@ static int build_arguments(Parser *parser,
 
     switch(type) {
     case ARG_NEW_ENTRY_ID:
-      if (TblLookup(parser->table, arg->str)) {
+      if (parser->LookupName(arg->str) != SI_BADID) {
         parse_error(parser, PSR_ERR_NAME_EXISTS);
         return -1;
       }
       break;
 
     case ARG_ENTRY_ID: {
-      const TableEnt *ent = TblLookup(parser->table, arg->str);
-      if (ent == NULL) {
+      const ID id = parser->LookupName(arg->str);
+      if (id == SI_BADID) {
         parse_error(parser, PSR_ERR_NAME_NOT_FOUND);
         return -1;
       }
-      arg->id = EntGetID(ent);
+      arg->id = id;
       break;
       }
 
@@ -257,7 +284,7 @@ static int parse_line(Parser *parser, const char *line)
   }
 
   if (result.new_entry_name != NULL) {
-    TblAdd(parser->table, result.new_entry_name, result.new_entry_id);
+    parser->RegisterName(result.new_entry_name, result.new_entry_id);
   }
 
   return 0;
