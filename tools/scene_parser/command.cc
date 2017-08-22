@@ -11,6 +11,27 @@
 
 static int print_property_list(const char *type_name);
 
+#if TESTTEST
+// OpenPlugin
+class OpenPluginCommand : public Command {
+  OpenPluginCommand()
+  {
+    SetArguments(
+      ARG_COMMAND_NAME,
+      ARG_NEW_ENTRY_ID,
+      ARG_FILE_PATH);
+  }
+  ~OpenPluginCommand() {}
+  CommandResult Run(const std::vector<CommandArgument> &args) const
+  {
+    CommandResult result;
+    result.SetEntryID(SiOpenPlugin(args[2].GetString()));
+    result.SetEntryName(args[1].GetString());
+    return result;
+  }
+}
+#endif
+
 /* OpenPlugin */
 static const int OpenPlugin_args[] = {
   ARG_COMMAND_NAME,
@@ -521,7 +542,7 @@ static const Command command_list[] = {
 #undef REGISTER_COMMAND
 };
 
-const Command *CmdSearchCommand(const char *command_name)
+const Command *SearchCommand(const char *command_name)
 {
   const Command *cmd = command_list;
 
@@ -622,4 +643,92 @@ static int print_property_list(const char *type_name)
   }
 
   return 0;
+}
+
+CommandArgument::CommandArgument() :
+  str_("N/A"), num_(0), id_(SI_BADID) //TODO string for invalid argument
+{
+}
+
+CommandArgument::~CommandArgument()
+{
+}
+
+void CommandArgument::SetString(const std::string &str)
+{
+  str_ = str;
+}
+
+const char *CommandArgument::GetString() const
+{
+  return str_.c_str();
+}
+
+void CommandArgument::SetNumber(double num)
+{
+  num_ = num;
+}
+
+double CommandArgument::GetNumber() const
+{
+  return num_;
+}
+
+void CommandArgument::SetID(ID id)
+{
+  id_ = id;
+}
+
+ID CommandArgument::GetID() const
+{
+  return id_;
+}
+
+CommandResult::CommandResult() :
+    status_(SI_FAIL), new_id_(SI_BADID), entry_name_("")
+{
+}
+
+CommandResult::~CommandResult()
+{
+}
+
+void CommandResult::SetStatus(Status status)
+{
+  status_ = status;
+}
+
+Status CommandResult::GetStatus() const
+{
+  return status_;
+}
+
+void CommandResult::SetEntryID(ID id)
+{
+  new_id_ = id;
+}
+
+ID CommandResult::GetEntryID() const
+{
+  return new_id_;
+}
+
+void CommandResult::SetEntryName(const std::string &name)
+{
+  entry_name_ = name;
+}
+
+const char *CommandResult::GetEntryName() const
+{
+  return entry_name_.c_str();
+}
+
+bool CommandResult::HasEntryName() const
+{
+  return !entry_name_.empty();
+}
+
+bool CommandResult::IsFail() const
+{
+  return GetStatus() == SI_FAIL && GetEntryID() == SI_BADID;
 }

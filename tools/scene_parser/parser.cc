@@ -5,12 +5,7 @@
 
 #include <sstream>
 #include <vector>
-
-#include <cstring>
-#include <cstdlib>
 #include <cassert>
-#include <cstdio>
-#include <cctype>
 
 static void print_command(const CommandArgument *args, int nargs);
 static int symbol_to_number(CommandArgument *arg);
@@ -64,7 +59,7 @@ int Parser::ParseLine(const std::string &line)
   CommandArgument arguments[16];
   args_from_tokens(tokens, arguments, 16);
 
-  const Command *command = CmdSearchCommand(arguments[0].GetString());
+  const Command *command = SearchCommand(arguments[0].GetString());
   if (command == NULL) {
     parse_error(PSR_ERR_UNKNOWN_COMMAND);
     return -1;
@@ -163,25 +158,31 @@ int Parser::build_arguments(const Command *command, CommandArgument *arguments)
       }
 
     case ARG_LIGHT_TYPE:
-      if (strcmp(arg->GetString(), "PointLight") == 0) {
-        arg->SetNumber(SI_POINT_LIGHT);
-      } else if (strcmp(arg->GetString(), "GridLight") == 0) {
-        arg->SetNumber(SI_GRID_LIGHT);
-      } else if (strcmp(arg->GetString(), "SphereLight") == 0) {
-        arg->SetNumber(SI_SPHERE_LIGHT);
-      } else if (strcmp(arg->GetString(), "DomeLight") == 0) {
-        arg->SetNumber(SI_DOME_LIGHT);
-      } else {
-        parse_error(PSR_ERR_BAD_ENUM);
-        return -1;
+      {
+        const std::string str = arg->GetString();
+        if (str == "PointLight") {
+          arg->SetNumber(SI_POINT_LIGHT);
+        } else if (str == "GridLight") {
+          arg->SetNumber(SI_GRID_LIGHT);
+        } else if (str == "SphereLight") {
+          arg->SetNumber(SI_SPHERE_LIGHT);
+        } else if (str == "DomeLight") {
+          arg->SetNumber(SI_DOME_LIGHT);
+        } else {
+          parse_error(PSR_ERR_BAD_ENUM);
+          return -1;
+        }
       }
       break;
 
     case ARG_PROPERTY_NAME:
       break;
     case ARG_GROUP_NAME:
-      if (strcmp(arg->GetString(), "DEFAULT_SHADING_GROUP") == 0) {
-        arg->SetString("");
+      {
+        const std::string str = arg->GetString();
+        if (str == "DEFAULT_SHADING_GROUP") {
+          arg->SetString("");
+        }
       }
       break;
     case ARG_FILE_PATH:
@@ -292,7 +293,7 @@ static int scan_number(CommandArgument *arg)
   const int is_symbol = symbol_to_number(arg);
 
   if (is_symbol) {
-    // arg->num is already set from symbol string
+    // number is already set from symbol string
     return 0;
   }
 
@@ -307,26 +308,26 @@ static int scan_number(CommandArgument *arg)
 
 static int symbol_to_number(CommandArgument *arg)
 {
-  const char *str = arg->GetString();
+  const std::string str = arg->GetString();
 
   // transform orders
-  if (strcmp(str, "ORDER_SRT") == 0) {arg->SetNumber(SI_ORDER_SRT); return 1;}
-  if (strcmp(str, "ORDER_STR") == 0) {arg->SetNumber(SI_ORDER_STR); return 1;}
-  if (strcmp(str, "ORDER_RST") == 0) {arg->SetNumber(SI_ORDER_RST); return 1;}
-  if (strcmp(str, "ORDER_RTS") == 0) {arg->SetNumber(SI_ORDER_RTS); return 1;}
-  if (strcmp(str, "ORDER_TRS") == 0) {arg->SetNumber(SI_ORDER_TRS); return 1;}
-  if (strcmp(str, "ORDER_TSR") == 0) {arg->SetNumber(SI_ORDER_TSR); return 1;}
+  if (str == "ORDER_SRT") {arg->SetNumber(SI_ORDER_SRT); return 1;}
+  if (str == "ORDER_STR") {arg->SetNumber(SI_ORDER_STR); return 1;}
+  if (str == "ORDER_RST") {arg->SetNumber(SI_ORDER_RST); return 1;}
+  if (str == "ORDER_RTS") {arg->SetNumber(SI_ORDER_RTS); return 1;}
+  if (str == "ORDER_TRS") {arg->SetNumber(SI_ORDER_TRS); return 1;}
+  if (str == "ORDER_TSR") {arg->SetNumber(SI_ORDER_TSR); return 1;}
   // rotate orders
-  if (strcmp(str, "ORDER_XYZ") == 0) {arg->SetNumber(SI_ORDER_XYZ); return 1;}
-  if (strcmp(str, "ORDER_XZY") == 0) {arg->SetNumber(SI_ORDER_XZY); return 1;}
-  if (strcmp(str, "ORDER_YXZ") == 0) {arg->SetNumber(SI_ORDER_YXZ); return 1;}
-  if (strcmp(str, "ORDER_YZX") == 0) {arg->SetNumber(SI_ORDER_YZX); return 1;}
-  if (strcmp(str, "ORDER_ZXY") == 0) {arg->SetNumber(SI_ORDER_ZXY); return 1;}
-  if (strcmp(str, "ORDER_ZYX") == 0) {arg->SetNumber(SI_ORDER_ZYX); return 1;}
+  if (str == "ORDER_XYZ") {arg->SetNumber(SI_ORDER_XYZ); return 1;}
+  if (str == "ORDER_XZY") {arg->SetNumber(SI_ORDER_XZY); return 1;}
+  if (str == "ORDER_YXZ") {arg->SetNumber(SI_ORDER_YXZ); return 1;}
+  if (str == "ORDER_YZX") {arg->SetNumber(SI_ORDER_YZX); return 1;}
+  if (str == "ORDER_ZXY") {arg->SetNumber(SI_ORDER_ZXY); return 1;}
+  if (str == "ORDER_ZYX") {arg->SetNumber(SI_ORDER_ZYX); return 1;}
 
   // sampler type
-  if (strcmp(str, "FIXED_GRID_SAMPER") == 0)     {arg->SetNumber(SI_FIXED_GRID_SAMPLER); return 1;}
-  if (strcmp(str, "ADAPTIVE_GRID_SAMPLER") == 0) {arg->SetNumber(SI_ADAPTIVE_GRID_SAMPLER); return 1;}
+  if (str == "FIXED_GRID_SAMPER")     {arg->SetNumber(SI_FIXED_GRID_SAMPLER); return 1;}
+  if (str == "ADAPTIVE_GRID_SAMPLER") {arg->SetNumber(SI_ADAPTIVE_GRID_SAMPLER); return 1;}
 
   return 0;
 }
