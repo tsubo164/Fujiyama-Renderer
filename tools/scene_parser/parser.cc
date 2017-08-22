@@ -30,9 +30,12 @@ enum PsrErroNo {
   PSR_ERR_NAME_NOT_FOUND
 };
 
-Parser::Parser()
+Parser::Parser() :
+  name_map_(),
+  line_no_(0),
+  error_message_(NULL),
+  error_no_()
 {
-  line_no_ = 0;
   SiOpenScene();
   parse_error(PSR_ERR_NONE);
 }
@@ -44,10 +47,10 @@ Parser::~Parser()
 
 int Parser::ParseLine(const std::string &line)
 {
-  line_no_++;
-
   std::vector<std::string> tokens;
   const int ntokens = tokenize(line, tokens);
+
+  line_no_++;
 
   if (ntokens == 0) {
     // blank line
@@ -61,7 +64,7 @@ int Parser::ParseLine(const std::string &line)
   CommandArgument arguments[16];
   args_from_tokens(tokens, arguments, 16);
 
-  const Command *command = CmdSearchCommand(arguments[0].AsString());
+  const Command *command = CmdSearchCommand(arguments[0].GetString());
   if (command == NULL) {
     parse_error(PSR_ERR_UNKNOWN_COMMAND);
     return -1;
@@ -83,13 +86,13 @@ int Parser::ParseLine(const std::string &line)
   print_command(arguments, command->arg_count);
 
   const CommandResult result = command->Run(arguments);
-  if (!CmdSuccess(&result)) {
+  if (result.IsFail()) {
     parse_error(SiGetErrorNo());
     return -1;
   }
 
-  if (result.new_entry_name != NULL) {
-    register_name(result.new_entry_name, result.new_entry_id);
+  if (result.HasEntryName()) {
+    register_name(result.GetEntryName(), result.GetEntryID());
   }
 
   return 0;
@@ -134,19 +137,19 @@ int Parser::build_arguments(const Command *command, CommandArgument *arguments)
 
     switch(type) {
     case ARG_NEW_ENTRY_ID:
-      if (lookup_name(arg->AsString()) != SI_BADID) {
+      if (lookup_name(arg->GetString()) != SI_BADID) {
         parse_error(PSR_ERR_NAME_EXISTS);
         return -1;
       }
       break;
 
     case ARG_ENTRY_ID: {
-      const ID id = lookup_name(arg->AsString());
+      const ID id = lookup_name(arg->GetString());
       if (id == SI_BADID) {
         parse_error(PSR_ERR_NAME_NOT_FOUND);
         return -1;
       }
-      arg->id = id;
+      arg->SetID(id);
       break;
       }
 
@@ -160,14 +163,14 @@ int Parser::build_arguments(const Command *command, CommandArgument *arguments)
       }
 
     case ARG_LIGHT_TYPE:
-      if (strcmp(arg->AsString(), "PointLight") == 0) {
-        arg->num = SI_POINT_LIGHT;
-      } else if (strcmp(arg->AsString(), "GridLight") == 0) {
-        arg->num = SI_GRID_LIGHT;
-      } else if (strcmp(arg->AsString(), "SphereLight") == 0) {
-        arg->num = SI_SPHERE_LIGHT;
-      } else if (strcmp(arg->AsString(), "DomeLight") == 0) {
-        arg->num = SI_DOME_LIGHT;
+      if (strcmp(arg->GetString(), "PointLight") == 0) {
+        arg->SetNumber(SI_POINT_LIGHT);
+      } else if (strcmp(arg->GetString(), "GridLight") == 0) {
+        arg->SetNumber(SI_GRID_LIGHT);
+      } else if (strcmp(arg->GetString(), "SphereLight") == 0) {
+        arg->SetNumber(SI_SPHERE_LIGHT);
+      } else if (strcmp(arg->GetString(), "DomeLight") == 0) {
+        arg->SetNumber(SI_DOME_LIGHT);
       } else {
         parse_error(PSR_ERR_BAD_ENUM);
         return -1;
@@ -177,7 +180,7 @@ int Parser::build_arguments(const Command *command, CommandArgument *arguments)
     case ARG_PROPERTY_NAME:
       break;
     case ARG_GROUP_NAME:
-      if (strcmp(arg->AsString(), "DEFAULT_SHADING_GROUP") == 0) {
+      if (strcmp(arg->GetString(), "DEFAULT_SHADING_GROUP") == 0) {
         arg->SetString("");
       }
       break;
@@ -272,9 +275,9 @@ static void print_command(const CommandArgument *args, int nargs)
 {
   int i = 0;
 
-  printf("-- %s: ", args[0].AsString());
+  printf("-- %s: ", args[0].GetString());
   for (i = 1; i < nargs; i++) {
-    printf("[%s]", args[i].AsString());
+    printf("[%s]", args[i].GetString());
     if (i == nargs - 1) {
       printf("\n");
     } else {
@@ -293,7 +296,8 @@ static int scan_number(CommandArgument *arg)
     return 0;
   }
 
-  arg->num = strtod(arg->AsString(), &end);
+  const double n = strtod(arg->GetString(), &end);
+  arg->SetNumber(n);
   if (*end != '\0') {
     return -1;
   }
@@ -303,26 +307,26 @@ static int scan_number(CommandArgument *arg)
 
 static int symbol_to_number(CommandArgument *arg)
 {
-  const char *str = arg->AsString();
+  const char *str = arg->GetString();
 
   // transform orders
-  if (strcmp(str, "ORDER_SRT") == 0) {arg->num = SI_ORDER_SRT; return 1;}
-  if (strcmp(str, "ORDER_STR") == 0) {arg->num = SI_ORDER_STR; return 1;}
-  if (strcmp(str, "ORDER_RST") == 0) {arg->num = SI_ORDER_RST; return 1;}
-  if (strcmp(str, "ORDER_RTS") == 0) {arg->num = SI_ORDER_RTS; return 1;}
-  if (strcmp(str, "ORDER_TRS") == 0) {arg->num = SI_ORDER_TRS; return 1;}
-  if (strcmp(str, "ORDER_TSR") == 0) {arg->num = SI_ORDER_TSR; return 1;}
+  if (strcmp(str, "ORDER_SRT") == 0) {arg->SetNumber(SI_ORDER_SRT); return 1;}
+  if (strcmp(str, "ORDER_STR") == 0) {arg->SetNumber(SI_ORDER_STR); return 1;}
+  if (strcmp(str, "ORDER_RST") == 0) {arg->SetNumber(SI_ORDER_RST); return 1;}
+  if (strcmp(str, "ORDER_RTS") == 0) {arg->SetNumber(SI_ORDER_RTS); return 1;}
+  if (strcmp(str, "ORDER_TRS") == 0) {arg->SetNumber(SI_ORDER_TRS); return 1;}
+  if (strcmp(str, "ORDER_TSR") == 0) {arg->SetNumber(SI_ORDER_TSR); return 1;}
   // rotate orders
-  if (strcmp(str, "ORDER_XYZ") == 0) {arg->num = SI_ORDER_XYZ; return 1;}
-  if (strcmp(str, "ORDER_XZY") == 0) {arg->num = SI_ORDER_XZY; return 1;}
-  if (strcmp(str, "ORDER_YXZ") == 0) {arg->num = SI_ORDER_YXZ; return 1;}
-  if (strcmp(str, "ORDER_YZX") == 0) {arg->num = SI_ORDER_YZX; return 1;}
-  if (strcmp(str, "ORDER_ZXY") == 0) {arg->num = SI_ORDER_ZXY; return 1;}
-  if (strcmp(str, "ORDER_ZYX") == 0) {arg->num = SI_ORDER_ZYX; return 1;}
+  if (strcmp(str, "ORDER_XYZ") == 0) {arg->SetNumber(SI_ORDER_XYZ); return 1;}
+  if (strcmp(str, "ORDER_XZY") == 0) {arg->SetNumber(SI_ORDER_XZY); return 1;}
+  if (strcmp(str, "ORDER_YXZ") == 0) {arg->SetNumber(SI_ORDER_YXZ); return 1;}
+  if (strcmp(str, "ORDER_YZX") == 0) {arg->SetNumber(SI_ORDER_YZX); return 1;}
+  if (strcmp(str, "ORDER_ZXY") == 0) {arg->SetNumber(SI_ORDER_ZXY); return 1;}
+  if (strcmp(str, "ORDER_ZYX") == 0) {arg->SetNumber(SI_ORDER_ZYX); return 1;}
 
   // sampler type
-  if (strcmp(str, "FIXED_GRID_SAMPER") == 0)     {arg->num = SI_FIXED_GRID_SAMPLER; return 1;}
-  if (strcmp(str, "ADAPTIVE_GRID_SAMPLER") == 0) {arg->num = SI_ADAPTIVE_GRID_SAMPLER; return 1;}
+  if (strcmp(str, "FIXED_GRID_SAMPER") == 0)     {arg->SetNumber(SI_FIXED_GRID_SAMPLER); return 1;}
+  if (strcmp(str, "ADAPTIVE_GRID_SAMPLER") == 0) {arg->SetNumber(SI_ADAPTIVE_GRID_SAMPLER); return 1;}
 
   return 0;
 }

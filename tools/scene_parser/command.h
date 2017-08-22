@@ -26,46 +26,92 @@ enum ArgumentType {
 class CommandArgument {
 public:
   CommandArgument() :
-      str_(""),
-      num(0),
-      id(SI_BADID) {}
+    str_("N/A"), num_(0), id_(SI_BADID) {} //TODO string for invalid argument
   ~CommandArgument() {}
 
 public:
-  void SetString(const std::string str)
+  void SetString(const std::string &str)
   {
     str_ = str;
   }
-  const char *AsString() const
+  const char *GetString() const
   {
-    if (str_ == "") {
-      return "N/A"; //TODO string for invalid argument
-    } else {
-      return str_.c_str();
-    }
+    return str_.c_str();
+  }
+
+  void SetNumber(double num)
+  {
+    num_ = num;
+  }
+  double GetNumber() const
+  {
+    return num_;
+  }
+
+  void SetID(ID id)
+  {
+    id_ = id;
+  }
+  ID GetID() const
+  {
+    return id_;
   }
 
 private:
   std::string str_;
-public:
-  //const char *str;
-  double num;
-  ID id;
+  double num_;
+  ID id_;
 };
 
 class CommandResult {
 public:
   CommandResult() :
-      status(SI_FAIL),
-      new_entry_id(SI_BADID),
-      new_entry_name(NULL)
+      status_(SI_FAIL),
+      new_id_(SI_BADID),
+      entry_name_("")
   {}
   ~CommandResult() {}
 
 public:
-  Status status;
-  ID new_entry_id;
-  const char *new_entry_name;
+  void SetStatus(Status status)
+  {
+    status_ = status;
+  }
+  Status GetStatus() const
+  {
+    return status_;
+  }
+  void SetEntryID(ID id)
+  {
+    new_id_ = id;
+  }
+  ID GetEntryID() const
+  {
+    return new_id_;
+  }
+  void SetEntryName(const std::string &name)
+  {
+    entry_name_ = name;
+  }
+  const char *GetEntryName() const
+  {
+    return entry_name_.c_str();
+  }
+
+  bool HasEntryName() const
+  {
+    return !entry_name_.empty();
+  }
+
+  bool IsFail() const
+  {
+    return GetStatus() == SI_FAIL && GetEntryID() == SI_BADID;
+  }
+
+private:
+  Status status_;
+  ID new_id_;
+  std::string entry_name_;
 };
 
 typedef CommandResult (*CommandFunction)(const CommandArgument *args);
@@ -79,6 +125,5 @@ public:
 };
 
 extern const Command *CmdSearchCommand(const char *command_name);
-extern int CmdSuccess(const CommandResult *result);
 
 #endif // XXX_H

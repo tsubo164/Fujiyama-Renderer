@@ -2,17 +2,9 @@
 // See LICENSE and README
 
 #include "parser.h"
-#include "fj_scene_interface.h"
-
 #include <iostream>
 #include <fstream>
 #include <string>
-
-#include <cstdio>
-#include <cstring>
-#include <cerrno>
-
-const char *usage = "usage: scene [path]";
 
 int main(int argc, const char **argv)
 {
@@ -20,19 +12,20 @@ int main(int argc, const char **argv)
   std::ifstream file;
   std::string line;
 
-  if (argc == 2) {
+  switch (argc) {
+  case 2:
     file.open(argv[1]);
     if (!file) {
-      fprintf(stderr, "error: %s: %s\n", argv[1], strerror(errno));
+      std::cerr << "error: Could not open file: " << argv[1] << std::endl;
       return -1;
     }
     strm = &file;
-  }
-  else if (argc == 1) {
+    break;
+  case 1:
     strm = &std::cin;
-  }
-  else {
-    fprintf(stderr, "%s\n", usage);
+    break;
+  default:
+    std::cerr << "usage: scene [path]" << std::endl;
     return 0;
   }
 
@@ -42,8 +35,10 @@ int main(int argc, const char **argv)
     const int err = parser.ParseLine(line);
 
     if (err) {
-      fprintf(stderr, "error: %s: %d: %s\n",
-          parser.GetErrorMessage(), parser.GetLineNumber(), line.c_str());
+      std::cerr << "error: ";
+      std::cerr << parser.GetErrorMessage() << ": ";
+      std::cerr << parser.GetLineNumber() << ": ";
+      std::cerr << line.c_str() << std::endl;
       return -1;
     }
   }
