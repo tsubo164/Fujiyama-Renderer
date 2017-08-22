@@ -39,11 +39,11 @@ int main(int argc, const char **argv)
   Parser parser;
 
   while (getline(*strm, line)) {
-    const int err = PsrParseLine(&parser, line);
+    const int err = parser.ParseLine(line);
 
     if (err) {
       fprintf(stderr, "error: %s: %d: %s\n",
-          PsrGetErrorMessage(&parser), PsrGetLineNo(&parser), line.c_str());
+          parser.GetErrorMessage(), parser.GetLineNumber(), line.c_str());
       return -1;
     }
   }

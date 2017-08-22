@@ -5,6 +5,7 @@
 #define PARSER_H
 
 #include "fj_scene_interface.h"
+#include "command.h"
 #include <string>
 #include <map>
 
@@ -15,27 +16,21 @@ public:
   Parser();
   ~Parser();
 
-public:
-  int line_no;
-
-  const char *error_message;
-  int error_no;
-
-public:
-  bool RegisterName(std::string name, ID id);
-  ID LookupName(std::string name) const;
+  int ParseLine(const std::string &line);
+  int GetLineNumber() const;
+  const char *GetErrorMessage() const;
 
 private:
   typedef std::map<std::string, ID> NameMap;
   NameMap name_map_;
+  int line_no_;
+  const char *error_message_;
+  int error_no_;
+
+  bool register_name(std::string name, ID id);
+  ID lookup_name(std::string name) const;
+  int build_arguments(const Command *command, CommandArgument *arguments);
+  void parse_error(int error_no);
 };
-
-extern Parser *PsrNew(void);
-extern void PsrFree(Parser *parser);
-
-//TODO TEST
-extern int PsrParseLine(Parser *parser, const std::string &line);
-extern int PsrGetLineNo(const Parser *parser);
-extern const char *PsrGetErrorMessage(const Parser *parser);
 
 #endif // FJ_XXX_H

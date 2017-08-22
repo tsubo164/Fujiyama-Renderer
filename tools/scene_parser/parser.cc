@@ -2,7 +2,6 @@
 // See LICENSE and README
 
 #include "parser.h"
-#include "command.h"
 
 #include <sstream>
 #include <vector>
@@ -16,14 +15,9 @@
 static void print_command(const CommandArgument *args, int nargs);
 static int symbol_to_number(CommandArgument *arg);
 static int scan_number(CommandArgument *arg);
-static int build_arguments(Parser *parser,
-    const Command *command, CommandArgument *arguments);
 static int args_from_tokens(const std::vector<std::string> &tokens,
     CommandArgument *args, int max_args);
 static int tokenize(const std::string &str, std::vector<std::string> &tokens);
-
-static int parse_line(Parser *parser, const std::string &line);
-static void parse_error(Parser *parser, int error_no);
 
 enum PsrErroNo {
   PSR_ERR_NONE = 1024, // offset to avoid conflict with SI_ERR
@@ -38,9 +32,9 @@ enum PsrErroNo {
 
 Parser::Parser()
 {
-  line_no = 0;
+  line_no_ = 0;
   SiOpenScene();
-  parse_error(this, PSR_ERR_NONE);
+  parse_error(PSR_ERR_NONE);
 }
 
 Parser::~Parser()
@@ -48,7 +42,70 @@ Parser::~Parser()
   SiCloseScene();
 }
 
-bool Parser::RegisterName(std::string name, ID id)
+int Parser::ParseLine(const std::string &line)
+{
+  line_no_++;
+
+  std::vector<std::string> tokens;
+  const int ntokens = tokenize(line, tokens);
+
+  if (ntokens == 0) {
+    // blank line
+    return 0;
+  }
+  if (tokens[0][0] == '#') {
+    // comment line
+    return 0;
+  }
+
+  CommandArgument arguments[16];
+  args_from_tokens(tokens, arguments, 16);
+
+  const Command *command = CmdSearchCommand(arguments[0].AsString());
+  if (command == NULL) {
+    parse_error(PSR_ERR_UNKNOWN_COMMAND);
+    return -1;
+  }
+  if (ntokens < command->arg_count) {
+    parse_error(PSR_ERR_FEW_ARGS);
+    return -1;
+  }
+  if (ntokens > command->arg_count) {
+    parse_error(PSR_ERR_MANY_ARGS);
+    return -1;
+  }
+
+  const int err = build_arguments(command, arguments);
+  if (err) {
+    return -1;
+  }
+
+  print_command(arguments, command->arg_count);
+
+  const CommandResult result = command->Run(arguments);
+  if (!CmdSuccess(&result)) {
+    parse_error(SiGetErrorNo());
+    return -1;
+  }
+
+  if (result.new_entry_name != NULL) {
+    register_name(result.new_entry_name, result.new_entry_id);
+  }
+
+  return 0;
+}
+
+int Parser::GetLineNumber() const
+{
+  return line_no_;
+}
+
+const char *Parser::GetErrorMessage() const
+{
+  return error_message_;
+}
+
+bool Parser::register_name(std::string name, ID id)
 {
   NameMap::const_iterator it = name_map_.find(name);
   if (it == name_map_.end()) {
@@ -59,7 +116,7 @@ bool Parser::RegisterName(std::string name, ID id)
   }
 }
 
-ID Parser::LookupName(std::string name) const
+ID Parser::lookup_name(std::string name) const
 {
   NameMap::const_iterator it = name_map_.find(name);
   if (it != name_map_.end()) {
@@ -69,33 +126,117 @@ ID Parser::LookupName(std::string name) const
   }
 }
 
-Parser *PsrNew(void)
+int Parser::build_arguments(const Command *command, CommandArgument *arguments)
 {
-  return new Parser();
-}
+  for (int i = 0; i < command->arg_count; i++) {
+    CommandArgument *arg = &arguments[i];
+    const int type = command->arg_types[i];
 
-void PsrFree(Parser *parser)
+    switch(type) {
+    case ARG_NEW_ENTRY_ID:
+      if (lookup_name(arg->AsString()) != SI_BADID) {
+        parse_error(PSR_ERR_NAME_EXISTS);
+        return -1;
+      }
+      break;
+
+    case ARG_ENTRY_ID: {
+      const ID id = lookup_name(arg->AsString());
+      if (id == SI_BADID) {
+        parse_error(PSR_ERR_NAME_NOT_FOUND);
+        return -1;
+      }
+      arg->id = id;
+      break;
+      }
+
+    case ARG_NUMBER: {
+      const int err = scan_number(arg);
+      if (err) {
+        parse_error(PSR_ERR_BAD_NUMBER);
+        return -1;
+      }
+      break;
+      }
+
+    case ARG_LIGHT_TYPE:
+      if (strcmp(arg->AsString(), "PointLight") == 0) {
+        arg->num = SI_POINT_LIGHT;
+      } else if (strcmp(arg->AsString(), "GridLight") == 0) {
+        arg->num = SI_GRID_LIGHT;
+      } else if (strcmp(arg->AsString(), "SphereLight") == 0) {
+        arg->num = SI_SPHERE_LIGHT;
+      } else if (strcmp(arg->AsString(), "DomeLight") == 0) {
+        arg->num = SI_DOME_LIGHT;
+      } else {
+        parse_error(PSR_ERR_BAD_ENUM);
+        return -1;
+      }
+      break;
+
+    case ARG_PROPERTY_NAME:
+      break;
+    case ARG_GROUP_NAME:
+      if (strcmp(arg->AsString(), "DEFAULT_SHADING_GROUP") == 0) {
+        arg->SetString("");
+      }
+      break;
+    case ARG_FILE_PATH:
+      break;
+    case ARG_STRING:
+      break;
+    case ARG_COMMAND_NAME:
+      break;
+    default:
+      assert(!"implement error\n");
+      break;
+    }
+  }
+  return 0;
+}
+// TODO should move this to fj_scene_interface.c?
+class SiError {
+public:
+  int number;
+  const char *message;
+};
+
+void Parser::parse_error(int error_no)
 {
-  delete parser;
+  static const SiError errors[] = {
+    // from Parser
+    {PSR_ERR_NONE, ""},
+    {PSR_ERR_UNKNOWN_COMMAND,  "unknown command"},
+    {PSR_ERR_MANY_ARGS,        "too many arguments"},
+    {PSR_ERR_FEW_ARGS,         "too few arguments"},
+    {PSR_ERR_BAD_NUMBER,       "bad number arguments"},
+    {PSR_ERR_BAD_ENUM,         "bad enum arguments"},
+    {PSR_ERR_NAME_EXISTS,      "entry name already exists"},
+    {PSR_ERR_NAME_NOT_FOUND,   "entry name not found"},
+    // from SceneInterface
+    {SI_ERR_PLUGIN_NOT_FOUND,           "plugin not found"},
+    {SI_ERR_INIT_PLUGIN_FUNC_NOT_EXIST, "initialize plugin function not exit"},
+    {SI_ERR_INIT_PLUGIN_FUNC_FAIL,      "initialize plugin function failed"},
+    {SI_ERR_BAD_PLUGIN_INFO,            "invalid plugin info in the plugin"},
+    {SI_ERR_CLOSE_PLUGIN_FAIL,          "close plugin function failed"},
+    // TODO FIXME temp
+    {SI_ERR_BADTYPE,    "invalid entry type"},
+    {SI_ERR_FAILLOAD,   "load file failed"},
+    {SI_ERR_FAILNEW,    "new entry failed"},
+    {SI_ERR_NO_MEMORY,  "no memory"},
+    {SI_ERR_NONE, ""}
+  };
+  const SiError *error = NULL;
+
+  error_no_ = error_no;
+
+  for (error = errors; error->number != SI_ERR_NONE; error++) {
+    if (error_no_ == error->number) {
+      error_message_ = error->message;
+      break;
+    }
+  }
 }
-
-const char *PsrGetErrorMessage(const Parser *parser)
-{
-  return parser->error_message;
-}
-
-int PsrParseLine(Parser *parser, const std::string &line)
-{
-  parser->line_no++;
-
-  return parse_line(parser, line);
-}
-
-int PsrGetLineNo(const Parser *parser)
-{
-  return parser->line_no;
-}
-
 static int tokenize(const std::string &str, std::vector<std::string> &tokens)
 {
   std::istringstream iss(str);
@@ -121,7 +262,6 @@ static int args_from_tokens(const std::vector<std::string> &tokens,
   int ntokens = static_cast<int>(tokens.size());
 
   for (int i = 0; i < ntokens && i < max_args; i++) {
-    std::cout << "\t[" << tokens[i] << "]\n";
     args[i].SetString(tokens[i]);
   }
 
@@ -141,129 +281,6 @@ static void print_command(const CommandArgument *args, int nargs)
       printf(" ");
     }
   }
-}
-
-static int build_arguments(Parser *parser,
-    const Command *command, CommandArgument *arguments)
-{
-  int i;
-
-  for (i = 0; i < command->arg_count; i++) {
-    CommandArgument *arg = &arguments[i];
-    const int type = command->arg_types[i];
-
-    switch(type) {
-    case ARG_NEW_ENTRY_ID:
-      if (parser->LookupName(arg->AsString()) != SI_BADID) {
-        parse_error(parser, PSR_ERR_NAME_EXISTS);
-        return -1;
-      }
-      break;
-
-    case ARG_ENTRY_ID: {
-      const ID id = parser->LookupName(arg->AsString());
-      if (id == SI_BADID) {
-        parse_error(parser, PSR_ERR_NAME_NOT_FOUND);
-        return -1;
-      }
-      arg->id = id;
-      break;
-      }
-
-    case ARG_NUMBER: {
-      const int err = scan_number(arg);
-      if (err) {
-        parse_error(parser, PSR_ERR_BAD_NUMBER);
-        return -1;
-      }
-      break;
-      }
-
-    case ARG_LIGHT_TYPE:
-      if (strcmp(arg->AsString(), "PointLight") == 0) {
-        arg->num = SI_POINT_LIGHT;
-      } else if (strcmp(arg->AsString(), "GridLight") == 0) {
-        arg->num = SI_GRID_LIGHT;
-      } else if (strcmp(arg->AsString(), "SphereLight") == 0) {
-        arg->num = SI_SPHERE_LIGHT;
-      } else if (strcmp(arg->AsString(), "DomeLight") == 0) {
-        arg->num = SI_DOME_LIGHT;
-      } else {
-        parse_error(parser, PSR_ERR_BAD_ENUM);
-        return -1;
-      }
-      break;
-
-    case ARG_PROPERTY_NAME:
-      break;
-    case ARG_GROUP_NAME:
-      if (strcmp(arg->AsString(), "DEFAULT_SHADING_GROUP") == 0) {
-        arg->SetString("");
-      }
-      break;
-    case ARG_FILE_PATH:
-      break;
-    case ARG_STRING:
-      break;
-    case ARG_COMMAND_NAME:
-      break;
-    default:
-      assert(!"implement error\n");
-      break;
-    }
-  }
-  return 0;
-}
-
-static int parse_line(Parser *parser, const std::string &line)
-{
-  std::vector<std::string> tokens;
-  const int ntokens = tokenize(line, tokens);
-
-  if (ntokens == 0) {
-    // blank line
-    return 0;
-  }
-  if (tokens[0][0] == '#') {
-    // comment line
-    return 0;
-  }
-
-  CommandArgument arguments[16];
-  args_from_tokens(tokens, arguments, 16);
-
-  const Command *command = CmdSearchCommand(arguments[0].AsString());
-  if (command == NULL) {
-    parse_error(parser, PSR_ERR_UNKNOWN_COMMAND);
-    return -1;
-  }
-  if (ntokens < command->arg_count) {
-    parse_error(parser, PSR_ERR_FEW_ARGS);
-    return -1;
-  }
-  if (ntokens > command->arg_count) {
-    parse_error(parser, PSR_ERR_MANY_ARGS);
-    return -1;
-  }
-
-  const int err = build_arguments(parser, command, arguments);
-  if (err) {
-    return -1;
-  }
-
-  print_command(arguments, command->arg_count);
-
-  const CommandResult result = command->Run(arguments);
-  if (!CmdSuccess(&result)) {
-    parse_error(parser, SiGetErrorNo());
-    return -1;
-  }
-
-  if (result.new_entry_name != NULL) {
-    parser->RegisterName(result.new_entry_name, result.new_entry_id);
-  }
-
-  return 0;
 }
 
 static int scan_number(CommandArgument *arg)
@@ -308,48 +325,4 @@ static int symbol_to_number(CommandArgument *arg)
   if (strcmp(str, "ADAPTIVE_GRID_SAMPLER") == 0) {arg->num = SI_ADAPTIVE_GRID_SAMPLER; return 1;}
 
   return 0;
-}
-
-// TODO should move this to fj_scene_interface.c?
-class SiError {
-public:
-  int number;
-  const char *message;
-};
-
-static void parse_error(Parser *parser, int error_no)
-{
-  static const SiError errors[] = {
-    // from Parser
-    {PSR_ERR_NONE, ""},
-    {PSR_ERR_UNKNOWN_COMMAND,  "unknown command"},
-    {PSR_ERR_MANY_ARGS,        "too many arguments"},
-    {PSR_ERR_FEW_ARGS,         "too few arguments"},
-    {PSR_ERR_BAD_NUMBER,       "bad number arguments"},
-    {PSR_ERR_BAD_ENUM,         "bad enum arguments"},
-    {PSR_ERR_NAME_EXISTS,      "entry name already exists"},
-    {PSR_ERR_NAME_NOT_FOUND,   "entry name not found"},
-    // from SceneInterface
-    {SI_ERR_PLUGIN_NOT_FOUND,           "plugin not found"},
-    {SI_ERR_INIT_PLUGIN_FUNC_NOT_EXIST, "initialize plugin function not exit"},
-    {SI_ERR_INIT_PLUGIN_FUNC_FAIL,      "initialize plugin function failed"},
-    {SI_ERR_BAD_PLUGIN_INFO,            "invalid plugin info in the plugin"},
-    {SI_ERR_CLOSE_PLUGIN_FAIL,          "close plugin function failed"},
-    // TODO FIXME temp
-    {SI_ERR_BADTYPE,    "invalid entry type"},
-    {SI_ERR_FAILLOAD,   "load file failed"},
-    {SI_ERR_FAILNEW,    "new entry failed"},
-    {SI_ERR_NO_MEMORY,  "no memory"},
-    {SI_ERR_NONE, ""}
-  };
-  const SiError *error = NULL;
-
-  parser->error_no = error_no;
-
-  for (error = errors; error->number != SI_ERR_NONE; error++) {
-    if (parser->error_no == error->number) {
-      parser->error_message = error->message;
-      break;
-    }
-  }
 }
