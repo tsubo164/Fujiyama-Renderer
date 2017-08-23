@@ -103,7 +103,7 @@ const char *Parser::GetErrorMessage() const
   return error_message_;
 }
 
-bool Parser::register_name(std::string name, ID id)
+bool Parser::register_name(const std::string &name, ID id)
 {
   NameMap::const_iterator it = name_map_.find(name);
   if (it == name_map_.end()) {
@@ -114,7 +114,7 @@ bool Parser::register_name(std::string name, ID id)
   }
 }
 
-ID Parser::lookup_name(std::string name) const
+ID Parser::lookup_name(const std::string &name) const
 {
   NameMap::const_iterator it = name_map_.find(name);
   if (it != name_map_.end()) {
@@ -157,32 +157,30 @@ int Parser::build_arguments(const Command *command, CommandArgument *arguments)
       break;
       }
 
-    case ARG_LIGHT_TYPE:
-      {
-        const std::string str = arg->GetString();
-        if (str == "PointLight") {
-          arg->SetNumber(SI_POINT_LIGHT);
-        } else if (str == "GridLight") {
-          arg->SetNumber(SI_GRID_LIGHT);
-        } else if (str == "SphereLight") {
-          arg->SetNumber(SI_SPHERE_LIGHT);
-        } else if (str == "DomeLight") {
-          arg->SetNumber(SI_DOME_LIGHT);
-        } else {
-          parse_error(PSR_ERR_BAD_ENUM);
-          return -1;
-        }
+    case ARG_LIGHT_TYPE: {
+      const std::string str = arg->GetString();
+      if (str == "PointLight") {
+        arg->SetNumber(SI_POINT_LIGHT);
+      } else if (str == "GridLight") {
+        arg->SetNumber(SI_GRID_LIGHT);
+      } else if (str == "SphereLight") {
+        arg->SetNumber(SI_SPHERE_LIGHT);
+      } else if (str == "DomeLight") {
+        arg->SetNumber(SI_DOME_LIGHT);
+      } else {
+        parse_error(PSR_ERR_BAD_ENUM);
+        return -1;
+      }
       }
       break;
 
     case ARG_PROPERTY_NAME:
       break;
-    case ARG_GROUP_NAME:
-      {
-        const std::string str = arg->GetString();
-        if (str == "DEFAULT_SHADING_GROUP") {
-          arg->SetString("");
-        }
+    case ARG_GROUP_NAME: {
+      const std::string str = arg->GetString();
+      if (str == "DEFAULT_SHADING_GROUP") {
+        arg->SetString("");
+      }
       }
       break;
     case ARG_FILE_PATH:
@@ -230,11 +228,10 @@ void Parser::parse_error(int error_no)
     {SI_ERR_NO_MEMORY,  "no memory"},
     {SI_ERR_NONE, ""}
   };
-  const SiError *error = NULL;
 
   error_no_ = error_no;
 
-  for (error = errors; error->number != SI_ERR_NONE; error++) {
+  for (const SiError *error = errors; error->number != SI_ERR_NONE; error++) {
     if (error_no_ == error->number) {
       error_message_ = error->message;
       break;
@@ -263,7 +260,7 @@ static int tokenize(const std::string &str, std::vector<std::string> &tokens)
 static int args_from_tokens(const std::vector<std::string> &tokens,
     CommandArgument *args, int max_args)
 {
-  int ntokens = static_cast<int>(tokens.size());
+  const int ntokens = static_cast<int>(tokens.size());
 
   for (int i = 0; i < ntokens && i < max_args; i++) {
     args[i].SetString(tokens[i]);
@@ -274,10 +271,8 @@ static int args_from_tokens(const std::vector<std::string> &tokens,
 
 static void print_command(const CommandArgument *args, int nargs)
 {
-  int i = 0;
-
   printf("-- %s: ", args[0].GetString());
-  for (i = 1; i < nargs; i++) {
+  for (int i = 1; i < nargs; i++) {
     printf("[%s]", args[i].GetString());
     if (i == nargs - 1) {
       printf("\n");

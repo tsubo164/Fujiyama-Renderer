@@ -27,8 +27,8 @@ private:
   const char *error_message_;
   int error_no_;
 
-  bool register_name(std::string name, ID id);
-  ID lookup_name(std::string name) const;
+  bool register_name(const std::string &name, ID id);
+  ID lookup_name(const std::string &name) const;
   int build_arguments(const Command *command, CommandArgument *arguments);
   void parse_error(int error_no);
 };
