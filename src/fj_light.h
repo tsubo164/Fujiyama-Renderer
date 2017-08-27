@@ -63,6 +63,9 @@ public:
   Color Illuminate(const LightSample &sample, const Vector &Ps) const;
   int Preprocess();
 
+  //TODO TEST non-destructive
+  void GetLightSampleSet(std::vector<LightSample> &samples /*TODO , const Vector &P */) const;
+
 public: // TODO ONCE FINISHING INHERITANCE MAKE IT PRAIVATE
   Color color_;
   float intensity_;

@@ -8,6 +8,7 @@
 #include "fj_texture.h"
 #include <cfloat>
 
+#include "fj_multi_thread.h"
 namespace fj {
 
 static int point_light_get_sample_count(const Light *light);
@@ -402,6 +403,38 @@ static int no_preprocess(Light *light)
 {
   // does nothing
   return 0;
+}
+
+//TODO TEST non-destructive
+void Light::GetLightSampleSet(std::vector<LightSample> &samples /*TODO , const Vector &P */) const
+{
+  static XorShift rng_bank_[64];
+  XorShift &my_rng_ = rng_bank_[MtGetThreadID()];
+  int max_samples = 16;
+
+  Transform transform_interp;
+  // TODO time sampling
+  XfmLerpTransformSample(&transform_samples_, 0, &transform_interp);
+
+  int nsamples = GetSampleCount();
+  nsamples = Min(nsamples, max_samples);
+
+  for (int i = 0; i < nsamples; i++) {
+    XorShift &mutable_rng = const_cast<XorShift &>(my_rng_);
+    Vector P_sample;
+    Vector N_sample;
+
+    P_sample = mutable_rng.HollowSphereRand();
+    N_sample = P_sample;
+
+    XfmTransformPoint(&transform_interp, &P_sample);
+    XfmTransformVector(&transform_interp, &N_sample);
+    N_sample = Normalize(N_sample);
+
+    samples[i].P = P_sample;
+    samples[i].N = N_sample;
+    samples[i].light = this;
+  }
 }
 
 } // namespace xxx
