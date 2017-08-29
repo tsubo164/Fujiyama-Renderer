@@ -167,7 +167,7 @@ void Light::SetRotateOrder(int order)
 
 void Light::GetSamples(LightSample *samples, int max_samples) const
 {
-  if (type_ == LGT_SPHERE) {
+  if (type_ == LGT_SPHERE || type_ == LGT_GRID) {
     get_samples(samples, max_samples);
   } else {
     GetSamples_(this, samples, max_samples);
@@ -176,7 +176,7 @@ void Light::GetSamples(LightSample *samples, int max_samples) const
 
 int Light::GetSampleCount() const
 {
-  if (type_ == LGT_SPHERE) {
+  if (type_ == LGT_SPHERE || type_ == LGT_GRID) {
     return get_sample_count();
   } else {
     return GetSampleCount_(this);
@@ -185,7 +185,7 @@ int Light::GetSampleCount() const
 
 Color Light::Illuminate(const LightSample &sample, const Vector &Ps) const
 {
-  if (type_ == LGT_SPHERE) {
+  if (type_ == LGT_SPHERE || type_ == LGT_GRID) {
     return illuminate(sample, Ps);
   } else {
     Color Cl;

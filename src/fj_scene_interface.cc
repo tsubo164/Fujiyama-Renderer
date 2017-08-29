@@ -643,7 +643,9 @@ ID SiNewLight(int light_type)
     break;
   case SI_GRID_LIGHT:
     type = LGT_GRID;
-    light = get_scene()->NewLight(type);
+    //light = get_scene()->NewLight(type);
+    light = get_scene()->NewRectangleLight();
+    light->SetLightType(type);
     break;
   case SI_SPHERE_LIGHT:
     type = LGT_SPHERE;
