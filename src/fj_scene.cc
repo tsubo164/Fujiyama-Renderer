@@ -4,6 +4,7 @@
 #include "fj_scene.h"
 #include "fj_grid_accelerator.h"
 #include "fj_bvh_accelerator.h"
+#include "fj_sphere_light.h"
 #include <cassert>
 
 #define DEFINE_LIST_FUNCTIONS(Type) \
@@ -162,6 +163,12 @@ Curve *Scene::NewCurve()
 }
 
 // Light
+Light *Scene::NewSphereLight()
+{
+  Light *light = new SphereLight();
+  return push_entry_(LightList, light);
+}
+
 Light *Scene::NewLight(int light_type)
 {
   Light *light = new Light();

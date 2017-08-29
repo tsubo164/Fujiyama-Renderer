@@ -639,22 +639,29 @@ ID SiNewLight(int light_type)
   switch (light_type) {
   case SI_POINT_LIGHT:
     type = LGT_POINT;
+    light = get_scene()->NewLight(type);
     break;
   case SI_GRID_LIGHT:
     type = LGT_GRID;
+    light = get_scene()->NewLight(type);
     break;
   case SI_SPHERE_LIGHT:
     type = LGT_SPHERE;
+    //light = get_scene()->NewLight(type);
+    light = get_scene()->NewSphereLight();
+    light->SetLightType(type);
     break;
   case SI_DOME_LIGHT:
     type = LGT_DOME;
+    light = get_scene()->NewLight(type);
     break;
   default:
     type = LGT_POINT;
+    light = get_scene()->NewLight(type);
     break;
   };
 
-  light = get_scene()->NewLight(type);
+  //TODO TMP
   if (light == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;

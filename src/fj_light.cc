@@ -167,19 +167,31 @@ void Light::SetRotateOrder(int order)
 
 void Light::GetSamples(LightSample *samples, int max_samples) const
 {
-  GetSamples_(this, samples, max_samples);
+  if (type_ == LGT_SPHERE) {
+    get_samples(samples, max_samples);
+  } else {
+    GetSamples_(this, samples, max_samples);
+  }
 }
 
 int Light::GetSampleCount() const
 {
-  return GetSampleCount_(this);
+  if (type_ == LGT_SPHERE) {
+    return get_sample_count();
+  } else {
+    return GetSampleCount_(this);
+  }
 }
 
 Color Light::Illuminate(const LightSample &sample, const Vector &Ps) const
 {
-  Color Cl;
-  Illuminate_(this, &sample, &Ps, &Cl);
-  return Cl;
+  if (type_ == LGT_SPHERE) {
+    return illuminate(sample, Ps);
+  } else {
+    Color Cl;
+    Illuminate_(this, &sample, &Ps, &Cl);
+    return Cl;
+  }
 }
 
 int Light::Preprocess()
@@ -406,35 +418,22 @@ static int no_preprocess(Light *light)
 }
 
 //TODO TEST non-destructive
-void Light::GetLightSampleSet(std::vector<LightSample> &samples /*TODO , const Vector &P */) const
+void Light::GetLightSamples(std::vector<LightSample> &samples /*TODO , const Vector &P */) const
 {
-  static XorShift rng_bank_[64];
-  XorShift &my_rng_ = rng_bank_[MtGetThreadID()];
-  int max_samples = 16;
+}
 
-  Transform transform_interp;
-  // TODO time sampling
-  XfmLerpTransformSample(&transform_samples_, 0, &transform_interp);
+int Light::get_sample_count() const
+{
+  return sample_count_;
+}
 
-  int nsamples = GetSampleCount();
-  nsamples = Min(nsamples, max_samples);
+void Light::get_samples(LightSample *samples, int max_samples) const
+{
+}
 
-  for (int i = 0; i < nsamples; i++) {
-    XorShift &mutable_rng = const_cast<XorShift &>(my_rng_);
-    Vector P_sample;
-    Vector N_sample;
-
-    P_sample = mutable_rng.HollowSphereRand();
-    N_sample = P_sample;
-
-    XfmTransformPoint(&transform_interp, &P_sample);
-    XfmTransformVector(&transform_interp, &N_sample);
-    N_sample = Normalize(N_sample);
-
-    samples[i].P = P_sample;
-    samples[i].N = N_sample;
-    samples[i].light = this;
-  }
+Color Light::illuminate(const LightSample &sample, const Vector &Ps) const
+{
+  return Color();
 }
 
 } // namespace xxx

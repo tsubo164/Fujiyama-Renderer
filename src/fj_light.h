@@ -39,7 +39,7 @@ public:
 class Light {
 public:
   Light();
-  ~Light();
+  virtual ~Light();
 
   void SetLightType(int light_type);
 
@@ -64,7 +64,7 @@ public:
   int Preprocess();
 
   //TODO TEST non-destructive
-  void GetLightSampleSet(std::vector<LightSample> &samples /*TODO , const Vector &P */) const;
+  void GetLightSamples(std::vector<LightSample> &samples /*TODO , const Vector &P */) const;
 
 public: // TODO ONCE FINISHING INHERITANCE MAKE IT PRAIVATE
   Color color_;
@@ -94,6 +94,11 @@ public: // TODO ONCE FINISHING INHERITANCE MAKE IT PRAIVATE
       const LightSample *sample,
       const Vector *Ps, Color *Cl);
   int (*Preprocess_)(Light *light);
+
+private:
+  virtual int get_sample_count() const;
+  virtual void get_samples(LightSample *samples, int max_samples) const;
+  virtual Color illuminate(const LightSample &sample, const Vector &Ps) const;
 };
 
 } // namespace xxx

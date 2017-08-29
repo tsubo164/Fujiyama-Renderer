@@ -20,8 +20,8 @@ files       := \
 		fj_object_set fj_os fj_plugin fj_primitive_set fj_point_cloud fj_procedure \
 		fj_progress fj_property fj_protocol fj_random fj_rectangle fj_renderer \
 		fj_sampler fj_scene fj_scene_interface fj_scene_node fj_shader fj_shading \
-		fj_socket fj_texture fj_tiler fj_timer fj_transform fj_triangle fj_turbulence \
-		fj_volume fj_volume_accelerator fj_volume_filling
+		fj_socket fj_sphere_light fj_texture fj_tiler fj_timer fj_transform fj_triangle \
+		fj_turbulence fj_volume fj_volume_accelerator fj_volume_filling
 
 incdir  := $(topdir)/src
 libdir  := $(topdir)/lib

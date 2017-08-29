@@ -120,6 +120,7 @@ public:
   size_t GetCurveCount() const;
 
   // Light
+  Light *NewSphereLight();
   Light *NewLight(int light_type);
   Light **GetLightList() const;
   Light *GetLight(int index) const;
