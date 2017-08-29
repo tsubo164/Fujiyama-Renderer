@@ -68,6 +68,16 @@ float Light::GetIntensity() const
   return intensity_;
 }
 
+int Light::GetSampleDensity() const
+{
+  return sample_count_;
+}
+
+bool Light::IsDoulbeSided() const
+{
+  return double_sided_;
+}
+
 void Light::SetTranslate(Real tx, Real ty, Real tz, Real time)
 {
   XfmPushTranslateSample(&transform_samples_, tx, ty, tz, time);
@@ -116,6 +126,17 @@ int Light::Preprocess()
 //TODO TEST non-destructive
 void Light::GetLightSamples(std::vector<LightSample> &samples /*TODO , const Vector &P */) const
 {
+}
+
+void Light::get_transform_sample(Transform &sample, Real time) const
+{
+  // TODO time sampling
+  XfmLerpTransformSample(&transform_samples_, time, &sample);
+}
+
+float Light::get_sample_intensity() const
+{
+  return sample_intensity_;
 }
 
 } // namespace xxx

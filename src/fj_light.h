@@ -43,6 +43,8 @@ public:
 
   Color GetColor() const;
   float GetIntensity() const;
+  int GetSampleDensity() const;
+  bool IsDoulbeSided() const;
 
   // transformation
   void SetTranslate(Real tx, Real ty, Real tz, Real time);
@@ -59,6 +61,11 @@ public:
 
   //TODO TEST non-destructive
   void GetLightSamples(std::vector<LightSample> &samples /*TODO , const Vector &P */) const;
+
+protected:
+  void get_transform_sample(Transform &sample, Real time) const;
+  //TODO this may not be necessary
+  float get_sample_intensity() const;
 
 public: // TODO ONCE FINISHING INHERITANCE MAKE IT PRAIVATE
   Color color_;

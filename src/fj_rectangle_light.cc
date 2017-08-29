@@ -2,7 +2,6 @@
 // See LICENSE and README
 
 #include "fj_rectangle_light.h"
-#include "fj_multi_thread.h"
 
 namespace fj {
 
@@ -16,14 +15,15 @@ RectangleLight::~RectangleLight()
 
 int RectangleLight::get_sample_count() const
 {
-  return sample_count_;
+  return GetSampleDensity();
 }
 
 void RectangleLight::get_samples(LightSample *samples, int max_samples) const
 {
   Transform transform_interp;
   // TODO time sampling
-  XfmLerpTransformSample(&transform_samples_, 0, &transform_interp);
+  const float time = 0;
+  get_transform_sample(transform_interp, time);
 
   Vector N_sample(0, 1, 0);
   XfmTransformVector(&transform_interp, &N_sample);
@@ -36,9 +36,7 @@ void RectangleLight::get_samples(LightSample *samples, int max_samples) const
     XorShift &mutable_rng = const_cast<XorShift &>(rng_);
     const Real x = mutable_rng.NextFloat01() - .5;
     const Real z = mutable_rng.NextFloat01() - .5;
-    Vector P_sample;
-    P_sample.x = x;
-    P_sample.z = z;
+    Vector P_sample(x, 0, z);
 
     XfmTransformPoint(&transform_interp, &P_sample);
 
@@ -50,22 +48,16 @@ void RectangleLight::get_samples(LightSample *samples, int max_samples) const
 
 Color RectangleLight::illuminate(const LightSample &sample, const Vector &Ps) const
 {
-  Vector Ln = Ps - sample.P;
-  Ln = Normalize(Ln);
-
-  Color Cl;
+  const Vector Ln = Normalize(Ps - sample.P);
 
   Real dot = Dot(Ln, sample.N);
-  if (double_sided_) {
+  if (IsDoulbeSided()) {
     dot = Abs(dot);
   } else {
     dot = Max(dot, 0.);
   }
 
-  Cl = sample_intensity_ * color_;
-  Cl *= dot;
-
-  return Cl;
+  return dot * get_sample_intensity() * GetColor();
 }
 
 int RectangleLight::preprocess()

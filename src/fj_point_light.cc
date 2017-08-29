@@ -25,7 +25,8 @@ void PointLight::get_samples(LightSample *samples, int max_samples) const
 
   Transform transform_interp;
   // TODO time sampling
-  XfmLerpTransformSample(&transform_samples_, 0, &transform_interp);
+  const float time = 0;
+  get_transform_sample(transform_interp, time);
 
   samples[0].P = transform_interp.translate;
   samples[0].N = Vector(0, 0, 0);
