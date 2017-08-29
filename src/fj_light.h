@@ -41,6 +41,9 @@ public:
   void SetDoubleSided(bool on_or_off);
   void SetEnvironmentMap(Texture *texture);
 
+  Color GetColor() const;
+  float GetIntensity() const;
+
   // transformation
   void SetTranslate(Real tx, Real ty, Real tz, Real time);
   void SetRotate(Real rx, Real ry, Real rz, Real time);

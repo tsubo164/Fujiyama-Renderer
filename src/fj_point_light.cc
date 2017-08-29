@@ -34,7 +34,7 @@ void PointLight::get_samples(LightSample *samples, int max_samples) const
 
 Color PointLight::illuminate(const LightSample &sample, const Vector &Ps) const
 {
-  return intensity_ * color_;
+  return GetIntensity() * GetColor();
 }
 
 int PointLight::preprocess()

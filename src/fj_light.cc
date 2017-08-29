@@ -58,6 +58,16 @@ void Light::SetEnvironmentMap(Texture *texture)
   environment_map_ = texture;
 }
 
+Color Light::GetColor() const
+{
+  return color_;
+}
+
+float Light::GetIntensity() const
+{
+  return intensity_;
+}
+
 void Light::SetTranslate(Real tx, Real ty, Real tz, Real time)
 {
   XfmPushTranslateSample(&transform_samples_, tx, ty, tz, time);
