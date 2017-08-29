@@ -5,6 +5,8 @@
 #define FJ_DOME_LIGHT_H
 
 #include "fj_light.h"
+#include "fj_importance_sampling.h"
+#include <vector>
 
 namespace fj {
 
@@ -18,6 +20,9 @@ private:
   virtual void get_samples(LightSample *samples, int max_samples) const;
   virtual Color illuminate(const LightSample &sample, const Vector &Ps) const;
   virtual int preprocess();
+
+  // TODO tmp solution for dome light data
+  std::vector<DomeSample> dome_samples_;
 };
 
 } // namespace xxx

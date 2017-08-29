@@ -5,7 +5,7 @@
 
 namespace fj {
 
-RectangleLight::RectangleLight()
+RectangleLight::RectangleLight() : rng_()
 {
 }
 

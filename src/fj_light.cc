@@ -19,8 +19,7 @@ Light::Light() :
   sample_count_(16),
   sample_intensity_(intensity_ / sample_count_),
 
-  environment_map_(NULL),
-  dome_samples_()
+  environment_map_(NULL)
 {
   XfmInitTransformSampleList(&transform_samples_);
 }
@@ -76,6 +75,11 @@ int Light::GetSampleDensity() const
 bool Light::IsDoulbeSided() const
 {
   return double_sided_;
+}
+
+Texture *Light::GetEnvironmentMap() const
+{
+  return environment_map_;
 }
 
 void Light::SetTranslate(Real tx, Real ty, Real tz, Real time)

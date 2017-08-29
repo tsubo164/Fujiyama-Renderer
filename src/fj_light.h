@@ -5,7 +5,6 @@
 #define FJ_LIGHT_H
 
 #include "fj_compatibility.h"
-#include "fj_importance_sampling.h"
 #include "fj_transform.h"
 #include "fj_random.h"
 #include "fj_vector.h"
@@ -45,6 +44,7 @@ public:
   float GetIntensity() const;
   int GetSampleDensity() const;
   bool IsDoulbeSided() const;
+  Texture *GetEnvironmentMap() const;
 
   // transformation
   void SetTranslate(Real tx, Real ty, Real tz, Real time);
@@ -82,8 +82,6 @@ public: // TODO ONCE FINISHING INHERITANCE MAKE IT PRAIVATE
   float sample_intensity_;
 
   Texture *environment_map_;
-  // TODO tmp solution for dome light data
-  std::vector<DomeSample> dome_samples_;
 
 private:
   virtual int get_sample_count() const = 0;

@@ -7,7 +7,7 @@
 
 namespace fj {
 
-DomeLight::DomeLight()
+DomeLight::DomeLight() : dome_samples_()
 {
 }
 
@@ -17,14 +17,15 @@ DomeLight::~DomeLight()
 
 int DomeLight::get_sample_count() const
 {
-  return sample_count_;
+  return GetSampleDensity();
 }
 
 void DomeLight::get_samples(LightSample *samples, int max_samples) const
 {
   Transform transform_interp;
   // TODO time sampling
-  XfmLerpTransformSample(&transform_samples_, 0, &transform_interp);
+  const float time = 0;
+  get_transform_sample(transform_interp, time);
 
   int nsamples = GetSampleCount();
   nsamples = Min(nsamples, max_samples);
@@ -49,7 +50,7 @@ void DomeLight::get_samples(LightSample *samples, int max_samples) const
 
 Color DomeLight::illuminate(const LightSample &sample, const Vector &Ps) const
 {
-  return sample_intensity_ * sample.color;
+  return get_sample_intensity() * sample.color;
 }
 
 int DomeLight::preprocess()
@@ -64,27 +65,28 @@ int DomeLight::preprocess()
   dome_samples_.resize(NSAMPLES, init_sample);
   std::vector<DomeSample>(dome_samples_).swap(dome_samples_);
 
-  if (environment_map_ == NULL) {
+  Texture *envmap = GetEnvironmentMap();
+  if (envmap == NULL) {
     // TODO should be an error?
     return 0;
   }
 
-  int XRES = environment_map_->GetWidth();
-  int YRES = environment_map_->GetHeight();
+  int XRES = envmap->GetWidth();
+  int YRES = envmap->GetHeight();
   // TODO parameteraize
   XRES /= 8;
   YRES /= 8;
 
   if (0) {
-    ImportanceSampling(environment_map_, 0,
+    ImportanceSampling(envmap, 0,
         XRES, YRES,
         &dome_samples_[0], NSAMPLES);
   } else if (1) {
-    StratifiedImportanceSampling(environment_map_, 0,
+    StratifiedImportanceSampling(envmap, 0,
         XRES, YRES,
         &dome_samples_[0], NSAMPLES);
   } else {
-    StructuredImportanceSampling(environment_map_, 0,
+    StructuredImportanceSampling(envmap, 0,
         XRES, YRES,
         &dome_samples_[0], NSAMPLES);
   }

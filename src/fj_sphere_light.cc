@@ -6,7 +6,7 @@
 
 namespace fj {
 
-SphereLight::SphereLight()
+SphereLight::SphereLight() : rng_()
 {
 }
 
