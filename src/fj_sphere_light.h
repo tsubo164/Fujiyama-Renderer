@@ -17,6 +17,7 @@ private:
   virtual int get_sample_count() const;
   virtual void get_samples(LightSample *samples, int max_samples) const;
   virtual Color illuminate(const LightSample &sample, const Vector &Ps) const;
+  virtual int preprocess();
 };
 
 } // namespace xxx

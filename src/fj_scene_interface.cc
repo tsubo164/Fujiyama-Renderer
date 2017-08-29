@@ -655,7 +655,9 @@ ID SiNewLight(int light_type)
     break;
   case SI_DOME_LIGHT:
     type = LGT_DOME;
-    light = get_scene()->NewLight(type);
+    //light = get_scene()->NewLight(type);
+    light = get_scene()->NewDomeLight();
+    light->SetLightType(type);
     break;
   default:
     type = LGT_POINT;

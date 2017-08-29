@@ -13,7 +13,7 @@ target_dir  := lib
 target_name := libscene.so
 files       := \
 		fj_accelerator fj_adaptive_grid_sampler fj_box fj_bvh_accelerator fj_callback \
-		fj_camera fj_curve fj_filter fj_fixed_grid_sampler fj_framebuffer \
+		fj_camera fj_curve fj_dome_light fj_filter fj_fixed_grid_sampler fj_framebuffer \
 		fj_framebuffer_io fj_geometry fj_geometry_io fj_grid_accelerator \
 		fj_importance_sampling fj_interval fj_light fj_matrix fj_mesh \
 		fj_mipmap fj_multi_thread fj_noise fj_object_group fj_object_instance \

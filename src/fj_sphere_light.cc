@@ -63,6 +63,12 @@ Color SphereLight::illuminate(const LightSample &sample, const Vector &Ps) const
   return Cl;
 }
 
+int SphereLight::preprocess()
+{
+  // does nothing
+  return 0;
+}
+
 #if 0
 void SphereLight::get_light_samples(std::vector<LightSample> &samples) const
 {

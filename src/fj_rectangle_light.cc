@@ -68,4 +68,10 @@ Color RectangleLight::illuminate(const LightSample &sample, const Vector &Ps) co
   return Cl;
 }
 
+int RectangleLight::preprocess()
+{
+  // does nothing
+  return 0;
+}
+
 } // namespace xxx
