@@ -167,24 +167,31 @@ void Light::SetRotateOrder(int order)
 
 void Light::GetSamples(LightSample *samples, int max_samples) const
 {
+  /*
   if (type_ == LGT_SPHERE || type_ == LGT_GRID || type_ == LGT_DOME) {
     get_samples(samples, max_samples);
   } else {
     GetSamples_(this, samples, max_samples);
   }
+  */
+  get_samples(samples, max_samples);
 }
 
 int Light::GetSampleCount() const
 {
+  /*
   if (type_ == LGT_SPHERE || type_ == LGT_GRID || type_ == LGT_DOME) {
     return get_sample_count();
   } else {
     return GetSampleCount_(this);
   }
+  */
+  return get_sample_count();
 }
 
 Color Light::Illuminate(const LightSample &sample, const Vector &Ps) const
 {
+  /*
   if (type_ == LGT_SPHERE || type_ == LGT_GRID || type_ == LGT_DOME) {
     return illuminate(sample, Ps);
   } else {
@@ -192,15 +199,20 @@ Color Light::Illuminate(const LightSample &sample, const Vector &Ps) const
     Illuminate_(this, &sample, &Ps, &Cl);
     return Cl;
   }
+  */
+  return illuminate(sample, Ps);
 }
 
 int Light::Preprocess()
 {
+  /*
   if (type_ == LGT_SPHERE || type_ == LGT_GRID || type_ == LGT_DOME) {
     return preprocess();
   } else {
     return Preprocess_(this);
   }
+  */
+  return preprocess();
 }
 
 // point light

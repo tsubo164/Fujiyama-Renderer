@@ -17,11 +17,12 @@ files       := \
 		fj_framebuffer_io fj_geometry fj_geometry_io fj_grid_accelerator \
 		fj_importance_sampling fj_interval fj_light fj_matrix fj_mesh \
 		fj_mipmap fj_multi_thread fj_noise fj_object_group fj_object_instance \
-		fj_object_set fj_os fj_plugin fj_primitive_set fj_point_cloud fj_procedure \
-		fj_progress fj_property fj_protocol fj_random fj_rectangle fj_rectangle_light \
-		fj_renderer fj_sampler fj_scene fj_scene_interface fj_scene_node fj_shader \
-		fj_shading fj_socket fj_sphere_light fj_texture fj_tiler fj_timer fj_transform \
-		fj_triangle fj_turbulence fj_volume fj_volume_accelerator fj_volume_filling
+		fj_object_set fj_os fj_plugin fj_primitive_set fj_point_cloud fj_point_light \
+		fj_procedure fj_progress fj_property fj_protocol fj_random fj_rectangle \
+		fj_rectangle_light fj_renderer fj_sampler fj_scene fj_scene_interface fj_scene_node \
+		fj_shader fj_shading fj_socket fj_sphere_light fj_texture fj_tiler fj_timer \
+		fj_transform fj_triangle fj_turbulence fj_volume fj_volume_accelerator \
+		fj_volume_filling
 
 incdir  := $(topdir)/src
 libdir  := $(topdir)/lib

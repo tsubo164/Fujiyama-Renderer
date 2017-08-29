@@ -122,6 +122,7 @@ public:
   // Light
   Light *NewRectangleLight();
   Light *NewSphereLight();
+  Light *NewPointLight();
   Light *NewDomeLight();
   Light *NewLight(int light_type);
   Light **GetLightList() const;

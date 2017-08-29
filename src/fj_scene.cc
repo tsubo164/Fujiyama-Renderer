@@ -7,6 +7,7 @@
 
 #include "fj_rectangle_light.h"
 #include "fj_sphere_light.h"
+#include "fj_point_light.h"
 #include "fj_dome_light.h"
 
 #include <cassert>
@@ -176,6 +177,12 @@ Light *Scene::NewRectangleLight()
 Light *Scene::NewSphereLight()
 {
   Light *light = new SphereLight();
+  return push_entry_(LightList, light);
+}
+
+Light *Scene::NewPointLight()
+{
+  Light *light = new PointLight();
   return push_entry_(LightList, light);
 }
 

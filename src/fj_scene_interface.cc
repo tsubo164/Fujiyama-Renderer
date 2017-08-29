@@ -639,7 +639,9 @@ ID SiNewLight(int light_type)
   switch (light_type) {
   case SI_POINT_LIGHT:
     type = LGT_POINT;
-    light = get_scene()->NewLight(type);
+    //light = get_scene()->NewLight(type);
+    light = get_scene()->NewPointLight();
+    light->SetLightType(type);
     break;
   case SI_GRID_LIGHT:
     type = LGT_GRID;
@@ -661,7 +663,9 @@ ID SiNewLight(int light_type)
     break;
   default:
     type = LGT_POINT;
-    light = get_scene()->NewLight(type);
+    //light = get_scene()->NewLight(type);
+    light = get_scene()->NewPointLight();
+    light->SetLightType(type);
     break;
   };
 
