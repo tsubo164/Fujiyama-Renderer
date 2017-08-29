@@ -24,12 +24,6 @@
 
 namespace fj {
 
-// TODO TMP
-enum AcceleratorType {
-  ACC_GRID = 0,
-  ACC_BVH
-};
-
 class Scene {
 public:
   Scene();
@@ -42,7 +36,8 @@ public:
   size_t GetObjectInstanceCount() const;
 
   // Accelerator
-  Accelerator *NewAccelerator(int accelerator_type);
+  Accelerator *NewGridAccelerator();
+  Accelerator *NewBVHAccelerator();
   Accelerator **GetAcceleratorList() const;
   Accelerator *GetAccelerator(int index) const;
   size_t GetAcceleratorCount() const;

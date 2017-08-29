@@ -63,20 +63,15 @@ ObjectInstance *Scene::NewObjectInstance()
 }
 
 // Accelerator
-Accelerator *Scene::NewAccelerator(int accelerator_type)
+Accelerator *Scene::NewGridAccelerator()
 {
-  Accelerator *acc = NULL;
-  switch (accelerator_type) {
-  case ACC_GRID:
-    acc = new GridAccelerator();
-    break;
-  case ACC_BVH:
-    acc = new BVHAccelerator();
-    break;
-  default:
-    assert(!"invalid accelerator type");
-    break;
-  }
+  Accelerator *acc = new GridAccelerator();
+  return push_entry_(AcceleratorList, acc);
+}
+
+Accelerator *Scene::NewBVHAccelerator()
+{
+  Accelerator *acc = new BVHAccelerator();
   return push_entry_(AcceleratorList, acc);
 }
 

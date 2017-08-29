@@ -459,7 +459,7 @@ ID SiNewPointCloud(void)
     return SI_BADID;
   }
 
-  acc = get_scene()->NewAccelerator(ACC_GRID);
+  acc = get_scene()->NewGridAccelerator();
   if (acc == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -615,7 +615,7 @@ ID SiNewCurve(void)
     return SI_BADID;
   }
 
-  acc = get_scene()->NewAccelerator(ACC_GRID);
+  acc = get_scene()->NewGridAccelerator();
   if (acc == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
@@ -695,7 +695,7 @@ ID SiNewMesh(void)
   }
   mesh->Clear();
 
-  acc = get_scene()->NewAccelerator(ACC_GRID);
+  acc = get_scene()->NewGridAccelerator();
   if (acc == NULL) {
     set_errno(SI_ERR_NO_MEMORY);
     return SI_BADID;
