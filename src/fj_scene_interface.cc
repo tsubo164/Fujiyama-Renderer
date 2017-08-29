@@ -634,38 +634,22 @@ ID SiNewCurve(void)
 ID SiNewLight(int light_type)
 {
   Light *light = NULL;
-  //int type = 0;
 
   switch (light_type) {
   case SI_POINT_LIGHT:
-    //type = LGT_POINT;
-    //light = get_scene()->NewLight(type);
     light = get_scene()->NewPointLight();
-    //light->SetLightType(type);
     break;
   case SI_GRID_LIGHT:
-    //type = LGT_GRID;
-    //light = get_scene()->NewLight(type);
     light = get_scene()->NewRectangleLight();
-    //light->SetLightType(type);
     break;
   case SI_SPHERE_LIGHT:
-    //type = LGT_SPHERE;
-    //light = get_scene()->NewLight(type);
     light = get_scene()->NewSphereLight();
-    //light->SetLightType(type);
     break;
   case SI_DOME_LIGHT:
-    //type = LGT_DOME;
-    //light = get_scene()->NewLight(type);
     light = get_scene()->NewDomeLight();
-    //light->SetLightType(type);
     break;
   default:
-    //type = LGT_POINT;
-    //light = get_scene()->NewLight(type);
-    light = get_scene()->NewPointLight();
-    //light->SetLightType(type);
+    return SI_BADID;
     break;
   };
 
