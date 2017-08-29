@@ -13,7 +13,6 @@ Light::Light() :
   color_(1, 1, 1),
   intensity_(1),
   transform_samples_(),
-  rng_(),
 
   double_sided_(false),
   sample_count_(16),
@@ -125,11 +124,6 @@ Color Light::Illuminate(const LightSample &sample, const Vector &Ps) const
 int Light::Preprocess()
 {
   return preprocess();
-}
-
-//TODO TEST non-destructive
-void Light::GetLightSamples(std::vector<LightSample> &samples /*TODO , const Vector &P */) const
-{
 }
 
 void Light::get_transform_sample(Transform &sample, Real time) const

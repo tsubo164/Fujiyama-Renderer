@@ -36,6 +36,7 @@ public:
   // light properties
   void SetColor(float r, float g, float b);
   void SetIntensity(float intensity);
+  //TODO this needs to be void SetSampleDensity(float density)
   void SetSampleCount(int sample_count);
   void SetDoubleSided(bool on_or_off);
   void SetEnvironmentMap(Texture *texture);
@@ -59,28 +60,20 @@ public:
   Color Illuminate(const LightSample &sample, const Vector &Ps) const;
   int Preprocess();
 
-  //TODO TEST non-destructive
-  void GetLightSamples(std::vector<LightSample> &samples /*TODO , const Vector &P */) const;
-
 protected:
   void get_transform_sample(Transform &sample, Real time) const;
   //TODO this may not be necessary
   float get_sample_intensity() const;
 
-public: // TODO ONCE FINISHING INHERITANCE MAKE IT PRAIVATE
+private:
   Color color_;
   float intensity_;
 
-  // transformation properties
   TransformSampleList transform_samples_;
-
-  // for area light sampling
-  XorShift rng_;
-
   bool double_sided_;
+  //TODO this needs to be sample_density_
   int sample_count_;
   float sample_intensity_;
-
   Texture *environment_map_;
 
 private:
