@@ -15,13 +15,6 @@
 
 namespace fj {
 
-enum LightType {
-  LGT_POINT = 0,
-  LGT_GRID,
-  LGT_SPHERE,
-  LGT_DOME
-};
-
 class Light;
 class Texture;
 
@@ -40,8 +33,6 @@ class Light {
 public:
   Light();
   virtual ~Light();
-
-  void SetLightType(int light_type);
 
   // light properties
   void SetColor(float r, float g, float b);
@@ -76,7 +67,6 @@ public: // TODO ONCE FINISHING INHERITANCE MAKE IT PRAIVATE
   // for area light sampling
   XorShift rng_;
 
-  int type_;
   bool double_sided_;
   int sample_count_;
   float sample_intensity_;
@@ -85,21 +75,11 @@ public: // TODO ONCE FINISHING INHERITANCE MAKE IT PRAIVATE
   // TODO tmp solution for dome light data
   std::vector<DomeSample> dome_samples_;
 
-  // TODO USE INHERITANCE
-  // functions
-  int (*GetSampleCount_)(const Light *light);
-  void (*GetSamples_)(const Light *light,
-      LightSample *samples, int max_samples);
-  void (*Illuminate_)(const Light *light,
-      const LightSample *sample,
-      const Vector *Ps, Color *Cl);
-  int (*Preprocess_)(Light *light);
-
 private:
-  virtual int get_sample_count() const;
-  virtual void get_samples(LightSample *samples, int max_samples) const;
-  virtual Color illuminate(const LightSample &sample, const Vector &Ps) const;
-  virtual int preprocess();
+  virtual int get_sample_count() const = 0;
+  virtual void get_samples(LightSample *samples, int max_samples) const = 0;
+  virtual Color illuminate(const LightSample &sample, const Vector &Ps) const = 0;
+  virtual int preprocess() = 0;
 };
 
 } // namespace xxx

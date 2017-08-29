@@ -192,13 +192,6 @@ Light *Scene::NewDomeLight()
   return push_entry_(LightList, light);
 }
 
-Light *Scene::NewLight(int light_type)
-{
-  Light *light = new Light();
-  light->SetLightType(light_type);
-  return push_entry_(LightList, light);
-}
-
 // Mesh
 Mesh *Scene::NewMesh()
 {

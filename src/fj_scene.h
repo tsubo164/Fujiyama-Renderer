@@ -124,7 +124,6 @@ public:
   Light *NewSphereLight();
   Light *NewPointLight();
   Light *NewDomeLight();
-  Light *NewLight(int light_type);
   Light **GetLightList() const;
   Light *GetLight(int index) const;
   size_t GetLightCount() const;
