@@ -4,6 +4,8 @@
 #include "fj_dome_light.h"
 #include "fj_multi_thread.h"
 #include "fj_texture.h"
+// TODO delete FLT_MAX
+#include <cfloat>
 
 namespace fj {
 

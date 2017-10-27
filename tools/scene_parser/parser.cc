@@ -6,6 +6,8 @@
 #include <sstream>
 #include <vector>
 #include <cassert>
+#include <cstdio>
+#include <cstdlib>
 
 static void print_command(const CommandArgument *args, int nargs);
 static int symbol_to_number(CommandArgument *arg);
