@@ -84,6 +84,7 @@ libscene_dll_obj = \
   ..\..\src\fj_callback.obj \
   ..\..\src\fj_camera.obj \
   ..\..\src\fj_curve.obj \
+  ..\..\src\fj_dome_light.obj \
   ..\..\src\fj_filter.obj \
   ..\..\src\fj_fixed_grid_sampler.obj \
   ..\..\src\fj_framebuffer.obj \
@@ -106,6 +107,7 @@ libscene_dll_obj = \
   ..\..\src\fj_os.obj \
   ..\..\src\fj_plugin.obj \
   ..\..\src\fj_point_cloud.obj \
+  ..\..\src\fj_point_light.obj \
   ..\..\src\fj_primitive_set.obj \
   ..\..\src\fj_procedure.obj \
   ..\..\src\fj_progress.obj \
@@ -113,6 +115,7 @@ libscene_dll_obj = \
   ..\..\src\fj_protocol.obj \
   ..\..\src\fj_random.obj \
   ..\..\src\fj_rectangle.obj \
+  ..\..\src\fj_rectangle_light.obj \
   ..\..\src\fj_renderer.obj \
   ..\..\src\fj_sampler.obj \
   ..\..\src\fj_scene.obj \
@@ -121,6 +124,7 @@ libscene_dll_obj = \
   ..\..\src\fj_shader.obj \
   ..\..\src\fj_shading.obj \
   ..\..\src\fj_socket.obj \
+  ..\..\src\fj_sphere_light.obj \
   ..\..\src\fj_texture.obj \
   ..\..\src\fj_tiler.obj \
   ..\..\src\fj_timer.obj \
@@ -151,6 +155,9 @@ libscene_dll_obj = \
 
 ..\..\src\fj_curve.obj : ..\..\src\fj_curve.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_curve.cc
+
+..\..\src\fj_dome_light.obj : ..\..\src\fj_dome_light.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_dome_light.cc
 
 ..\..\src\fj_filter.obj : ..\..\src\fj_filter.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_filter.cc
@@ -218,6 +225,9 @@ libscene_dll_obj = \
 ..\..\src\fj_point_cloud.obj : ..\..\src\fj_point_cloud.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_point_cloud.cc
 
+..\..\src\fj_point_light.obj : ..\..\src\fj_point_light.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_point_light.cc
+
 ..\..\src\fj_primitive_set.obj : ..\..\src\fj_primitive_set.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_primitive_set.cc
 
@@ -238,6 +248,9 @@ libscene_dll_obj = \
 
 ..\..\src\fj_rectangle.obj : ..\..\src\fj_rectangle.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_rectangle.cc
+
+..\..\src\fj_rectangle_light.obj : ..\..\src\fj_rectangle_light.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_rectangle_light.cc
 
 ..\..\src\fj_renderer.obj : ..\..\src\fj_renderer.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_renderer.cc
@@ -262,6 +275,9 @@ libscene_dll_obj = \
 
 ..\..\src\fj_socket.obj : ..\..\src\fj_socket.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_socket.cc
+
+..\..\src\fj_sphere_light.obj : ..\..\src\fj_sphere_light.cc
+	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_sphere_light.cc
 
 ..\..\src\fj_texture.obj : ..\..\src\fj_texture.cc
 	@$(CC) $(CXXFLAGS) /D "FJ_DLL_EXPORT" /Fo$@ ..\..\src\fj_texture.cc
@@ -616,8 +632,7 @@ $(jpg2mip_exe) : $(jpg2mip_exe_obj)
 scene_exe_obj = \
   ..\..\tools\scene_parser\command.obj \
   ..\..\tools\scene_parser\main.obj \
-  ..\..\tools\scene_parser\parser.obj \
-  ..\..\tools\scene_parser\table.obj
+  ..\..\tools\scene_parser\parser.obj
 
 ..\..\tools\scene_parser\command.obj : ..\..\tools\scene_parser\command.cc
 	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\scene_parser\command.cc
@@ -627,9 +642,6 @@ scene_exe_obj = \
 
 ..\..\tools\scene_parser\parser.obj : ..\..\tools\scene_parser\parser.cc
 	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\scene_parser\parser.cc
-
-..\..\tools\scene_parser\table.obj : ..\..\tools\scene_parser\table.cc
-	@$(CC) $(CXXFLAGS)  /Fo$@ ..\..\tools\scene_parser\table.cc
 
 $(scene_exe) : $(scene_exe_obj)
 	@echo scene.exe
