@@ -1,0 +1,16 @@
+Fujiyama Renderer v0.3.5(Alpha) Release Notes
+=============================================
+
+New features since v0.3.4
+-------------------------
+ * Cleaned up some codes. There is not much difference from user's view point.
+
+Features under development
+--------------------------
+ * Deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support
