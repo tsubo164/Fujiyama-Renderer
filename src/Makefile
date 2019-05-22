@@ -3,9 +3,9 @@
 
 CC = g++
 OPT = -O3
-OMP = -fopenmp
-CFLAGS = $(OPT) $(OMP) -fPIC -Wall -ansi -pedantic-errors
-LDFLAGS = $(OMP) -shared -ldl -lm
+STD = c++11
+CFLAGS = $(OPT) -fPIC -Wall -std=$(STD) -pedantic-errors
+LDFLAGS = -shared -ldl -lm
 RM = rm -f
 
 topdir      := ..

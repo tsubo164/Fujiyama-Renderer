@@ -114,13 +114,13 @@ void Transform::SetRotateOrder(int order)
 }
 
 void Transform::SetTransform(
-    int transform_order, int rotate_order,
+    int new_transform_order, int new_rotate_order,
     Real tx, Real ty, Real tz,
     Real rx, Real ry, Real rz,
     Real sx, Real sy, Real sz)
 {
-  transform_order = transform_order;
-  rotate_order    = rotate_order;
+  transform_order = new_transform_order;
+  rotate_order    = new_rotate_order;
   translate       = Vector(tx, ty, tz);
   rotate          = Vector(rx, ry, rz);
   scale           = Vector(sx, sy, sz);

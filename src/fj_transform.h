@@ -52,7 +52,7 @@ public:
   void SetTransformOrder(int order);
   void SetRotateOrder   (int order);
   void SetTransform(
-      int transform_order, int rotate_order,
+      int new_transform_order, int new_rotate_order,
       Real tx, Real ty, Real tz,
       Real rx, Real ry, Real rz,
       Real sx, Real sy, Real sz);
