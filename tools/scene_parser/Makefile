@@ -3,7 +3,7 @@
 
 CC = g++
 OPT = -O3
-CFLAGS = $(OPT) -Wall -ansi -pedantic-errors
+CFLAGS = $(OPT) -Wall -std=c++11 -pedantic-errors
 LDFLAGS = -lscene -lm
 RM = rm -f
 

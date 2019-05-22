@@ -1,7 +1,9 @@
 *.o
 *.d
 *.so
+*.fb
 *.pyc
 *.swp
 bin/*
 *.plist
+scenes/cube

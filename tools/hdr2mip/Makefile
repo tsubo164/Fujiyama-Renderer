@@ -3,7 +3,7 @@
 
 CC = g++
 OPT = -O3
-CFLAGS = $(OPT) -Wall -ansi -pedantic-errors
+CFLAGS = $(OPT) -Wall -std=c++11 -pedantic-errors
 LDFLAGS = -lscene -lm
 RM = rm -f
 
@@ -26,9 +26,10 @@ depends := hdr2mip.d  rgbe.d
 .PHONY: all clean depend
 all: $(target)
 
+#compling with gcc instead of g++ because of lots of errors and warnings
 rgbe.o: %.o: %.c
 	@echo '  compile $<'
-	@gcc   $(CFLAGS) -I$(incdir) -c -o $@ $<
+	@gcc   $(OPT) -Wall -ansi -pedantic-errors -I$(incdir) -c -o $@ $<
 
 hdr2mip.o: %.o: %.cc
 	@echo '  compile $<'

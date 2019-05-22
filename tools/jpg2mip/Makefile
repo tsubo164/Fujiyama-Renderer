@@ -3,8 +3,8 @@
 
 CC = g++
 OPT = -O3
-CFLAGS = $(OPT) -Wall -ansi -pedantic-errors -I/usr/local/include #TODO remove path for jpeg
-LDFLAGS = -lscene -lm -ljpeg -L/usr/local/lib #TODO remove path for jpeg
+CFLAGS = $(OPT) -Wall -std=c++11 -pedantic-errors
+LDFLAGS = -lscene -lm -ljpeg
 RM = rm -f
 
 topdir      := ../..

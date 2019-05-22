@@ -3,12 +3,12 @@
 
 CC = g++
 OPT = -O3
-CFLAGS = $(OPT) -Wall -ansi -pedantic-errors
+CFLAGS = $(OPT) -Wall -std=c++11 -pedantic-errors
 LDFLAGS = -lscene -lm -lGL -lGLU -lglut
 RM = rm -f
 
 ifeq ($(shell uname),Darwin)
-CFLAGS = $(OPT) -Wall -ansi -pedantic-errors -Wno-deprecated-declarations
+CFLAGS = $(OPT) -Wall -std=c++11 -pedantic-errors -Wno-deprecated-declarations
 LDFLAGS = -lscene -framework GLUT -framework OpenGL
 endif
 

@@ -3,7 +3,7 @@
 
 CC = g++
 OPT = -O3
-CFLAGS = $(OPT) -fPIC -Wall -ansi -pedantic-errors
+CFLAGS = $(OPT) -fPIC -Wall -std=c++11 -pedantic-errors
 LDFLAGS = -shared -lscene
 RM = rm -f
 
@@ -24,9 +24,12 @@ depends := $(addsuffix .d, $(files))
 .PHONY: all clean depend
 all: $(target)
 
+#compling with gcc instead of g++ because of lots of errors and warnings
+#disabled -Wself-assign
 plyfile.o: %.o: %.c
 	@echo '  compile $<'
-	@gcc   $(CFLAGS) -I$(incdir) -c -o $@ $<
+	@gcc   $(OPT) -fPIC -Wall -Wno-self-assign -ansi -pedantic-errors -I$(incdir) -c -o $@ $<
+
 
 ply2mesh.o: %.o: %.cc
 	@echo '  compile $<'

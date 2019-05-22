@@ -5,7 +5,7 @@ topdir := ../
 
 CC = g++
 OPT = -O3
-CFLAGS = -I$(topdir)src -Wall -ansi -pedantic-errors $(OPT)
+CFLAGS = -I$(topdir)src -Wall -std=c++11 -pedantic-errors $(OPT)
 LDFLAGS = -L$(topdir)lib -lscene
 
 RM = rm -f

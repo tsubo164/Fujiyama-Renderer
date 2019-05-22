@@ -3,8 +3,7 @@
 
 CC = g++
 OPT = -O3
-STD = c++11
-CFLAGS = $(OPT) -fPIC -Wall -std=$(STD) -pedantic-errors
+CFLAGS = $(OPT) -fPIC -Wall -std=c++11 -pedantic-errors
 LDFLAGS = -shared -ldl -lm
 RM = rm -f
 
