@@ -618,7 +618,7 @@ void Renderer::SetUseMaxThread(int use_max_thread)
 
 void Renderer::SetThreadCount(int thread_count)
 {
-  const int max_thread_count = MtGetMaxThreadCount();
+  const int max_thread_count = MtGetMaxAvailableThreadCount();
 
   if (thread_count < 1) {
     thread_count_ = 1;
@@ -631,7 +631,7 @@ void Renderer::SetThreadCount(int thread_count)
 
 int Renderer::GetThreadCount() const
 {
-  const int max_thread_count = MtGetMaxThreadCount();
+  const int max_thread_count = MtGetMaxAvailableThreadCount();
 
   if (use_max_thread_) {
     return max_thread_count;
@@ -716,7 +716,7 @@ public:
 static void init_worker(Worker *worker, int id,
     const Renderer *renderer, const Tiler *tiler);
 static int render_frame_start(Renderer *renderer, const Tiler *tiler);
-static ThreadStatus render_tile(void *data, const ThreadContext *context);
+static LoopStatus render_tile(void *data, const ThreadContext *context);
 static void render_frame_done(Renderer *renderer, const Tiler *tiler);
 
 int Renderer::prepare_rendering()
@@ -777,7 +777,7 @@ int Renderer::execute_rendering()
     return -1;
   }
 
-  MtRunThreadLoop(&worker_list[0], render_tile, thread_count, 0, tile_count);
+  MtRunParallelLoop(&worker_list[0], render_tile, thread_count, 0, tile_count);
 
   render_frame_done(this, &tiler);
 
@@ -1089,7 +1089,7 @@ static int integrate_samples(Worker *worker)
   return 0;
 }
 
-static ThreadStatus render_tile(void *data, const ThreadContext *context)
+static LoopStatus render_tile(void *data, const ThreadContext *context)
 {
   Worker *worker_list = (Worker *) data;
   Worker *worker = &worker_list[context->thread_id];
@@ -1099,7 +1099,7 @@ static ThreadStatus render_tile(void *data, const ThreadContext *context)
 
   interrupted = render_tile_start(worker);
   if (interrupted) {
-    return THREAD_LOOP_CANCEL;
+    return LoopStatus::Cancel;
   }
 
   interrupted = integrate_samples(worker);
@@ -1108,10 +1108,10 @@ static ThreadStatus render_tile(void *data, const ThreadContext *context)
   render_tile_done(worker);
 
   if (interrupted) {
-    return THREAD_LOOP_CANCEL;
+    return LoopStatus::Cancel;
   }
 
-  return THREAD_LOOP_CONTINUE;
+  return LoopStatus::Continue;
 }
 
 } // namespace xxx

@@ -100,7 +100,7 @@ bool TextureCache::IsOpen() const
 
 Texture::Texture() :
     filename_(""),
-    cache_list_(MtGetMaxThreadCount())
+    cache_list_(MtGetMaxAvailableThreadCount())
 {
 }
 

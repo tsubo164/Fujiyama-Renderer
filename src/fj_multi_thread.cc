@@ -17,7 +17,7 @@ static std::mutex thread_id_map_mtx;
 static int active_thread_count = 1;
 
 // manage all threads' status
-static ThreadStatus global_loop_status = THREAD_LOOP_CONTINUE;
+static LoopStatus global_loop_status = LoopStatus::Continue;
 static std::mutex global_stat_mtx;
 
 // manage iterations
@@ -68,13 +68,13 @@ static int get_thread_id()
   return thread_id_map[this_id];
 }
 
-static int get_running_thread_count()
+static int get_active_thread_count()
 {
   std::lock_guard<std::mutex> lock(thread_id_map_mtx);
   return thread_id_map.size();
 }
 
-static int get_global_loop_status()
+static LoopStatus get_global_loop_status()
 {
   std::lock_guard<std::mutex> lock(global_stat_mtx);
   return global_loop_status;
@@ -83,7 +83,7 @@ static int get_global_loop_status()
 static void cancel_parallel_loop()
 {
   std::lock_guard<std::mutex> lock(global_stat_mtx);
-  global_loop_status = THREAD_LOOP_CANCEL;
+  global_loop_status = LoopStatus::Cancel;
 }
 
 static void init_iteration_que_index()
@@ -107,14 +107,14 @@ static int checkout_iteration_id(const std::vector<int> &iteration_que)
 }
 
 static void parallel_for(int thread_id, const std::vector<int> &iteration_que,
-    void *data, ThreadFunction task)
+    void *data, TaskFunction task)
 {
   ThreadRegistration reg(thread_id);
 
   for (;;) {
     // check global loop status
-    const ThreadStatus global_status = get_global_loop_status();
-    if (global_status == THREAD_LOOP_CANCEL) {
+    const LoopStatus global_status = get_global_loop_status();
+    if (global_status == LoopStatus::Cancel) {
       break;
     }
 
@@ -125,48 +125,44 @@ static void parallel_for(int thread_id, const std::vector<int> &iteration_que,
     }
 
     ThreadContext cxt;
-    cxt.thread_count = MtGetRunningThreadCount();
+    cxt.thread_count = MtGetActiveThreadCount();
     cxt.thread_id = MtGetThreadID();
     cxt.iteration_count = iteration_que.size();
     cxt.iteration_id = iteration_id;
 
-    const ThreadStatus local_status = task(data, &cxt);
-    if (local_status == THREAD_LOOP_CANCEL) {
+    const LoopStatus local_status = task(data, &cxt);
+    if (local_status == LoopStatus::Cancel) {
       cancel_parallel_loop();
       break;
     }
   }
 }
 
-//TODO rename to MtGetAvailableMaxThreadCount
-int MtGetMaxThreadCount(void)
+int MtGetMaxAvailableThreadCount()
 {
   return std::thread::hardware_concurrency();
 }
 
-//TODO rename to MtGetActiveThreadCount
-int MtGetRunningThreadCount(void)
+int MtGetActiveThreadCount()
 {
-  return get_running_thread_count();
+  return get_active_thread_count();
 }
 
-int MtGetThreadID(void)
+void MtSetActiveThreadCount(int count)
 {
-  return get_thread_id();
-}
-
-//TODO rename to MtSetActiveThreadCount
-void MtSetMaxThreadCount(int count)
-{
-  const int max = MtGetMaxThreadCount();
+  const int max = MtGetMaxAvailableThreadCount();
   int n = count < 1 ? 1 : count;
   n = n > max ? max : n;
 
   active_thread_count = n;
 }
 
-//TODO rename to MtRunParallelLoop
-ThreadStatus MtRunThreadLoop(void *data, ThreadFunction run_thread, int thread_count,
+int MtGetThreadID()
+{
+  return get_thread_id();
+}
+
+LoopStatus MtRunParallelLoop(void *data, TaskFunction task_fn, int thread_count,
     int start, int end)
 {
   //TODO take iteration_que from caller
@@ -181,7 +177,7 @@ ThreadStatus MtRunThreadLoop(void *data, ThreadFunction run_thread, int thread_c
   for (int i = 0; i < thread_count; i++) {
     const int thread_id = i;
     threads.push_back(std::thread(parallel_for, thread_id, std::cref(iteration_que),
-          data, run_thread));
+          data, task_fn));
   }
 
   for (auto &t: threads) {
@@ -191,11 +187,11 @@ ThreadStatus MtRunThreadLoop(void *data, ThreadFunction run_thread, int thread_c
   return get_global_loop_status();
 }
 
-void MtCriticalSection(void *data, CriticalFunction critical)
+void MtCriticalSection(void *data, CriticalFunction critical_fn)
 {
   static std::mutex mtx;
   std::lock_guard<std::mutex> lock(mtx);
-  critical(data);
+  critical_fn(data);
 }
 
 } // namespace xxx

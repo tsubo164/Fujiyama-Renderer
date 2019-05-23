@@ -10,39 +10,33 @@ namespace fj {
 
 class ThreadContext {
 public:
-  ThreadContext() :
-      iteration_id(0),
-      iteration_count(0),
-      thread_id(0),
-      thread_count(0) {}
+  ThreadContext() {}
   ~ThreadContext() {}
 
 public:
-  int iteration_id;
-  int iteration_count;
-  int thread_id;
-  int thread_count;
+  int iteration_id = 0;
+  int iteration_count = 0;
+  int thread_id = 0;
+  int thread_count = 0;
 };
 
-enum {
-  THREAD_LOOP_CONTINUE = 0,
-  THREAD_LOOP_CANCEL = 1
+enum class LoopStatus {
+  Continue = 0,
+  Cancel,
 };
-typedef int ThreadStatus;
 
-typedef ThreadStatus (*ThreadFunction)(void *data, const ThreadContext *context);
-typedef void (*CriticalFunction)(void *data);
+using TaskFunction = LoopStatus (*)(void *data, const ThreadContext *context);
+using CriticalFunction = void (*)(void *data);
 
-extern int MtGetMaxThreadCount(void);
-extern int MtGetRunningThreadCount(void);
+int MtGetMaxAvailableThreadCount();
+int MtGetActiveThreadCount();
+void MtSetActiveThreadCount(int count);
 // TODO possible to hide this from plugin?
-FJ_API int MtGetThreadID(void);
+FJ_API int MtGetThreadID();
 
-extern void MtSetMaxThreadCount(int count);
-
-extern ThreadStatus MtRunThreadLoop(void *data, ThreadFunction run_thread, int thread_count,
+LoopStatus MtRunParallelLoop(void *data, TaskFunction task_fn, int thread_count,
     int start, int end);
-extern void MtCriticalSection(void *data, CriticalFunction critical);
+void MtCriticalSection(void *data, CriticalFunction critical_fn);
 
 } // namespace xxx
 
