@@ -7,18 +7,11 @@
 #include "fj_compatibility.h"
 #include <cassert>
 
-#if defined(FJ_MACOSX) && !defined(__clang__)
-  #include <cfloat>
-  #define FJ_REAL_MAX DBL_MAX
-#else
-  #define FJ_REAL_MAX std::numeric_limits<fj::Real>::max()
-#endif
-
 namespace fj {
 
 //XXX CHANGE FJ_REAL_MAX IF REAL IS FLOAT
-typedef double Real;
-typedef int Index;
+using Real = double;
+using Index = int;
 
 class FJ_API Index3 {
 public:
