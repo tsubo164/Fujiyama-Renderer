@@ -3,8 +3,8 @@
 
 CC = g++
 OPT = -O3
-#disabling deprecated-register until c++17
-CFLAGS = $(OPT) -Wall -std=c++11 -Wno-deprecated-register
+#XXX compatibility for deprecated features
+CFLAGS = $(OPT) -Wall -std=c++11 -Wno-deprecated
 LDFLAGS = -lscene -lm
 RM = rm -f
 

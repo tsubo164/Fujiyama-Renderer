@@ -96,7 +96,8 @@ static int checkout_iteration_id(const std::vector<int> &iteration_que)
   static std::mutex mtx;
   std::lock_guard<std::mutex> lock(iteration_que_index_mtx);
 
-  if (iteration_que_index >= iteration_que.size()) {
+  const int que_size = static_cast<int>(iteration_que.size());
+  if (iteration_que_index >= que_size) {
     return -1;
   }
 

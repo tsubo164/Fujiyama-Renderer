@@ -7,6 +7,7 @@ CFLAGS = $(OPT) -Wall -std=c++11 -pedantic-errors
 LDFLAGS = -lscene -lm -lGL -lGLU -lglut
 RM = rm -f
 
+#XXX compatibility for MaxOS GLUT
 ifeq ($(shell uname),Darwin)
 CFLAGS = $(OPT) -Wall -std=c++11 -pedantic-errors -Wno-deprecated-declarations
 LDFLAGS = -lscene -framework GLUT -framework OpenGL

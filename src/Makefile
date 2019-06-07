@@ -7,6 +7,11 @@ CFLAGS = $(OPT) -fPIC -Wall -std=c++11 -pedantic-errors
 LDFLAGS = -shared -ldl -lm
 RM = rm -f
 
+#XXX compatibility for Linux pthread
+ifeq ($(shell uname),Linux)
+LDFLAGS = -shared -ldl -lm -pthread
+endif
+
 topdir      := ..
 target_dir  := lib
 target_name := libscene.so
