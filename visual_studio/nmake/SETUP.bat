@@ -4,7 +4,7 @@
 @echo off
 
 echo ^> Setting up building environments ...
-call setupenv_vs2012.bat
+call setupenv_vs.bat
 echo.
 
 echo ^> Building Fujiyama Renderer ...
