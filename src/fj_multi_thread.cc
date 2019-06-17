@@ -40,14 +40,6 @@ static void unregister_thread_id()
   thread_id_map.erase(this_id);
 }
 
-/*
-static int get_registered_thread_count()
-{
-  std::lock_guard<std::mutex> lock(thread_id_map_mtx);
-  return thread_id_map.size();
-}
-*/
-
 // thread registeration RAII
 class ThreadRegistration {
 public:
@@ -163,15 +155,9 @@ int MtGetThreadID()
   return get_thread_id();
 }
 
-LoopStatus MtRunParallelLoop(void *data, TaskFunction task_fn, int thread_count,
-    int start, int end)
+LoopStatus MtRunParallelLoop(void *data, TaskFunction task_fn,
+    int thread_count, const std::vector<int> &iteration_que)
 {
-  //TODO take iteration_que from caller
-  std::vector<int> iteration_que;
-  for (int i = start; i < end; i++) {
-    iteration_que.push_back(i);
-  }
-
   std::vector<std::thread> threads;
   init_iteration_que_index();
 

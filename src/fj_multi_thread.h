@@ -5,6 +5,7 @@
 #define FJ_MULTI_THREAD_H
 
 #include "fj_compatibility.h"
+#include <vector>
 
 namespace fj {
 
@@ -34,8 +35,8 @@ void MtSetActiveThreadCount(int count);
 // TODO possible to hide this from plugin?
 FJ_API int MtGetThreadID();
 
-LoopStatus MtRunParallelLoop(void *data, TaskFunction task_fn, int thread_count,
-    int start, int end);
+LoopStatus MtRunParallelLoop(void *data, TaskFunction task_fn,
+    int thread_count, const std::vector<int> &iteration_que);
 void MtCriticalSection(void *data, CriticalFunction critical_fn);
 
 } // namespace xxx

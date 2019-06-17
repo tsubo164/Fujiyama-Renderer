@@ -777,7 +777,13 @@ int Renderer::execute_rendering()
     return -1;
   }
 
-  MtRunParallelLoop(&worker_list[0], render_tile, thread_count, 0, tile_count);
+  // Iteration number que for parallel loop
+  std::vector<int> iteration_que(tile_count);
+  for (int i = 0; i <tile_count; i++) {
+    iteration_que[i] = i;
+  }
+
+  MtRunParallelLoop(&worker_list[0], render_tile, thread_count, iteration_que);
 
   render_frame_done(this, &tiler);
 
