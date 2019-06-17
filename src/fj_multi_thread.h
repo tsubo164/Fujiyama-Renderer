@@ -26,7 +26,7 @@ enum class LoopStatus {
   Cancel,
 };
 
-using TaskFunction = LoopStatus (*)(void *data, const ThreadContext *context);
+using TaskFunction = LoopStatus (*)(void *data, const ThreadContext &context);
 using CriticalFunction = void (*)(void *data);
 
 int MtGetMaxAvailableThreadCount();

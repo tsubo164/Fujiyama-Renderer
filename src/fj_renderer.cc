@@ -716,7 +716,7 @@ public:
 static void init_worker(Worker *worker, int id,
     const Renderer *renderer, const Tiler *tiler);
 static int render_frame_start(Renderer *renderer, const Tiler *tiler);
-static LoopStatus render_tile(void *data, const ThreadContext *context);
+static LoopStatus render_tile(void *data, const ThreadContext &context);
 static void render_frame_done(Renderer *renderer, const Tiler *tiler);
 
 int Renderer::prepare_rendering()
@@ -1095,13 +1095,13 @@ static int integrate_samples(Worker *worker)
   return 0;
 }
 
-static LoopStatus render_tile(void *data, const ThreadContext *context)
+static LoopStatus render_tile(void *data, const ThreadContext &context)
 {
   Worker *worker_list = (Worker *) data;
-  Worker *worker = &worker_list[context->thread_id];
+  Worker *worker = &worker_list[context.thread_id];
   int interrupted = 0;
 
-  set_working_region(worker, context->iteration_id);
+  set_working_region(worker, context.iteration_id);
 
   interrupted = render_tile_start(worker);
   if (interrupted) {

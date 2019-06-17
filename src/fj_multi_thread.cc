@@ -123,7 +123,7 @@ static void parallel_for(int thread_id, const std::vector<int> &iteration_que,
     cxt.iteration_count = iteration_que.size();
     cxt.iteration_id = iteration_id;
 
-    const LoopStatus local_status = task(data, &cxt);
+    const LoopStatus local_status = task(data, cxt);
     if (local_status == LoopStatus::Cancel) {
       cancel_parallel_loop();
       break;
