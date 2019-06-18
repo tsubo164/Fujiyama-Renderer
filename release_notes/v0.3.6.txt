@@ -1,0 +1,17 @@
+Fujiyama Renderer v0.3.6(Alpha) Release Notes
+=============================================
+
+New features since v0.3.5
+-------------------------
+ * Switched to C++11 to utilize standard thread library.
+ * No more OpenMP dependency.
+
+Features under development
+--------------------------
+ * Deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support
