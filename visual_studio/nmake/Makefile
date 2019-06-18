@@ -13,7 +13,7 @@ macro = /D "NODEBUG"
 
 CC = cl.exe
 LD = link.exe
-CXXFLAGS = /nologo $(opt) $(warn) $(macro) /fp:precise /EHsc /MD /openmp /I..\..\src /I$(INCLUDE_PATH) /c
+CXXFLAGS = /nologo $(opt) $(warn) $(macro) /fp:precise /EHsc /MD /I..\..\src /I$(INCLUDE_PATH) /c
 LDFLAGS = /nologo /LTCG /LIBPATH:$(out_dir) /LIBPATH:$(LIBRARY_PATH)
 RM = del
 

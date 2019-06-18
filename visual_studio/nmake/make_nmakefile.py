@@ -3,8 +3,7 @@
 #See LICENSE and README
 
 #import subprocess
-import sys, os
-from glob import glob
+import sys, os, glob
 
 top_dir = '../..'
 src_dir = top_dir + '/src'
@@ -34,7 +33,7 @@ macro = /D "NODEBUG"
 aliases = """\
 CC = cl.exe
 LD = link.exe
-CXXFLAGS = /nologo $(opt) $(warn) $(macro) /fp:precise /EHsc /MD /openmp /I{src_dir} /I$(INCLUDE_PATH) /c
+CXXFLAGS = /nologo $(opt) $(warn) $(macro) /fp:precise /EHsc /MD /I{src_dir} /I$(INCLUDE_PATH) /c
 LDFLAGS = /nologo /LTCG /LIBPATH:$(out_dir) /LIBPATH:$(LIBRARY_PATH)
 RM = del
 """.format(src_dir = src_dir.replace('/','\\'))
@@ -50,11 +49,14 @@ phony = """\
 .PHONY: all clean check
 """
 
+def get_file_list(pattern):
+	return sorted(glob.glob(pattern))
+
 target_list = [
 # libscene
 {
 	'name':               'libscene.dll',
-	'source_list':        glob(top_dir + '/src/*.cc'),
+	'source_list':        get_file_list(top_dir + '/src/*.cc'),
 	'additional_cflags':  '/D "FJ_DLL_EXPORT"',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'ws2_32.lib',
@@ -62,7 +64,7 @@ target_list = [
 # sample
 {
 	'name':               'cube.exe',
-	'source_list':        glob(top_dir + '/scenes/*.cc'),
+	'source_list':        get_file_list(top_dir + '/scenes/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '',
 	'additional_libs':    'libscene.lib',
@@ -70,49 +72,49 @@ target_list = [
 # shaders
 {
 	'name':               'ConstantShader.dll',
-	'source_list':        glob(top_dir + '/shaders/constant_shader/*.cc'),
+	'source_list':        get_file_list(top_dir + '/shaders/constant_shader/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'GlassShader.dll',
-	'source_list':        glob(top_dir + '/shaders/glass_shader/*.cc'),
+	'source_list':        get_file_list(top_dir + '/shaders/glass_shader/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'HairShader.dll',
-	'source_list':        glob(top_dir + '/shaders/hair_shader/*.cc'),
+	'source_list':        get_file_list(top_dir + '/shaders/hair_shader/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'PathtracingShader.dll',
-	'source_list':        glob(top_dir + '/shaders/pathtracing_shader/*.cc'),
+	'source_list':        get_file_list(top_dir + '/shaders/pathtracing_shader/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'PlasticShader.dll',
-	'source_list':        glob(top_dir + '/shaders/plastic_shader/*.cc'),
+	'source_list':        get_file_list(top_dir + '/shaders/plastic_shader/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'SSSShader.dll',
-	'source_list':        glob(top_dir + '/shaders/sss_shader/*.cc'),
+	'source_list':        get_file_list(top_dir + '/shaders/sss_shader/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'VolumeShader.dll',
-	'source_list':        glob(top_dir + '/shaders/volume_shader/*.cc'),
+	'source_list':        get_file_list(top_dir + '/shaders/volume_shader/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
@@ -120,63 +122,63 @@ target_list = [
 # procedures
 {
 	'name':               'CurveGeneneratorProcedure.dll',
-	'source_list':        glob(top_dir + '/procedures/curve_generator_procedure/*.cc'),
+	'source_list':        get_file_list(top_dir + '/procedures/curve_generator_procedure/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'ConstantVolumeProcedure.dll',
-	'source_list':        glob(top_dir + '/procedures/constantvolume_procedure/*.cc'),
+	'source_list':        get_file_list(top_dir + '/procedures/constantvolume_procedure/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'WavefrontObjProcedure.dll',
-	'source_list':        glob(top_dir + '/procedures/wavefrontobj_procedure/*.cc'),
+	'source_list':        get_file_list(top_dir + '/procedures/wavefrontobj_procedure/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'PointCloudGenerator.dll',
-	'source_list':        glob(top_dir + '/procedures/pointcloud_generator/*.cc'),
+	'source_list':        get_file_list(top_dir + '/procedures/pointcloud_generator/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'PointCloudsProcedure.dll',
-	'source_list':        glob(top_dir + '/procedures/pointclouds_procedure/*.cc'),
+	'source_list':        get_file_list(top_dir + '/procedures/pointclouds_procedure/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'SplineWispsProcedure.dll',
-	'source_list':        glob(top_dir + '/procedures/splinewisps_procedure/*.cc'),
+	'source_list':        get_file_list(top_dir + '/procedures/splinewisps_procedure/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'StanfordPlyProcedure.dll',
-	'source_list':        glob(top_dir + '/procedures/stanfordply_procedure/*.cc') + glob(top_dir + '/procedures/stanfordply_procedure/*.c'),
+	'source_list':        get_file_list(top_dir + '/procedures/stanfordply_procedure/*.cc') + get_file_list(top_dir + '/procedures/stanfordply_procedure/*.c'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'SurfaceWispsProcedure.dll',
-	'source_list':        glob(top_dir + '/procedures/surfacewisps_procedure/*.cc'),
+	'source_list':        get_file_list(top_dir + '/procedures/surfacewisps_procedure/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'VelocityGeneratorProcedure.dll',
-	'source_list':        glob(top_dir + '/procedures/velocity_generator_procedure/*.cc'),
+	'source_list':        get_file_list(top_dir + '/procedures/velocity_generator_procedure/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '/DLL',
 	'additional_libs':    'libscene.lib',
@@ -184,35 +186,35 @@ target_list = [
 # tools
 {
 	'name':               'fb2exr.exe',
-	'source_list':        glob(top_dir + '/tools/fb2exr/*.cc'),
+	'source_list':        get_file_list(top_dir + '/tools/fb2exr/*.cc'),
 	'additional_cflags':  '/D "OPENEXR_DLL"',
 	'additional_ldflags': '',
 	'additional_libs':    'libscene.lib Half.lib Iex.lib IlmImf.lib IlmThread.lib Imath.lib zlibwapi.lib',
 },
 {
 	'name':               'fbview.exe',
-	'source_list':        glob(top_dir + '/tools/framebuffer_viewer/*.cc'),
+	'source_list':        get_file_list(top_dir + '/tools/framebuffer_viewer/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '',
 	'additional_libs':    'libscene.lib ws2_32.lib',
 },
 {
 	'name':               'hdr2mip.exe',
-	'source_list':        glob(top_dir + '/tools/hdr2mip/*.cc') + glob(top_dir + '/tools/hdr2mip/*.c'),
+	'source_list':        get_file_list(top_dir + '/tools/hdr2mip/*.cc') + get_file_list(top_dir + '/tools/hdr2mip/*.c'),
 	'additional_cflags':  '',
 	'additional_ldflags': '',
 	'additional_libs':    'libscene.lib',
 },
 {
 	'name':               'jpg2mip.exe',
-	'source_list':        glob(top_dir + '/tools/jpg2mip/*.cc'),
+	'source_list':        get_file_list(top_dir + '/tools/jpg2mip/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '',
 	'additional_libs':    'libscene.lib jpeg.lib',
 },
 {
 	'name':               'scene.exe',
-	'source_list':        glob(top_dir + '/tools/scene_parser/*.cc'),
+	'source_list':        get_file_list(top_dir + '/tools/scene_parser/*.cc'),
 	'additional_cflags':  '',
 	'additional_ldflags': '',
 	'additional_libs':    'libscene.lib',
