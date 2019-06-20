@@ -5,7 +5,7 @@ Fujiyama Renderer
 -----------------
 Fujiyama is free and open source, distribution oriented ray-tracing renderer
 designed to handle production image rendering. 
-* Compatibility - written in pure ANSI C++
+* Compatibility - written in C++11
 * Portability - depends on no external library (x)
 * Simplicity - requires only single C++ header file and library
 * Compact - the core library is small and easy to embed
@@ -80,4 +80,4 @@ designed to handle production image rendering.
   + Rendering callbacks - 5 points to hook rendering process
 
 http://fujiyama-renderer.com/
-Copyright (c) 2011-2017 Hiroshi Tsubokawa
+Copyright (c) 2011-2019 Hiroshi Tsubokawa

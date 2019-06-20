@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2017 Hiroshi Tsubokawa
+// Copyright (c) 2011-2019 Hiroshi Tsubokawa
 // See LICENSE and README
 
 #include "load_images.h"

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # 1 xyzrgb_dragon with 32 point lights
-# Copyright (c) 2011-2017 Hiroshi Tsubokawa
+# Copyright (c) 2011-2019 Hiroshi Tsubokawa
 
 import fujiyama
 si = fujiyama.SceneInterface()

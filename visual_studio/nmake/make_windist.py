@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011-2017 Hiroshi Tsubokawa
+# Copyright (c) 2011-2019 Hiroshi Tsubokawa
 # See LICENSE.txt and README.txt
 
 import os, glob, shutil, zipfile, sys
@@ -7,7 +7,7 @@ import os, glob, shutil, zipfile, sys
 fujiyama_dir = 'Fujiyama-Renderer'
 
 readme_txt = """\
-# Copyright (c) 2011-2017 Hiroshi Tsubokawa
+# Copyright (c) 2011-2019 Hiroshi Tsubokawa
 # See LICENSE.txt and README.txt
 
 Fujiyama Renderer for Windows 64bit

@@ -1,15 +1,15 @@
-# Copyright (c) 2011-2017 Hiroshi Tsubokawa
+# Copyright (c) 2011-2019 Hiroshi Tsubokawa
 # See LICENSE and README
 
 Build Fujiyama-Renderer-for-Win x64
 ===================================
 
-  setupenv_vs2012.bat
+  setupenv_vs.bat
   nmake
 
   or
 
-  setupenv_vs2012.bat
+  setupenv_vs.bat
   nmake INCLUDE_PATH=C:\your_include_path LIBRARY_PATH=C:\your_lib_path
 
   The default paths are:

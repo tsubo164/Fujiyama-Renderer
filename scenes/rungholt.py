@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # 1 rungholt with 1 dome light with an HDRI
-# Copyright (c) 2011-2017 Hiroshi Tsubokawa
+# Copyright (c) 2011-2019 Hiroshi Tsubokawa
 
 import fujiyama
 import wavefrontobj
