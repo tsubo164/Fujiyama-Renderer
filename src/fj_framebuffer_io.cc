@@ -108,10 +108,31 @@ private:
       }
     }
     else if (is_pixels_) {
-      const Real r = to_float(tokens[0], 0);
-      const Real g = to_float(tokens[1], 0);
-      const Real b = to_float(tokens[2], 0);
-      const Real a = to_float(tokens[3], 0);
+      float r=0, g=0, b=0, a=0;
+
+      if (nchannels_ != tokens.size()) {
+        std::cout << "WARNING: channel count doesn't match the number of values in file.\n";
+      }
+      else {
+        switch (nchannels_) {
+        case 1:
+          r = to_float(tokens[0], 0);
+          break;
+        case 3:
+          r = to_float(tokens[0], 0);
+          g = to_float(tokens[1], 0);
+          b = to_float(tokens[2], 0);
+          break;
+        case 4:
+          r = to_float(tokens[0], 0);
+          g = to_float(tokens[1], 0);
+          b = to_float(tokens[2], 0);
+          a = to_float(tokens[3], 0);
+          break;
+        default:
+          break;
+        }
+      }
       fb_.SetColor(x, y, Color4(r, g, b, a));
       if (++x == width_) {
         x = 0;
