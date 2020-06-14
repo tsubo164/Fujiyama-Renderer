@@ -250,6 +250,9 @@ static int initialize_viewer(const char *filename)
         break;
       }
       printf("%d x %d: %s\n", viewbox.Size()[0], viewbox.Size()[1], format);
+      // TODO find better way
+      window_resize_callback(NULL, viewbox.Size()[0], viewbox.Size()[1]);
+      window_change_title_callback(NULL, filename);
     }
   }
 

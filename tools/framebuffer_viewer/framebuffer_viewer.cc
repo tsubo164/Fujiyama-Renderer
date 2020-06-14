@@ -241,7 +241,7 @@ void FrameBufferViewer::PressKey(unsigned char key, int mouse_x, int mouse_y)
     break;
   case 'u':
     LoadImage(filename_);
-    setup_image_card();
+    //setup_image_card();
     Draw();
     break;
   case 'q':
@@ -492,6 +492,8 @@ int FrameBufferViewer::LoadImage(const std::string &filename)
 
   setup_image_card();
 
+  // TODO find better way
+  /*
   if (resize_window_ != NULL) {
     resize_window_(
         window_object_,
@@ -501,6 +503,7 @@ int FrameBufferViewer::LoadImage(const std::string &filename)
   if (change_window_title_ != NULL) {
     change_window_title_(window_object_, filename_.c_str());
   }
+  */
 
   return err;
 }
