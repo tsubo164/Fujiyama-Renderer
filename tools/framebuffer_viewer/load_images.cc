@@ -25,7 +25,9 @@ int LoadFb(const std::string &filename, FrameBuffer *fb, BufferInfo *info)
     return -1;
   }
 
-  ReadFrameBuffer(filename, *fb);
+  if (ReadFrameBuffer(filename, *fb)) {
+    return -1;
+  }
   info->viewbox.min[0] = 0;
   info->viewbox.min[1] = 0;
   info->viewbox.max[0] = fb->GetWidth();

@@ -45,21 +45,11 @@ static void motion(int x, int y);
 static void keyboard(unsigned char key, int x, int y);
 static void timer(int value);
 
-// called back by framebuffer
-/*
-static void window_resize_callback(void *win, int x_image_res, int y_image_res);
-static void window_change_title_callback(void *win, const char *title);
-*/
-
 static int initialize_viewer(const char *filename);
 static void render_status_message(const FrameBufferViewer *viewer);
 
-static const int WIN_W_MIN = 320 * 0 + 1920 / 2;
-static const int WIN_H_MIN = 240 * 0 + 1080 / 2;
-/*
-static const int WIN_W_MAX = 1280;
-static const int WIN_H_MAX = 720;
-*/
+static const int WINDOW_WIDTH = 1920 / 2;
+static const int WINDOW_HEIGHT = 1080 / 2;
 
 int main(int argc, char **argv)
 {
@@ -84,21 +74,18 @@ int main(int argc, char **argv)
 
   if (strcmp(argv[1], "--listen") == 0) {
     filename = NULL;
-    sprintf(win_title, "Listen Mode - FrameBuffer Viewer");
   } else {
     filename = argv[1];
-    sprintf(win_title, "%s - FrameBuffer Viewer", filename);
   }
 
-  // tipical glut settings
   glutInit(&argc, argv);
   // this doesn't resize image
-  //glutInitWindowSize(WIN_W_MIN, WIN_H_MIN);
+  //glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
   glutCreateWindow(win_title);
 
   // this is better solution to resize for init
-  glutReshapeWindow(WIN_W_MIN, WIN_H_MIN);
+  glutReshapeWindow(WINDOW_WIDTH, WINDOW_HEIGHT);
 
   glutDisplayFunc(display);
   glutReshapeFunc(resize);
@@ -123,7 +110,6 @@ int main(int argc, char **argv)
   }
 
   glutMainLoop();
-
   return 0;
 }
 
@@ -160,7 +146,6 @@ static void mouse(int button, int state, int x, int y)
       btn = MOUSE_BUTTON_MIDDLE;
       break;
     case GLUT_RIGHT_BUTTON:
-      // TODO not sure why need cast only here
       btn = MOUSE_BUTTON_RIGHT;
       break;
     default:
@@ -198,27 +183,9 @@ static void timer(int value)
   }
 }
 
-/*
-static void window_resize_callback(void *win, int x_image_res, int y_image_res)
-{
-  const int window_margin = 20;
-  const int new_window_size_x = x_image_res + 2 * window_margin;
-  const int new_window_size_y = y_image_res + 2 * window_margin;
-  glutReshapeWindow(
-      Clamp(new_window_size_x, WIN_W_MIN, WIN_W_MAX),
-      Clamp(new_window_size_y, WIN_H_MIN, WIN_H_MAX));
-}
-
-static void window_change_title_callback(void *win, const char *title)
-{
-  const std::string new_window_title(std::string(title) + " - FrameBuffer Viewer");
-  glutSetWindowTitle(new_window_title.c_str());
-}
-*/
-
 static int initialize_viewer(const char *filename)
 {
-  // avoid windows Rectangle
+  // avoid windows Rectangle name conflict
   fj::Rectangle viewbox;
 
   // create viewer
@@ -233,48 +200,15 @@ static int initialize_viewer(const char *filename)
     fprintf(stderr, "Could not register viewer_exit()\n");
   }
 
-  // set callback functions
-  //viewer->SetWindowResizeRequest     (NULL, window_resize_callback);
-  //viewer->SetWindowChangeTitleRequest(NULL, window_change_title_callback);
-
   if (filename == NULL) {
     viewer->StartListening();
     return 0;
   }
 
   // load image
-  {
-    if (viewer->LoadImage(filename)) {
-      fprintf(stderr, "Could not open framebuffer file: %s\n", filename);
-      return -1;
-    } else {
-      const char *format;
-      int nchannels;
-      // get image size info
-      viewer->GetImageSize(viewbox, &nchannels);
-      switch (nchannels) {
-      case 3:
-        format = "RGB";
-        break;
-      case 4:
-        format = "RGBA";
-        break;
-      default:
-        format = "UNKNOWN";
-        break;
-      }
-      printf("%d x %d: %s\n", viewbox.Size()[0], viewbox.Size()[1], format);
-      // TODO find better way
-      /*
-      window_resize_callback(NULL, viewbox.Size()[0], viewbox.Size()[1]);
-      window_change_title_callback(NULL, filename);
-      std::cout << "initialize_viewer: " << viewbox.Size()[0] << ", " << viewbox.Size()[1] << '\n';
-      */
-    }
-
-    //std::cout << "=============\n";
-    //resize(WIN_W_MIN, WIN_H_MIN);
-    //resize(WIN_W_MIN + 1, WIN_H_MIN + 1);
+  if (viewer->LoadImage(filename)) {
+    fprintf(stderr, "Could not open framebuffer file: %s\n", filename);
+    return -1;
   }
 
   return 0;
