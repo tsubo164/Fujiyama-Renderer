@@ -145,6 +145,9 @@ private:
 int ReadFrameBuffer(const std::string &filename, FrameBuffer &fb)
 {
   std::ifstream strm(filename.c_str());
+  if (!strm) {
+    return -1;
+  }
   PtoFrameBuffer pto(fb);
 
   set_error(ERR_FB_NOERR);
