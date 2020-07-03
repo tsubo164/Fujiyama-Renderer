@@ -46,15 +46,20 @@ static void keyboard(unsigned char key, int x, int y);
 static void timer(int value);
 
 // called back by framebuffer
+/*
 static void window_resize_callback(void *win, int x_image_res, int y_image_res);
 static void window_change_title_callback(void *win, const char *title);
+*/
 
 static int initialize_viewer(const char *filename);
+static void render_status_message(const FrameBufferViewer *viewer);
 
-static const int WIN_W_MIN = 320;
-static const int WIN_H_MIN = 240;
+static const int WIN_W_MIN = 320 * 0 + 1920 / 2;
+static const int WIN_H_MIN = 240 * 0 + 1080 / 2;
+/*
 static const int WIN_W_MAX = 1280;
 static const int WIN_H_MAX = 720;
+*/
 
 int main(int argc, char **argv)
 {
@@ -87,9 +92,13 @@ int main(int argc, char **argv)
 
   // tipical glut settings
   glutInit(&argc, argv);
-  glutInitWindowSize(WIN_W_MIN, WIN_H_MIN);
+  // this doesn't resize image
+  //glutInitWindowSize(WIN_W_MIN, WIN_H_MIN);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
   glutCreateWindow(win_title);
+
+  // this is better solution to resize for init
+  glutReshapeWindow(WIN_W_MIN, WIN_H_MIN);
 
   glutDisplayFunc(display);
   glutReshapeFunc(resize);
@@ -126,6 +135,9 @@ static void exit_viewer(void)
 static void display(void)
 {
   viewer->Draw();
+
+  render_status_message(viewer);
+
   glutSwapBuffers();
 }
 
@@ -186,6 +198,7 @@ static void timer(int value)
   }
 }
 
+/*
 static void window_resize_callback(void *win, int x_image_res, int y_image_res)
 {
   const int window_margin = 20;
@@ -201,6 +214,7 @@ static void window_change_title_callback(void *win, const char *title)
   const std::string new_window_title(std::string(title) + " - FrameBuffer Viewer");
   glutSetWindowTitle(new_window_title.c_str());
 }
+*/
 
 static int initialize_viewer(const char *filename)
 {
@@ -220,8 +234,8 @@ static int initialize_viewer(const char *filename)
   }
 
   // set callback functions
-  viewer->SetWindowResizeRequest     (NULL, window_resize_callback);
-  viewer->SetWindowChangeTitleRequest(NULL, window_change_title_callback);
+  //viewer->SetWindowResizeRequest     (NULL, window_resize_callback);
+  //viewer->SetWindowChangeTitleRequest(NULL, window_change_title_callback);
 
   if (filename == NULL) {
     viewer->StartListening();
@@ -251,10 +265,44 @@ static int initialize_viewer(const char *filename)
       }
       printf("%d x %d: %s\n", viewbox.Size()[0], viewbox.Size()[1], format);
       // TODO find better way
+      /*
       window_resize_callback(NULL, viewbox.Size()[0], viewbox.Size()[1]);
       window_change_title_callback(NULL, filename);
+      std::cout << "initialize_viewer: " << viewbox.Size()[0] << ", " << viewbox.Size()[1] << '\n';
+      */
     }
+
+    //std::cout << "=============\n";
+    //resize(WIN_W_MIN, WIN_H_MIN);
+    //resize(WIN_W_MIN + 1, WIN_H_MIN + 1);
   }
 
   return 0;
+}
+
+static void render_status_message(const FrameBufferViewer *viewer)
+{
+  //void *font = FJ_FONT GLUT_BITMAP_TIMES_ROMAN_24;
+  void *font = GLUT_BITMAP_HELVETICA_18;
+  const std::string &text = viewer->GetStatusMessage();
+  int width, height;
+  viewer->GetWindowSize(width, height);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  glTranslatef(-width / 2 + 12, height / 2 - 20, 0);
+
+  // drop shadow
+  glColor3f(0, 0, 0);
+  glRasterPos3f(1, -1, 0);
+  for (char c: text) {
+    glutBitmapCharacter(font, c);
+  }
+
+  // main text
+  glColor3f(1, 1, 1);
+  glRasterPos3f(0, 0, 0);
+  for (char c: text) {
+    glutBitmapCharacter(font, c);
+  }
 }

@@ -47,6 +47,8 @@ public:
   int LoadImage(const std::string &filename);
 
   void GetImageSize(Rectangle &viewbox, int *nchannels) const;
+  void GetWindowSize(int &width, int &height) const;
+  const std::string &GetStatusMessage() const;
 
   void SetWindowResizeRequest(
       void *window_object,
@@ -59,11 +61,13 @@ private:
   void set_to_home_position();
   void setup_image_card();
   void draw_viewbox() const;
+  void change_status_message(const std::string &message);
 
   FrameBuffer fb_;
   ImageCard image_;
 
   std::string filename_;
+  std::string status_message_;
   bool is_listening_;
 
   int win_width_;

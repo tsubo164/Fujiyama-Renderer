@@ -23,6 +23,9 @@ static bool is_socket_ready = false;
 static void draw_tile_guide(int width, int height, int tilesize);
 
 FrameBufferViewer::FrameBufferViewer() :
+    filename_(""),
+    status_message_(""),
+
     is_listening_(false),
     win_width_(0),
     win_height_(0),
@@ -33,9 +36,11 @@ FrameBufferViewer::FrameBufferViewer() :
 
     tilesize_(0),
     draw_tile_(1),
+
     window_object_(NULL),
     resize_window_(NULL),
     change_window_title_(NULL),
+
     server_(),
     state_(STATE_NONE),
     tile_status_(),
@@ -74,7 +79,7 @@ void FrameBufferViewer::Draw() const
 
   glTranslatef(xmove, ymove, 0.f);
   glScalef(scale_, scale_, 1.f);
-  glTranslatef(-.5 * xviewsize, -.5 * yviewsize, 0.f); 
+  glTranslatef(-.5 * xviewsize, -.5 * yviewsize, 0.f);
 
   // render background
   glColor3f(0.f, 0.f, 0.f);
@@ -281,10 +286,13 @@ void FrameBufferViewer::StartListening()
   state_ = STATE_READY;
   frame_id_ = -1;
 
+  /*
   if (change_window_title_ != NULL) {
     std::string title("READY: listeing to renderer"); 
     change_window_title_(window_object_, title.c_str());
   }
+  */
+  change_status_message("READY: Listening to Renderer");
 }
 
 void FrameBufferViewer::StopListening()
@@ -299,10 +307,13 @@ void FrameBufferViewer::StopListening()
   state_ = STATE_NONE;
   frame_id_ = -1;
 
+  /*
   if (change_window_title_ != NULL) {
     std::string title("DISCONNECTED: 'l' to start listeing"); 
     change_window_title_(window_object_, title.c_str());
   }
+  */
+  change_status_message("DISCONNECTED: 'l' to Start Listening");
 }
 
 bool FrameBufferViewer::IsListening() const
@@ -361,10 +372,13 @@ void FrameBufferViewer::Listen()
         const int new_window_size_y = viewbox_.Size()[1];
         resize_window_(window_object_, new_window_size_x, new_window_size_y);
       }
+      /*
       if (change_window_title_ != NULL) {
         std::string title("RENDERING: ESC to stop rendering"); 
         change_window_title_(window_object_, title.c_str());
       }
+      */
+      change_status_message("RENDERING: ESC to Stop Rendering");
       break;
 
     case MSG_RENDER_FRAME_DONE:
@@ -375,19 +389,25 @@ void FrameBufferViewer::Listen()
       }
       if (state_ == STATE_RENDERING) {
         state_ = STATE_READY;
+        /*
         if (change_window_title_ != NULL) {
           std::string title("READY: listeing to renderer"); 
           change_window_title_(window_object_, title.c_str());
         }
+        */
+        change_status_message("READY: Listeing to Renderer"); 
       } else if (state_ == STATE_INTERRUPTED) {
         for (size_t i = 0; i < tile_status_.size(); i++) {
           tile_status_[i] = TileStatus();
         }
         state_ = STATE_ABORT;
+        /*
         if (change_window_title_ != NULL) {
           std::string title("INCOMPLETE: rendering terminated"); 
           change_window_title_(window_object_, title.c_str());
         }
+        */
+        change_status_message("INCOMPLETE: Rendering Terminated"); 
       }
       frame_id_ = -1;
 
@@ -435,10 +455,13 @@ void FrameBufferViewer::Listen()
     }
 
     if (state_ == STATE_INTERRUPTED) {
+      /*
       if (change_window_title_ != NULL) {
         std::string title("INTERRUPTED: aborting render process"); 
         change_window_title_(window_object_, title.c_str());
       }
+      */
+      change_status_message("INTERRUPTED: Aborting Render Process"); 
       SendRenderFrameAbort(client, message.frame_id);
       // abort;
     }
@@ -504,6 +527,7 @@ int FrameBufferViewer::LoadImage(const std::string &filename)
     change_window_title_(window_object_, filename_.c_str());
   }
   */
+  change_status_message("File: " + filename_);
 
   return err;
 }
@@ -512,6 +536,17 @@ void FrameBufferViewer::GetImageSize(Rectangle &viewbox, int *nchannels) const
 {
   viewbox = viewbox_;
   *nchannels = fb_.GetChannelCount();
+}
+
+void FrameBufferViewer::GetWindowSize(int &width, int &height) const
+{
+  width = win_width_;
+  height = win_height_;
+}
+
+const std::string &FrameBufferViewer::GetStatusMessage() const
+{
+  return status_message_;
 }
 
 void FrameBufferViewer::SetWindowResizeRequest(
@@ -601,6 +636,11 @@ void FrameBufferViewer::draw_viewbox() const
     glVertex3f(viewbox_.max[0], viewbox_.min[1], 0.f);
   glEnd();
   glPopAttrib();
+}
+
+void FrameBufferViewer::change_status_message(const std::string &message)
+{
+  status_message_ = message;
 }
 
 static void draw_tile_guide(int width, int height, int tilesize)
