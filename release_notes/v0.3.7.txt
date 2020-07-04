@@ -1,0 +1,17 @@
+Fujiyama Renderer v0.3.7(Alpha) Release Notes
+=============================================
+
+New features since v0.3.6
+-------------------------
+ * Show status message on fbview viewport.
+ * Fixed some bugs related on FrameBuffer and fbview.
+
+Features under development
+--------------------------
+ * Deformation motion blur
+ * AOV support
+ * Displacement shader
+ * Subdivision surface
+ * Deep shadow map
+ * Alembic support
+ * OpenVDB support
