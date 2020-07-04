@@ -79,12 +79,14 @@ int main(int argc, char **argv)
   }
 
   glutInit(&argc, argv);
-  // this doesn't resize image
-  //glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+  // XXX on maxOS, need to reszie window after creation to viewport work properly
+  // for some reason. so create window with nimus 1 pixel then resize back to normal.
+  glutInitWindowSize(WINDOW_WIDTH - 1, WINDOW_HEIGHT);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
   glutCreateWindow(win_title);
 
-  // this is better solution to resize for init
+  // XXX on maxOS, need to reszie window after creation to viewport work properly
+  // for some reason. so create window with nimus 1 pixel then resize back to normal.
   glutReshapeWindow(WINDOW_WIDTH, WINDOW_HEIGHT);
 
   glutDisplayFunc(display);
@@ -223,7 +225,10 @@ static void render_status_message(const FrameBufferViewer *viewer)
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  glTranslatef(-width / 2 + 12, height / 2 - 20, 0);
+  // to top left corner
+  glTranslatef(-width / 2, height / 2, 0);
+  // offset a bit
+  glTranslatef(12, -20, 0);
 
   // drop shadow
   glColor3f(0, 0, 0);
