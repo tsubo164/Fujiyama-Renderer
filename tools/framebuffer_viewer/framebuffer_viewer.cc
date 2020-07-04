@@ -60,8 +60,8 @@ void FrameBufferViewer::Draw() const
 {
   const int xviewsize = viewbox_.Size()[0];
   const int yviewsize = viewbox_.Size()[1];
-  const int xmove = scale_ * xoffset_; 
-  const int ymove = scale_ * yoffset_; 
+  const float xmove = scale_ * xoffset_;
+  const float ymove = scale_ * yoffset_;
 
   glClearColor(.2f, .2f, .2f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT);
@@ -203,7 +203,6 @@ void FrameBufferViewer::MoveMouse(int x, int y)
 void FrameBufferViewer::PressKey(unsigned char key, int mouse_x, int mouse_y)
 {
   switch (key) {
-  // TODO TEST
   case 'l':
     if (IsListening()) {
       StopListening();

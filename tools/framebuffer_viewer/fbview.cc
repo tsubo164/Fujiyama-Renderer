@@ -24,16 +24,16 @@ static const char USAGE[] =
 
 static const char USAGE2[] =
 "Hotkeys:\n"
-"  h                 Back to home position\n"
-"  r                 Display red channel. one more hit back to rgb\n"
-"  g                 Display green channel. one more hit back to rgb\n"
-"  b                 Display blue channel. one more hit back to rgb\n"
-"  a                 Display alpha channel. one more hit back to rgb\n"
-"  t                 Toggle displaying tile guide lines when viewing *.mip\n"
-"  u                 Update (reload) image file\n"
-"  l                 Toggle listening mode on/off\n"
-"  q                 Quit Application\n"
-"  ESC               Abort render process when displaying progress\n"
+"    h   Back to home position\n"
+"    r   Display red channel. one more hit back to rgb\n"
+"    g   Display green channel. one more hit back to rgb\n"
+"    b   Display blue channel. one more hit back to rgb\n"
+"    a   Display alpha channel. one more hit back to rgb\n"
+"    t   Toggle displaying tile guide lines when viewing *.mip\n"
+"    u   Update (reload) image file\n"
+"    l   Toggle listening mode on/off\n"
+"    q   Quit Application\n"
+"  ESC   Abort render process when displaying progress\n"
 "\n";
 
 static FrameBufferViewer *viewer = NULL;
@@ -54,21 +54,21 @@ static const int WINDOW_HEIGHT = 1080 / 2;
 int main(int argc, char **argv)
 {
   const char *filename = NULL;
-  char win_title[1024] = "FrameBuffer Viewer";
+  const char *win_title = "FrameBuffer Viewer";
 
   if (argc == 2 && strcmp(argv[1], "--help") == 0) {
-    fprintf(stderr, "%s%s", USAGE, USAGE2);
+    std::cout << USAGE << USAGE2;
     return 0;
   }
 
   if (argc != 2) {
-    fprintf(stderr, "error: invalid number of arguments.\n");
-    fprintf(stderr, "%s%s", USAGE, USAGE2);
+    std::cerr << "ERROR: Invalid number of arguments.\n\n";
+    std::cerr << USAGE << USAGE2;
     return -1;
   }
 
   if (strlen(argv[1]) > 1000) {
-    fprintf(stderr, "error: too long file name.\n");
+    std::cerr << "ERROR: Too long file name.\n\n";
     return -1;
   }
 
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     const GLenum err = glewInit();
     if (err != GLEW_OK) {
       // Problem: glewInit failed, something is seriously wrong.
-      fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+      std::cerr << "ERROR: " << glewGetErrorString(err) << "\n\n";
       return -1;
     }
   }
@@ -191,13 +191,13 @@ static int initialize_viewer(const char *filename)
   // create viewer
   viewer = new FrameBufferViewer();
   if (viewer == NULL) {
-    fprintf(stderr, "Could not allocate FrameBufferViewer\n");
+    std::cerr << "Could not allocate FrameBufferViewer\n\n";
     return -1;
   }
 
   // register cleanup function
   if (atexit(exit_viewer) != 0) {
-    fprintf(stderr, "Could not register viewer_exit()\n");
+    std::cerr << "Could not register viewer_exit()\n\n";
   }
 
   if (filename == NULL) {
@@ -207,7 +207,7 @@ static int initialize_viewer(const char *filename)
 
   // load image
   if (viewer->LoadImage(filename)) {
-    fprintf(stderr, "Could not open framebuffer file: %s\n", filename);
+    std::cerr << "Could not open framebuffer file: " << filename << "\n\n";
     return -1;
   }
 
@@ -216,7 +216,6 @@ static int initialize_viewer(const char *filename)
 
 static void render_status_message(const FrameBufferViewer *viewer)
 {
-  //void *font = FJ_FONT GLUT_BITMAP_TIMES_ROMAN_24;
   void *font = GLUT_BITMAP_HELVETICA_18;
   const std::string &text = viewer->GetStatusMessage();
   int width, height;

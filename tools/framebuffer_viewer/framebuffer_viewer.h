@@ -72,10 +72,10 @@ private:
   float exponent_;
   float lockexponent_;
   float dist_per_pixel_;
-  int xoffset_;
-  int yoffset_;
-  int xlockoffset_;
-  int ylockoffset_;
+  float xoffset_;
+  float yoffset_;
+  float xlockoffset_;
+  float ylockoffset_;
 
   Rectangle viewbox_;
 
