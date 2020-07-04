@@ -80,14 +80,18 @@ int main(int argc, char **argv)
 
   glutInit(&argc, argv);
   // XXX on maxOS, need to reszie window after creation to viewport work properly
-  // for some reason. so create window with nimus 1 pixel then resize back to normal.
-  glutInitWindowSize(WINDOW_WIDTH - 1, WINDOW_HEIGHT);
+  // for some reason. No setup window size here.
+#ifndef FJ_MACOSX
+  glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+#endif
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
   glutCreateWindow(win_title);
 
   // XXX on maxOS, need to reszie window after creation to viewport work properly
-  // for some reason. so create window with nimus 1 pixel then resize back to normal.
+  // for some reason. Resizing window size here.
+#if defined(FJ_MACOSX)
   glutReshapeWindow(WINDOW_WIDTH, WINDOW_HEIGHT);
+#endif
 
   glutDisplayFunc(display);
   glutReshapeFunc(resize);
