@@ -80,4 +80,4 @@ designed to handle production image rendering.
   + Rendering callbacks - 5 points to hook rendering process
 
 http://fujiyama-renderer.com/
-Copyright (c) 2011-2019 Hiroshi Tsubokawa
+Copyright (c) 2011-2020 Hiroshi Tsubokawa

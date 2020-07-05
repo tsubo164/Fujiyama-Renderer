@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # glassy armadillo, happy buddha and horse
-# Copyright (c) 2011-2019 Hiroshi Tsubokawa
+# Copyright (c) 2011-2020 Hiroshi Tsubokawa
 
 import fujiyama
 

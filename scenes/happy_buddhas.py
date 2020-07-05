@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # 16 Happy Buddhas with 32 point lights
-# Copyright (c) 2011-2019 Hiroshi Tsubokawa
+# Copyright (c) 2011-2020 Hiroshi Tsubokawa
 
 import fujiyama
 si = fujiyama.SceneInterface()

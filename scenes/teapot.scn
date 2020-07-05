@@ -1,5 +1,5 @@
 # 1 teapot with 32 point lights
-# Copyright (c) 2011-2019 Hiroshi Tsubokawa
+# Copyright (c) 2011-2020 Hiroshi Tsubokawa
 
 #plugins
 OpenPlugin plastic_shader  PlasticShader

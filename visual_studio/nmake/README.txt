@@ -1,4 +1,4 @@
-# Copyright (c) 2011-2019 Hiroshi Tsubokawa
+# Copyright (c) 2011-2020 Hiroshi Tsubokawa
 # See LICENSE and README
 
 Build Fujiyama-Renderer-for-Win x64

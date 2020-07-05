@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # 4 head models and sss shaders with 1 point light
-# Copyright (c) 2011-2019 Hiroshi Tsubokawa
+# Copyright (c) 2011-2020 Hiroshi Tsubokawa
 
 import fujiyama
 

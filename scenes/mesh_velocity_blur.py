@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # 1 point cloud with 1 dome light with an HDRI
-# Copyright (c) 2011-2019 Hiroshi Tsubokawa
+# Copyright (c) 2011-2020 Hiroshi Tsubokawa
 
 # NOTE How to make dragon_vel.mesh
 # $ ply2mesh dragon.ply  dragon.mesh
